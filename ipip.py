@@ -3,7 +3,7 @@ import sys
 
 ip = str(sys.argv[1])
 # r = os.popen('bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) '+ip)
-ret = subprocess.run(f'bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) {ip}', shell=True, capture_output=True, text=True)
+r = subprocess.run(f'bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) {ip}', shell=True, capture_output=True, text=True)
 temp = str(r.read()).split("\n")
 tp1 = []
 status = 0
