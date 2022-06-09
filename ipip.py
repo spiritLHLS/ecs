@@ -1,9 +1,10 @@
-import subprocess
+import os
 import sys
 
 ip = str(sys.argv[1])
-ret = subprocess.run(f'bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) {ip}', shell=True, capture_output=True, text=True)
-temp = str(ret.stdout).split("\n")
+r = os.popen(f'bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) {ip}')
+# ret = subprocess.run(f'bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) {ip}', shell=True, capture_output=True, text=True)
+temp = str(r.read()).split("\n")
 tp1 = []
 status = 0
 for i in temp:
