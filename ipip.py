@@ -31,7 +31,7 @@ if ttpp != []:
             temp_lists.append(j)
             break
 temps = []
-tep = ""
+tep = temp_lists[0][1]
 count = 0
 tpe = ""
 for i in temp_lists:
