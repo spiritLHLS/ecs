@@ -46,5 +46,5 @@ msg = "  本机地址\n"
 for i in temps:
     msg = msg + i[0] + f",{i[1]}次" + "\n"
 print(msg)
-os.system(rm -rf return.sh)
+os.system("rm -rf return.sh")
 
