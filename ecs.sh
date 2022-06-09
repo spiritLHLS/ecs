@@ -1631,6 +1631,7 @@ else
     apt-get update > /dev/null 2>&1
     apt-get -y install python3.7 > /dev/null 2>&1
 fi
+export PYTHONIOENCODING=utf-8
 ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
 ! _exists "free" && _red "Error: free command not found.\n" && exit 1
 start_time=$(date +%s)
