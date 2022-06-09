@@ -13,10 +13,19 @@ for i in temp:
         tp1.append(i)
 count = 0
 temp_lists = []
+ttpp = []
 for i in tp1:
     if count%3 == 0:
-        temp_lists.append(i.split(" "))
+        for j in ttpp:
+            if len(j) > 3:
+                temp_lists.append(j)
+        ttpp = []
+    ttpp.append(i.split(" "))
     count += 1
+if ttpp != []:
+    for j in ttpp:
+        if len(j) > 3:
+            temp_lists.append(j)
 ASNS = []
 countrys = []
 location = []
