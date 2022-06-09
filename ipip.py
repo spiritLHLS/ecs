@@ -39,7 +39,7 @@ for i in temp_lists:
         temps.append((i[1], temp_lists.count(i)))
         tpe = i
     tep = i[1]
-if tpe != temp_lists[-1]:
+if tpe != temps[-1][0]:
     temps.append((temp_lists[-1][1], temp_lists.count(temp_lists[-1])))
 msg = "  本机地址\n"
 for i in temps:
