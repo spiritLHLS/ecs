@@ -34,5 +34,5 @@ for i in temp_lists:
 try:
     print(msg)
 except:
-    print(msg.encode("utf-8").decode("latin1"))
+    print(msg.encode("utf-8"))
 
