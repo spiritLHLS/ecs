@@ -3,7 +3,7 @@ import sys
 
 ip = str(sys.argv[1])
 ret = subprocess.run(f'bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) {ip}', shell=True, capture_output=True, text=True)
-temp = ret.stdout.split("\n")
+temp = ret.stdout.encode("utf-8").decode("latin1").split("\n")
 tp1 = []
 status = 0
 for i in temp:
@@ -34,5 +34,5 @@ for i in temp_lists:
 try:
     print(msg)
 except:
-    print(msg.encode("utf-8"))
+    print(msg.encode("utf-8").decode("latin1"))
 
