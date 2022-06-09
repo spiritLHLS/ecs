@@ -3,7 +3,7 @@ import sys
 
 ip = str(sys.argv[1])
 ret = subprocess.run(f'bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) {ip}', shell=True, capture_output=True, text=True)
-temp = ret.stdout.encode("utf-8").decode("latin1").split("\n")
+temp = str(ret.stdout).split("\n")
 tp1 = []
 status = 0
 for i in temp:
@@ -28,11 +28,19 @@ if ttpp != []:
         if len(j) > 1:
             temp_lists.append(j)
             break
-msg = "  本机地址\n"
+temps = []
+tep = temp_lists[0][1]
+count = 0
+tpe = ""
 for i in temp_lists:
-    msg = msg + i[1] + "\n"
-try:
-    print(msg)
-except:
-    print(msg.encode("utf-8").decode("latin1"))
+    if tep != i[1]:
+        temps.append((i[1], temp_lists.count(i)))
+        tpe = i
+    tep = i[1]
+if tpe != temp_lists[-1]:
+    temps.append((temp_lists[-1][1], temp_lists.count(temp_lists[-1])))
+msg = "  本机地址\n"
+for i in temps:
+    msg = msg + i[0] + f",{i[1]}次" + "\n"
+print(msg)
 
