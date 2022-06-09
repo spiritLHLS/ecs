@@ -31,5 +31,8 @@ if ttpp != []:
 msg = "  本机地址\n"
 for i in temp_lists:
     msg = msg + i[1] + "\n"
-print(msg)
+try:
+    print(msg)
+except:
+    print(msg.encode("utf-8").decode("latin1"))
 
