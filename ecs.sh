@@ -587,15 +587,22 @@ SystemInfo_GetVirtType() {
     fi
 }
 
+Function_GenerateResult_SysBench_MemoryTest() {
+    sleep 0.1
+    if [ -f "${WorkDir}/SysBench/Memory/result.txt" ]; then
+        cp -f ${WorkDir}/SysBench/Memory/result.txt ${WorkDir}/result/05-memorytest.result
+    fi
+}
 
 # 生成结果文件
 Function_GenerateResult() {
-    echo -e "${Msg_Info} Please wait, collecting results ..."
+    # echo -e "${Msg_Info} Please wait, collecting results ..."
     mkdir -p /tmp/ >/dev/null 2>&1
     mkdir -p ${WorkDir}/result >/dev/null 2>&1
     Function_GenerateResult_SysBench_CPUTest >/dev/null
     Function_GenerateResult_DiskTest >/dev/null
-    echo -e "${Msg_Info} Generating Report ..."
+    Function_GenerateResult_SysBench_MemoryTest >/dev/null
+    # echo -e "${Msg_Info} Generating Report ..."
     local finalresultfile="${WorkDir}/result/finalresult.txt"
     sleep 0.2
     if [ -f "${WorkDir}/result/01-systeminfo.result" ]; then
@@ -606,14 +613,18 @@ Function_GenerateResult() {
         cat ${WorkDir}/result/04-cputest.result >>${WorkDir}/result/finalresult.txt
     fi
     sleep 0.2
+    if [ -f "${WorkDir}/result/05-memorytest.result" ]; then
+        cat ${WorkDir}/result/05-memorytest.result >>${WorkDir}/result/finalresult.txt
+    fi
+    sleep 0.2
     if [ -f "${WorkDir}/result/06-disktest.result" ]; then
         cat ${WorkDir}/result/06-disktest.result >>${WorkDir}/result/finalresult.txt
     fi
     sleep 0.2
-    echo -e "${Msg_Info} Saving local Report ..."
+    # echo -e "${Msg_Info} Saving local Report ..."
     cp ${WorkDir}/result/finalresult.txt $HOME/LemonBench.Result.txt
     sleep 0.1
-    echo -e "${Msg_Info} Generating Report URL ..."
+    # echo -e "${Msg_Info} Generating Report URL ..."
     cat ${WorkDir}/result/finalresult.txt | PasteBin_Upload
 }
 
@@ -646,7 +657,7 @@ PasteBin_Upload() {
         --data "expiration=${PASTEBIN_EXPIRATION:-}" \
         --data "syntax=${PASTEBIN_SYNTAX:-text}")"
     if [ "$?" = "0" ]; then
-        echo -e "${Msg_Success} Report Generate Success！Please save the follwing link:"
+        # echo -e "${Msg_Success} Report Generate Success！Please save the follwing link:"
         echo -e "${Msg_Info} 测试CPU和IO的报告(需登陆查看): ${uploadresult}"
     else
         echo -e "${Msg_Warning} Report Generate Failure, But you can still read $HOME/LemonBench.Result.txt to get this result！"
@@ -1252,8 +1263,8 @@ Run_DiskTest_DD() {
 
 Function_DiskTest_Fast() {
     mkdir -p ${WorkDir}/DiskTest/ >/dev/null 2>&1
-    echo -e "${Font_Yellow}-> 磁盘IO测试中 (4K Block/1M Block, Direct Mode)${Font_Suffix}\n"
-    echo -e "-> 磁盘IO测试中 (4K Block/1M Block, Direct Mode)\n" >>${WorkDir}/DiskTest/result.txt
+    echo -e " ${Font_Yellow}-> 磁盘IO测试中 (4K Block/1M Block, Direct Mode)${Font_Suffix}\n"
+    echo -e " -> 磁盘IO测试中 (4K Block/1M Block, Direct Mode)\n" >>${WorkDir}/DiskTest/result.txt
     SystemInfo_GetVirtType
     SystemInfo_GetOSRelease
     if [ "${Var_VirtType}" = "docker" ] || [ "${Var_VirtType}" = "wsl" ]; then
@@ -1615,10 +1626,10 @@ checkspeedtest
 SystemInfo_GetSystemBit
 if [ "${release}" == "centos" ]; then
     yum update > /dev/null 2>&1
-    yum -y install python3 > /dev/null 2>&1
+    yum -y install python3.7 > /dev/null 2>&1
 else
     apt-get update > /dev/null 2>&1
-    apt-get -y install python3 > /dev/null 2>&1
+    apt-get -y install python3.7 > /dev/null 2>&1
 fi
 ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
 ! _exists "free" && _red "Error: free command not found.\n" && exit 1
