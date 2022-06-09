@@ -1,9 +1,11 @@
 import subprocess
 import sys
+import time
 
 ip = str(sys.argv[1])
 # r = os.popen('bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) '+ip)
 r = subprocess.run(f'bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) {ip}', capture_output=True, text=True)
+print(r.status)
 temp = str(r.stdout).split("\n")
 print(temp)
 tp1 = []
