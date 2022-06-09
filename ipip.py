@@ -1,14 +1,11 @@
 import subprocess
 import sys
 import time
+import os
 
 ip = str(sys.argv[1])
-# r = os.popen('bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) '+ip)
 r = subprocess.run(f'wget https://raw.githubusercontent.com/fscarmen/tools/main/return.sh && chmod 777 return.sh && ./return.sh {ip}', shell=True, capture_output=True, text=True)
-print("Return code:", r.returncode)  # Return code: 0
-print("STDOUT:", r.stdout)  # STDOUT: ...当前目录内容...
-print("STDERR:", r.stderr)  # STDERR: <空>
-temp = str(r.stdout).split("\n")
+temp = r.stdout.split("\n")
 print(temp)
 tp1 = []
 status = 0
@@ -49,4 +46,5 @@ msg = "  本机地址\n"
 for i in temps:
     msg = msg + i[0] + f",{i[1]}次" + "\n"
 print(msg)
+os.system(rm -rf return.sh)
 
