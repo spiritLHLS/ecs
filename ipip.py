@@ -5,7 +5,9 @@ import time
 ip = str(sys.argv[1])
 # r = os.popen('bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) '+ip)
 r = subprocess.run(f'bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) {ip}', shell=True, capture_output=True, text=True)
-print(r.status)
+print("Return code:", r.returncode)  # Return code: 0
+print("STDOUT:", r.stdout)  # STDOUT: ...当前目录内容...
+print("STDERR:", r.stderr)  # STDERR: <空>
 temp = str(r.stdout).split("\n")
 print(temp)
 tp1 = []
