@@ -37,7 +37,7 @@ tpe = ""
 for i in temp_lists:
     if tep != i[1]:
         temps.append((i[1], temp_lists.count(i)))
-        tpe = i
+        tpe = i[1]
     tep = i[1]
 if tpe != temps[-1][0]:
     temps.append((temp_lists[-1][1], temp_lists.count(temp_lists[-1])))
