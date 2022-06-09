@@ -1571,5 +1571,8 @@ next
 print_end_time
 next
 rm -rf dp
-rm -f ecs.sh
+rm -rf nf
+rm -rf tubecheck
+rm -rf speedtest.tgz
+rm -rf ecs.sh
 
