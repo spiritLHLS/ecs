@@ -658,7 +658,7 @@ PasteBin_Upload() {
         --data "syntax=${PASTEBIN_SYNTAX:-text}")"
     if [ "$?" = "0" ]; then
         # echo -e "${Msg_Success} Report Generate Success！Please save the follwing link:"
-        echo -e "${Msg_Info} 测试CPU和IO的报告(需登陆查看): ${uploadresult}"
+        echo -e "${Msg_Info} 上述测试报告(需登陆查看): ${uploadresult}"
     else
         echo -e "${Msg_Warning} Report Generate Failure, But you can still read $HOME/LemonBench.Result.txt to get this result！"
     fi
