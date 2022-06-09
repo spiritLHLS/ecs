@@ -1570,6 +1570,7 @@ python3 ipip.py "120.196.165.24"
 next
 print_end_time
 next
+rm -rf ipip.py
 rm -rf dp
 rm -rf nf
 rm -rf tubecheck
