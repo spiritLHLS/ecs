@@ -4,7 +4,7 @@ import time
 import os
 
 ip = str(sys.argv[1])
-r = subprocess.run(f'wget https://raw.githubusercontent.com/fscarmen/tools/main/return.sh && chmod 777 return.sh && ./return.sh {ip}', shell=True, capture_output=True, text=True)
+r = subprocess.run(f'wget https://raw.githubusercontent.com/fscarmen/tools/main/return.sh && chmod 777 return.sh && ./return.sh {ip}', shell=True, capture_output=True, text=True, encoding="utf-8")
 temp = r.stdout.split("\n")
 print(temp)
 tp1 = []
