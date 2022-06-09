@@ -1252,8 +1252,8 @@ Run_DiskTest_DD() {
 
 Function_DiskTest_Fast() {
     mkdir -p ${WorkDir}/DiskTest/ >/dev/null 2>&1
-    echo -e "\n ${Font_Yellow}-> 磁盘IO测试中 (4K Block/1M Block, Direct Mode)${Font_Suffix}\n"
-    echo -e "\n -> 磁盘IO测试中 (4K Block/1M Block, Direct Mode)\n" >>${WorkDir}/DiskTest/result.txt
+    echo -e "${Font_Yellow}-> 磁盘IO测试中 (4K Block/1M Block, Direct Mode)${Font_Suffix}\n"
+    echo -e "-> 磁盘IO测试中 (4K Block/1M Block, Direct Mode)\n" >>${WorkDir}/DiskTest/result.txt
     SystemInfo_GetVirtType
     SystemInfo_GetOSRelease
     if [ "${Var_VirtType}" = "docker" ] || [ "${Var_VirtType}" = "wsl" ]; then
@@ -1671,3 +1671,4 @@ rm -rf dp
 rm -rf nf
 rm -rf tubecheck
 rm -rf ecs.sh
+
