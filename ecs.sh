@@ -1635,8 +1635,8 @@ checkroot
 checkwget
 checksystem
 checkpython
-sleep 1
-check_python3
+# sleep 1
+# check_python3
 checkcurl
 checkspeedtest
 SystemInfo_GetSystemBit
