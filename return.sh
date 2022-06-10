@@ -11,7 +11,7 @@ i386 )    FILE=besttracemac;;
 esac
 
 ip=$1
-green " 本脚说明：测 VPS ——> 对端 经过的地区及线路，填本地IP就是测回程，核心程序来由: https://www.ipip.net/ ，请知悉！"
+# green " 本脚说明：测 VPS ——> 对端 经过的地区及线路，填本地IP就是测回程，核心程序来由: https://www.ipip.net/ ，请知悉！"
 [[ -z "$ip" || $ip = '[DESTINATION_IP]' ]] >/dev/null 2>&1 && reading " 请输入目的地 IP: " ip
 # wget https://github.com/fscarmen/tools/raw/main/besttrace/besttrace >/dev/null 2>&1
 # chmod 777 besttrace >/dev/null 2>&1
