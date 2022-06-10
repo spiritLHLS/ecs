@@ -19,7 +19,7 @@ ip=$1
 # chmod 777 besttracearm >/dev/null 2>&1
 # wget https://github.com/fscarmen/tools/raw/main/besttrace/besttracemac >/dev/null 2>&1 
 # chmod 777 besttracemac >/dev/null 2>&1
-[[ ! -e "$FILE" ]] >/dev/null 2>&1 && green " 下载 IPIP.net 测线路文件 " && wget https://github.com/fscarmen/tools/raw/main/besttrace/$FILE >/dev/null 2>&1 && chmod 777 $FILE >/dev/null 2>&1
+[[ ! -e "$FILE" ]] >/dev/null 2>&1 && wget https://github.com/fscarmen/tools/raw/main/besttrace/$FILE >/dev/null 2>&1 && chmod 777 $FILE >/dev/null 2>&1
 chmod +x "$FILE" >/dev/null 2>&1
 sudo ./"$FILE" "$ip" -g cn
 # rm -rf besttracemac
