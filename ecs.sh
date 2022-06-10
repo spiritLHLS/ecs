@@ -1380,6 +1380,20 @@ Entrance_DiskTest_Fast() {
 #    Function_BenchFinish
 }
 
+check_dependencies(){
+  for c in $@; do
+    type -p $c >/dev/null 2>&1
+    (yellow " $(eval echo "${T[${L}7]}") " && ${PACKAGE_INSTALL[b]} "$c")
+    (yellow " $(eval echo "${T[${L}8]}") " && ${PACKAGE_UPDATE[b]} && ${PACKAGE_INSTALL[b]} "$c")
+    ! type -p $c >/dev/null 2>&1 && yellow " $(eval echo "${T[${L}9]}") " && exit 1;
+  done; }
+
+check_python3(){
+ PY=("python3" "python" "python2")
+ for g in "${PY[@]}"; do type -p $g >/dev/null 2>&1 && PYTHON=$g && break; done
+ [ -z "$PYTHON" ] && PYTHON=python3 && check_dependencies $PYTHON
+}
+
 calc_disk() {
     local total_size=0
     local array=$@
@@ -1621,6 +1635,8 @@ checkroot
 checkwget
 checksystem
 checkpython
+sleep 1
+check_python3
 checkcurl
 checkspeedtest
 SystemInfo_GetSystemBit
@@ -1670,11 +1686,11 @@ curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sS
 echo "--------------------回程路由--感谢fscarmen开源------------------------"
 green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉！"
 green "广州电信 58.60.188.222"
-python3 ipip.py "58.60.188.222"
+$PYTHON ipip.py "58.60.188.222"
 green "广州联通 210.21.196.6"
-python3 ipip.py "210.21.196.6"
+$PYTHON ipip.py "210.21.196.6"
 green "广州移动 120.196.165.24"
-python3 ipip.py "120.196.165.24"
+$PYTHON ipip.py "120.196.165.24"
 next
 print_end_time
 next
