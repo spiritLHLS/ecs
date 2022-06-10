@@ -1322,7 +1322,7 @@ Run_SysBench_Memory() {
     ResultScore="$(echo "${TotalScore} ${maxtestcount} 1000" | awk '{printf "%.2f",$1/$2/$3}')"
     if [ "${MiB_Flag}" = "1" ]; then
         # MiB to MB
-        ResultSpeed="$(echo "${TotalSpeed} ${maxtestcount} 1048576‬ 1000000" | awk '{printf "%.2f",$1/$2/$3*$4}')"
+        ResultSpeed="$(echo "${TotalSpeed} ${maxtestcount} 1048576 1000000" | awk '{printf "%.2f",$1/$2/$3*$4}')"
     else
         # 直接输出
         ResultSpeed="$(echo "${TotalSpeed} ${maxtestcount}" | awk '{printf "%.2f",$1/$2}')"
@@ -1380,19 +1380,19 @@ Entrance_DiskTest_Fast() {
 #    Function_BenchFinish
 }
 
-check_dependencies(){
-  for c in $@; do
-    type -p $c >/dev/null 2>&1
-    (yellow " $(eval echo "${T[${L}7]}") " && ${PACKAGE_INSTALL[b]} "$c")
-    (yellow " $(eval echo "${T[${L}8]}") " && ${PACKAGE_UPDATE[b]} && ${PACKAGE_INSTALL[b]} "$c")
-    ! type -p $c >/dev/null 2>&1 && yellow " $(eval echo "${T[${L}9]}") " && exit 1;
-  done; }
+# check_dependencies(){
+#   for c in $@; do
+#     type -p $c >/dev/null 2>&1
+#     (yellow " $(eval echo "${T[${L}7]}") " && ${PACKAGE_INSTALL[b]} "$c")
+#     (yellow " $(eval echo "${T[${L}8]}") " && ${PACKAGE_UPDATE[b]} && ${PACKAGE_INSTALL[b]} "$c")
+#     ! type -p $c >/dev/null 2>&1 && yellow " $(eval echo "${T[${L}9]}") " && exit 1;
+#   done; }
 
-check_python3(){
- PY=("python3" "python" "python2")
- for g in "${PY[@]}"; do type -p $g >/dev/null 2>&1 && PYTHON=$g && break; done
- [ -z "$PYTHON" ] && PYTHON=python3 && check_dependencies $PYTHON
-}
+# check_python3(){
+#  PY=("python3" "python" "python2")
+#  for g in "${PY[@]}"; do type -p $g >/dev/null 2>&1 && PYTHON=$g && break; done
+#  [ -z "$PYTHON" ] && PYTHON=python3 && check_dependencies $PYTHON
+# }
 
 calc_disk() {
     local total_size=0
@@ -1635,8 +1635,6 @@ checkroot
 checkwget
 checksystem
 checkpython
-# sleep 1
-# check_python3
 checkcurl
 checkspeedtest
 SystemInfo_GetSystemBit
