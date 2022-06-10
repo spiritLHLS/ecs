@@ -55,8 +55,15 @@ for i in temp_lists:
     tep = i[1]
 if tpe != temp_lists[-1]:
     temps.append((temp_lists[-1][1], temp_lists.count(temp_lists[-1])))
-msg = "  本机地址\n"
+news_temps = []
 for i in temps:
+    if "*" not in i:
+        if i not in news_temps:
+            news_temps.append(i)
+    else:
+        news_temps.append(i)
+msg = "  本机地址\n"
+for i in news_temps:
     msg = msg + i[0] + f",{i[1]}次" + "\n"
 print(msg)
 os.system("rm -rf return.sh")
