@@ -1686,11 +1686,11 @@ curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sS
 echo "--------------------回程路由--感谢fscarmen开源------------------------"
 green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉！"
 green "广州电信 58.60.188.222"
-$PYTHON ipip.py "58.60.188.222"
+$PYTHON ipip.py 58.60.188.222
 green "广州联通 210.21.196.6"
-$PYTHON ipip.py "210.21.196.6"
+$PYTHON ipip.py 210.21.196.6
 green "广州移动 120.196.165.24"
-$PYTHON ipip.py "120.196.165.24"
+$PYTHON ipip.py 120.196.165.24
 next
 print_end_time
 next
