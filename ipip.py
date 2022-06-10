@@ -1,11 +1,25 @@
-import subprocess
 import sys
-import time
 import os
+import time
+import subprocess
+
+def excuteCommand(com):
+    ex = subprocess.Popen(com, stdout=subprocess.PIPE, shell=True)
+    out, err  = ex.communicate()
+    status = ex.wait()
+    # print("cmd in:", com)
+    # print("cmd out: ", out.decode())
+    return out.decode()
+
 
 ip = str(sys.argv[1])
-r = subprocess.run(f'wget https://raw.githubusercontent.com/fscarmen/tools/main/return.sh && chmod 777 return.sh && ./return.sh {ip}', shell=True, capture_output=True, text=True, encoding="utf-8")
-temp = r.stdout.split("\n")
+os.system("rm -rf return.sh >/dev/null 2>&1")
+time.sleep(1)
+os.system("wget https://raw.githubusercontent.com/spiritLHLS/ecs/main/return.sh >/dev/null 2>&1")
+time.sleep(3)
+os.system("chmod 777 return.sh >/dev/null 2>&1")
+time.sleep(0.5)
+temp = excuteCommand(f"./return.sh {ip}").split("\n")
 tp1 = []
 status = 0
 for i in temp:
@@ -31,22 +45,19 @@ if ttpp != []:
             temp_lists.append(j)
             break
 temps = []
-try:
-    tep = temp_lists[0][1]
-except:
-    tep = ""
+tep = ""
 count = 0
 tpe = ""
 for i in temp_lists:
     if tep != i[1]:
         temps.append((i[1], temp_lists.count(i)))
-#         tpe = i[1]
+        tpe = i
     tep = i[1]
-# if tpe != temps[-1][0]:
-#     temps.append((temp_lists[-1][1], temp_lists.count(temp_lists[-1])))
+if tpe != temp_lists[-1]:
+    temps.append((temp_lists[-1][1], temp_lists.count(temp_lists[-1])))
 msg = "  本机地址\n"
 for i in temps:
     msg = msg + i[0] + f",{i[1]}次" + "\n"
 print(msg)
-os.system("rm -rf return.sh")
+# os.system("rm -rf return.sh")
 
