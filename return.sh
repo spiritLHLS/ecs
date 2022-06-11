@@ -17,9 +17,6 @@ wget https://github.com/fscarmen/tools/raw/main/besttrace/besttracearm >/dev/nul
 chmod 777 besttracearm >/dev/null 2>&1
 # wget https://github.com/fscarmen/tools/raw/main/besttrace/besttracemac >/dev/null 2>&1 
 # chmod 777 besttracemac >/dev/null 2>&1
-[[ ! -e "$FILE" ]] >/dev/null 2>&1 && wget https://github.com/fscarmen/tools/raw/main/besttrace/$FILE >/dev/null 2>&1 && chmod 777 $FILE >/dev/null 2>&1
-chmod +x "$FILE" >/dev/null 2>&1
-sudo ./"$FILE" "$1" -g cn
-# rm -rf besttracemac
-rm -rf besttracearm >/dev/null 2>&1
-rm -rf besttrace >/dev/null 2>&1
+sudo ./"$FILE" "$1" -g cn > $TEMP_FILE
+"$(cat $TEMP_FILE | tail -n +3 | grep -vE ".*\*$" | awk '{print $(NF-4) $(NF-3) $(NF-2) $(NF-1) $NF}' 2>/dev/null | uniq | awk '{printf("%d,%s\n",NR,$0)}' | sed "s/\(AS[0-9]*\)//g")"
+rm -f ip.temp
