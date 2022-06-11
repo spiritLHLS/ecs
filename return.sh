@@ -16,5 +16,5 @@ esac
 [[ ! -e $FILE ]] && wget -q https://github.com/fscarmen/tools/raw/main/besttrace/$FILE >/dev/null 2>&1
 chmod 777 $FILE >/dev/null 2>&1
 sudo ./"$FILE" "$1" -g cn > $TEMP_FILE
-green "$(cat $TEMP_FILE | tail -n +2 | awk 'NF>3 {print $(NF-4) $(NF-3) $(NF-2) $(NF-1) $NF}' 2>/dev/null | uniq | awk '{printf("%d,%s\n",NR,$0)}' | sed "s/\(AS[0-9]*\)//g")"
+green "$(cat $TEMP_FILE | sed "s/.*AS[0-9]*//g" | sed "/\*$/d;/^$/d;1d" | uniq | awk '{printf("%d,%s\n"),NR,$0}')"
 rm -f $TEMP_FILE
