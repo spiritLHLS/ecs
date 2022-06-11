@@ -79,6 +79,12 @@ checkspeedtest() {
 }
 
 
+red(){ echo -e "\033[31m\033[01m$1\033[0m"; }
+green(){ echo -e "\033[32m\033[01m$1\033[0m"; }
+test_area=("广州电信" "广州联通" "广州移动")
+test_ip=("58.60.188.222" "210.21.196.6" "120.196.165.2")
+TEMP_FILE='ip.test'
+
 SystemInfo_GetOSRelease() {
     if [ -f "/etc/centos-release" ]; then # CentOS
         Var_OSRelease="centos"
@@ -1608,14 +1614,16 @@ print_end_time() {
     echo " 时间          : $date_time"
 }
 
+check_return() {
+  [[ ! -e return.sh ]] && curl -qO https://raw.githubusercontent.com/spiritLHLS/ecs/main/return.sh
+  chmod +x return.sh >/dev/null 2>&1
 
-red(){ echo -e "\033[31m\033[01m$1\033[0m"; }
-green(){ echo -e "\033[32m\033[01m$1\033[0m"; }
-
-[[ ! -e ipip.py ]] && curl -O https://raw.githubusercontent.com/spiritLHLS/ecs/main/return.sh
-chmod +x return.sh >/dev/null 2>&1
-
-
+  green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉！" >> $TEMP_FILE
+  for ((a=0;a<${#test_area[@]};a++)); do
+    green "\n${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
+    ./return.sh ${test_ip[a]} >> $TEMP_FILE
+  done
+}
 
 checkroot
 checkwget
@@ -1623,6 +1631,7 @@ checksystem
 checkpython
 checkcurl
 checkspeedtest
+{ check_return; }&
 SystemInfo_GetSystemBit
 if [ "${release}" == "centos" ]; then
     yum update > /dev/null 2>&1
@@ -1668,13 +1677,7 @@ Global_UnlockTest 6
 echo "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
 curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
 echo "--------------------回程路由--感谢fscarmen开源------------------------"
-green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉！"
-green "广州电信 58.60.188.222"
-./return.sh 58.60.188.222
-green "广州联通 210.21.196.6"
-./return.sh 210.21.196.6
-green "广州移动 120.196.165.24"
-./return.sh 120.196.165.24
+cat $TEMP_FILE
 next
 print_end_time
 next
@@ -1686,4 +1689,4 @@ rm -rf dp
 rm -rf nf
 rm -rf tubecheck
 rm -rf ecs.sh
-
+rm -rf $TEMP_FILE
