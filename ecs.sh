@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ver="2022.06.16"
-changeLog="融合怪四代目(集合百家之长)(专为测评频道小鸡而生)"
+changeLog="融合怪五代目(集合百家之长)(专为测评频道小鸡而生)"
 
 checkroot(){
 	[[ $EUID -ne 0 ]] && echo -e "${RED}请使用 root 用户运行本脚本！${PLAIN}" && exit 1
