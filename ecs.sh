@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.06.09"
+ver="2022.06.16"
 changeLog="融合怪四代目(集合百家之长)(专为测评频道小鸡而生)"
 
 checkroot(){
@@ -1605,17 +1605,41 @@ print_end_time() {
 }
 
 backtrace() {
-  curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh > $TEMP_FILE2 2>&1
+  rm -f $TEMP_FILE2
+  curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -qsSf | sh > $TEMP_FILE2 2>&1
 }
 
+translate(){ [[ -n "$1" ]] && curl -ksm8 "http://fanyi.youdao.com/translate?&doctype=json&type=AUTO&i=${1//[[:space:]]/}" | cut -d \" -f18 2>/dev/null; }
+
 check_return() {
+  rm -f $TEMP_FILE
+  IP_4=$(curl -s4m5 https:/ip.gs/json) &&
+  WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
+  COUNTRY_4E=$(expr "$IP_4" : '.*country\":\"\([^"]*\).*') &&
+  COUNTRY_4=$(translate "$COUNTRY_4E") &&
+  ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
+  PE_4=$(curl -sm5 ping.pe/$WAN_4) &&
+  COOKIE_4=$(echo $PE_4 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
+  TYPE_4=$(curl -sm5 --header "cookie: $COOKIE_4" ping.pe/$WAN_4 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g") &&
+  _blue " IPv4: $WAN_4\t\t 地区: $COUNTRY_4\t 类型: $TYPE_4\t ASN: $ASNORG_4" >> $TEMP_FILE
+  
+  IP_6=$(curl -s6m5 https:/ip.gs/json) &&
+  WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
+  COUNTRY_6E=$(expr "$IP_6" : '.*country\":\"\([^"]*\).*') &&
+  COUNTRY_6=$(translate "$COUNTRY_6E") &&
+  ASNORG_6=$(expr "$IP_6" : '.*asn_org\":\"\([^"]*\).*') &&
+  PE_6=$(curl -sm5 ping6.ping.pe/$WAN_6) &&
+  COOKIE_6=$(echo $PE_6 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
+  TYPE_6=$(curl -sm5 --header "cookie: $COOKIE_6" ping6.ping.pe/$WAN_6 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g") &&
+  _blue " IPv6: $WAN_6\t 地区: $COUNTRY_6\t 类型: $TYPE_6\t ASN: $ASNORG_6" >> $TEMP_FILE
+
   [[ ! -e return.sh ]] && curl -qO https://raw.githubusercontent.com/spiritLHLS/ecs/main/return.sh
   chmod +x return.sh >/dev/null 2>&1
 
-  _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" > $TEMP_FILE
+  _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
   
   for ((a=0;a<${#test_area[@]};a++)); do
-    _yellow "\n${test_area[a]} ${test_ip[a]}\n" >> $TEMP_FILE
+    _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
     ./return.sh ${test_ip[a]} >> $TEMP_FILE
   done
 }
@@ -1626,7 +1650,8 @@ checksystem
 checkpython
 checkcurl
 checkspeedtest
-{ backtrace; check_return; }&
+backtrace
+check_return
 SystemInfo_GetSystemBit
 if [ "${release}" == "centos" ]; then
     yum update > /dev/null 2>&1
