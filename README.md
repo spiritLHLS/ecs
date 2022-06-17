@@ -11,11 +11,15 @@ bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/m
 bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/main/ecs.sh)
 ```
 
-单独的ipip脚本
+# 功能
 
-```
-wget https://github.com/spiritLHLS/ecs/raw/main/ipip.py
-chmod 777 ipip.py
-python3 ipip.py 210.21.196.6
-rm -rf ipip.py
-```
+- [x] 基础系统信息
+- [x] CPU测试--感谢lemonbench开源
+- [x] 内存测试--感谢lemonbench开源
+- [x] 磁盘IO读写测试--感谢lemonbench开源
+- [x] speedtest测速--感谢teddysun和superspeed的开源
+- [x] 流媒体解锁--感谢sjlleo开源
+- [x] 流媒体解锁--感谢RegionRestrictionCheck开源
+- [x] 三网回程--感谢zhanghanyun/backtrace开源
+- [x] 回程路由--由fscarmen开源以及本人的技术思路提供
+- [ ] 端口检测-检测是否被墙
