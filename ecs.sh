@@ -78,6 +78,41 @@ checkspeedtest() {
 	mkdir -p speedtest-cli && tar zxvf speedtest.tgz -C ./speedtest-cli/ > /dev/null 2>&1 && chmod a+rx ./speedtest-cli/speedtest
 }
 
+install_speedtest() {
+    if [ ! -e "./speedtest-cli/speedtest" ]; then
+        sys_bit=""
+        local sysarch="$(uname -m)"
+        if [ "${sysarch}" = "unknown" ] || [ "${sysarch}" = "" ]; then
+            local sysarch="$(arch)"
+        fi
+        if [ "${sysarch}" = "x86_64" ]; then
+            sys_bit="x86_64"
+        fi
+        if [ "${sysarch}" = "i386" ] || [ "${sysarch}" = "i686" ]; then
+            sys_bit="i386"
+        fi
+        if [ "${sysarch}" = "armv8" ] || [ "${sysarch}" = "armv8l" ] || [ "${sysarch}" = "aarch64" ] || [ "${sysarch}" = "arm64" ]; then
+            sys_bit="aarch64"
+        fi
+        if [ "${sysarch}" = "armv7" ] || [ "${sysarch}" = "armv7l" ]; then
+            sys_bit="armhf"
+        fi
+        if [ "${sysarch}" = "armv6" ]; then
+            sys_bit="armel"
+        fi
+        [ -z "${sys_bit}" ] && _red "Error: Unsupported system architecture (${sysarch}).\n" && exit 1
+        url1="https://install.speedtest.net/app/cli/ookla-speedtest-1.1.1-linux-${sys_bit}.tgz"
+        url2="https://dl.lamp.sh/files/ookla-speedtest-1.1.1-linux-${sys_bit}.tgz"
+        wget --no-check-certificate -q -T10 -O speedtest.tgz ${url1}
+        if [ $? -ne 0 ]; then
+            wget --no-check-certificate -q -T10 -O speedtest.tgz ${url2}
+            [ $? -ne 0 ] && _red "Error: Failed to download speedtest-cli.\n" && exit 1
+        fi
+        mkdir -p speedtest-cli && tar zxf speedtest.tgz -C ./speedtest-cli && chmod +x ./speedtest-cli/speedtest
+        rm -f speedtest.tgz
+    fi
+}
+
 test_area=("广州电信" "广州联通" "广州移动")
 test_ip=("58.60.188.222" "210.21.196.6" "120.196.165.2")
 TEMP_FILE='ip.test'
@@ -699,27 +734,26 @@ speed_test(){
 	        if [[ $(awk -v num1=${temp} -v num2=0 'BEGIN{print(num1>num2)?"1":"0"}') -eq 1 ]]; then
 	        	# printf "${RED}%-6s${YELLOW}%s%s${GREEN}%-24s${CYAN}%s%-10s${BLUE}%s%-10s${PURPLE}%-8s${PLAIN}\n" "${nodeID}"  "${nodeISP}" "|" "${strnodeLocation:0:24}" "↑ " "${reupload}" "↓ " "${REDownload}" "${relatency}" | tee -a $log
                		#printf "\033[0;33m%-18s\033[0;32m%-18s\033[0;31m%-20s\033[0;36m%-12s\033[0m\n" "${strnodeLocation:0:20}" "${reupload}"Mbps "${REDownload}"Mbps "${relatency}"ms
-	       		echo -e "${strnodeLocation:0:20}\t${reupload}Mbps\t${REDownload}Mbps\t${relatency}ms"
+	       		echo -e "${strnodeLocation:0:20}\t ${reupload}Mbps\t ${REDownload}Mbps\t ${relatency}ms"
 			fi
 		else
-		echo -e "${strnodeLocation:0:20}\t ERROR NETWORK"
 	        local cerror="ERROR"
 		fi
 }
 
-# speed_test2() {
-#     local nodeName="$2"
-#     [ -z "$1" ] && ./speedtest-cli/speedtest --progress=no --accept-license --accept-gdpr > ./speedtest-cli/speedtest.log 2>&1 || \
-#     ./speedtest-cli/speedtest --progress=no --server-id=$1 --accept-license --accept-gdpr > ./speedtest-cli/speedtest.log 2>&1
-#     if [ $? -eq 0 ]; then
-#         local dl_speed=$(awk '/Download/{print $3" "$4}' ./speedtest-cli/speedtest.log)
-#         local up_speed=$(awk '/Upload/{print $3" "$4}' ./speedtest-cli/speedtest.log)
-#         local latency=$(awk '/Latency/{print $2" "$3}' ./speedtest-cli/speedtest.log)
-#         if [[ -n "${dl_speed}" && -n "${up_speed}" && -n "${latency}" ]]; then
-#             echo -e "${nodeName}\t ${up_speed}\t ${dl_speed}\t ${latency}"
-#         fi
-#     fi
-# }
+speed_test2() {
+    local nodeName="$2"
+    [ -z "$1" ] && ./speedtest-cli/speedtest --progress=no --accept-license --accept-gdpr > ./speedtest-cli/speedtest.log 2>&1 || \
+    ./speedtest-cli/speedtest --progress=no --server-id=$1 --accept-license --accept-gdpr > ./speedtest-cli/speedtest.log 2>&1
+    if [ $? -eq 0 ]; then
+        local dl_speed=$(awk '/Download/{print $3" "$4}' ./speedtest-cli/speedtest.log)
+        local up_speed=$(awk '/Upload/{print $3" "$4}' ./speedtest-cli/speedtest.log)
+        local latency=$(awk '/Latency/{print $2" "$3}' ./speedtest-cli/speedtest.log)
+        if [[ -n "${dl_speed}" && -n "${up_speed}" && -n "${latency}" ]]; then
+            echo -e "${nodeName}\t ${up_speed}\t ${dl_speed}\t ${latency}"
+        fi
+    fi
+}
 
 function MediaUnlockTest_Dazn() {
     echo -n -e " Dazn:\t\t\t\t\t->\c"
@@ -1188,7 +1222,7 @@ next() {
 }
 
 speed() {
-    speed_test '' 'speedtest'
+    speed_test2 '' 'speedtest'
     speed_test '21541' '洛杉矶\t'
     speed_test '13623' '新加坡\t'
     speed_test '44988' '日本东京'
@@ -1667,5 +1701,7 @@ rm -rf ipip.py*
 rm -rf dp
 rm -rf nf
 rm -rf tubecheck
-rm -rf ecs.sh
+rm -rf besttrace
+rm -rf LemonBench.Result.txt*
+rm -rf ecs.sh*
 rm -rf $TEMP_FILE $TEMP_FILE2
