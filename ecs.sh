@@ -1645,6 +1645,7 @@ checksystem
 checkpython
 checkcurl
 checkspeedtest
+install_speedtest
 backtrace
 check_return
 SystemInfo_GetSystemBit
