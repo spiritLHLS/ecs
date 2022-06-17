@@ -677,47 +677,49 @@ Entrance_SysBench_CPU_Fast() {
 #    Function_BenchFinish
 }
 
-#speed_test(){
-#	speedLog="./speedtest.log"
-#	true > $speedLog
-#		speedtest-cli/speedtest -p no -s $1 --accept-license > $speedLog 2>&1
-#		is_upload=$(cat $speedLog | grep 'Upload')
-#		if [[ ${is_upload} ]]; then
-#	        local REDownload=$(cat $speedLog | awk -F ' ' '/Download/{print $3}')
-#	        local reupload=$(cat $speedLog | awk -F ' ' '/Upload/{print $3}')
-#	        local relatency=$(cat $speedLog | awk -F ' ' '/Latency/{print $2}')
-#
-#			local nodeID=$1
-#			local nodeLocation=$2
-#			local nodeISP=$3
-#
-#			strnodeLocation="${nodeLocation}　　　　　　"
-#			LANG=C
-#			#echo $LANG
-#
-#			temp=$(echo "${REDownload}" | awk -F ' ' '{print $1}')
-#	        if [[ $(awk -v num1=${temp} -v num2=0 'BEGIN{print(num1>num2)?"1":"0"}') -eq 1 ]]; then
-#	        	# printf "${RED}%-6s${YELLOW}%s%s${GREEN}%-24s${CYAN}%s%-10s${BLUE}%s%-10s${PURPLE}%-8s${PLAIN}\n" "${nodeID}"  "${nodeISP}" "|" "${strnodeLocation:0:24}" "↑ " "${reupload}" "↓ " "${REDownload}" "${relatency}" | tee -a $log
-#                printf "\033[0;33m%-18s\033[0;32m%-18s\033[0;31m%-20s\033[0;36m%-12s\033[0m\n" "${strnodeLocation:0:20}" "${reupload}"Mbps "${REDownload}"Mbps "${relatency}"ms
-#			fi
-#		else
-#	        local cerror="ERROR"
-#		fi
-#}
+speed_test(){
+	speedLog="./speedtest.log"
+	true > $speedLog
+		speedtest-cli/speedtest -p no -s $1 --accept-license > $speedLog 2>&1
+		is_upload=$(cat $speedLog | grep 'Upload')
+		if [[ ${is_upload} ]]; then
+	        local REDownload=$(cat $speedLog | awk -F ' ' '/Download/{print $3}')
+	        local reupload=$(cat $speedLog | awk -F ' ' '/Upload/{print $3}')
+	        local relatency=$(cat $speedLog | awk -F ' ' '/Latency/{print $2}')
 
-speed_test2() {
-    local nodeName="$2"
-    [ -z "$1" ] && ./speedtest-cli/speedtest --progress=no --accept-license --accept-gdpr > ./speedtest-cli/speedtest.log 2>&1 || \
-    ./speedtest-cli/speedtest --progress=no --server-id=$1 --accept-license --accept-gdpr > ./speedtest-cli/speedtest.log 2>&1
-    if [ $? -eq 0 ]; then
-        local dl_speed=$(awk '/Download/{print $3" "$4}' ./speedtest-cli/speedtest.log)
-        local up_speed=$(awk '/Upload/{print $3" "$4}' ./speedtest-cli/speedtest.log)
-        local latency=$(awk '/Latency/{print $2" "$3}' ./speedtest-cli/speedtest.log)
-        if [[ -n "${dl_speed}" && -n "${up_speed}" && -n "${latency}" ]]; then
-            echo -e "${nodeName}\t ${up_speed}\t ${dl_speed}\t ${latency}"
-        fi
-    fi
+			local nodeID=$1
+			local nodeLocation=$2
+			local nodeISP=$3
+
+			strnodeLocation="${nodeLocation}　　　　　　"
+			LANG=C
+			#echo $LANG
+
+			temp=$(echo "${REDownload}" | awk -F ' ' '{print $1}')
+	        if [[ $(awk -v num1=${temp} -v num2=0 'BEGIN{print(num1>num2)?"1":"0"}') -eq 1 ]]; then
+	        	# printf "${RED}%-6s${YELLOW}%s%s${GREEN}%-24s${CYAN}%s%-10s${BLUE}%s%-10s${PURPLE}%-8s${PLAIN}\n" "${nodeID}"  "${nodeISP}" "|" "${strnodeLocation:0:24}" "↑ " "${reupload}" "↓ " "${REDownload}" "${relatency}" | tee -a $log
+               		#printf "\033[0;33m%-18s\033[0;32m%-18s\033[0;31m%-20s\033[0;36m%-12s\033[0m\n" "${strnodeLocation:0:20}" "${reupload}"Mbps "${REDownload}"Mbps "${relatency}"ms
+	       		echo -e "${strnodeLocation:0:20}\t${reupload}Mbps\t${REDownload}Mbps\t${relatency}ms"
+			fi
+		else
+		echo -e "${strnodeLocation:0:20}\t ERROR NETWORK"
+	        local cerror="ERROR"
+		fi
 }
+
+# speed_test2() {
+#     local nodeName="$2"
+#     [ -z "$1" ] && ./speedtest-cli/speedtest --progress=no --accept-license --accept-gdpr > ./speedtest-cli/speedtest.log 2>&1 || \
+#     ./speedtest-cli/speedtest --progress=no --server-id=$1 --accept-license --accept-gdpr > ./speedtest-cli/speedtest.log 2>&1
+#     if [ $? -eq 0 ]; then
+#         local dl_speed=$(awk '/Download/{print $3" "$4}' ./speedtest-cli/speedtest.log)
+#         local up_speed=$(awk '/Upload/{print $3" "$4}' ./speedtest-cli/speedtest.log)
+#         local latency=$(awk '/Latency/{print $2" "$3}' ./speedtest-cli/speedtest.log)
+#         if [[ -n "${dl_speed}" && -n "${up_speed}" && -n "${latency}" ]]; then
+#             echo -e "${nodeName}\t ${up_speed}\t ${dl_speed}\t ${latency}"
+#         fi
+#     fi
+# }
 
 function MediaUnlockTest_Dazn() {
     echo -n -e " Dazn:\t\t\t\t\t->\c"
@@ -1186,20 +1188,20 @@ next() {
 }
 
 speed() {
-    speed_test2 '' 'speedtest'
-    speed_test2 '21541' '洛杉矶\t'
-    speed_test2 '13623' '新加坡\t'
-    speed_test2 '44988' '日本东京'
-    speed_test2 '16176' '中国香港'
-    speed_test2 '3633' '电信上海' '电信'
+    speed_test '' 'speedtest'
+    speed_test '21541' '洛杉矶\t'
+    speed_test '13623' '新加坡\t'
+    speed_test '44988' '日本东京'
+    speed_test '16176' '中国香港'
+    speed_test '3633' '电信上海' '电信'
 #    speed_test '27594' '电信广东广州5G' '电信'
-    speed_test2 '5396' '电信江苏苏州5G' '电信'
-    speed_test2 '24447' '联通上海' '联通'
-    speed_test2 '26678' '联通广东广州5G' '联通'
+    speed_test '5396' '电信江苏苏州5G' '电信'
+    speed_test '24447' '联通上海' '联通'
+    speed_test '26678' '联通广东广州5G' '联通'
 #    speed_test '4870' '联通湖南长沙' '联通'
 #    speed_test '15863' '移动广西南宁' '移动'
-    speed_test2 '16398' '移动贵州贵阳' '移动'
-    speed_test2 '27249' '移动江苏南京5G' '移动'
+    speed_test '16398' '移动贵州贵阳' '移动'
+    speed_test '27249' '移动江苏南京5G' '移动'
 #https://raw.githubusercontent.com/zq/superspeed/master/superspeed.sh
 }
 
@@ -1462,41 +1464,6 @@ ipv4_info() {
     fi
 }
 
-install_speedtest() {
-    if [ ! -e "./speedtest-cli/speedtest" ]; then
-        sys_bit=""
-        local sysarch="$(uname -m)"
-        if [ "${sysarch}" = "unknown" ] || [ "${sysarch}" = "" ]; then
-            local sysarch="$(arch)"
-        fi
-        if [ "${sysarch}" = "x86_64" ]; then
-            sys_bit="x86_64"
-        fi
-        if [ "${sysarch}" = "i386" ] || [ "${sysarch}" = "i686" ]; then
-            sys_bit="i386"
-        fi
-        if [ "${sysarch}" = "armv8" ] || [ "${sysarch}" = "armv8l" ] || [ "${sysarch}" = "aarch64" ] || [ "${sysarch}" = "arm64" ]; then
-            sys_bit="aarch64"
-        fi
-        if [ "${sysarch}" = "armv7" ] || [ "${sysarch}" = "armv7l" ]; then
-            sys_bit="armhf"
-        fi
-        if [ "${sysarch}" = "armv6" ]; then
-            sys_bit="armel"
-        fi
-        [ -z "${sys_bit}" ] && _red "Error: Unsupported system architecture (${sysarch}).\n" && exit 1
-        url1="https://install.speedtest.net/app/cli/ookla-speedtest-1.1.1-linux-${sys_bit}.tgz"
-        url2="https://dl.lamp.sh/files/ookla-speedtest-1.1.1-linux-${sys_bit}.tgz"
-        wget --no-check-certificate -q -T10 -O speedtest.tgz ${url1}
-        if [ $? -ne 0 ]; then
-            wget --no-check-certificate -q -T10 -O speedtest.tgz ${url2}
-            [ $? -ne 0 ] && _red "Error: Failed to download speedtest-cli.\n" && exit 1
-        fi
-        mkdir -p speedtest-cli && tar zxf speedtest.tgz -C ./speedtest-cli && chmod +x ./speedtest-cli/speedtest
-        rm -f speedtest.tgz
-    fi
-}
-
 print_intro() {
     echo "--------------------- A Bench Script By spiritlhl --------------------"
     echo "                   测评频道: https://t.me/vps_reviews                    "
@@ -1674,7 +1641,7 @@ Entrance_DiskTest_Fast
 next
 Function_GenerateResult
 Global_Exit_Action >/dev/null 2>&1
-install_speedtest && echo -e "测速点位置\t 上传速度\t 下载速度\t 延迟"
+echo -e "测速点位置\t 上传速度\t 下载速度\t 延迟"
 speed && rm -fr speedtest-cli
 echo "--------------------流媒体解锁--感谢sjlleo开源-------------------------"
 ./tubecheck | sed "/@sjlleo/d"
