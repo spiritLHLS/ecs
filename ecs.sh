@@ -1704,5 +1704,6 @@ rm -rf nf
 rm -rf tubecheck
 rm -rf besttrace
 rm -rf LemonBench.Result.txt*
+rm -rf speedtest.log*
 rm -rf ecs.sh*
 rm -rf $TEMP_FILE $TEMP_FILE2
