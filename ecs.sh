@@ -1679,18 +1679,21 @@ Global_Exit_Action >/dev/null 2>&1
 echo -e "测速点位置\t 上传速度\t 下载速度\t 延迟"
 speed && rm -fr speedtest-cli
 echo "--------------------流媒体解锁--感谢sjlleo开源-------------------------"
+echo "Youtube"
 ./tubecheck | sed "/@sjlleo/d"
+echo "Netflix"
 ./nf | sed "/@sjlleo/d"
+echo "DisneyPlus"
 ./dp | sed "/@sjlleo/d"
-echo "解锁油管，奈菲，迪士尼以上面为准，下面这三测的不准"
-echo -e "\n---------------流媒体解锁--感谢RegionRestrictionCheck开源-------------"
+echo "解锁Youtube，Netflix，DisneyPlus以上面为准，下面这三测的不准"
+echo -e "---------------流媒体解锁--感谢RegionRestrictionCheck开源-------------"
 echo " 以下为IPV4网络测试"
 Global_UnlockTest 4
 echo " 以下为IPV6网络测试"
 Global_UnlockTest 6
-echo -e "\n-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
+echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
 cat $TEMP_FILE2
-echo -e "\n--------------------回程路由--感谢fscarmen开源------------------------"
+echo -e "--------------------回程路由--感谢fscarmen开源------------------------"
 cat $TEMP_FILE
 next
 print_end_time
