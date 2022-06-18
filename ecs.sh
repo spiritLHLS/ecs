@@ -1673,7 +1673,7 @@ PE_6=$(curl -sm5 ping6.ping.pe/$WAN_6) &&
 COOKIE_6=$(echo $PE_6 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
 TYPE_6=$(curl -sm5 --header "cookie: $COOKIE_6" ping6.ping.pe/$WAN_6 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g") &&
 _blue " 宽带类型: $TYPE_6\t ASN: $ASNORG_6" >> $TEMP_FILE
-[[ ! -e return.sh ]] && curl -qO https://raw.githubusercontent.com/spiritLHLS/ecs/main/return.sh
+[[ ! -e return.sh ]] && curl -qO https://raw.githubusercontent.com/spiritLHLS/ecs/main/return.sh > /dev/null 2>&1
 chmod +x return.sh >/dev/null 2>&1
 _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
 for ((a=0;a<${#test_area[@]};a++)); do
