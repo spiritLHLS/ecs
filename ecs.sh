@@ -116,7 +116,6 @@ install_speedtest() {
 test_area=("广州电信" "广州联通" "广州移动")
 test_ip=("58.60.188.222" "210.21.196.6" "120.196.165.2")
 TEMP_FILE='ip.test'
-TEMP_FILE2='backtrace.test'
 
 SystemInfo_GetOSRelease() {
     if [ -f "/etc/centos-release" ]; then # CentOS
@@ -1605,40 +1604,6 @@ print_end_time() {
     echo " 时间          : $date_time"
 }
 
-backtrace() {
-  rm -f $TEMP_FILE2
-  curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -qsSf | sh > $TEMP_FILE2 2>&1
-}
-
-check_return() {
-  rm -f $TEMP_FILE
-  IP_4=$(curl -s4m5 https:/ip.gs/json) &&
-  WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
-  ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
-  PE_4=$(curl -sm5 ping.pe/$WAN_4) &&
-  COOKIE_4=$(echo $PE_4 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
-  TYPE_4=$(curl -sm5 --header "cookie: $COOKIE_4" ping.pe/$WAN_4 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g") &&
-  _blue " IPv4: $WAN_4\t\t 类型: $TYPE_4\t ASN: $ASNORG_4" >> $TEMP_FILE
-  
-  IP_6=$(curl -s6m5 https:/ip.gs/json) &&
-  WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
-  ASNORG_6=$(expr "$IP_6" : '.*asn_org\":\"\([^"]*\).*') &&
-  PE_6=$(curl -sm5 ping6.ping.pe/$WAN_6) &&
-  COOKIE_6=$(echo $PE_6 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
-  TYPE_6=$(curl -sm5 --header "cookie: $COOKIE_6" ping6.ping.pe/$WAN_6 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g") &&
-  _blue " IPv6: $WAN_6\t 类型: $TYPE_6\t ASN: $ASNORG_6" >> $TEMP_FILE
-
-  [[ ! -e return.sh ]] && curl -qO https://raw.githubusercontent.com/spiritLHLS/ecs/main/return.sh
-  chmod +x return.sh >/dev/null 2>&1
-
-  _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
-  
-  for ((a=0;a<${#test_area[@]};a++)); do
-    _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
-    ./return.sh ${test_ip[a]} >> $TEMP_FILE
-  done
-}
-
 checkroot
 checkwget
 checksystem
@@ -1646,8 +1611,6 @@ checkpython
 checkcurl
 checkspeedtest
 install_speedtest
-backtrace
-check_return
 SystemInfo_GetSystemBit
 if [ "${release}" == "centos" ]; then
     yum update > /dev/null 2>&1
@@ -1682,7 +1645,7 @@ echo "--------------------流媒体解锁--感谢sjlleo开源-------------------
 echo "Youtube"
 ./tubecheck | sed "/@sjlleo/d"
 echo "Netflix"
-./nf | sed "/@sjlleo/d"
+./nf | sed "/@sjlleo/d;/^$/d"
 echo "DisneyPlus"
 ./dp | sed "/@sjlleo/d"
 echo "解锁Youtube，Netflix，DisneyPlus以上面为准，下面这三测的不准"
@@ -1692,8 +1655,31 @@ Global_UnlockTest 4
 echo " 以下为IPV6网络测试"
 Global_UnlockTest 6
 echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
-cat $TEMP_FILE2
-echo -e "--------------------回程路由--感谢fscarmen开源------------------------"
+rm -f $TEMP_FILE2
+curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
+echo -e "\n--------------------回程路由--感谢fscarmen开源------------------------"
+rm -f $TEMP_FILE
+IP_4=$(curl -s4m5 https:/ip.gs/json) &&
+WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
+ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
+PE_4=$(curl -sm5 ping.pe/$WAN_4) &&
+COOKIE_4=$(echo $PE_4 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
+TYPE_4=$(curl -sm5 --header "cookie: $COOKIE_4" ping.pe/$WAN_4 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g") &&
+_blue " 宽带类型: $TYPE_4\t ASN: $ASNORG_4" >> $TEMP_FILE
+IP_6=$(curl -s6m5 https:/ip.gs/json) &&
+WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
+ASNORG_6=$(expr "$IP_6" : '.*asn_org\":\"\([^"]*\).*') &&
+PE_6=$(curl -sm5 ping6.ping.pe/$WAN_6) &&
+COOKIE_6=$(echo $PE_6 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
+TYPE_6=$(curl -sm5 --header "cookie: $COOKIE_6" ping6.ping.pe/$WAN_6 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g") &&
+_blue " 宽带类型: $TYPE_6\t ASN: $ASNORG_6" >> $TEMP_FILE
+[[ ! -e return.sh ]] && curl -qO https://raw.githubusercontent.com/spiritLHLS/ecs/main/return.sh
+chmod +x return.sh >/dev/null 2>&1
+_green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
+for ((a=0;a<${#test_area[@]};a++)); do
+  _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
+  ./return.sh ${test_ip[a]} >> $TEMP_FILE
+done
 cat $TEMP_FILE
 next
 print_end_time
@@ -1709,4 +1695,4 @@ rm -rf besttrace
 rm -rf LemonBench.Result.txt*
 rm -rf speedtest.log*
 rm -rf ecs.sh*
-rm -rf $TEMP_FILE $TEMP_FILE2
+rm -rf $TEMP_FILE
