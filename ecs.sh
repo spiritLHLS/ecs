@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.06.16"
+ver="2022.06.21"
 changeLog="融合怪五代目(集合百家之长)(专为测评频道小鸡而生)"
 
 checkroot(){
@@ -25,15 +25,42 @@ checksystem() {
 	fi
 }
 
+
+checkupdate(){
+	    echo "正在更新包管理源"
+	    if [ "${release}" == "centos" ]; then
+		    yum update > /dev/null 2>&1
+		else
+		    apt-get update > /dev/null 2>&1
+		fi
+
+}
+
+
+
 checkpython() {
 	if  [ ! -e '/usr/bin/python' ]; then
 	        echo "正在安装 Python"
 	            if [ "${release}" == "centos" ]; then
-	            		yum update > /dev/null 2>&1
+# 	            	    yum update > /dev/null 2>&1
 	                    yum -y install python > /dev/null 2>&1
 	                else
-	                	apt-get update > /dev/null 2>&1
+# 	                    apt-get update > /dev/null 2>&1
 	                    apt-get -y install python > /dev/null 2>&1
+	                fi
+
+	fi
+}
+
+checkdnsutils() {
+	if  [ ! -e '/usr/bin/dnsutils' ]; then
+	        echo "正在安装 dnsutils"
+	            if [ "${release}" == "centos" ]; then
+# 	                    yum update > /dev/null 2>&1
+	                    yum -y install dnsutils > /dev/null 2>&1
+	                else
+# 	                    apt-get update > /dev/null 2>&1
+	                    apt-get -y install dnsutils > /dev/null 2>&1
 	                fi
 
 	fi
@@ -43,10 +70,10 @@ checkcurl() {
 	if  [ ! -e '/usr/bin/curl' ]; then
 	        echo "正在安装 Curl"
 	            if [ "${release}" == "centos" ]; then
-	                yum update > /dev/null 2>&1
+# 	                yum update > /dev/null 2>&1
 	                yum -y install curl > /dev/null 2>&1
 	            else
-	                apt-get update > /dev/null 2>&1
+# 	                apt-get update > /dev/null 2>&1
 	                apt-get -y install curl > /dev/null 2>&1
 	            fi
 	fi
@@ -56,10 +83,10 @@ checkwget() {
 	if  [ ! -e '/usr/bin/wget' ]; then
 	        echo "正在安装 Wget"
 	            if [ "${release}" == "centos" ]; then
-	                yum update > /dev/null 2>&1
+# 	                yum update > /dev/null 2>&1
 	                yum -y install wget > /dev/null 2>&1
 	            else
-	                apt-get update > /dev/null 2>&1
+# 	                apt-get update > /dev/null 2>&1
 	                apt-get -y install wget > /dev/null 2>&1
 	            fi
 	fi
@@ -1604,12 +1631,15 @@ print_end_time() {
     echo " 时间          : $date_time"
 }
 
+
+checkupdate
 checkroot
 checkwget
 checksystem
 checkpython
 checkcurl
 checkspeedtest
+checkdnsutils
 install_speedtest
 SystemInfo_GetSystemBit
 if [ "${release}" == "centos" ]; then
