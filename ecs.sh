@@ -1688,7 +1688,7 @@ echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源-------
 rm -f $TEMP_FILE2
 curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
 
-echo -e "\n------------------回程路由--感谢fscarmen开源及PR----------------------"
+echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
 rm -f $TEMP_FILE
 IP_4=$(curl -s4m5 https:/ip.gs/json) &&
 WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
@@ -1713,7 +1713,7 @@ for ((a=0;a<${#test_area[@]};a++)); do
 done
 cat $TEMP_FILE
 
-echo -e "\n------------------测端口开通--感谢fscarmen开源及PR----------------------"
+echo -e "------------------测端口开通--感谢fscarmen开源及PR----------------------"
 if [ -n "$IP_4" ]; then
   PORT4=(22 80 443 8080)
   for i in ${PORT4[@]}; do
