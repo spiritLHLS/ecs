@@ -1687,7 +1687,8 @@ Global_UnlockTest 6
 echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
 rm -f $TEMP_FILE2
 curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
-echo -e "\n--------------------回程路由--感谢fscarmen开源------------------------"
+
+echo -e "\n------------------回程路由--感谢fscarmen开源及PR----------------------"
 rm -f $TEMP_FILE
 IP_4=$(curl -s4m5 https:/ip.gs/json) &&
 WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
@@ -1711,6 +1712,22 @@ for ((a=0;a<${#test_area[@]};a++)); do
   ./return.sh ${test_ip[a]} >> $TEMP_FILE
 done
 cat $TEMP_FILE
+
+echo -e "\n------------------测端口开通--感谢fscarmen开源及PR----------------------"
+if [ -n "$IP_4" ]; then
+  PORT4=(22 80 443 8080)
+  for i in ${PORT4[@]}; do
+    bash <(curl -s4SL https://raw.githubusercontent.com/fscarmen/tools/main/check_port.sh) $IPv4:$i > PORT4_$i
+    sed -i "1,5 d; s/状态/$i/g" PORT4_$i
+    cut -f 1 PORT4_$i > PORT4_${i}_1
+    cut -f 2,3  PORT4_$i > PORT4_${i}_2
+  done
+  paste PORT4_${PORT4[0]}_1 PORT4_${PORT4[1]}_1 PORT4_${PORT4[2]}_1 PORT4_${PORT4[3]} > PORT4_RESULT
+  _blue " IPv4 端口开通情况 "
+  cat PORT4_RESULT
+  rm -f PORT4_*
+else _red " VPS 没有 IPv4 "
+fi
 next
 print_end_time
 next
