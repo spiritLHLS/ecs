@@ -652,83 +652,83 @@ SystemInfo_GetVirtType() {
     fi
 }
 
-Function_GenerateResult_SysBench_MemoryTest() {
-    sleep 0.1
-    if [ -f "${WorkDir}/SysBench/Memory/result.txt" ]; then
-        cp -f ${WorkDir}/SysBench/Memory/result.txt ${WorkDir}/result/05-memorytest.result
-    fi
-}
+# Function_GenerateResult_SysBench_MemoryTest() {
+#     sleep 0.1
+#     if [ -f "${WorkDir}/SysBench/Memory/result.txt" ]; then
+#         cp -f ${WorkDir}/SysBench/Memory/result.txt ${WorkDir}/result/05-memorytest.result
+#     fi
+# }
 
 # 生成结果文件
-Function_GenerateResult() {
-    # echo -e "${Msg_Info} Please wait, collecting results ..."
-    mkdir -p /tmp/ >/dev/null 2>&1
-    mkdir -p ${WorkDir}/result >/dev/null 2>&1
-    Function_GenerateResult_SysBench_CPUTest >/dev/null
-    Function_GenerateResult_DiskTest >/dev/null
-    Function_GenerateResult_SysBench_MemoryTest >/dev/null
-    # echo -e "${Msg_Info} Generating Report ..."
-    local finalresultfile="${WorkDir}/result/finalresult.txt"
-    sleep 0.2
-    if [ -f "${WorkDir}/result/01-systeminfo.result" ]; then
-        cat ${WorkDir}/result/01-systeminfo.result >>${WorkDir}/result/finalresult.txt
-    fi
-    sleep 0.2
-    if [ -f "${WorkDir}/result/04-cputest.result" ]; then
-        cat ${WorkDir}/result/04-cputest.result >>${WorkDir}/result/finalresult.txt
-    fi
-    sleep 0.2
-    if [ -f "${WorkDir}/result/05-memorytest.result" ]; then
-        cat ${WorkDir}/result/05-memorytest.result >>${WorkDir}/result/finalresult.txt
-    fi
-    sleep 0.2
-    if [ -f "${WorkDir}/result/06-disktest.result" ]; then
-        cat ${WorkDir}/result/06-disktest.result >>${WorkDir}/result/finalresult.txt
-    fi
-    sleep 0.2
-    # echo -e "${Msg_Info} Saving local Report ..."
-    cp ${WorkDir}/result/finalresult.txt $HOME/LemonBench.Result.txt
-    sleep 0.1
-    # echo -e "${Msg_Info} Generating Report URL ..."
-    cat ${WorkDir}/result/finalresult.txt | PasteBin_Upload
-}
+# Function_GenerateResult() {
+#     # echo -e "${Msg_Info} Please wait, collecting results ..."
+#     mkdir -p /tmp/ >/dev/null 2>&1
+#     mkdir -p ${WorkDir}/result >/dev/null 2>&1
+#     Function_GenerateResult_SysBench_CPUTest >/dev/null
+#     Function_GenerateResult_DiskTest >/dev/null
+#     Function_GenerateResult_SysBench_MemoryTest >/dev/null
+#     # echo -e "${Msg_Info} Generating Report ..."
+#     local finalresultfile="${WorkDir}/result/finalresult.txt"
+#     sleep 0.2
+#     if [ -f "${WorkDir}/result/01-systeminfo.result" ]; then
+#         cat ${WorkDir}/result/01-systeminfo.result >>${WorkDir}/result/finalresult.txt
+#     fi
+#     sleep 0.2
+#     if [ -f "${WorkDir}/result/04-cputest.result" ]; then
+#         cat ${WorkDir}/result/04-cputest.result >>${WorkDir}/result/finalresult.txt
+#     fi
+#     sleep 0.2
+#     if [ -f "${WorkDir}/result/05-memorytest.result" ]; then
+#         cat ${WorkDir}/result/05-memorytest.result >>${WorkDir}/result/finalresult.txt
+#     fi
+#     sleep 0.2
+#     if [ -f "${WorkDir}/result/06-disktest.result" ]; then
+#         cat ${WorkDir}/result/06-disktest.result >>${WorkDir}/result/finalresult.txt
+#     fi
+#     sleep 0.2
+#     # echo -e "${Msg_Info} Saving local Report ..."
+#     cp ${WorkDir}/result/finalresult.txt $HOME/LemonBench.Result.txt
+#     sleep 0.1
+#     # echo -e "${Msg_Info} Generating Report URL ..."
+#     cat ${WorkDir}/result/finalresult.txt | PasteBin_Upload
+# }
 
 
-Function_GenerateResult_SysBench_CPUTest() {
-    sleep 0.1
-    if [ -f "${WorkDir}/SysBench/CPU/result.txt" ]; then
-        cp -f ${WorkDir}/SysBench/CPU/result.txt ${WorkDir}/result/04-cputest.result
-    fi
-}
+# Function_GenerateResult_SysBench_CPUTest() {
+#     sleep 0.1
+#     if [ -f "${WorkDir}/SysBench/CPU/result.txt" ]; then
+#         cp -f ${WorkDir}/SysBench/CPU/result.txt ${WorkDir}/result/04-cputest.result
+#     fi
+# }
 
-Function_GenerateResult_DiskTest() {
-    sleep 0.1
-    if [ -f "${WorkDir}/DiskTest/result.txt" ]; then
-        cp -f ${WorkDir}/DiskTest/result.txt ${WorkDir}/result/06-disktest.result
-    fi
-}
+# Function_GenerateResult_DiskTest() {
+#     sleep 0.1
+#     if [ -f "${WorkDir}/DiskTest/result.txt" ]; then
+#         cp -f ${WorkDir}/DiskTest/result.txt ${WorkDir}/result/06-disktest.result
+#     fi
+# }
 
 Global_Exit_Action() {
     rm -rf ${WorkDir}/
 }
 
-PasteBin_Upload() {
-    local uploadresult="$(curl -fsL -X POST \
-        --url https://paste.ubuntu.com \
-        --output /dev/null \
-        --write-out "%{url_effective}\n" \
-        --data-urlencode "content@${PASTEBIN_CONTENT:-/dev/stdin}" \
-        --data "poster=${PASTEBIN_POSTER:-LemonBench}" \
-        --data "expiration=${PASTEBIN_EXPIRATION:-}" \
-        --data "syntax=${PASTEBIN_SYNTAX:-text}")"
-    if [ "$?" = "0" ]; then
-        # echo -e "${Msg_Success} Report Generate Success！Please save the follwing link:"
-        echo -e "${Msg_Info} 上述测试报告(需登陆查看): ${uploadresult}"
-    else
-        echo -e "${Msg_Warning} Report Generate Failure, But you can still read $HOME/LemonBench.Result.txt to get this result！"
-    fi
-    echo "----------------------------------------------------------------------"
-}
+# PasteBin_Upload() {
+#     local uploadresult="$(curl -fsL -X POST \
+#         --url https://paste.ubuntu.com \
+#         --output /dev/null \
+#         --write-out "%{url_effective}\n" \
+#         --data-urlencode "content@${PASTEBIN_CONTENT:-/dev/stdin}" \
+#         --data "poster=${PASTEBIN_POSTER:-LemonBench}" \
+#         --data "expiration=${PASTEBIN_EXPIRATION:-}" \
+#         --data "syntax=${PASTEBIN_SYNTAX:-text}")"
+#     if [ "$?" = "0" ]; then
+#         # echo -e "${Msg_Success} Report Generate Success！Please save the follwing link:"
+#         echo -e "${Msg_Info} 上述测试报告(需登陆查看): ${uploadresult}"
+#     else
+#         echo -e "${Msg_Warning} Report Generate Failure, But you can still read $HOME/LemonBench.Result.txt to get this result！"
+#     fi
+#     echo "----------------------------------------------------------------------"
+# }
 
 
 Entrance_SysBench_CPU_Fast() {
@@ -1588,35 +1588,6 @@ print_system_info() {
     echo " 虚拟化架构        : $(_blue "$virt")"
 }
 
-
-
-#print_io_test() {
-#    freespace=$( df -m . | awk 'NR==2 {print $4}' )
-#    if [ -z "${freespace}" ]; then
-#        freespace=$( df -m . | awk 'NR==3 {print $3}' )
-#    fi
-#    if [ ${freespace} -gt 1024 ]; then
-#        writemb=2048
-#        io1=$( io_test ${writemb} )
-#        echo " 磁盘I/O (第一次) : $(_yellow "$io1")"
-#        io2=$( io_test ${writemb} )
-#        echo " 磁盘I/O (第二次) : $(_yellow "$io2")"
-#        io3=$( io_test ${writemb} )
-#        echo " 磁盘I/O (第三次) : $(_yellow "$io3")"
-#        ioraw1=$( echo $io1 | awk 'NR==1 {print $1}' )
-#        [ "`echo $io1 | awk 'NR==1 {print $2}'`" == "GB/s" ] && ioraw1=$( awk 'BEGIN{print '$ioraw1' * 1024}' )
-#        ioraw2=$( echo $io2 | awk 'NR==1 {print $1}' )
-#        [ "`echo $io2 | awk 'NR==1 {print $2}'`" == "GB/s" ] && ioraw2=$( awk 'BEGIN{print '$ioraw2' * 1024}' )
-#        ioraw3=$( echo $io3 | awk 'NR==1 {print $1}' )
-#        [ "`echo $io3 | awk 'NR==1 {print $2}'`" == "GB/s" ] && ioraw3=$( awk 'BEGIN{print '$ioraw3' * 1024}' )
-#        ioall=$( awk 'BEGIN{print '$ioraw1' + '$ioraw2' + '$ioraw3'}' )
-#        ioavg=$( awk 'BEGIN{printf "%.1f", '$ioall' / 3}' )
-#        echo " 磁盘I/O (平均结果) : $(_yellow "$ioavg MB/s")"
-#    else
-#        echo " $(_red "Not enough space for I/O Speed test!")"
-#    fi
-#}
-
 print_end_time() {
     end_time=$(date +%s)
     time=$(( ${end_time} - ${start_time} ))
@@ -1664,10 +1635,9 @@ Entrance_SysBench_CPU_Fast
 echo "-------------------内存测试--感谢lemonbench开源-----------------------"
 Entrance_SysBench_Memory_Fast
 echo "----------------磁盘IO读写测试--感谢lemonbench开源--------------------"
-#print_io_test
 Entrance_DiskTest_Fast
 next
-Function_GenerateResult
+# Function_GenerateResult
 Global_Exit_Action >/dev/null 2>&1
 echo -e "测速点位置\t 上传速度\t 下载速度\t 延迟"
 speed && rm -fr speedtest-cli
@@ -1687,7 +1657,6 @@ Global_UnlockTest 6
 echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
 rm -f $TEMP_FILE2
 curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
-
 echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
 rm -f $TEMP_FILE
 IP_4=$(curl -s4m5 https:/ip.gs/json) &&
@@ -1712,7 +1681,6 @@ for ((a=0;a<${#test_area[@]};a++)); do
   ./return.sh ${test_ip[a]} >> $TEMP_FILE
 done
 cat $TEMP_FILE
-
 echo -e "------------------测端口开通--感谢fscarmen开源及PR----------------------"
 if [ -n "$IP_4" ]; then
   PORT4=(22 80 443 8080)
