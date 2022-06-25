@@ -328,7 +328,7 @@ Check_Sysbench_InstantBuild() {
     elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
-        apt-get update
+#         apt-get update
         apt -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip
         echo -e "${Msg_Info}Downloading Source code (Version 1.0.17)..."
         mkdir -p /tmp/_LBench/src/
@@ -1334,7 +1334,7 @@ Function_DiskTest_Fast() {
     Run_DiskTest_DD "1GB.test" "1M" "1000" "1GB-1M Block"
     # 执行完成, 标记FLAG
     LBench_Flag_FinishDiskTestFast="1"
-    sleep 1
+    sleep 0.5
 }
 
 # =============== SysBench - 内存性能 部分 ===============
@@ -1415,7 +1415,7 @@ Run_SysBench_Memory() {
     else
         echo -e " $6:\t\t${ResultSpeed} MB/s" >>${WorkDir}/SysBench/Memory/result.txt
     fi
-    sleep 1
+    sleep 0.5
 }
 
 Function_SysBench_Memory_Fast() {
@@ -1426,7 +1426,7 @@ Function_SysBench_Memory_Fast() {
     Run_SysBench_Memory "1" "5" "1" "write" "seq" "单线程写测试"
     # 完成FLAG
     LBench_Flag_FinishSysBenchMemoryFast="1"
-    sleep 1
+    sleep 0.5
 }
 
 Entrance_SysBench_Memory_Fast() {
@@ -1614,10 +1614,10 @@ checkdnsutils
 install_speedtest
 SystemInfo_GetSystemBit
 if [ "${release}" == "centos" ]; then
-    yum update > /dev/null 2>&1
+#     yum update > /dev/null 2>&1
     yum -y install python3.7 > /dev/null 2>&1
 else
-    apt-get update > /dev/null 2>&1
+#     apt-get update > /dev/null 2>&1
     apt-get -y install python3.7 > /dev/null 2>&1
 fi
 export PYTHONIOENCODING=utf-8
@@ -1636,9 +1636,9 @@ echo "-------------------内存测试--感谢lemonbench开源-------------------
 Entrance_SysBench_Memory_Fast
 echo "----------------磁盘IO读写测试--感谢lemonbench开源--------------------"
 Entrance_DiskTest_Fast
-next
 # Function_GenerateResult
 Global_Exit_Action >/dev/null 2>&1
+echo "--------网络测速--由teddysun和superspeed开源及spiritlhls整理----------"
 echo -e "测速点位置\t 上传速度\t 下载速度\t 延迟"
 speed && rm -fr speedtest-cli
 echo "--------------------流媒体解锁--感谢sjlleo开源-------------------------"
