@@ -235,7 +235,7 @@ SystemInfo_GetOSRelease() {
 }
 
 function Global_UnlockTest() {
-    echo ""
+#     echo ""
     echo "============[ Multination ]============"
     MediaUnlockTest_Dazn ${1}
     MediaUnlockTest_HotStar ${1}
@@ -412,7 +412,7 @@ Run_SysBench_CPU() {
 
 Function_SysBench_CPU_Fast() {
     mkdir -p ${WorkDir}/SysBench/CPU/ >/dev/null 2>&1
-    echo -e " ${Font_Yellow}-> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}\n"
+    echo -e " ${Font_Yellow}-> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}"
     echo -e " -> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/CPU/result.txt
     Run_SysBench_CPU "1" "5" "1" "1 线程测试(1核)得分"
     if [ "${LBench_Result_CPUThreadNumber}" -ge "2" ]; then
@@ -1321,7 +1321,7 @@ Run_DiskTest_DD() {
 
 Function_DiskTest_Fast() {
     mkdir -p ${WorkDir}/DiskTest/ >/dev/null 2>&1
-    echo -e " ${Font_Yellow}-> 磁盘IO测试中 (4K Block/1M Block, Direct Mode)${Font_Suffix}\n"
+    echo -e " ${Font_Yellow}-> 磁盘IO测试中 (4K Block/1M Block, Direct Mode)${Font_Suffix}"
     echo -e " -> 磁盘IO测试中 (4K Block/1M Block, Direct Mode)\n" >>${WorkDir}/DiskTest/result.txt
     SystemInfo_GetVirtType
     SystemInfo_GetOSRelease
@@ -1420,7 +1420,7 @@ Run_SysBench_Memory() {
 
 Function_SysBench_Memory_Fast() {
     mkdir -p ${WorkDir}/SysBench/Memory/ >/dev/null 2>&1
-    echo -e " ${Font_Yellow}-> 内存测试 Test (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}\n"
+    echo -e " ${Font_Yellow}-> 内存测试 Test (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}"
     echo -e " -> 内存测试 (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/Memory/result.txt
     Run_SysBench_Memory "1" "5" "1" "read" "seq" "单线程读测试"
     Run_SysBench_Memory "1" "5" "1" "write" "seq" "单线程写测试"
@@ -1681,7 +1681,7 @@ for ((a=0;a<${#test_area[@]};a++)); do
   ./return.sh ${test_ip[a]} >> $TEMP_FILE
 done
 cat $TEMP_FILE
-echo -e "------------------测端口开通--感谢fscarmen开源及PR----------------------"
+echo -e "-----------------测端口开通--感谢fscarmen开源及PR----------------------"
 if [ -n "$IP_4" ]; then
   PORT4=(22 80 443 8080)
   for i in ${PORT4[@]}; do
