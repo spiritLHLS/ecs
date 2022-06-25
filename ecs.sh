@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.06.24"
+ver="2022.06.25"
 changeLog="融合怪六代目(集合百家之长)(专为测评频道小鸡而生)"
 
 checkroot(){
