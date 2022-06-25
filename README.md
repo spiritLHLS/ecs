@@ -23,3 +23,7 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 - [x] 三网回程--感谢zhanghanyun/backtrace开源
 - [x] 回程路由以及带宽类型检测(商宽/家宽/数据中心)--由fscarmen开源以及本人的技术思路提供
 - [x] 端口检测(检测是否被墙)--由fscarmen开源以及本人的技术思路提供
+
+# 测评频道
+
+https://t.me/vps_reviews
