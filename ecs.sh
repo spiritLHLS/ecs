@@ -1638,9 +1638,6 @@ echo "----------------磁盘IO读写测试--感谢lemonbench开源--------------
 Entrance_DiskTest_Fast
 # Function_GenerateResult
 Global_Exit_Action >/dev/null 2>&1
-echo "--------网络测速--由teddysun和superspeed开源及spiritlhls整理----------"
-echo -e "测速点位置\t 上传速度\t 下载速度\t 延迟"
-speed && rm -fr speedtest-cli
 echo "--------------------流媒体解锁--感谢sjlleo开源-------------------------"
 echo "Youtube"
 ./tubecheck | sed "/@sjlleo/d"
@@ -1696,6 +1693,9 @@ if [ -n "$IP_4" ]; then
   rm -f PORT4_*
 else _red " VPS 没有 IPv4 "
 fi
+echo "--------网络测速--由teddysun和superspeed开源及spiritlhls整理----------"
+echo -e "测速点位置\t 上传速度\t 下载速度\t 延迟"
+speed && rm -fr speedtest-cli
 next
 print_end_time
 next
