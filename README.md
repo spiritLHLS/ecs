@@ -17,7 +17,7 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 - [x] CPU测试--感谢lemonbench开源
 - [x] 内存测试--感谢lemonbench开源
 - [x] 磁盘IO读写测试--感谢lemonbench开源
-- [x] speedtest测速--感谢teddysun和superspeed的开源
+- [x] speedtest测速--由teddysun和superspeed的开源以及个人整理
 - [x] 流媒体解锁--感谢sjlleo开源
 - [x] 流媒体解锁--感谢RegionRestrictionCheck开源
 - [x] 三网回程--感谢zhanghanyun/backtrace开源
