@@ -1,5 +1,6 @@
 # ecs
-融合怪测评脚本
+
+### 融合怪测评脚本
 
 ```bash
 bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/ecs.sh)
@@ -9,6 +10,12 @@ bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/m
 
 ```bash
 bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/main/ecs.sh)
+```
+
+### 纯测路由端口，不测其他
+
+```bash
+bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/main/route.sh)
 ```
 
 # 功能
