@@ -18,6 +18,12 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/main/route.sh)
 ```
 
+或
+
+```bash
+bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/main/route.sh)
+```
+
 # 功能
 
 - [x] 基础系统信息
