@@ -10,6 +10,17 @@ test_ip=("58.60.188.222" "210.21.196.6" "120.196.165.2")
 TEMP_FILE='ip.test'
 
 
+trap _exit INT QUIT TERM
+
+_red() { echo -e "\033[31m\033[01m$@\033[0m"; }
+
+_green() { echo -e "\033[32m\033[01m$@\033[0m"; }
+
+_yellow() { echo -e "\033[33m\033[01m$@\033[0m"; }
+
+_blue() { echo -e "\033[36m\033[01m$@\033[0m"; }
+
+
 checkroot(){
 	[[ $EUID -ne 0 ]] && echo -e "${RED}请使用 root 用户运行本脚本！${PLAIN}" && exit 1
 }
@@ -99,6 +110,13 @@ checkwget() {
 	fi
 }
 
+print_intro() {
+    echo "--------------------- A Bench Script By spiritlhl --------------------"
+    echo "                   测评频道: https://t.me/vps_reviews                    "
+    echo "版本：$ver"
+    echo "更新日志：$changeLog"
+}
+
 next() {
     printf "%-70s\n" "-" | sed 's/\s/-/g'
 }
@@ -135,13 +153,7 @@ export PYTHONIOENCODING=utf-8
 ! _exists "free" && _red "Error: free command not found.\n" && exit 1
 clear
 start_time=$(date +%s)
-print_intro() {
-    echo "--------------------- A Bench Script By spiritlhl --------------------"
-    echo "                   测评频道: https://t.me/vps_reviews                    "
-    echo "版本：$ver"
-    echo "更新日志：$changeLog"
-    echo "-------------------感谢teddysun和misakabench的开源--------------------"
-}
+print_intro
 echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
 rm -f $TEMP_FILE2
 curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
