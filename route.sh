@@ -20,6 +20,26 @@ _yellow() { echo -e "\033[33m\033[01m$@\033[0m"; }
 
 _blue() { echo -e "\033[36m\033[01m$@\033[0m"; }
 
+_exists() {
+    local cmd="$1"
+    if eval type type > /dev/null 2>&1; then
+        eval type "$cmd" > /dev/null 2>&1
+    elif command > /dev/null 2>&1; then
+        command -v "$cmd" > /dev/null 2>&1
+    else
+        which "$cmd" > /dev/null 2>&1
+    fi
+    local rt=$?
+    return ${rt}
+}
+
+_exit() {
+    _red "\n检测到退出操作，脚本终止！\n"
+    # clean up
+    rm -fr benchtest_*
+    exit 1
+}
+
 
 checkroot(){
 	[[ $EUID -ne 0 ]] && echo -e "${RED}请使用 root 用户运行本脚本！${PLAIN}" && exit 1
