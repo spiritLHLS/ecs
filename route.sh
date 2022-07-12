@@ -221,5 +221,6 @@ print_end_time
 next
 rm -rf wget-log*
 rm -rf ipip.py*
+rm -rf return.sh*
 rm -rf besttrace
 rm -rf $TEMP_FILE
