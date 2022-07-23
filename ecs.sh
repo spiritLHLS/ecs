@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.06.25"
+ver="2022.07.23"
 changeLog="融合怪六代目(集合百家之长)(专为测评频道小鸡而生)"
 
 
@@ -1682,25 +1682,27 @@ Entrance_DiskTest_Fast
 # Function_GenerateResult
 Global_Exit_Action >/dev/null 2>&1
 echo "--------------------流媒体解锁--感谢sjlleo开源-------------------------"
-echo "Youtube"
+yellow "以下测试的解锁地区是准确的，但是不是完整解锁的判断可能有误，这方面仅作参考使用"
+yellow "Youtube"
 ./tubecheck | sed "/@sjlleo/d"
 sleep 0.5
-echo "Netflix"
+yellow "Netflix"
 ./nf | sed "/@sjlleo/d;/^$/d"
 sleep 0.5
-echo "DisneyPlus"
+yellow "DisneyPlus"
 ./dp | sed "/@sjlleo/d"
 sleep 0.5
-echo "解锁Youtube，Netflix，DisneyPlus以上面为准，下面这三测的不准"
+yellow "解锁Youtube，Netflix，DisneyPlus的地区以上面为准，下面这三测的不准"
 echo -e "---------------流媒体解锁--感谢RegionRestrictionCheck开源-------------"
-echo " 以下为IPV4网络测试"
+yellow " 以下为IPV4网络测试"
 Global_UnlockTest 4
-echo " 以下为IPV6网络测试"
+yellow " 以下为IPV6网络测试"
 Global_UnlockTest 6
 echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
 rm -f $TEMP_FILE2
 curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
 echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
+yellow "以下测试的带宽类型可能有误，商宽可能被判断为家宽，仅作参考使用"
 rm -f $TEMP_FILE
 IP_4=$(curl -s4m5 https:/ip.gs/json) &&
 WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
