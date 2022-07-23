@@ -555,7 +555,7 @@ SystemInfo_GetSystemBit() {
 	sleep 0.5
         curl -L https://github.com/sjlleo/netflix-verify/releases/download/v3.0/nf_linux_amd64 -o nf && chmod +x nf
 	sleep 0.5
-        curl -L tubecheck https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
+        curl -L https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
 	sleep 0.5
     elif [ "${sysarch}" = "i386" ] || [ "${sysarch}" = "i686" ]; then
         # X86平台 32位
@@ -565,7 +565,7 @@ SystemInfo_GetSystemBit() {
 	sleep 0.5
         curl -L https://github.com/sjlleo/netflix-verify/releases/download/v3.0/nf_linux_amd64 -o nf && chmod +x nf
         sleep 0.5
-	curl -L tubecheck https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_386 -o tubecheck && chmod +x tubecheck
+	curl -L https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_386 -o tubecheck && chmod +x tubecheck
 	sleep 0.5
     elif [ "${sysarch}" = "armv7l" ] || [ "${sysarch}" = "armv8" ] || [ "${sysarch}" = "armv8l" ] || [ "${sysarch}" = "aarch64" ]; then
         # ARM平台 暂且将32位/64位统一对待
@@ -584,7 +584,7 @@ SystemInfo_GetSystemBit() {
 	sleep 0.5
         curl -L https://github.com/sjlleo/netflix-verify/releases/download/v3.0/nf_linux_amd64 -o nf && chmod +x nf
 	sleep 0.5
-        curl -L tubecheck https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
+        curl -L https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
 	sleep 0.5
     fi
 }
