@@ -3,6 +3,29 @@
 ver="2022.06.25"
 changeLog="融合怪六代目(集合百家之长)(专为测评频道小鸡而生)"
 
+
+
+red(){
+    echo -e "\033[31m\033[01m$1\033[0m"
+}
+
+green(){
+    echo -e "\033[32m\033[01m$1\033[0m"
+}
+
+yellow(){
+    echo -e "\033[33m\033[01m$1\033[0m"
+}
+
+REGEX=("debian" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "alpine")
+RELEASE=("Debian" "Ubuntu" "CentOS" "CentOS" "Alpine")
+PACKAGE_UPDATE=("apt -y update" "apt -y update" "yum -y update" "yum -y update" "apk update -f")
+PACKAGE_INSTALL=("apt -y install" "apt -y install" "yum -y install" "yum -y install" "apk add -f")
+CMD=("$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(hostnamectl 2>/dev/null | grep -i system | cut -d : -f2)" "$(lsb_release -sd 2>/dev/null)" "$(grep -i description /etc/lsb-release 2>/dev/null | cut -d \" -f2)" "$(grep . /etc/redhat-release 2>/dev/null)" "$(grep . /etc/issue 2>/dev/null | cut -d \\ -f1 | sed '/^[ ]*$/d')")
+
+
+
+
 checkroot(){
 	[[ $EUID -ne 0 ]] && echo -e "${RED}请使用 root 用户运行本脚本！${PLAIN}" && exit 1
 }
@@ -528,41 +551,41 @@ SystemInfo_GetSystemBit() {
         # X86平台 64位
         LBench_Result_SystemBit_Short="64"
         LBench_Result_SystemBit_Full="amd64"
-        rm -rf dp
-        wget -O dp https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 && chmod +x dp
-        rm -rf nf
-        wget -O nf https://github.com/sjlleo/netflix-verify/releases/download/v3.0/nf_linux_amd64 && chmod +x nf
-        rm -rf tubecheck
-        wget -O tubecheck https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 && chmod +x tubecheck
+	curl -L https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 -o dp && chmod +x dp
+	sleep 0.5
+        curl -L https://github.com/sjlleo/netflix-verify/releases/download/v3.0/nf_linux_amd64 -o nf && chmod +x nf
+	sleep 0.5
+        curl -L tubecheck https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
+	sleep 0.5
     elif [ "${sysarch}" = "i386" ] || [ "${sysarch}" = "i686" ]; then
         # X86平台 32位
         LBench_Result_SystemBit_Short="32"
         LBench_Result_SystemBit_Full="i386"
-        rm -rf dp
-        wget -O dp https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_386 && chmod +x dp
-        rm -rf nf
-        wget -O nf https://github.com/sjlleo/netflix-verify/releases/download/v3.0/nf_linux_amd64 && chmod +x nf
-        rm -rf tubecheck
-        wget -O tubecheck https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_386 && chmod +x tubecheck
+        curl -L https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_386 -o dp && chmod +x dp
+	sleep 0.5
+        curl -L https://github.com/sjlleo/netflix-verify/releases/download/v3.0/nf_linux_amd64 -o nf && chmod +x nf
+        sleep 0.5
+	curl -L tubecheck https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_386 -o tubecheck && chmod +x tubecheck
+	sleep 0.5
     elif [ "${sysarch}" = "armv7l" ] || [ "${sysarch}" = "armv8" ] || [ "${sysarch}" = "armv8l" ] || [ "${sysarch}" = "aarch64" ]; then
         # ARM平台 暂且将32位/64位统一对待
         LBench_Result_SystemBit_Short="arm"
         LBench_Result_SystemBit_Full="arm"
-        rm -rf dp
-        wget -O dp https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_arm && chmod +x dp
-        rm -rf nf
-        wget -O nf https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_arm64 && chmod +x nf
-        rm -rf tubecheck
-        wget -O tubecheck https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_arm && chmod +x tubecheck
+        curl -L https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_arm -o dp && chmod +x dp
+	sleep 0.5
+        curl -L https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_arm64 -o nf && chmod +x nf
+	sleep 0.5
+        curl -L https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_arm -o tubecheck && chmod +x tubecheck
+	sleep 0.5
     else
         LBench_Result_SystemBit_Short="unknown"
         LBench_Result_SystemBit_Full="unknown"
-        rm -rf dp
-        wget -O dp https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 && chmod +x dp
-        rm -rf nf
-        wget -O nf https://github.com/sjlleo/netflix-verify/releases/download/v3.0/nf_linux_amd64 && chmod +x nf
-        rm -rf tubecheck
-        wget -O tubecheck https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 && chmod +x tubecheck
+        curl -L https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 -o dp && chmod +x dp
+	sleep 0.5
+        curl -L https://github.com/sjlleo/netflix-verify/releases/download/v3.0/nf_linux_amd64 -o nf && chmod +x nf
+	sleep 0.5
+        curl -L tubecheck https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
+	sleep 0.5
     fi
 }
 
@@ -1603,6 +1626,25 @@ print_end_time() {
 }
 
 
+checkssh() {
+	for i in "${CMD[@]}"; do
+		SYS="$i" && [[ -n $SYS ]] && break
+	done
+
+	for ((int=0; int<${#REGEX[@]}; int++)); do
+		[[ $(echo "$SYS" | tr '[:upper:]' '[:lower:]') =~ ${REGEX[int]} ]] && SYSTEM="${RELEASE[int]}" && [[ -n $SYSTEM ]] && break
+	done
+	echo "开启22端口中，以便于测试IP是否被阻断"
+	sshport=22
+	[[ ! -f /etc/ssh/sshd_config ]] && sudo ${PACKAGE_UPDATE[int]} && sudo ${PACKAGE_INSTALL[int]} openssh-server
+	[[ -z $(type -P curl) ]] && sudo ${PACKAGE_UPDATE[int]} && sudo ${PACKAGE_INSTALL[int]} curl
+	sudo sed -i "s/^#\?Port.*/Port $sshport/g" /etc/ssh/sshd_config;
+	sudo service ssh restart >/dev/null 2>&1 # 某些VPS系统的ssh服务名称为ssh，以防无法重启服务导致无法立刻使用密码登录
+	sudo service sshd restart >/dev/null 2>&1
+	echo "开启22端口完毕"
+}
+
+
 checkupdate
 checkroot
 checkwget
@@ -1611,6 +1653,7 @@ checkpython
 checkcurl
 checkspeedtest
 checkdnsutils
+checkssh
 install_speedtest
 SystemInfo_GetSystemBit
 if [ "${release}" == "centos" ]; then
@@ -1641,10 +1684,13 @@ Global_Exit_Action >/dev/null 2>&1
 echo "--------------------流媒体解锁--感谢sjlleo开源-------------------------"
 echo "Youtube"
 ./tubecheck | sed "/@sjlleo/d"
+sleep 0.5
 echo "Netflix"
 ./nf | sed "/@sjlleo/d;/^$/d"
+sleep 0.5
 echo "DisneyPlus"
 ./dp | sed "/@sjlleo/d"
+sleep 0.5
 echo "解锁Youtube，Netflix，DisneyPlus以上面为准，下面这三测的不准"
 echo -e "---------------流媒体解锁--感谢RegionRestrictionCheck开源-------------"
 echo " 以下为IPV4网络测试"
@@ -1679,6 +1725,7 @@ for ((a=0;a<${#test_area[@]};a++)); do
 done
 cat $TEMP_FILE
 echo -e "-----------------测端口开通--感谢fscarmen开源及PR----------------------"
+sleep 0.5
 if [ -n "$IP_4" ]; then
   PORT4=(22 80 443 8080)
   for i in ${PORT4[@]}; do
@@ -1694,6 +1741,7 @@ if [ -n "$IP_4" ]; then
 else _red " VPS 没有 IPv4 "
 fi
 echo "--------网络测速--由teddysun和superspeed开源及spiritlhls整理----------"
+sleep 0.5
 echo -e "测速点位置\t 上传速度\t 下载速度\t 延迟"
 speed && rm -fr speedtest-cli
 next
