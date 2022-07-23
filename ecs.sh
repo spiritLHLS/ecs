@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ver="2022.07.23"
-changeLog="融合怪六代目(集合百家之长)(专为测评频道小鸡而生)"
+changeLog="融合怪七代目(集合百家之长)(专为测评频道小鸡而生)"
 
 
 
@@ -62,17 +62,10 @@ checkupdate(){
 
 
 checkpython() {
-	if  [ ! -e '/usr/bin/python' ]; then
-	        echo "正在安装 Python"
-	            if [ "${release}" == "centos" ]; then
-# 	            	    yum update > /dev/null 2>&1
-	                    yum -y install python > /dev/null 2>&1
-	                else
-# 	                    apt-get update > /dev/null 2>&1
-	                    apt-get -y install python > /dev/null 2>&1
-	                fi
-
-	fi
+    ! type -p python3 >/dev/null 2>&1 && yellow "\n Install python3\n" && ${PACKAGE_INSTALL[int]} python3
+    # ! type -p pip3 install subprocess >/dev/null 2>&1 && yellow "\n Install pip3\n" && ${PACKAGE_INSTALL[int]} python3-pip
+    # pip3 install subprocess
+    sleep 0.5
 }
 
 checkdnsutils() {
@@ -1669,6 +1662,8 @@ export PYTHONIOENCODING=utf-8
 start_time=$(date +%s)
 get_system_info
 check_virt
+curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck.py -o qzcheck.py 
+curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
 clear
 print_intro
 print_system_info
@@ -1698,6 +1693,10 @@ yellow " 以下为IPV4网络测试"
 Global_UnlockTest 4
 yellow " 以下为IPV6网络测试"
 Global_UnlockTest 6
+echo -e "----------------------TikTok解锁--感谢lmc999开源----------------------"
+python3 tk.py 
+echo -e "------------------欺诈分数以及IP质量检测--本频道独创--------------------"
+python3 qzcheck.py 
 echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
 rm -f $TEMP_FILE2
 curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
@@ -1753,6 +1752,8 @@ rm -rf return.sh
 rm -rf speedtest.tgz*
 rm -rf wget-log*
 rm -rf ipip.py*
+rm -rf tk.py*
+rm -rf qzcheck.py*
 rm -rf dp
 rm -rf nf
 rm -rf tubecheck
