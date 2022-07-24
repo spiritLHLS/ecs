@@ -1695,7 +1695,8 @@ yellow " 以下为IPV6网络测试"
 Global_UnlockTest 6
 echo -e "----------------------TikTok解锁--感谢lmc999开源----------------------"
 python3 tk.py 
-echo -e "------------------欺诈分数以及IP质量检测--本频道原创--------------------"
+echo -e "------------------欺诈分数以及IP质量检测--本频道原创-------------------"
+yellow "得分仅作参考，不代表100%准确"
 python3 qzcheck.py 
 echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
 rm -f $TEMP_FILE2
