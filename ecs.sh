@@ -63,8 +63,8 @@ checkupdate(){
 
 checkpython() {
     ! type -p python3 >/dev/null 2>&1 && yellow "\n Install python3\n" && ${PACKAGE_INSTALL[int]} python3
-    # ! type -p pip3 install subprocess >/dev/null 2>&1 && yellow "\n Install pip3\n" && ${PACKAGE_INSTALL[int]} python3-pip
-    # pip3 install subprocess
+    ! type -p pip3 install requests >/dev/null 2>&1 && yellow "\n Install pip3\n" && ${PACKAGE_INSTALL[int]} python3-pip
+    pip3 install requests
     sleep 0.5
 }
 
