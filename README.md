@@ -24,6 +24,18 @@ bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/m
 bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/main/route.sh)
 ```
 
+### 纯测IP质量(IP黑还是白)
+
+```bash
+bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh)
+```
+
+或
+
+```bash
+bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/main/qzcheck.sh)
+```
+
 # 功能
 
 - [x] 基础系统信息
