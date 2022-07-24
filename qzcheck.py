@@ -52,6 +52,6 @@ try:
     context2 = requests.get(
         f"https://api.abuseipdb.com/api/v2/check?ipAddress={ip}", headers=head)
     print("IP类型：", str(context2.json()["data"]["usageType"]))
-    print("abuse得分：", str(context2.json()["data"]["abuseConfidenceScore"]))
+    print("abuse得分(越低越好)：", str(context2.json()["data"]["abuseConfidenceScore"]))
 except:
     pass
