@@ -11,7 +11,7 @@ def excuteCommand(com):
     return out.decode()
 
 ip = excuteCommand("curl -sm8 ip.sb").replace("\n", "").replace(" ", "")
-context = requests.get(f"https://scamalytics.com/ip/{ip}").text
+context = requests.get(f"https://scamalytics.com/ip/{ip}", timeout=30).text
 temp1 = re.findall(f">Fraud Score: (.*?)</div", context)[0]
 print(f"欺诈分数：{temp1}")
 temp2 = re.findall(f"<div(.*?)div>", context)[-6:]
