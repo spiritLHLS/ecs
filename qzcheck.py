@@ -26,6 +26,6 @@ for i in range(0, 101):
             print("0判定为低风险,高于10判定为爬虫或者垃圾邮件发送者,高于40判定为有严重不良行为的IP(如僵尸网络等),这个数值一般不会大于60")
             print("Cloudflare威胁得分：", context1)
             break
-     except:
+    except:
         pass
         
