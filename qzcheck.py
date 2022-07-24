@@ -28,12 +28,11 @@ for i in range(1, 101):
             timeout=1).text
         if "pong!" not in context1:
             print(
-                "以下0为低风险,高于10为爬虫或者垃圾邮件发送者,高于40为有严重不良行为(如僵尸网络等),数值一般不会大于60"
+                "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60"
             )
             print("Cloudflare威胁得分：", str(i))
             break
     except:
         pass
 if i == 100:
-    print("以下0为低风险,高于10为爬虫或者垃圾邮件发送者,高于40为有严重不良行为(如僵尸网络等),数值一般不会大于60")
-    print("Cloudflare威胁得分: 0")
+    print("Cloudflare威胁得分(0为低风险): 0")
