@@ -28,16 +28,30 @@ for i in range(1, 101):
             f"https://cf-threat.sukkaw.com/hello.json?threat={str(i)}",
             timeout=1).text
         try:
-          if "pong!" not in context1:
-              print(
-                  "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60")
-              print("Cloudflare威胁得分：", str(i))
-              status = 1
-              break
+            if "pong!" not in context1:
+                print(
+                    "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60"
+                )
+                print("Cloudflare威胁得分：", str(i))
+                status = 1
+                break
         except:
             pass
     except:
-      status = -1
-      pass
+        status = -1
+        pass
 if i == 100 and status == 0:
     print("Cloudflare威胁得分(0为低风险): 0")
+try:
+    head = {
+        "Accept":
+        "application/json",
+        "key":
+        "c515467669330390a935a974506eef7f9e27d89e81f5835649711a858bdd7c0b61a6d9386e74ce24"
+    }
+    context2 = requests.get(
+        f"https://api.abuseipdb.com/api/v2/check?ipAddress={ip}", headers=head)
+    print("IP类型：", str(context2.json()["data"]["usageType"]))
+    print("abuse得分：", str(context2.json()["data"]["abuseConfidenceScore"]))
+except:
+    pass
