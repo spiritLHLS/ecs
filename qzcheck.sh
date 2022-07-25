@@ -191,4 +191,4 @@ next
 rm -rf wget-log*
 rm -rf qzcheck.py*
 rm -rf googlesearchcheck.py*
-rm -rf gdlog.txt*
+rm -rf gdlog*
