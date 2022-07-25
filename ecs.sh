@@ -1593,6 +1593,7 @@ print_system_info() {
     if [ -n "$ccache" ]; then
         echo " CPU 缓存          : $(_blue "$ccache")"
     fi
+    DISTRO=$(grep 'PRETTY_NAME' /etc/os-release | cut -d '"' -f 2 )
     CPU_AES=$(cat /proc/cpuinfo | grep aes)
     [[ -z "$CPU_AES" ]] && CPU_AES="\xE2\x9D\x8C Disabled" || CPU_AES="\xE2\x9C\x94 Enabled"
     CPU_VIRT=$(cat /proc/cpuinfo | grep 'vmx\|svm')
