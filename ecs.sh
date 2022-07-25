@@ -1663,7 +1663,7 @@ export PYTHONIOENCODING=utf-8
 start_time=$(date +%s)
 get_system_info
 check_virt
-curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck.py -o qzcheck.py 
+curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py -o qzcheck_ecs.py 
 curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
 curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
 sleep 0.5
