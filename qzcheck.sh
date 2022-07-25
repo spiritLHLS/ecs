@@ -157,6 +157,7 @@ checkpython() {
     ! type -p python3 >/dev/null 2>&1 && yellow "\n Install python3\n" && ${PACKAGE_INSTALL[int]} python3
     ! type -p pip3 install requests >/dev/null 2>&1 && yellow "\n Install pip3\n" && ${PACKAGE_INSTALL[int]} python3-pip
     pip3 install requests
+    pip3 install magic_google
     sleep 0.5
 }
 
@@ -167,6 +168,7 @@ checkcurl
 checksystem
 checkpython
 curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck.py -o qzcheck.py 
+curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
 if [ "${release}" == "centos" ]; then
     yum -y install python3.7 > /dev/null 2>&1
 else
@@ -175,6 +177,8 @@ fi
 export PYTHONIOENCODING=utf-8
 ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
 ! _exists "free" && _red "Error: free command not found.\n" && exit 1
+sleep 0.5
+python3 googlesearchcheck.py
 clear
 start_time=$(date +%s)
 print_intro
@@ -186,3 +190,5 @@ print_end_time
 next
 rm -rf wget-log*
 rm -rf qzcheck.py*
+rm -rf googlesearchcheck.py*
+rm -rf gdlog.txt*
