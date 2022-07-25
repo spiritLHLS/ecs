@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.07.23"
+ver="2022.07.25"
 changeLog="融合怪七代目(集合百家之长)(专为测评频道小鸡而生)"
 
 
@@ -1542,11 +1542,11 @@ ipv4_info() {
 }
 
 print_intro() {
-    echo "--------------------- A Bench Script By spiritlhl --------------------"
+    echo "--------------------- A Bench Script By spiritlhl ---------------------"
     echo "                   测评频道: https://t.me/vps_reviews                    "
     echo "版本：$ver"
     echo "更新日志：$changeLog"
-    echo "-------------------感谢teddysun和misakabench的开源--------------------"
+    echo "-----------------感谢teddysun和misakabench和yabs开源-------------------"
 }
 
 # Get System information
@@ -1593,12 +1593,19 @@ print_system_info() {
     if [ -n "$ccache" ]; then
         echo " CPU 缓存          : $(_blue "$ccache")"
     fi
+    CPU_AES=$(cat /proc/cpuinfo | grep aes)
+    [[ -z "$CPU_AES" ]] && CPU_AES="\xE2\x9D\x8C Disabled" || CPU_AES="\xE2\x9C\x94 Enabled"
+    CPU_VIRT=$(cat /proc/cpuinfo | grep 'vmx\|svm')
+    [[ -z "$CPU_VIRT" ]] && CPU_VIRT="\xE2\x9D\x8C Disabled" || CPU_VIRT="\xE2\x9C\x94 Enabled"
     echo " 硬盘空间          : $(_yellow "$disk_total_size GB") $(_blue "($disk_used_size GB 已用)")"
     echo " 内存              : $(_yellow "$tram MB") $(_blue "($uram MB 已用)")"
     echo " Swap              : $(_blue "$swap MB ($uswap MB 已用)")"
     echo " 系统在线时间      : $(_blue "$up")"
     echo " 负载              : $(_blue "$load")"
-    echo " 系统              : $(_blue "$opsy")"
+    echo " 系统              : $(_blue "$DISTRO")"  
+    # $(_blue "$opsy")"
+    echo " AES-NI指令集      : $(_blue "$CPU_AES")"  
+    echo " VM-x/AMD-V支持    : $(_blue "$CPU_VIRT")"  
     echo " 架构              : $(_blue "$arch ($lbit Bit)")"
     echo " 内核              : $(_blue "$kern")"
     echo " TCP加速方式       : $(_yellow "$tcpctrl")"
