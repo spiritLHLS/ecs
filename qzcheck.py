@@ -86,13 +86,13 @@ try:
 except Exception as e:
     print(e)
 
-# try:
-with open("gdlog", "r") as fp:
-    context3 = fp.read()
-print(context3)
-if "https://www.spiritysdx.top/" in context3:
-    print("Google搜索可行性：yes")
-else:
+try:
+    with open("gdlog", "r") as fp:
+        context3 = fp.read()
+    print(context3)
+    if "https://www.spiritysdx.top/" in context3:
+        print("Google搜索可行性：yes")
+    else:
+        print("Google搜索可行性：no")
+except:
     print("Google搜索可行性：no")
-# except:
-#     print("Google搜索可行性：no")
