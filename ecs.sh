@@ -1701,7 +1701,7 @@ echo -e "-------------------TikTok解锁--感谢lmc999提供检测--------------
 python3 tk.py 
 echo -e "------------------欺诈分数以及IP质量检测--本频道原创-------------------"
 yellow "得分仅作参考，不代表100%准确"
-python3 qzcheck.py 
+python3 qzcheck_ecs.py 
 echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
 rm -f $TEMP_FILE2
 curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
@@ -1758,7 +1758,7 @@ rm -rf speedtest.tgz*
 rm -rf wget-log*
 rm -rf ipip.py*
 rm -rf tk.py*
-rm -rf qzcheck.py*
+rm -rf qzcheck_ecs.py*
 rm -rf dp
 rm -rf nf
 rm -rf tubecheck
