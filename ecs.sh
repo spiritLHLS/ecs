@@ -1767,5 +1767,5 @@ rm -rf LemonBench.Result.txt*
 rm -rf speedtest.log*
 rm -rf ecs.sh*
 rm -rf googlesearchcheck.py*
-rm -rf gdlog.txt*
+rm -rf gdlog*
 rm -rf $TEMP_FILE
