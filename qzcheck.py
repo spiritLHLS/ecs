@@ -38,20 +38,23 @@ head = {
 }
 
 ip = excuteCommand("curl -sm8 ip.sb").replace("\n", "").replace(" ", "")
-context = requests.get(f"https://scamalytics.com/ip/{ip}", timeout=30).text
-temp1 = re.findall(f">Fraud Score: (.*?)</div", context)[0]
-print(f"欺诈分数(越低越好)：{temp1}")
-temp2 = re.findall(f"<div(.*?)div>", context)[-6:]
-nlist = ["匿名代理", "Tor出口节点", "服务器IP", "公共代理", "网络代理", "搜索引擎机器人"]
-for i, j in zip(temp2, nlist):
-    temp3 = re.findall(f"\">(.*?)</", i)[0]
-    print(f"{j}: {temp3}")
+try:
+    context = requests.get(f"https://scamalytics.com/ip/{ip}", timeout=10).text
+    temp1 = re.findall(f">Fraud Score: (.*?)</div", context)[0]
+    print(f"欺诈分数(越低越好)：{temp1}")
+    temp2 = re.findall(f"<div(.*?)div>", context)[-6:]
+    nlist = ["匿名代理", "Tor出口节点", "服务器IP", "公共代理", "网络代理", "搜索引擎机器人"]
+    for i, j in zip(temp2, nlist):
+        temp3 = re.findall(f"\">(.*?)</", i)[0]
+        print(f"{j}: {temp3}")
+except:
+    pass
 status = 0
 for i in range(1, 101):
     try:
         context1 = requests.get(
             f"https://cf-threat.sukkaw.com/hello.json?threat={str(i)}",
-            timeout=1).text
+            timeout=1, timeout=10).text
         try:
             if "pong!" not in context1:
                 print(
@@ -71,7 +74,7 @@ try:
     try:
         context2 = requests.get(
             f"https://api.abuseipdb.com/api/v2/check?ipAddress={ip}",
-            headers=head)
+            headers=head,timeout=10)
     except:
         for i in keys_list:
             head["key"] = keys_list[random.randint(0,len(keys_list))]
