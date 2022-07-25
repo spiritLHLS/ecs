@@ -87,7 +87,7 @@ except Exception as e:
     print(e)
 
 # try:
-with open("./gdlog.txt", "r") as fp:
+with open("gdlog", "r") as fp:
     context3 = fp.read()
 print(context3)
 if "https://www.spiritysdx.top/" in context3:
