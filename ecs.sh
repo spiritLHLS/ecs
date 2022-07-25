@@ -65,6 +65,7 @@ checkpython() {
     ! type -p python3 >/dev/null 2>&1 && yellow "\n Install python3\n" && ${PACKAGE_INSTALL[int]} python3
     ! type -p pip3 install requests >/dev/null 2>&1 && yellow "\n Install pip3\n" && ${PACKAGE_INSTALL[int]} python3-pip
     pip3 install requests
+    pip3 install magic_google
     sleep 0.5
 }
 
@@ -1663,7 +1664,10 @@ start_time=$(date +%s)
 get_system_info
 check_virt
 curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck.py -o qzcheck.py 
+curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
 curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
+sleep 0.5
+python3 googlesearchcheck.py
 clear
 print_intro
 print_system_info
@@ -1762,4 +1766,6 @@ rm -rf besttrace
 rm -rf LemonBench.Result.txt*
 rm -rf speedtest.log*
 rm -rf ecs.sh*
+rm -rf googlesearchcheck.py*
+rm -rf gdlog.txt*
 rm -rf $TEMP_FILE
