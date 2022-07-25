@@ -1,6 +1,7 @@
 import requests
 import subprocess
 import re
+import random
 
 
 def excuteCommand(com):
@@ -73,7 +74,7 @@ try:
             headers=head)
     except:
         for i in keys_list:
-            head["key"] = i
+            head["key"] = keys_list[random.randint(0,len(keys_list))]
             try:
                 context2 = requests.get(
                     f"https://api.abuseipdb.com/api/v2/check?ipAddress={ip}",
