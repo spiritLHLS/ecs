@@ -89,7 +89,7 @@ except Exception as e:
 try:
     with open("gdlog", "r") as fp:
         context3 = fp.read()
-    if "https://www.spiritysdx.top/" in context3:
+    if "https" in context3:
         print("Google搜索可行性：yes")
     else:
         print("Google搜索可行性：no")
