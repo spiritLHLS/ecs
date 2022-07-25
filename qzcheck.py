@@ -1,7 +1,6 @@
 import requests
 import subprocess
 import re
-import random
 
 
 def excuteCommand(com):
@@ -86,3 +85,13 @@ try:
     print("abuse得分：", str(context2.json()["data"]["abuseConfidenceScore"]))
 except Exception as e:
     print(e)
+
+try:
+    with open("gdlog.txt", "r", encoding="utf-8") as fp:
+        context3 = fp.read()
+    if "https://www.spiritysdx.top/" in context3:
+        print("Google搜索可行性：yes")
+    else:
+        print("Google搜索可行性：no")
+except:
+    print("Google搜索可行性：no")
