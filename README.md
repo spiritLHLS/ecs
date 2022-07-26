@@ -51,6 +51,7 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 - [x] 端口检测(检测是否被墙)--由fscarmen的PR以及本人的技术思路提供
 - [x] IP质量检测(检测IP白不白)--本人独创
 - [x] speedtest测速--由teddysun和superspeed的开源以及个人整理
+- [ ] 全国网络延迟测试 
 
 # 测评频道
 
