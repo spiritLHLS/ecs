@@ -1666,6 +1666,7 @@ fscarmen_route_script(){
 
 fscarmen_port_script(){
     echo -e "-----------------测端口开通--感谢fscarmen开源及PR----------------------"
+    IP_4=$(curl -s4m5 https:/ip.gs/json)
     sleep 0.5
     if [ -n "$IP_4" ]; then
     PORT4=(22 80 443 8080)
