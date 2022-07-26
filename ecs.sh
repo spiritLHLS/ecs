@@ -1856,6 +1856,10 @@ hardware_script(){
 
 port_script(){
     pre_check
+    SystemInfo_GetSystemBit
+    get_system_info
+    check_virt
+    checkssh
     start_time=$(date +%s)
     clear
     print_intro
