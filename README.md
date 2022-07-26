@@ -42,7 +42,7 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 - [x] CPU测试--感谢lemonbench开源
 - [x] 内存测试--感谢lemonbench开源
 - [x] 磁盘IO读写测试--感谢lemonbench开源
-- [ ] 硬盘IO读写测试--感谢yabs开源
+- [x] 硬盘IO读写测试--感谢yabs开源
 - [x] 御三家流媒体解锁--感谢sjlleo开源
 - [x] 常用流媒体解锁--感谢RegionRestrictionCheck开源
 - [x] Tiktok解锁--感谢lmc999的二进制文件
