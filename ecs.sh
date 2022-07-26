@@ -1906,7 +1906,7 @@ Start_script(){
     echo -e "${GREEN}7.${PLAIN} 解锁方面(御三家解锁+常用流媒体解锁+TikTok解锁)(平均运行1分钟出头)"
     echo -e "${GREEN}8.${PLAIN} 硬件方面(基础系统信息+CPU+内存+双重磁盘IO测试)(平均运行1分半钟)"
     echo -e "${GREEN}9.${PLAIN} 完整的IP质量检测(平均运行10~20秒)"
-    echo -e "${GREEN}10.${PLAIN} 常用端口开通情况(是否有阻断)(平均运行分钟左右)"
+    echo -e "${GREEN}10.${PLAIN} 常用端口开通情况(是否有阻断)(平均运行1分钟左右)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 退出"
     echo ""
