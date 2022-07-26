@@ -49,26 +49,29 @@ try:
         print(f"{j}: {temp3}")
 except:
     pass
-status = 0
-for i in range(1, 101):
-    try:
-        context1 = requests.get(
-            f"https://cf-threat.sukkaw.com/hello.json?threat={str(i)}", timeout=10).text
+try:
+    status = 0
+    for i in range(1, 101):
         try:
-            if "pong!" not in context1:
-                print(
-                    "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60"
-                )
-                print("Cloudflare威胁得分：", str(i))
-                status = 1
-                break
+            context1 = requests.get(
+                f"https://cf-threat.sukkaw.com/hello.json?threat={str(i)}", timeout=10).text
+            try:
+                if "pong!" not in context1:
+                    print(
+                        "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60"
+                    )
+                    print("Cloudflare威胁得分：", str(i))
+                    status = 1
+                    break
+            except:
+                pass
         except:
+            status = -1
             pass
-    except:
-        status = -1
-        pass
-if i == 100 and status == 0:
-    print("Cloudflare威胁得分(0为低风险): 0")
+    if i == 100 and status == 0:
+        print("Cloudflare威胁得分(0为低风险): 0")
+except:
+    pass
 try:
     try:
         context2 = requests.get(
@@ -80,7 +83,7 @@ try:
             try:
                 context2 = requests.get(
                     f"https://api.abuseipdb.com/api/v2/check?ipAddress={ip}",
-                    headers=head)
+                    headers=head, timeout=10)
                 break
             except:
                 pass
