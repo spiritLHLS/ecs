@@ -53,8 +53,7 @@ status = 0
 for i in range(1, 101):
     try:
         context1 = requests.get(
-            f"https://cf-threat.sukkaw.com/hello.json?threat={str(i)}",
-            timeout=1, timeout=10).text
+            f"https://cf-threat.sukkaw.com/hello.json?threat={str(i)}", timeout=10).text
         try:
             if "pong!" not in context1:
                 print(
