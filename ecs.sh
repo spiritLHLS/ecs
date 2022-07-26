@@ -1,9 +1,16 @@
 #!/usr/bin/env bash
 
-ver="2022.07.25"
-changeLog="融合怪七代目(集合百家之长)(专为测评频道小鸡而生)"
+ver="2022.07.26"
+changeLog="融合怪八代目(集合百家之长)(专为测评频道小鸡而生)"
 
+test_area=("广州电信" "广州联通" "广州移动")
+test_ip=("58.60.188.222" "210.21.196.6" "120.196.165.2")
+TEMP_FILE='ip.test'
 
+RED="\033[31m"
+GREEN="\033[32m"
+YELLOW="\033[33m"
+PLAIN="\033[0m"
 
 red(){
     echo -e "\033[31m\033[01m$1\033[0m"
@@ -59,8 +66,6 @@ checkupdate(){
 
 }
 
-
-
 checkpython() {
     ! type -p python3 >/dev/null 2>&1 && yellow "\n Install python3\n" && ${PACKAGE_INSTALL[int]} python3
     ! type -p pip3 install requests >/dev/null 2>&1 && yellow "\n Install pip3\n" && ${PACKAGE_INSTALL[int]} python3-pip
@@ -73,10 +78,8 @@ checkdnsutils() {
 	if  [ ! -e '/usr/bin/dnsutils' ]; then
 	        echo "正在安装 dnsutils"
 	            if [ "${release}" == "centos" ]; then
-# 	                    yum update > /dev/null 2>&1
 	                    yum -y install dnsutils > /dev/null 2>&1
 	                else
-# 	                    apt-get update > /dev/null 2>&1
 	                    apt-get -y install dnsutils > /dev/null 2>&1
 	                fi
 
@@ -87,10 +90,8 @@ checkcurl() {
 	if  [ ! -e '/usr/bin/curl' ]; then
 	        echo "正在安装 Curl"
 	            if [ "${release}" == "centos" ]; then
-# 	                yum update > /dev/null 2>&1
 	                yum -y install curl > /dev/null 2>&1
 	            else
-# 	                apt-get update > /dev/null 2>&1
 	                apt-get -y install curl > /dev/null 2>&1
 	            fi
 	fi
@@ -100,13 +101,69 @@ checkwget() {
 	if  [ ! -e '/usr/bin/wget' ]; then
 	        echo "正在安装 Wget"
 	            if [ "${release}" == "centos" ]; then
-# 	                yum update > /dev/null 2>&1
 	                yum -y install wget > /dev/null 2>&1
 	            else
-# 	                apt-get update > /dev/null 2>&1
 	                apt-get -y install wget > /dev/null 2>&1
 	            fi
 	fi
+}
+
+trap _exit INT QUIT TERM
+
+_red() { echo -e "\033[31m\033[01m$@\033[0m"; }
+
+_green() { echo -e "\033[32m\033[01m$@\033[0m"; }
+
+_yellow() { echo -e "\033[33m\033[01m$@\033[0m"; }
+
+_blue() { echo -e "\033[36m\033[01m$@\033[0m"; }
+
+_exists() {
+    local cmd="$1"
+    if eval type type > /dev/null 2>&1; then
+        eval type "$cmd" > /dev/null 2>&1
+    elif command > /dev/null 2>&1; then
+        command -v "$cmd" > /dev/null 2>&1
+    else
+        which "$cmd" > /dev/null 2>&1
+    fi
+    local rt=$?
+    return ${rt}
+}
+
+_exit() {
+    _red "\n检测到退出操作，脚本终止！\n"
+    # clean up
+    rm -fr speedtest.tgz speedtest-cli benchtest_*
+    exit 1
+}
+
+get_opsy() {
+    [ -f /etc/redhat-release ] && awk '{print $0}' /etc/redhat-release && return
+    [ -f /etc/os-release ] && awk -F'[= "]' '/PRETTY_NAME/{print $3,$4,$5}' /etc/os-release && return
+    [ -f /etc/lsb-release ] && awk -F'[="]+' '/DESCRIPTION/{print $2}' /etc/lsb-release && return
+}
+
+next() {
+    printf "%-70s\n" "-" | sed 's/\s/-/g'
+}
+
+checkssh() {
+	for i in "${CMD[@]}"; do
+		SYS="$i" && [[ -n $SYS ]] && break
+	done
+
+	for ((int=0; int<${#REGEX[@]}; int++)); do
+		[[ $(echo "$SYS" | tr '[:upper:]' '[:lower:]') =~ ${REGEX[int]} ]] && SYSTEM="${RELEASE[int]}" && [[ -n $SYSTEM ]] && break
+	done
+	echo "开启22端口中，以便于测试IP是否被阻断"
+	sshport=22
+	[[ ! -f /etc/ssh/sshd_config ]] && sudo ${PACKAGE_UPDATE[int]} && sudo ${PACKAGE_INSTALL[int]} openssh-server
+	[[ -z $(type -P curl) ]] && sudo ${PACKAGE_UPDATE[int]} && sudo ${PACKAGE_INSTALL[int]} curl
+	sudo sed -i "s/^#\?Port.*/Port $sshport/g" /etc/ssh/sshd_config;
+	sudo service ssh restart >/dev/null 2>&1 # 某些VPS系统的ssh服务名称为ssh，以防无法重启服务导致无法立刻使用密码登录
+	sudo service sshd restart >/dev/null 2>&1
+	echo "开启22端口完毕"
 }
 
 checkspeedtest() {
@@ -156,10 +213,6 @@ install_speedtest() {
         rm -f speedtest.tgz
     fi
 }
-
-test_area=("广州电信" "广州联通" "广州移动")
-test_ip=("58.60.188.222" "210.21.196.6" "120.196.165.2")
-TEMP_FILE='ip.test'
 
 SystemInfo_GetOSRelease() {
     if [ -f "/etc/centos-release" ]; then # CentOS
@@ -252,7 +305,6 @@ SystemInfo_GetOSRelease() {
 }
 
 function Global_UnlockTest() {
-#     echo ""
     echo "============[ Multination ]============"
     MediaUnlockTest_Dazn ${1}
     MediaUnlockTest_HotStar ${1}
@@ -345,7 +397,6 @@ Check_Sysbench_InstantBuild() {
     elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
-#         apt-get update
         apt -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip
         echo -e "${Msg_Info}Downloading Source code (Version 1.0.17)..."
         mkdir -p /tmp/_LBench/src/
@@ -373,30 +424,6 @@ Check_Sysbench_InstantBuild() {
         echo -e "${Msg_Error}Cannot compile on current enviorment！ (Only Support CentOS/Debian/Ubuntu/Fedora) "
     fi
 }
-
-Function_CheckTracemode() {
-    if [ "${Flag_TracerouteModeisSet}" = "1" ]; then
-        if [ "${GlobalVar_TracerouteMode}" = "icmp" ]; then
-            echo -e "${Msg_Info}Traceroute/BestTrace Tracemode is set to: ${Font_SkyBlue}ICMP Mode${Font_Suffix}"
-        elif [ "${GlobalVar_TracerouteMode}" = "tcp" ]; then
-            echo -e "${Msg_Info}Traceroute/BestTrace Tracemode is set to: ${Font_SkyBlue}TCP Mode${Font_Suffix}"
-        fi
-    else
-        GlobalVar_TracerouteMode="tcp"
-    fi
-}
-
-# =============== 测试启动与结束动作 ===============
-
-#Function_BenchFinish() {
-#    # 清理临时文件
-#    LBench_Result_BenchFinishTime="$(date +"%Y-%m-%d %H:%M:%S")"
-#    LBench_Result_BenchFinishTimestamp="$(date +%s)"
-#    LBench_Result_TimeElapsedSec="$(echo "$LBench_Result_BenchFinishTimestamp $LBench_Result_BenchStartTimestamp" | awk '{print $1-$2}')"
-#    echo -e " ${Msg_Info}${Font_Yellow}Bench Finish Time:${Font_Suffix} ${Font_SkyBlue}${LBench_Result_BenchFinishTime}${Font_Suffix}"
-#    echo -e " ${Msg_Info}${Font_Yellow}Time Elapsed:${Font_Suffix} ${Font_SkyBlue}${LBench_Result_TimeElapsedSec} seconds${Font_Suffix}"
-#}
-
 
 # =============== SysBench - CPU性能 部分 ===============
 Run_SysBench_CPU() {
@@ -669,90 +696,15 @@ SystemInfo_GetVirtType() {
     fi
 }
 
-# Function_GenerateResult_SysBench_MemoryTest() {
-#     sleep 0.1
-#     if [ -f "${WorkDir}/SysBench/Memory/result.txt" ]; then
-#         cp -f ${WorkDir}/SysBench/Memory/result.txt ${WorkDir}/result/05-memorytest.result
-#     fi
-# }
-
-# 生成结果文件
-# Function_GenerateResult() {
-#     # echo -e "${Msg_Info} Please wait, collecting results ..."
-#     mkdir -p /tmp/ >/dev/null 2>&1
-#     mkdir -p ${WorkDir}/result >/dev/null 2>&1
-#     Function_GenerateResult_SysBench_CPUTest >/dev/null
-#     Function_GenerateResult_DiskTest >/dev/null
-#     Function_GenerateResult_SysBench_MemoryTest >/dev/null
-#     # echo -e "${Msg_Info} Generating Report ..."
-#     local finalresultfile="${WorkDir}/result/finalresult.txt"
-#     sleep 0.2
-#     if [ -f "${WorkDir}/result/01-systeminfo.result" ]; then
-#         cat ${WorkDir}/result/01-systeminfo.result >>${WorkDir}/result/finalresult.txt
-#     fi
-#     sleep 0.2
-#     if [ -f "${WorkDir}/result/04-cputest.result" ]; then
-#         cat ${WorkDir}/result/04-cputest.result >>${WorkDir}/result/finalresult.txt
-#     fi
-#     sleep 0.2
-#     if [ -f "${WorkDir}/result/05-memorytest.result" ]; then
-#         cat ${WorkDir}/result/05-memorytest.result >>${WorkDir}/result/finalresult.txt
-#     fi
-#     sleep 0.2
-#     if [ -f "${WorkDir}/result/06-disktest.result" ]; then
-#         cat ${WorkDir}/result/06-disktest.result >>${WorkDir}/result/finalresult.txt
-#     fi
-#     sleep 0.2
-#     # echo -e "${Msg_Info} Saving local Report ..."
-#     cp ${WorkDir}/result/finalresult.txt $HOME/LemonBench.Result.txt
-#     sleep 0.1
-#     # echo -e "${Msg_Info} Generating Report URL ..."
-#     cat ${WorkDir}/result/finalresult.txt | PasteBin_Upload
-# }
-
-
-# Function_GenerateResult_SysBench_CPUTest() {
-#     sleep 0.1
-#     if [ -f "${WorkDir}/SysBench/CPU/result.txt" ]; then
-#         cp -f ${WorkDir}/SysBench/CPU/result.txt ${WorkDir}/result/04-cputest.result
-#     fi
-# }
-
-# Function_GenerateResult_DiskTest() {
-#     sleep 0.1
-#     if [ -f "${WorkDir}/DiskTest/result.txt" ]; then
-#         cp -f ${WorkDir}/DiskTest/result.txt ${WorkDir}/result/06-disktest.result
-#     fi
-# }
-
 Global_Exit_Action() {
     rm -rf ${WorkDir}/
 }
-
-# PasteBin_Upload() {
-#     local uploadresult="$(curl -fsL -X POST \
-#         --url https://paste.ubuntu.com \
-#         --output /dev/null \
-#         --write-out "%{url_effective}\n" \
-#         --data-urlencode "content@${PASTEBIN_CONTENT:-/dev/stdin}" \
-#         --data "poster=${PASTEBIN_POSTER:-LemonBench}" \
-#         --data "expiration=${PASTEBIN_EXPIRATION:-}" \
-#         --data "syntax=${PASTEBIN_SYNTAX:-text}")"
-#     if [ "$?" = "0" ]; then
-#         # echo -e "${Msg_Success} Report Generate Success！Please save the follwing link:"
-#         echo -e "${Msg_Info} 上述测试报告(需登陆查看): ${uploadresult}"
-#     else
-#         echo -e "${Msg_Warning} Report Generate Failure, But you can still read $HOME/LemonBench.Result.txt to get this result！"
-#     fi
-#     echo "----------------------------------------------------------------------"
-# }
 
 
 Entrance_SysBench_CPU_Fast() {
     Check_SysBench >/dev/null 2>&1
     SystemInfo_GetCPUInfo
     Function_SysBench_CPU_Fast
-#    Function_BenchFinish
 }
 
 speed_test(){
@@ -775,8 +727,6 @@ speed_test(){
 
 			temp=$(echo "${REDownload}" | awk -F ' ' '{print $1}')
 	        if [[ $(awk -v num1=${temp} -v num2=0 'BEGIN{print(num1>num2)?"1":"0"}') -eq 1 ]]; then
-	        	# printf "${RED}%-6s${YELLOW}%s%s${GREEN}%-24s${CYAN}%s%-10s${BLUE}%s%-10s${PURPLE}%-8s${PLAIN}\n" "${nodeID}"  "${nodeISP}" "|" "${strnodeLocation:0:24}" "↑ " "${reupload}" "↓ " "${REDownload}" "${relatency}" | tee -a $log
-               		#printf "\033[0;33m%-18s\033[0;32m%-18s\033[0;31m%-20s\033[0;36m%-12s\033[0m\n" "${strnodeLocation:0:20}" "${reupload}"Mbps "${REDownload}"Mbps "${relatency}"ms
 	       		echo -e "${strnodeLocation:0:20}\t ${reupload}Mbps\t ${REDownload}Mbps\t ${relatency}ms"
 			fi
 		else
@@ -1224,46 +1174,6 @@ function GameTest_Steam() {
     fi
 }
 
-trap _exit INT QUIT TERM
-
-_red() { echo -e "\033[31m\033[01m$@\033[0m"; }
-
-_green() { echo -e "\033[32m\033[01m$@\033[0m"; }
-
-_yellow() { echo -e "\033[33m\033[01m$@\033[0m"; }
-
-_blue() { echo -e "\033[36m\033[01m$@\033[0m"; }
-
-_exists() {
-    local cmd="$1"
-    if eval type type > /dev/null 2>&1; then
-        eval type "$cmd" > /dev/null 2>&1
-    elif command > /dev/null 2>&1; then
-        command -v "$cmd" > /dev/null 2>&1
-    else
-        which "$cmd" > /dev/null 2>&1
-    fi
-    local rt=$?
-    return ${rt}
-}
-
-_exit() {
-    _red "\n检测到退出操作，脚本终止！\n"
-    # clean up
-    rm -fr speedtest.tgz speedtest-cli benchtest_*
-    exit 1
-}
-
-get_opsy() {
-    [ -f /etc/redhat-release ] && awk '{print $0}' /etc/redhat-release && return
-    [ -f /etc/os-release ] && awk -F'[= "]' '/PRETTY_NAME/{print $3,$4,$5}' /etc/os-release && return
-    [ -f /etc/lsb-release ] && awk -F'[="]+' '/DESCRIPTION/{print $2}' /etc/lsb-release && return
-}
-
-next() {
-    printf "%-70s\n" "-" | sed 's/\s/-/g'
-}
-
 speed() {
     speed_test2 '' 'speedtest'
     speed_test '21541' '洛杉矶\t'
@@ -1279,6 +1189,14 @@ speed() {
     speed_test '15863' '移动广西南宁' '移动'
     speed_test '16398' '移动贵州贵阳' '移动'
 #     speed_test '27249' '移动江苏南京5G' '移动'
+#https://raw.githubusercontent.com/zq/superspeed/master/superspeed.sh
+}
+
+speed2() {
+    speed_test2 '' 'speedtest'
+    speed_test '3633' '电信上海' '电信'
+    speed_test '24447' '联通上海' '联通'
+    speed_test '15863' '移动广西南宁' '移动'
 #https://raw.githubusercontent.com/zq/superspeed/master/superspeed.sh
 }
 
@@ -1546,7 +1464,6 @@ print_intro() {
     echo "                   测评频道: https://t.me/vps_reviews                    "
     echo "版本：$ver"
     echo "更新日志：$changeLog"
-    echo "-----------------感谢teddysun和misakabench和yabs开源-------------------"
 }
 
 # Get System information
@@ -1593,19 +1510,19 @@ print_system_info() {
     if [ -n "$ccache" ]; then
         echo " CPU 缓存          : $(_blue "$ccache")"
     fi
-    DISTRO=$(grep 'PRETTY_NAME' /etc/os-release | cut -d '"' -f 2 )
-    CPU_AES=$(cat /proc/cpuinfo | grep aes)
-    [[ -z "$CPU_AES" ]] && CPU_AES="\xE2\x9D\x8C Disabled" || CPU_AES="\xE2\x9C\x94 Enabled"
-    CPU_VIRT=$(cat /proc/cpuinfo | grep 'vmx\|svm')
-    [[ -z "$CPU_VIRT" ]] && CPU_VIRT="\xE2\x9D\x8C Disabled" || CPU_VIRT="\xE2\x9C\x94 Enabled"
     echo " 硬盘空间          : $(_yellow "$disk_total_size GB") $(_blue "($disk_used_size GB 已用)")"
     echo " 内存              : $(_yellow "$tram MB") $(_blue "($uram MB 已用)")"
     echo " Swap              : $(_blue "$swap MB ($uswap MB 已用)")"
     echo " 系统在线时间      : $(_blue "$up")"
     echo " 负载              : $(_blue "$load")"
+    DISTRO=$(grep 'PRETTY_NAME' /etc/os-release | cut -d '"' -f 2 )
     echo " 系统              : $(_blue "$DISTRO")"  
     # $(_blue "$opsy")"
+    CPU_AES=$(cat /proc/cpuinfo | grep aes)
+    [[ -z "$CPU_AES" ]] && CPU_AES="\xE2\x9D\x8C Disabled" || CPU_AES="\xE2\x9C\x94 Enabled"
     echo " AES-NI指令集      : $(_blue "$CPU_AES")"  
+    CPU_VIRT=$(cat /proc/cpuinfo | grep 'vmx\|svm')
+    [[ -z "$CPU_VIRT" ]] && CPU_VIRT="\xE2\x9D\x8C Disabled" || CPU_VIRT="\xE2\x9C\x94 Enabled"
     echo " VM-x/AMD-V支持    : $(_blue "$CPU_VIRT")"  
     echo " 架构              : $(_blue "$arch ($lbit Bit)")"
     echo " 内核              : $(_blue "$kern")"
@@ -1623,157 +1540,391 @@ print_end_time() {
     else
         echo " 总共花费        : ${time} 秒"
     fi
-    date_time=$(date +%Y-%m-%d" "%H:%M:%S)
+    date_time=$(date)
+    # date_time=$(date +%Y-%m-%d" "%H:%M:%S)
     echo " 时间          : $date_time"
 }
 
 
-checkssh() {
-	for i in "${CMD[@]}"; do
-		SYS="$i" && [[ -n $SYS ]] && break
-	done
 
-	for ((int=0; int<${#REGEX[@]}; int++)); do
-		[[ $(echo "$SYS" | tr '[:upper:]' '[:lower:]') =~ ${REGEX[int]} ]] && SYSTEM="${RELEASE[int]}" && [[ -n $SYSTEM ]] && break
-	done
-	echo "开启22端口中，以便于测试IP是否被阻断"
-	sshport=22
-	[[ ! -f /etc/ssh/sshd_config ]] && sudo ${PACKAGE_UPDATE[int]} && sudo ${PACKAGE_INSTALL[int]} openssh-server
-	[[ -z $(type -P curl) ]] && sudo ${PACKAGE_UPDATE[int]} && sudo ${PACKAGE_INSTALL[int]} curl
-	sudo sed -i "s/^#\?Port.*/Port $sshport/g" /etc/ssh/sshd_config;
-	sudo service ssh restart >/dev/null 2>&1 # 某些VPS系统的ssh服务名称为ssh，以防无法重启服务导致无法立刻使用密码登录
-	sudo service sshd restart >/dev/null 2>&1
-	echo "开启22端口完毕"
+#######################################################################################
+
+
+python_script(){
+    checkpython
+    export PYTHONIOENCODING=utf-8
+    curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py -o qzcheck_ecs.py 
+    curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
+    curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
+    sleep 0.5
+    python3 googlesearchcheck.py
 }
 
 
-checkupdate
-checkroot
-checkwget
-checksystem
-checkpython
-checkcurl
-checkspeedtest
-checkdnsutils
-checkssh
-install_speedtest
-SystemInfo_GetSystemBit
-if [ "${release}" == "centos" ]; then
-#     yum update > /dev/null 2>&1
-    yum -y install python3.7 > /dev/null 2>&1
-else
-#     apt-get update > /dev/null 2>&1
-    apt-get -y install python3.7 > /dev/null 2>&1
-fi
-export PYTHONIOENCODING=utf-8
-! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
-! _exists "free" && _red "Error: free command not found.\n" && exit 1
-start_time=$(date +%s)
-get_system_info
-check_virt
-curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py -o qzcheck_ecs.py 
-curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
-curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
-sleep 0.5
-python3 googlesearchcheck.py
-clear
-print_intro
-print_system_info
-ipv4_info
-echo "-------------------CPU测试--感谢lemonbench开源------------------------"
-Entrance_SysBench_CPU_Fast
-echo "-------------------内存测试--感谢lemonbench开源-----------------------"
-Entrance_SysBench_Memory_Fast
-echo "----------------磁盘IO读写测试--感谢lemonbench开源--------------------"
-Entrance_DiskTest_Fast
-# Function_GenerateResult
-Global_Exit_Action >/dev/null 2>&1
-echo "--------------------流媒体解锁--感谢sjlleo开源-------------------------"
-yellow "以下测试的解锁地区是准确的，但是不是完整解锁的判断可能有误，这方面仅作参考使用"
-yellow "Youtube"
-./tubecheck | sed "/@sjlleo/d"
-sleep 0.5
-yellow "Netflix"
-./nf | sed "/@sjlleo/d;/^$/d"
-sleep 0.5
-yellow "DisneyPlus"
-./dp | sed "/@sjlleo/d"
-sleep 0.5
-yellow "解锁Youtube，Netflix，DisneyPlus的地区以上面为准，下面这三测的不准"
-echo -e "---------------流媒体解锁--感谢RegionRestrictionCheck开源-------------"
-yellow " 以下为IPV4网络测试"
-Global_UnlockTest 4
-yellow " 以下为IPV6网络测试"
-Global_UnlockTest 6
-echo -e "-------------------TikTok解锁--感谢lmc999提供检测----------------------"
-python3 tk.py 
-echo -e "------------------欺诈分数以及IP质量检测--本频道原创-------------------"
-yellow "得分仅作参考，不代表100%准确"
-python3 qzcheck_ecs.py 
-echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
-rm -f $TEMP_FILE2
-curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
-echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
-yellow "以下测试的带宽类型可能有误，商宽可能被判断为家宽，仅作参考使用"
-rm -f $TEMP_FILE
-IP_4=$(curl -s4m5 https:/ip.gs/json) &&
-WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
-ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
-PE_4=$(curl -sm5 ping.pe/$WAN_4) &&
-COOKIE_4=$(echo $PE_4 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
-TYPE_4=$(curl -sm5 --header "cookie: $COOKIE_4" ping.pe/$WAN_4 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g") &&
-_blue " IPv4 宽带类型: $TYPE_4\t ASN: $ASNORG_4" >> $TEMP_FILE
-IP_6=$(curl -s6m5 https:/ip.gs/json) &&
-WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
-ASNORG_6=$(expr "$IP_6" : '.*asn_org\":\"\([^"]*\).*') &&
-PE_6=$(curl -sm5 ping6.ping.pe/$WAN_6) &&
-COOKIE_6=$(echo $PE_6 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
-TYPE_6=$(curl -sm5 --header "cookie: $COOKIE_6" ping6.ping.pe/$WAN_6 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g") &&
-_blue " IPv6 宽带类型: $TYPE_6\t ASN: $ASNORG_6" >> $TEMP_FILE
-[[ ! -e return.sh ]] && curl -qO https://raw.githubusercontent.com/spiritLHLS/ecs/main/return.sh > /dev/null 2>&1
-chmod +x return.sh >/dev/null 2>&1
-_green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
-for ((a=0;a<${#test_area[@]};a++)); do
-  _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
-  ./return.sh ${test_ip[a]} >> $TEMP_FILE
-done
-cat $TEMP_FILE
-echo -e "-----------------测端口开通--感谢fscarmen开源及PR----------------------"
-sleep 0.5
-if [ -n "$IP_4" ]; then
-  PORT4=(22 80 443 8080)
-  for i in ${PORT4[@]}; do
-    bash <(curl -s4SL https://raw.githubusercontent.com/fscarmen/tools/main/check_port.sh) $WAN_4:$i > PORT4_$i
-    sed -i "1,5 d; s/状态/$i/g" PORT4_$i
-    cut -f 1 PORT4_$i > PORT4_${i}_1
-    cut -f 2,3  PORT4_$i > PORT4_${i}_2
-  done
-  paste PORT4_${PORT4[0]}_1 PORT4_${PORT4[1]}_1 PORT4_${PORT4[2]}_1 PORT4_${PORT4[3]} > PORT4_RESULT
-  _blue " IPv4 端口开通情况 "
-  cat PORT4_RESULT
-  rm -f PORT4_*
-else _red " VPS 没有 IPv4 "
-fi
-echo "--------网络测速--由teddysun和superspeed开源及spiritlhls整理----------"
-sleep 0.5
-echo -e "测速点位置\t 上传速度\t 下载速度\t 延迟"
-speed && rm -fr speedtest-cli
-next
-print_end_time
-next
-rm -rf return.sh
-rm -rf speedtest.tgz*
-rm -rf wget-log*
-rm -rf ipip.py*
-rm -rf tk.py*
-rm -rf qzcheck_ecs.py*
-rm -rf dp
-rm -rf nf
-rm -rf tubecheck
-rm -rf besttrace
-rm -rf LemonBench.Result.txt*
-rm -rf speedtest.log*
-rm -rf ecs.sh*
-rm -rf googlesearchcheck.py*
-rm -rf gdlog*
-rm -rf $TEMP_FILE
+pre_check(){
+    checkupdate
+    checkroot
+    checkwget
+    checksystem
+    checkcurl
+    ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
+    ! _exists "free" && _red "Error: free command not found.\n" && exit 1
+}
+
+sjlleo_script(){
+    echo "--------------------流媒体解锁--感谢sjlleo开源-------------------------"
+    yellow "以下测试的解锁地区是准确的，但是不是完整解锁的判断可能有误，这方面仅作参考使用"
+    yellow "Youtube"
+    ./tubecheck | sed "/@sjlleo/d"
+    sleep 0.5
+    yellow "Netflix"
+    ./nf | sed "/@sjlleo/d;/^$/d"
+    sleep 0.5
+    yellow "DisneyPlus"
+    ./dp | sed "/@sjlleo/d"
+    sleep 0.5
+    yellow "解锁Youtube，Netflix，DisneyPlus的地区以上面为准，下面这三测的不准"
+}
+
+basic_script(){
+    echo "-----------------感谢teddysun和misakabench和yabs开源-------------------"
+    print_system_info
+    ipv4_info
+    echo "-------------------CPU测试--感谢lemonbench开源------------------------"
+    Entrance_SysBench_CPU_Fast
+    echo "-------------------内存测试--感谢lemonbench开源-----------------------"
+    Entrance_SysBench_Memory_Fast
+}
+
+io1_script(){
+    echo "----------------磁盘IO读写测试--感谢lemonbench开源--------------------"
+    Entrance_DiskTest_Fast
+    # Function_GenerateResult
+    Global_Exit_Action >/dev/null 2>&1
+}
+
+io2_script(){
+    echo "-------------------磁盘IO读写测试--感谢yabs开源-----------------------"
+    bash ./yabsiotest.sh 
+    rm -rf yabsiotest.sh
+}
+
+RegionRestrictionCheck_script(){
+    echo -e "---------------流媒体解锁--感谢RegionRestrictionCheck开源-------------"
+    yellow " 以下为IPV4网络测试"
+    Global_UnlockTest 4
+    yellow " 以下为IPV6网络测试"
+    Global_UnlockTest 6
+}
+
+lmc999_script(){
+    echo -e "-------------------TikTok解锁--感谢lmc999提供检测----------------------"
+    python3 tk.py 
+}
+
+spiritlhl_script(){
+    echo -e "------------------欺诈分数以及IP质量检测--本频道原创-------------------"
+    yellow "得分仅作参考，不代表100%准确"
+    python3 qzcheck_ecs.py 
+}
+
+backtrace_script(){
+    echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
+    rm -f $TEMP_FILE2
+    curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
+}
+
+
+fscarmen_route_script(){
+    echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
+    yellow "以下测试的带宽类型可能有误，商宽可能被判断为家宽，仅作参考使用"
+    rm -f $TEMP_FILE
+    IP_4=$(curl -s4m5 https:/ip.gs/json) &&
+    WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
+    ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
+    PE_4=$(curl -sm5 ping.pe/$WAN_4) &&
+    COOKIE_4=$(echo $PE_4 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
+    TYPE_4=$(curl -sm5 --header "cookie: $COOKIE_4" ping.pe/$WAN_4 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g") &&
+    _blue " IPv4 宽带类型: $TYPE_4\t ASN: $ASNORG_4" >> $TEMP_FILE
+    IP_6=$(curl -s6m5 https:/ip.gs/json) &&
+    WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
+    ASNORG_6=$(expr "$IP_6" : '.*asn_org\":\"\([^"]*\).*') &&
+    PE_6=$(curl -sm5 ping6.ping.pe/$WAN_6) &&
+    COOKIE_6=$(echo $PE_6 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
+    TYPE_6=$(curl -sm5 --header "cookie: $COOKIE_6" ping6.ping.pe/$WAN_6 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g") &&
+    _blue " IPv6 宽带类型: $TYPE_6\t ASN: $ASNORG_6" >> $TEMP_FILE
+    [[ ! -e return.sh ]] && curl -qO https://raw.githubusercontent.com/spiritLHLS/ecs/main/return.sh > /dev/null 2>&1
+    chmod +x return.sh >/dev/null 2>&1
+    _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
+    for ((a=0;a<${#test_area[@]};a++)); do
+    _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
+    ./return.sh ${test_ip[a]} >> $TEMP_FILE
+    done
+    cat $TEMP_FILE
+}
+
+
+fscarmen_port_script(){
+    echo -e "-----------------测端口开通--感谢fscarmen开源及PR----------------------"
+    sleep 0.5
+    if [ -n "$IP_4" ]; then
+    PORT4=(22 80 443 8080)
+    for i in ${PORT4[@]}; do
+        bash <(curl -s4SL https://raw.githubusercontent.com/fscarmen/tools/main/check_port.sh) $WAN_4:$i > PORT4_$i
+        sed -i "1,5 d; s/状态/$i/g" PORT4_$i
+        cut -f 1 PORT4_$i > PORT4_${i}_1
+        cut -f 2,3  PORT4_$i > PORT4_${i}_2
+    done
+    paste PORT4_${PORT4[0]}_1 PORT4_${PORT4[1]}_1 PORT4_${PORT4[2]}_1 PORT4_${PORT4[3]} > PORT4_RESULT
+    _blue " IPv4 端口开通情况 "
+    cat PORT4_RESULT
+    rm -f PORT4_*
+    else _red " VPS 没有 IPv4 "
+    fi
+}
+
+superspeed_all_script(){
+    echo "--------网络测速--由teddysun和superspeed开源及spiritlhls整理----------"
+    sleep 0.5
+    echo -e "测速点位置\t 上传速度\t 下载速度\t 延迟"
+    speed && rm -fr speedtest-cli
+}
+
+superspeed_minal_script(){
+    echo "--------网络测速--由teddysun和superspeed开源及spiritlhls整理----------"
+    sleep 0.5
+    echo -e "测速点位置\t 上传速度\t 下载速度\t 延迟"
+    speed2 && rm -fr speedtest-cli
+}
+
+end_script(){
+    next
+    print_end_time
+    next
+}
+
+all_script(){
+    pre_check
+    SystemInfo_GetSystemBit
+    get_system_info
+    check_virt
+    checkssh
+    checkdnsutils
+    python_script
+    checkspeedtest
+    install_speedtest
+    start_time=$(date +%s)
+    clear
+    print_intro
+    basic_script
+    io1_script
+    sjlleo_script
+    RegionRestrictionCheck_script
+    lmc999_script
+    spiritlhl_script
+    backtrace_script
+    fscarmen_route_script
+    fscarmen_port_script
+    superspeed_all_script
+    end_script
+}
+
+minal_script(){
+    pre_check
+    SystemInfo_GetSystemBit
+    get_system_info
+    check_virt
+    checkspeedtest
+    install_speedtest
+    start_time=$(date +%s)
+    clear
+    print_intro
+    basic_script
+    io1_script
+    superspeed_minal_script
+    end_script
+}
+
+minal_plus(){
+    pre_check
+    SystemInfo_GetSystemBit
+    get_system_info
+    check_virt
+    python_script
+    checkdnsutils
+    checkspeedtest
+    install_speedtest
+    start_time=$(date +%s)
+    clear
+    print_intro
+    basic_script
+    io1_script
+    sjlleo_script
+    RegionRestrictionCheck_script
+    lmc999_script
+    backtrace_script
+    fscarmen_route_script
+    superspeed_minal_script
+    end_script
+}
+
+
+minal_plus_network(){
+    pre_check
+    SystemInfo_GetSystemBit
+    get_system_info
+    check_virt
+    checkspeedtest
+    install_speedtest
+    start_time=$(date +%s)
+    clear
+    print_intro
+    basic_script
+    io1_script
+    backtrace_script
+    fscarmen_route_script
+    superspeed_minal_script
+    end_script
+}
+
+minal_plus_media(){
+    pre_check
+    SystemInfo_GetSystemBit
+    get_system_info
+    check_virt
+    checkdnsutils
+    python_script
+    checkspeedtest
+    install_speedtest
+    start_time=$(date +%s)
+    clear
+    print_intro
+    basic_script
+    io1_script
+    sjlleo_script
+    RegionRestrictionCheck_script
+    lmc999_script
+    superspeed_minal_script
+    end_script
+}
+
+network_script(){
+    pre_check
+    python_script
+    checkspeedtest
+    install_speedtest
+    start_time=$(date +%s)
+    clear
+    print_intro
+    spiritlhl_script
+    backtrace_script
+    fscarmen_route_script
+    fscarmen_port_script
+    superspeed_all_script
+    end_script
+}
+
+media_script(){
+    pre_check
+    SystemInfo_GetSystemBit
+    checkdnsutils
+    python_script
+    start_time=$(date +%s)
+    clear
+    print_intro
+    sjlleo_script
+    RegionRestrictionCheck_script
+    lmc999_script
+    end_script
+}
+
+hardware_script(){
+    pre_check
+    SystemInfo_GetSystemBit
+    get_system_info
+    check_virt
+    curl -L https://gitlab.com/spiritysdx/za/-/raw/main/yabsiotest.sh -o yabsiotest.sh && chmod +x yabsiotest.sh
+    start_time=$(date +%s)
+    clear
+    print_intro
+    basic_script
+    io1_script
+    io2_script
+    end_script
+}
+
+port_script(){
+    pre_check
+    start_time=$(date +%s)
+    clear
+    print_intro
+    fscarmen_port_script
+    end_script
+}
+
+rm_script(){
+    rm -rf return.sh
+    rm -rf speedtest.tgz*
+    rm -rf wget-log*
+    rm -rf ipip.py*
+    rm -rf tk.py*
+    rm -rf qzcheck_ecs.py*
+    rm -rf dp
+    rm -rf nf
+    rm -rf tubecheck
+    rm -rf besttrace
+    rm -rf LemonBench.Result.txt*
+    rm -rf speedtest.log*
+    rm -rf ecs.sh*
+    rm -rf googlesearchcheck.py*
+    rm -rf gdlog*
+    rm -rf $TEMP_FILE
+}
+
+
+Start_script(){
+    clear
+    echo "#############################################################"
+    echo -e "#                     ${YELLOW}融合怪测评脚本${PLAIN}                        #"
+    echo "# 版本：$ver                                          #"
+    echo "# 更新日志：$changeLog#"
+    echo -e "# ${GREEN}作者${PLAIN}: spiritlhl                                           #"
+    echo -e "# ${GREEN}测评站点${PLAIN}: https://vps.spiritysdx.top                      #"
+    echo -e "# ${GREEN}TG频道${PLAIN}: https://t.me/vps_reviews                          #"
+    echo -e "# ${GREEN}GitHub${PLAIN}: https://github.com/spiritLHLS                     #"
+    echo -e "# ${GREEN}GitLab${PLAIN}: https://gitlab.com/spiritysdx                     #"
+    echo "#############################################################"
+    echo ""
+    green "请选择你接下来测评的组合或单项"
+    echo -e "${GREEN}1.${PLAIN} 完全体(所有项目都测试，平均运行8分钟以上)"
+    echo -e "${GREEN}2.${PLAIN} 极简版(基础系统信息+CPU+内存+磁盘IO+测速节点4个)"
+    echo -e "${GREEN}3.${PLAIN} 精简版(基础系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体解锁+TikTok解锁+回程+路由+测速节点4个)"
+    echo -e "${GREEN}4.${PLAIN} 精简网络版(基础系统信息+CPU+内存+磁盘IO+回程+路由+测速节点4个)"
+    echo -e "${GREEN}5.${PLAIN} 精简解锁版(基础系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体解锁+TikTok解锁+测速节点4个)"
+    echo -e "${GREEN}6.${PLAIN} 网络方面(简化的IP质量检测+三网回程+三网路由+测速节点11个)"
+    echo -e "${GREEN}7.${PLAIN} 解锁方面(御三家解锁+常用流媒体解锁+TikTok解锁)"
+    echo -e "${GREEN}8.${PLAIN} 硬件方面(基础系统信息+CPU+内存+双重磁盘IO测试)"
+    echo -e "${GREEN}9.${PLAIN} 完整的IP质量检测"
+    echo -e "${GREEN}10.${PLAIN} 常用端口开通情况(是否有阻断)"
+    echo " -------------"
+    echo -e "${GREEN}0.${PLAIN} 退出"
+    echo ""
+    read -rp "请输入选项:" StartInput
+	case $StartInput in
+        1) all_script ;;
+        2) minal_script ;;
+        3) minal_plus ;;
+        4) minal_plus_network ;;
+        5) minal_plus_media ;;
+        6) network_script;;
+        7) media_script;;
+        8) hardware_script;;
+        9) bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh);;
+        10) port_script ;;
+        0) exit 1 ;;
+    esac
+}
+
+
+Start_script
+rm_script
