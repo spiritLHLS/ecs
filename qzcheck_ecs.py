@@ -60,7 +60,7 @@ try:
             try:
                 context2 = requests.get(
                     f"https://api.abuseipdb.com/api/v2/check?ipAddress={ip}",
-                    headers=head)
+                    headers=head, timeout=6)
                 break
             except:
                 pass
