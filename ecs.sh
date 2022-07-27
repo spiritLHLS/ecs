@@ -1709,7 +1709,7 @@ all_script(){
     SystemInfo_GetSystemBit
     get_system_info
     check_virt
-    checkssh
+    # checkssh
     checkdnsutils
     python_script
     checkspeedtest
@@ -1859,7 +1859,7 @@ port_script(){
     SystemInfo_GetSystemBit
     get_system_info
     check_virt
-    checkssh
+    # checkssh
     start_time=$(date +%s)
     clear
     print_intro
