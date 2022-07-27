@@ -50,7 +50,7 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 - [x] 三网回程--感谢zhanghanyun/backtrace开源
 - [x] 回程路由以及带宽类型检测(商宽/家宽/数据中心)--由fscarmen的PR以及本人的技术思路提供
 - [x] 端口检测(检测是否被墙)--由fscarmen的PR以及本人的技术思路提供
-- [x] IP质量检测(检测IP白不白)--本人独创
+- [x] IP质量检测(检测IP白不白)--本人独创，感谢互联网提供的查询资源
 - [x] speedtest测速--由teddysun和superspeed的开源以及个人整理
 - [ ] 全国网络延迟测试 
 
