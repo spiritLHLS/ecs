@@ -70,9 +70,15 @@ checkpython() {
     ! type -p python3 >/dev/null 2>&1 && yellow "\n Install python3\n" && ${PACKAGE_INSTALL[int]} python3
     ! type -p pip3 install requests >/dev/null 2>&1 && yellow "\n Install pip3\n" && ${PACKAGE_INSTALL[int]} python3-pip
     pip3 install requests
-    pip3 install magic_google
     sleep 0.5
 }
+
+
+checkmagic(){
+    pip3 install magic_google
+    sleep 0.4
+}
+
 
 checkdnsutils() {
 	if  [ ! -e '/usr/bin/dnsutils' ]; then
@@ -1550,12 +1556,30 @@ print_end_time() {
 #######################################################################################
 
 
-python_script(){
+python_all_script(){
     checkpython
+    checkmagic
     export PYTHONIOENCODING=utf-8
     curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py -o qzcheck_ecs.py 
     curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
     curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
+    sleep 0.5
+    python3 googlesearchcheck.py
+}
+
+python_tk_script(){
+    checkpython
+    export PYTHONIOENCODING=utf-8
+    curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
+    sleep 0.5
+}
+
+python_gd_script(){
+    checkpython
+    checkmagic
+    export PYTHONIOENCODING=utf-8
+    curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py -o qzcheck_ecs.py 
+    curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
     sleep 0.5
     python3 googlesearchcheck.py
 }
@@ -1711,7 +1735,7 @@ all_script(){
     check_virt
     # checkssh
     checkdnsutils
-    python_script
+    python_all_script
     checkspeedtest
     install_speedtest
     start_time=$(date +%s)
@@ -1751,7 +1775,7 @@ minal_plus(){
     SystemInfo_GetSystemBit
     get_system_info
     check_virt
-    python_script
+    python_tk_script
     checkdnsutils
     checkspeedtest
     install_speedtest
@@ -1794,7 +1818,7 @@ minal_plus_media(){
     get_system_info
     check_virt
     checkdnsutils
-    python_script
+    python_tk_script
     checkspeedtest
     install_speedtest
     start_time=$(date +%s)
@@ -1811,7 +1835,7 @@ minal_plus_media(){
 
 network_script(){
     pre_check
-    python_script
+    python_gd_script
     checkspeedtest
     install_speedtest
     start_time=$(date +%s)
@@ -1829,7 +1853,7 @@ media_script(){
     pre_check
     SystemInfo_GetSystemBit
     checkdnsutils
-    python_script
+    python_tk_script
     start_time=$(date +%s)
     clear
     print_intro
