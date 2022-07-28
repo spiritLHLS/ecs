@@ -574,7 +574,7 @@ SystemInfo_GetSystemBit() {
         LBench_Result_SystemBit_Full="amd64"
 	curl -L https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 -o dp && chmod +x dp
 	sleep 0.5
-        curl -L https://github.com/sjlleo/netflix-verify/releases/download/v3.0/nf_linux_amd64 -o nf && chmod +x nf
+        curl -L https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
 	sleep 0.5
         curl -L https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
 	sleep 0.5
@@ -584,7 +584,7 @@ SystemInfo_GetSystemBit() {
         LBench_Result_SystemBit_Full="i386"
         curl -L https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_386 -o dp && chmod +x dp
 	sleep 0.5
-        curl -L https://github.com/sjlleo/netflix-verify/releases/download/v3.0/nf_linux_amd64 -o nf && chmod +x nf
+        curl -L https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
         sleep 0.5
 	curl -L https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_386 -o tubecheck && chmod +x tubecheck
 	sleep 0.5
@@ -603,7 +603,7 @@ SystemInfo_GetSystemBit() {
         LBench_Result_SystemBit_Full="unknown"
         curl -L https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 -o dp && chmod +x dp
 	sleep 0.5
-        curl -L https://github.com/sjlleo/netflix-verify/releases/download/v3.0/nf_linux_amd64 -o nf && chmod +x nf
+        curl -L https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
 	sleep 0.5
         curl -L https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
 	sleep 0.5
