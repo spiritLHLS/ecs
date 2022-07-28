@@ -38,7 +38,7 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 
 # 功能
 
-- [x] 自由组合测试方面和单项测试
+- [x] 自由组合测试方面和单项测试--原创
 - [x] 基础系统信息--感谢teddysun和misakabench和yabs开源，本人修改整理
 - [x] CPU测试--感谢lemonbench开源
 - [x] 内存测试--感谢lemonbench开源
