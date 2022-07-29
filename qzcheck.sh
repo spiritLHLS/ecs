@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-ver="2022.07.24"
-changeLog="IP质量测试(欺诈得分)，由频道 https://t.me/vps_reviews 整理修改"
+ver="2022.07.29"
+changeLog="IP质量测试(欺诈得分)，由频道 https://t.me/vps_reviews 原创"
 
 red(){
     echo -e "\033[31m\033[01m$1\033[0m"
