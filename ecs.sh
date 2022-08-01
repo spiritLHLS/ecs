@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.07.26"
+ver="2022.08.01"
 changeLog="融合怪八代目(集合百家之长)(专为测评频道小鸡而生)"
 
 test_area=("广州电信" "广州联通" "广州移动")
@@ -801,31 +801,6 @@ function MediaUnlockTest_Netflix() {
     fi
 }
 
-function MediaUnlockTest_HotStar() {
-    echo -n -e " HotStar:\t\t\t\t->\c"
-    local result=$(curl $useNIC $xForward --user-agent "${UA_Browser}" -${1} ${ssll} -fsL --write-out %{http_code} --output /dev/null --max-time 10 "https://api.hotstar.com/o/v1/page/1557?offset=0&size=20&tao=0&tas=20")
-    if [ "$result" = "000" ]; then
-        echo -n -e "\r HotStar:\t\t\t\t${Font_Red}Failed (Network Connection)${Font_Suffix}\n"
-        return
-    elif [ "$result" = "401" ]; then
-        local region=$(curl $useNIC $xForward --user-agent "${UA_Browser}" -${1} ${ssll} -sI "https://www.hotstar.com" | grep 'geo=' | sed 's/.*geo=//' | cut -f1 -d",")
-        local site_region=$(curl $useNIC $xForward -${1} ${ssll} -s -o /dev/null -L --max-time 10 -w '%{url_effective}\n' "https://www.hotstar.com" | sed 's@.*com/@@' | tr [:lower:] [:upper:])
-        if [ -n "$region" ] && [ "$region" = "$site_region" ]; then
-            echo -n -e "\r HotStar:\t\t\t\t${Font_Green}Yes (Region: $region)${Font_Suffix}\n"
-            return
-        else
-            echo -n -e "\r HotStar:\t\t\t\t${Font_Red}No${Font_Suffix}\n"
-            return
-        fi
-    elif [ "$result" = "475" ]; then
-        echo -n -e "\r HotStar:\t\t\t\t${Font_Red}No${Font_Suffix}\n"
-        return
-    else
-        echo -n -e "\r HotStar:\t\t\t\t${Font_Red}Failed${Font_Suffix}\n"
-    fi
-
-}
-
 function MediaUnlockTest_DisneyPlus() {
     echo -n -e " Disney+:\t\t\t\t->\c"
     local PreAssertion=$(curl $useNIC $xForward -${1} --user-agent "${UA_Browser}" -s --max-time 10 -X POST "https://global.edge.bamgrid.com/devices" -H "authorization: Bearer ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84" -H "content-type: application/json; charset=UTF-8" -d '{"deviceFamily":"browser","applicationRuntime":"chrome","deviceProfile":"windows","attributes":{}}' 2>&1)
@@ -876,6 +851,31 @@ function MediaUnlockTest_DisneyPlus() {
     else
         echo -n -e "\r Disney+:\t\t\t\t${Font_Red}Failed${Font_Suffix}\n"
         return
+    fi
+
+}
+
+function MediaUnlockTest_HotStar() {
+    echo -n -e " HotStar:\t\t\t\t->\c"
+    local result=$(curl $useNIC $xForward --user-agent "${UA_Browser}" -${1} ${ssll} -fsL --write-out %{http_code} --output /dev/null --max-time 10 "https://api.hotstar.com/o/v1/page/1557?offset=0&size=20&tao=0&tas=20")
+    if [ "$result" = "000" ]; then
+        echo -n -e "\r HotStar:\t\t\t\t${Font_Red}Failed (Network Connection)${Font_Suffix}\n"
+        return
+    elif [ "$result" = "401" ]; then
+        local region=$(curl $useNIC $xForward --user-agent "${UA_Browser}" -${1} ${ssll} -sI "https://www.hotstar.com" | grep 'geo=' | sed 's/.*geo=//' | cut -f1 -d",")
+        local site_region=$(curl $useNIC $xForward -${1} ${ssll} -s -o /dev/null -L --max-time 10 -w '%{url_effective}\n' "https://www.hotstar.com" | sed 's@.*com/@@' | tr [:lower:] [:upper:])
+        if [ -n "$region" ] && [ "$region" = "$site_region" ]; then
+            echo -n -e "\r HotStar:\t\t\t\t${Font_Green}Yes (Region: $region)${Font_Suffix}\n"
+            return
+        else
+            echo -n -e "\r HotStar:\t\t\t\t${Font_Red}No${Font_Suffix}\n"
+            return
+        fi
+    elif [ "$result" = "475" ]; then
+        echo -n -e "\r HotStar:\t\t\t\t${Font_Red}No${Font_Suffix}\n"
+        return
+    else
+        echo -n -e "\r HotStar:\t\t\t\t${Font_Red}Failed${Font_Suffix}\n"
     fi
 
 }
