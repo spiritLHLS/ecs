@@ -96,6 +96,7 @@ checkdnsutils() {
 	        echo "正在安装 dnsutils"
 	            if [ "${release}" == "centos" ]; then
 	                    yum -y install dnsutils > /dev/null 2>&1
+                        yum -y install bind-utils > /dev/null 2>&1
 	                else
 	                    apt-get -y install dnsutils > /dev/null 2>&1
 	                fi
