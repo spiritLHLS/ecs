@@ -69,11 +69,8 @@ checksystem() {
 
 checkupdate(){
 	    echo "正在更新包管理源"
-	    if [ "${release}" == "centos" ]; then
-		    yum update > /dev/null 2>&1
-		else
-		    apt-get update > /dev/null 2>&1
-		fi
+		${PACKAGE_UPDATE[int]} > /dev/null 2>&1
+        ${PACKAGE_INSTALL[int]} dmidecode > /dev/null 2>&1
 
 }
 
@@ -98,7 +95,7 @@ checkdnsutils() {
 	                    yum -y install dnsutils > /dev/null 2>&1
                         yum -y install bind-utils > /dev/null 2>&1
 	                else
-	                    apt-get -y install dnsutils > /dev/null 2>&1
+	                    ${PACKAGE_INSTALL[int]} dnsutils > /dev/null 2>&1
 	                fi
 
 	fi
@@ -107,22 +104,14 @@ checkdnsutils() {
 checkcurl() {
 	if  [ ! -e '/usr/bin/curl' ]; then
 	        echo "正在安装 Curl"
-	            if [ "${release}" == "centos" ]; then
-	                yum -y install curl > /dev/null 2>&1
-	            else
-	                apt-get -y install curl > /dev/null 2>&1
-	            fi
+	        ${PACKAGE_INSTALL[int]} curl > /dev/null 2>&1
 	fi
 }
 
 checkwget() {
 	if  [ ! -e '/usr/bin/wget' ]; then
 	        echo "正在安装 Wget"
-	            if [ "${release}" == "centos" ]; then
-	                yum -y install wget > /dev/null 2>&1
-	            else
-	                apt-get -y install wget > /dev/null 2>&1
-	            fi
+	        ${PACKAGE_INSTALL[int]} wget > /dev/null 2>&1
 	fi
 }
 
