@@ -392,12 +392,12 @@ Check_Sysbench_InstantBuild() {
         yum install -y epel-release
         yum install -y wget curl make gcc gcc-c++ make automake libtool pkgconfig libaio-devel
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
-        echo -e "${Msg_Info}Downloading Source code (Version 1.0.17)..."
+        echo -e "${Msg_Info}Downloading Source code (Version 1.0.20)..."
         mkdir -p /tmp/_LBench/src/
-        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://github.com/akopytov/sysbench/archive/1.0.17.zip
+        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://cdn.jsdelivr.net/gh/akopytov/sysbench@archive/refs/tags/1.0.20.tar.gz
         echo -e "${Msg_Info}Compiling Sysbench Module ..."
         cd /tmp/_LBench/src/
-        unzip sysbench.zip && cd sysbench-1.0.17
+        unzip sysbench.zip && cd sysbench-1.0.20
         ./autogen.sh && ./configure --without-mysql && make -j8 && make install
         echo -e "${Msg_Info}Cleaning up ..."
         cd /tmp && rm -rf /tmp/_LBench/src/sysbench*  >/dev/null 2>&1
@@ -405,12 +405,12 @@ Check_Sysbench_InstantBuild() {
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
         apt -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip
-        echo -e "${Msg_Info}Downloading Source code (Version 1.0.17)..."
+        echo -e "${Msg_Info}Downloading Source code (Version 1.0.20)..."
         mkdir -p /tmp/_LBench/src/
-        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://github.com/akopytov/sysbench/archive/1.0.17.zip
+        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://cdn.jsdelivr.net/gh/akopytov/sysbench@archive/refs/tags/1.0.20.tar.gz
         echo -e "${Msg_Info}Compiling Sysbench Module ..."
         cd /tmp/_LBench/src/
-        unzip sysbench.zip && cd sysbench-1.0.17
+        unzip sysbench.zip && cd sysbench-1.0.20
         ./autogen.sh && ./configure --without-mysql && make -j8 && make install
         echo -e "${Msg_Info}Cleaning up ..."
         cd /tmp && rm -rf /tmp/_LBench/src/sysbench*  >/dev/null 2>&1
@@ -418,12 +418,12 @@ Check_Sysbench_InstantBuild() {
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
         dnf install -y wget curl gcc gcc-c++ make automake libtool pkgconfig libaio-devel
-        echo -e "${Msg_Info}Downloading Source code (Version 1.0.17)..."
+        echo -e "${Msg_Info}Downloading Source code (Version 1.0.20)..."
         mkdir -p /tmp/_LBench/src/
-        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://github.com/akopytov/sysbench/archive/1.0.17.zip
+        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://cdn.jsdelivr.net/gh/akopytov/sysbench@archive/refs/tags/1.0.20.tar.gz
         echo -e "${Msg_Info}Compiling Sysbench Module ..."
         cd /tmp/_LBench/src/
-        unzip sysbench.zip && cd sysbench-1.0.17
+        unzip sysbench.zip && cd sysbench-1.0.20
         ./autogen.sh && ./configure --without-mysql && make -j8 && make install
         echo -e "${Msg_Info}Cleaning up ..."
         cd /tmp && rm -rf /tmp/_LBench/src/sysbench*  >/dev/null 2>&1
@@ -579,40 +579,40 @@ SystemInfo_GetSystemBit() {
         # X86平台 64位
         LBench_Result_SystemBit_Short="64"
         LBench_Result_SystemBit_Full="amd64"
-	curl -L https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 -o dp && chmod +x dp
-	sleep 0.5
-        curl -L https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
-	sleep 0.5
-        curl -L https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
+	    curl -L https://cdn.jsdelivr.net/gh/sjlleo/VerifyDisneyPlus@releases/download/1.01/dp_1.01_linux_amd64 -o dp && chmod +x dp
+	    sleep 0.5
+        curl -L https://cdn.jsdelivr.net/gh/sjlleo/netflix-verify@releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
+	    sleep 0.5
+        curl -L https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck@releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
 	sleep 0.5
     elif [ "${sysarch}" = "i386" ] || [ "${sysarch}" = "i686" ]; then
         # X86平台 32位
         LBench_Result_SystemBit_Short="32"
         LBench_Result_SystemBit_Full="i386"
-        curl -L https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_386 -o dp && chmod +x dp
-	sleep 0.5
-        curl -L https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
+        curl -L https://cdn.jsdelivr.net/gh/sjlleo/VerifyDisneyPlus@releases/download/1.01/dp_1.01_linux_386 -o dp && chmod +x dp
+	    sleep 0.5
+        curl -L https://cdn.jsdelivr.net/gh/sjlleo/netflix-verify@releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
         sleep 0.5
-	curl -L https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_386 -o tubecheck && chmod +x tubecheck
-	sleep 0.5
+	    curl -L https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck@releases/download/1.0Beta/tubecheck_1.0beta_linux_386 -o tubecheck && chmod +x tubecheck
+	    sleep 0.5
     elif [ "${sysarch}" = "armv7l" ] || [ "${sysarch}" = "armv8" ] || [ "${sysarch}" = "armv8l" ] || [ "${sysarch}" = "aarch64" ]; then
         # ARM平台 暂且将32位/64位统一对待
         LBench_Result_SystemBit_Short="arm"
         LBench_Result_SystemBit_Full="arm"
-        curl -L https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_arm -o dp && chmod +x dp
+        curl -L https://cdn.jsdelivr.net/gh/sjlleo/VerifyDisneyPlus@releases/download/1.01/dp_1.01_linux_arm -o dp && chmod +x dp
 	sleep 0.5
-        curl -L https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_arm64 -o nf && chmod +x nf
+        curl -L https://cdn.jsdelivr.net/gh/sjlleo/netflix-verify@releases/download/v3.1.0/nf_linux_arm64 -o nf && chmod +x nf
 	sleep 0.5
-        curl -L https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_arm -o tubecheck && chmod +x tubecheck
+        curl -L https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck@releases/download/1.0Beta/tubecheck_1.0beta_linux_arm -o tubecheck && chmod +x tubecheck
 	sleep 0.5
     else
         LBench_Result_SystemBit_Short="unknown"
         LBench_Result_SystemBit_Full="unknown"
-        curl -L https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 -o dp && chmod +x dp
+        curl -L https://cdn.jsdelivr.net/gh/sjlleo/VerifyDisneyPlus@releases/download/1.01/dp_1.01_linux_amd64 -o dp && chmod +x dp
 	sleep 0.5
-        curl -L https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
+        curl -L https://cdn.jsdelivr.net/gh/sjlleo/netflix-verify@releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
 	sleep 0.5
-        curl -L https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
+        curl -L https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck@releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
 	sleep 0.5
     fi
 }
