@@ -43,6 +43,84 @@ for ((int = 0; int < ${#REGEX[@]}; int++)); do
     fi
 done
 
+# Trap终止信号捕获
+trap "Global_TrapSigExit_Sig1" 1
+trap "Global_TrapSigExit_Sig2" 2
+trap "Global_TrapSigExit_Sig3" 3
+trap "Global_TrapSigExit_Sig15" 15
+
+# Trap终止信号1 - 处理
+Global_TrapSigExit_Sig1() {
+    echo -e "\n\n${Msg_Error}Caught Signal SIGHUP, Exiting ...\n"
+    Global_TrapSigExit_Action
+    exit 1
+}
+
+# Trap终止信号2 - 处理 (Ctrl+C)
+Global_TrapSigExit_Sig2() {
+    echo -e "\n\n${Msg_Error}Caught Signal SIGINT (or Ctrl+C), Exiting ...\n"
+    Global_TrapSigExit_Action
+    exit 1
+}
+
+# Trap终止信号3 - 处理
+Global_TrapSigExit_Sig3() {
+    echo -e "\n\n${Msg_Error}Caught Signal SIGQUIT, Exiting ...\n"
+    Global_TrapSigExit_Action
+    exit 1
+}
+
+# Trap终止信号15 - 处理 (进程被杀)
+Global_TrapSigExit_Sig15() {
+    echo -e "\n\n${Msg_Error}Caught Signal SIGTERM, Exiting ...\n"
+    Global_TrapSigExit_Action
+    exit 1
+}
+
+# 新版JSON解析
+PharseJSON() {
+    # 使用方法: PharseJSON "要解析的原JSON文本" "要解析的键值"
+    # Example: PharseJSON ""Value":"123456"" "Value" [返回结果: 123456]
+    echo -n $1 | jq -r .$2
+}
+
+# 程序启动动作
+Global_StartupInit_Action() {
+    Global_Startup_Header
+    Function_CheckTracemode
+    # 清理残留, 为新一次的运行做好准备
+    echo -e "${Msg_Info}Initializing Running Enviorment, Please wait ..."
+    rm -rf ${WorkDir}
+    rm -rf /.tmp_LBench/
+    mkdir ${WorkDir}/
+    echo -e "${Msg_Info}Checking Dependency ..."
+    Check_Virtwhat
+    Check_JSONQuery
+    Check_Speedtest
+    Check_BestTrace
+    Check_Spoofer
+    Check_SysBench
+    echo -e "${Msg_Info}Starting Test ...\n\n"
+    clear
+}
+
+# 捕获异常信号后的动作
+Global_TrapSigExit_Action() {
+    rm -rf ${WorkDir}
+    rm -rf /.tmp_LBench/
+    rm_script
+}
+
+Global_Exit_Action() {
+    rm -rf ${WorkDir}/
+    rm_script
+}
+
+Function_BenchFinish() {
+    # 清理临时文件
+    sleep 1
+}
+
 
 checkroot(){
 	[[ $EUID -ne 0 ]] && echo -e "${RED}请使用 root 用户运行本脚本！${PLAIN}" && exit 1
@@ -482,6 +560,7 @@ SystemInfo_GetHostname() {
 }
 
 
+
 SystemInfo_GetCPUInfo() {
     mkdir -p ${WorkDir}/data >/dev/null 2>&1
     cat /proc/cpuinfo >${WorkDir}/data/cpuinfo
@@ -507,7 +586,7 @@ SystemInfo_GetCPUInfo() {
     LBench_Result_CPUProcessorNumber="$($ReadCPUInfo | awk -F ': ' '/processor/{print $2}' | wc -l)"
     LBench_Result_CPUSiblingsNumber="$($ReadCPUInfo | awk -F ': ' '/siblings/{print $2}' | sort -u)"
     LBench_Result_CPUTotalCoreNumber="$($ReadCPUInfo | awk -F ': ' '/physical id/&&/0/{print $2}' | wc -l)"
-
+    
     # 虚拟化能力检测
     SystemInfo_GetVirtType
     if [ "${Var_VirtType}" = "dedicated" ] || [ "${Var_VirtType}" = "wsl" ]; then
@@ -529,7 +608,7 @@ SystemInfo_GetCPUInfo() {
             LBench_Result_CPUVirtualizationType="${VirtualizationType}"
         else
             LBench_Result_CPUVirtualization="0"
-        fi
+        fi        
     else
         LBench_Result_CPUIsPhysical="0"
     fi
@@ -618,6 +697,132 @@ SystemInfo_GetSystemBit() {
 }
 
 
+# SystemInfo_GetMemInfo() {
+#     mkdir -p ${WorkDir}/data >/dev/null 2>&1
+#     cat /proc/meminfo >${WorkDir}/data/meminfo
+#     local ReadMemInfo="cat ${WorkDir}/data/meminfo"
+#     # 获取总内存
+#     LBench_Result_MemoryTotal_KB="$($ReadMemInfo | awk '/MemTotal/{print $2}')"
+#     LBench_Result_MemoryTotal_MB="$(echo $LBench_Result_MemoryTotal_KB | awk '{printf "%.2f\n",$1/1024}')"
+#     LBench_Result_MemoryTotal_GB="$(echo $LBench_Result_MemoryTotal_KB | awk '{printf "%.2f\n",$1/1048576}')"
+#     # 获取可用内存
+#     local MemFree="$($ReadMemInfo | awk '/MemFree/{print $2}')"
+#     local Buffers="$($ReadMemInfo | awk '/Buffers/{print $2}')"
+#     local Cached="$($ReadMemInfo | awk '/Cached/{print $2}')"
+#     LBench_Result_MemoryFree_KB="$(echo $MemFree $Buffers $Cached | awk '{printf $1+$2+$3}')"
+#     LBench_Result_MemoryFree_MB="$(echo $LBench_Result_MemoryFree_KB | awk '{printf "%.2f\n",$1/1024}')"
+#     LBench_Result_MemoryFree_GB="$(echo $LBench_Result_MemoryFree_KB | awk '{printf "%.2f\n",$1/1048576}')"
+#     # 获取已用内存
+#     local MemUsed="$(echo $LBench_Result_MemoryTotal_KB $LBench_Result_MemoryFree_KB | awk '{printf $1-$2}')"
+#     LBench_Result_MemoryUsed_KB="$MemUsed"
+#     LBench_Result_MemoryUsed_MB="$(echo $LBench_Result_MemoryUsed_KB | awk '{printf "%.2f\n",$1/1024}')"
+#     LBench_Result_MemoryUsed_GB="$(echo $LBench_Result_MemoryUsed_KB | awk '{printf "%.2f\n",$1/1048576}')"
+#     # 获取Swap总量
+#     LBench_Result_SwapTotal_KB="$($ReadMemInfo | awk '/SwapTotal/{print $2}')"
+#     LBench_Result_SwapTotal_MB="$(echo $LBench_Result_SwapTotal_KB | awk '{printf "%.2f\n",$1/1024}')"
+#     LBench_Result_SwapTotal_GB="$(echo $LBench_Result_SwapTotal_KB | awk '{printf "%.2f\n",$1/1048576}')"
+#     # 获取可用Swap
+#     LBench_Result_SwapFree_KB="$($ReadMemInfo | awk '/SwapFree/{print $2}')"
+#     LBench_Result_SwapFree_MB="$(echo $LBench_Result_SwapFree_KB | awk '{printf "%.2f\n",$1/1024}')"
+#     LBench_Result_SwapFree_GB="$(echo $LBench_Result_SwapFree_KB | awk '{printf "%.2f\n",$1/1048576}')"
+#     # 获取已用Swap
+#     local SwapUsed="$(echo $LBench_Result_SwapTotal_KB $LBench_Result_SwapFree_KB | awk '{printf $1-$2}')"
+#     LBench_Result_SwapUsed_KB="$SwapUsed"
+#     LBench_Result_SwapUsed_MB="$(echo $LBench_Result_SwapUsed_KB | awk '{printf "%.2f\n",$1/1024}')"
+#     LBench_Result_SwapUsed_GB="$(echo $LBench_Result_SwapUsed_KB | awk '{printf "%.2f\n",$1/1048576}')"
+# }
+
+
+
+# SystemInfo_GetOSRelease() {
+#     if [ -f "/etc/centos-release" ]; then # CentOS
+#         Var_OSRelease="centos"
+#         local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3,$4}')"
+#         if [ "$(rpm -qa | grep -o el6 | sort -u)" = "el6" ]; then
+#             Var_CentOSELRepoVersion="6"
+#             local Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $3}')"
+#         elif [ "$(rpm -qa | grep -o el7 | sort -u)" = "el7" ]; then
+#             Var_CentOSELRepoVersion="7"
+#             local Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $4}')"
+#         elif [ "$(rpm -qa | grep -o el8 | sort -u)" = "el8" ]; then
+#             Var_CentOSELRepoVersion="8"
+#             local Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $4}')"
+#         else
+#             local Var_CentOSELRepoVersion="unknown"
+#             local Var_OSReleaseVersion="<Unknown Release>"
+#         fi
+#         local Var_OSReleaseArch="$(arch)"
+#         LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
+#     elif [ -f "/etc/redhat-release" ]; then # RedHat
+#         Var_OSRelease="rhel"
+#         local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3,$4}')"
+#         if [ "$(rpm -qa | grep -o el6 | sort -u)" = "el6" ]; then
+#             Var_RedHatELRepoVersion="6"
+#             local Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $3}')"
+#         elif [ "$(rpm -qa | grep -o el7 | sort -u)" = "el7" ]; then
+#             Var_RedHatELRepoVersion="7"
+#             local Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $4}')"
+#         elif [ "$(rpm -qa | grep -o el8 | sort -u)" = "el8" ]; then
+#             Var_RedHatELRepoVersion="8"
+#             local Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $4}')"
+#         else
+#             local Var_RedHatELRepoVersion="unknown"
+#             local Var_OSReleaseVersion="<Unknown Release>"
+#         fi
+#         local Var_OSReleaseArch="$(arch)"
+#         LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
+#     elif [ -f "/etc/fedora-release" ]; then # Fedora
+#         Var_OSRelease="fedora"
+#         local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3}')"
+#         local Var_OSReleaseVersion="$(cat /etc/fedora-release | awk '{print $3,$4,$5,$6,$7}')"
+#         local Var_OSReleaseArch="$(arch)"
+#         LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
+#     elif [ -f "/etc/lsb-release" ]; then # Ubuntu
+#         Var_OSRelease="ubuntu"
+#         local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/NAME/{print $3}' | head -n1)"
+#         local Var_OSReleaseVersion="$(cat /etc/os-release | awk -F '[= "]' '/VERSION/{print $3,$4,$5,$6,$7}' | head -n1)"
+#         local Var_OSReleaseArch="$(arch)"
+#         LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
+#         Var_OSReleaseVersion_Short="$(cat /etc/lsb-release | awk -F '[= "]' '/DISTRIB_RELEASE/{print $2}')"
+#     elif [ -f "/etc/debian_version" ]; then # Debian
+#         Var_OSRelease="debian"
+#         local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3,$4}')"
+#         local Var_OSReleaseVersion="$(cat /etc/debian_version | awk '{print $1}')"
+#         local Var_OSReleaseVersionShort="$(cat /etc/debian_version | awk '{printf "%d\n",$1}')"
+#         if [ "${Var_OSReleaseVersionShort}" = "7" ]; then
+#             Var_OSReleaseVersion_Short="7"
+#             Var_OSReleaseVersion_Codename="wheezy"
+#             local Var_OSReleaseFullName="${Var_OSReleaseFullName} \"Wheezy\""
+#         elif [ "${Var_OSReleaseVersionShort}" = "8" ]; then
+#             Var_OSReleaseVersion_Short="8"
+#             Var_OSReleaseVersion_Codename="jessie"
+#             local Var_OSReleaseFullName="${Var_OSReleaseFullName} \"Jessie\""
+#         elif [ "${Var_OSReleaseVersionShort}" = "9" ]; then
+#             Var_OSReleaseVersion_Short="9"
+#             Var_OSReleaseVersion_Codename="stretch"
+#             local Var_OSReleaseFullName="${Var_OSReleaseFullName} \"Stretch\""
+#         elif [ "${Var_OSReleaseVersionShort}" = "10" ]; then
+#             Var_OSReleaseVersion_Short="10"
+#             Var_OSReleaseVersion_Codename="buster"
+#             local Var_OSReleaseFullName="${Var_OSReleaseFullName} \"Buster\""
+#         else
+#             Var_OSReleaseVersion_Short="sid"
+#             Var_OSReleaseVersion_Codename="sid"
+#             local Var_OSReleaseFullName="${Var_OSReleaseFullName} \"Sid (Testing)\""
+#         fi
+#         local Var_OSReleaseArch="$(arch)"
+#         LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
+#     elif [ -f "/etc/alpine-release" ]; then # Alpine Linux
+#         Var_OSRelease="alpinelinux"
+#         local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/NAME/{print $3,$4}' | head -n1)"
+#         local Var_OSReleaseVersion="$(cat /etc/alpine-release | awk '{print $1}')"
+#         local Var_OSReleaseArch="$(arch)"
+#         LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
+#     else
+#         Var_OSRelease="unknown" # 未知系统分支
+#         LBench_Result_OSReleaseFullName="[Error: Unknown Linux Branch !]"
+#     fi
+# }
 
 SystemInfo_GetVirtType() {
     if [ -f "/usr/bin/systemd-detect-virt" ]; then
@@ -636,31 +841,31 @@ SystemInfo_GetVirtType() {
         elif [ "${Var_VirtType}" = "xen" ]; then
             LBench_Result_VirtType="Xen Hypervisor"
         elif [ "${Var_VirtType}" = "bochs" ]; then
-            LBench_Result_VirtType="BOCHS"
+            LBench_Result_VirtType="BOCHS"   
         elif [ "${Var_VirtType}" = "uml" ]; then
-            LBench_Result_VirtType="User-mode Linux"
+            LBench_Result_VirtType="User-mode Linux"   
         elif [ "${Var_VirtType}" = "parallels" ]; then
-            LBench_Result_VirtType="Parallels"
+            LBench_Result_VirtType="Parallels"   
         elif [ "${Var_VirtType}" = "bhyve" ]; then
             LBench_Result_VirtType="FreeBSD Hypervisor"
         # 容器虚拟化检测
         elif [ "${Var_VirtType}" = "openvz" ]; then
             LBench_Result_VirtType="OpenVZ"
         elif [ "${Var_VirtType}" = "lxc" ]; then
-            LBench_Result_VirtType="LXC"
+            LBench_Result_VirtType="LXC"        
         elif [ "${Var_VirtType}" = "lxc-libvirt" ]; then
-            LBench_Result_VirtType="LXC (libvirt)"
+            LBench_Result_VirtType="LXC (libvirt)"        
         elif [ "${Var_VirtType}" = "systemd-nspawn" ]; then
-            LBench_Result_VirtType="Systemd nspawn"
+            LBench_Result_VirtType="Systemd nspawn"        
         elif [ "${Var_VirtType}" = "docker" ]; then
-            LBench_Result_VirtType="Docker"
+            LBench_Result_VirtType="Docker"        
         elif [ "${Var_VirtType}" = "rkt" ]; then
             LBench_Result_VirtType="RKT"
         # 特殊处理
         elif [ -c "/dev/lxss" ]; then # 处理WSL虚拟化
             Var_VirtType="wsl"
             LBench_Result_VirtType="Windows Subsystem for Linux (WSL)"
-        # 未匹配到任何结果, 或者非虚拟机
+        # 未匹配到任何结果, 或者非虚拟机 
         elif [ "${Var_VirtType}" = "none" ]; then
             Var_VirtType="dedicated"
             LBench_Result_VirtType="None"
@@ -703,15 +908,239 @@ SystemInfo_GetVirtType() {
     fi
 }
 
-Global_Exit_Action() {
-    rm -rf ${WorkDir}/
-}
+# SystemInfo_GetLoadAverage() {
+#     local Var_LoadAverage="$(cat /proc/loadavg)"
+#     LBench_Result_LoadAverage_1min="$(echo ${Var_LoadAverage} | awk '{print $1}')"
+#     LBench_Result_LoadAverage_5min="$(echo ${Var_LoadAverage} | awk '{print $2}')"
+#     LBench_Result_LoadAverage_15min="$(echo ${Var_LoadAverage} | awk '{print $3}')"
+# }
+
+# SystemInfo_GetUptime() {
+#     local ut="$(cat /proc/uptime | awk '{printf "%d\n",$1}')"
+#     local ut_day="$(echo $result | awk -v ut="$ut" '{printf "%d\n",ut/86400}')"
+#     local ut_hour="$(echo $result | awk -v ut="$ut" -v ut_day="$ut_day" '{printf "%d\n",(ut-(86400*ut_day))/3600}')"
+#     local ut_minute="$(echo $result | awk -v ut="$ut" -v ut_day="$ut_day" -v ut_hour="$ut_hour" '{printf "%d\n",(ut-(86400*ut_day)-(3600*ut_hour))/60}')"
+#     local ut_second="$(echo $result | awk -v ut="$ut" -v ut_day="$ut_day" -v ut_hour="$ut_hour" -v ut_minute="$ut_minute" '{printf "%d\n",(ut-(86400*ut_day)-(3600*ut_hour)-(60*ut_minute))}')"
+#     LBench_Result_SystemInfo_Uptime_Day="$ut_day"
+#     LBench_Result_SystemInfo_Uptime_Hour="$ut_hour"
+#     LBench_Result_SystemInfo_Uptime_Minute="$ut_minute"
+#     LBench_Result_SystemInfo_Uptime_Second="$ut_second"
+# }
+
+
+# SystemInfo_GetDiskStat() {
+#     LBench_Result_DiskRootPath="$(df -x tmpfs / | awk "NR>1" | sed ":a;N;s/\\n//g;ta" | awk '{print $1}')"
+#     local Var_DiskTotalSpace_KB="$(df -x tmpfs / | grep -oE "[0-9]{4,}" | awk 'NR==1 {print $1}')"
+#     LBench_Result_DiskTotal_KB="${Var_DiskTotalSpace_KB}"
+#     LBench_Result_DiskTotal_MB="$(echo ${Var_DiskTotalSpace_KB} | awk '{printf "%.2f\n",$1/1000}')"
+#     LBench_Result_DiskTotal_GB="$(echo ${Var_DiskTotalSpace_KB} | awk '{printf "%.2f\n",$1/1000000}')"
+#     LBench_Result_DiskTotal_TB="$(echo ${Var_DiskTotalSpace_KB} | awk '{printf "%.2f\n",$1/1000000000}')"
+#     local Var_DiskUsedSpace_KB="$(df -x tmpfs / | grep -oE "[0-9]{4,}" | awk 'NR==2 {print $1}')"
+#     LBench_Result_DiskUsed_KB="${Var_DiskUsedSpace_KB}"
+#     LBench_Result_DiskUsed_MB="$(echo ${LBench_Result_DiskUsed_KB} | awk '{printf "%.2f\n",$1/1000}')"
+#     LBench_Result_DiskUsed_GB="$(echo ${LBench_Result_DiskUsed_KB} | awk '{printf "%.2f\n",$1/1000000}')"
+#     LBench_Result_DiskUsed_TB="$(echo ${LBench_Result_DiskUsed_KB} | awk '{printf "%.2f\n",$1/1000000000}')"
+#     local Var_DiskFreeSpace_KB="$(df -x tmpfs / | grep -oE "[0-9]{4,}" | awk 'NR==3 {print $1}')"
+#     LBench_Result_DiskFree_KB="${Var_DiskFreeSpace_KB}"
+#     LBench_Result_DiskFree_MB="$(echo ${LBench_Result_DiskFree_KB} | awk '{printf "%.2f\n",$1/1000}')"
+#     LBench_Result_DiskFree_GB="$(echo ${LBench_Result_DiskFree_KB} | awk '{printf "%.2f\n",$1/1000000}')"
+#     LBench_Result_DiskFree_TB="$(echo ${LBench_Result_DiskFree_KB} | awk '{printf "%.2f\n",$1/1000000000}')"
+# }
+
+# SystemInfo_GetNetworkInfo() {
+#     local Result_IPV4="$(curl --user-agent "${UA_LemonBench}" --connect-timeout 10 -fsL4 https://lemonbench-api.ilemonrain.com/ipapi/ipapi.php)"
+#     local Result_IPV6="$(curl --user-agent "${UA_LemonBench}" --connect-timeout 10 -fsL6 https://lemonbench-api.ilemonrain.com/ipapi/ipapi.php)"
+#     if [ "${Result_IPV4}" != "" ] && [ "${Result_IPV6}" = "" ]; then
+#         LBench_Result_NetworkStat="ipv4only"
+#     elif [ "${Result_IPV4}" = "" ] && [ "${Result_IPV6}" != "" ]; then
+#         LBench_Result_NetworkStat="ipv6only"
+#     elif [ "${Result_IPV4}" != "" ] && [ "${Result_IPV6}" != "" ]; then
+#         LBench_Result_NetworkStat="dualstack"
+#     else
+#         LBench_Result_NetworkStat="unknown"
+#     fi
+#     if [ "${LBench_Result_NetworkStat}" = "ipv4only" ] || [ "${LBench_Result_NetworkStat}" = "dualstack" ]; then
+#         IPAPI_IPV4_ip="$(PharseJSON "${Result_IPV4}" "data.ip")"
+#         local IPAPI_IPV4_country_name="$(PharseJSON "${Result_IPV4}" "data.country")"
+#         local IPAPI_IPV4_region_name="$(PharseJSON "${Result_IPV4}" "data.province")"
+#         local IPAPI_IPV4_city_name="$(PharseJSON "${Result_IPV4}" "data.city")"
+#         IPAPI_IPV4_location="${IPAPI_IPV4_country_name} ${IPAPI_IPV4_region_name} ${IPAPI_IPV4_city_name}"
+#         IPAPI_IPV4_country_code="$(PharseJSON "${Result_IPV4}" "data.country_code")"
+#         IPAPI_IPV4_asn="$(PharseJSON "${Result_IPV4}" "data.asn.number")"
+#         IPAPI_IPV4_organization="$(PharseJSON "${Result_IPV4}" "data.asn.desc")"
+#     fi
+#     if [ "${LBench_Result_NetworkStat}" = "ipv6only" ] || [ "${LBench_Result_NetworkStat}" = "dualstack" ]; then
+#         IPAPI_IPV6_ip="$(PharseJSON "${Result_IPV6}" "data.ip")"
+#         local IPAPI_IPV6_country_name="$(PharseJSON "${Result_IPV6}" "data.country")"
+#         local IPAPI_IPV6_region_name="$(PharseJSON "${Result_IPV6}" "data.province")"
+#         local IPAPI_IPV6_city_name="$(PharseJSON "${Result_IPV6}" "data.city")"
+#         IPAPI_IPV6_location="${IPAPI_IPV6_country_name} ${IPAPI_IPV6_region_name} ${IPAPI_IPV6_city_name}"
+#         IPAPI_IPV6_country_code="$(PharseJSON "${Result_IPV6}" "data.country_code")"
+#         IPAPI_IPV6_asn="$(PharseJSON "${Result_IPV6}" "data.asn.number")"
+#         IPAPI_IPV6_organization="$(PharseJSON "${Result_IPV6}" "data.asn.desc")"
+#     fi
+#     if [ "${LBench_Result_NetworkStat}" = "unknown" ]; then
+#         IPAPI_IPV4_ip="-"
+#         IPAPI_IPV4_location="-"
+#         IPAPI_IPV4_country_code="-"
+#         IPAPI_IPV4_asn="-"
+#         IPAPI_IPV4_organization="-"
+#         IPAPI_IPV6_ip="-"
+#         IPAPI_IPV6_location="-"
+#         IPAPI_IPV6_country_code="-"
+#         IPAPI_IPV6_asn="-"
+#         IPAPI_IPV6_organization="-"
+#     fi
+# }
+
+
+# Function_GetSystemInfo() {
+#     clear
+#     echo -e "${Msg_Info}LemonBench Server Test Toolkit Build ${BuildTime}"
+#     echo -e "${Msg_Info}SystemInfo - Collecting System Information ..."
+#     Check_Virtwhat
+#     echo -e "${Msg_Info}Collecting CPU Info ..."
+#     SystemInfo_GetCPUInfo
+#     SystemInfo_GetLoadAverage
+#     SystemInfo_GetSystemBit
+#     SystemInfo_GetCPUStat
+#     echo -e "${Msg_Info}Collecting Memory Info ..."
+#     SystemInfo_GetMemInfo
+#     echo -e "${Msg_Info}Collecting Virtualization Info ..."
+#     SystemInfo_GetVirtType
+#     echo -e "${Msg_Info}Collecting System Info ..."
+#     SystemInfo_GetUptime
+#     SystemInfo_GetKernelVersion
+#     echo -e "${Msg_Info}Collecting OS Release Info ..."
+#     SystemInfo_GetOSRelease
+#     echo -e "${Msg_Info}Collecting Disk Info ..."
+#     SystemInfo_GetDiskStat
+#     echo -e "${Msg_Info}Collecting Network Info ..."
+#     SystemInfo_GetNetworkCCMethod
+#     SystemInfo_GetNetworkInfo
+#     echo -e "${Msg_Info}Starting Test ..."
+#     clear
+# }
+
+# Function_ShowSystemInfo() {
+#     echo -e "\n ${Font_Yellow}-> System Information${Font_Suffix}\n"
+#     if [ "${Var_OSReleaseVersion_Codename}" != "" ]; then
+#         echo -e " ${Font_Yellow}OS Release:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_OSReleaseFullName}${Font_Suffix}"
+#     else
+#         echo -e " ${Font_Yellow}OS Release:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_OSReleaseFullName}${Font_Suffix}"
+#     fi
+#     if [ "${Flag_DymanicCPUFreqDetected}" = "1" ]; then
+#         echo -e " ${Font_Yellow}CPU Model:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_CPUModelName}${Font_Suffix}  ${Font_White}${LBench_Result_CPUFreqMinGHz}~${LBench_Result_CPUFreqMaxGHz}${Font_Suffix}${Font_SkyBlue} GHz${Font_Suffix}"
+#     elif [ "${Flag_DymanicCPUFreqDetected}" = "0" ]; then
+#         echo -e " ${Font_Yellow}CPU Model:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_CPUModelName}  ${LBench_Result_CPUFreqGHz} GHz${Font_Suffix}"
+#     fi
+#     if [ "${LBench_Result_CPUCacheSize}" != "" ]; then
+#         echo -e " ${Font_Yellow}CPU Cache Size:${Font_Suffix}\t${Font_SkyBlue}${LBench_Result_CPUCacheSize}${Font_Suffix}"
+#     else
+#         echo -e " ${Font_Yellow}CPU Cache Size:${Font_Suffix}\t${Font_SkyBlue}None${Font_Suffix}"
+#     fi
+#     # CPU数量 分支判断
+#     if [ "${LBench_Result_CPUIsPhysical}" = "1" ]; then
+#         # 如果只存在1个物理CPU (单路物理服务器)
+#         if [ "${LBench_Result_CPUPhysicalNumber}" -eq "1" ]; then
+#             echo -e " ${Font_Yellow}CPU Number:${Font_Suffix}\t\t${LBench_Result_CPUPhysicalNumber} ${Font_SkyBlue}Physical CPU${Font_Suffix}, ${LBench_Result_CPUCoreNumber} ${Font_SkyBlue}Cores${Font_Suffix}, ${LBench_Result_CPUThreadNumber} ${Font_SkyBlue}Threads${Font_Suffix}"
+#         # 存在多个CPU, 继续深入分析检测 (多路物理服务器)
+#         elif [ "${LBench_Result_CPUPhysicalNumber}" -ge "2" ]; then
+#             echo -e " ${Font_Yellow}CPU Number:${Font_Suffix}\t\t${LBench_Result_CPUPhysicalNumber} ${Font_SkyBlue}Physical CPU(s)${Font_Suffix}, ${LBench_Result_CPUCoreNumber} ${Font_SkyBlue}Cores/CPU${Font_Suffix}, ${LBench_Result_CPUSiblingsNumber} ${Font_SkyBlue}Threads/CPU${Font_Suffix} (Total ${Font_SkyBlue}${LBench_Result_CPUTotalCoreNumber}${Font_Suffix} Cores, ${Font_SkyBlue}${LBench_Result_CPUProcessorNumber}${Font_Suffix} Threads)"
+#         # 针对树莓派等特殊情况做出检测优化
+#         elif [ "${LBench_Result_CPUThreadNumber}" = "0" ] && [ "${LBench_Result_CPUProcessorNumber} " -ge "1" ]; then
+#              echo -e " ${Font_Yellow}CPU Number:${Font_Suffix}\t\t${LBench_Result_CPUProcessorNumber} ${Font_SkyBlue}Cores${Font_Suffix}"
+#         fi
+#         if [ "${LBench_Result_CPUVirtualization}" = "1" ]; then
+#             echo -e " ${Font_Yellow}VirtReady:${Font_Suffix}\t\t${Font_SkyBlue}Yes${Font_Suffix} ${Font_SkyBlue}(Based on${Font_Suffix} ${LBench_Result_CPUVirtualizationType}${Font_SkyBlue})${Font_Suffix}"
+#         else
+#             echo -e " ${Font_Yellow}VirtReady:${Font_Suffix}\t\t${Font_SkyRed}No${Font_Suffix}"
+#         fi
+#     elif [ "${Var_VirtType}" = "openvz" ]; then
+#         echo -e " ${Font_Yellow}CPU Number:${Font_Suffix}\t\t${LBench_Result_CPUThreadNumber} ${Font_SkyBlue}vCPU${Font_Suffix} (${LBench_Result_CPUCoreNumber} ${Font_SkyBlue}Host Core/Thread${Font_Suffix})"
+#     else
+#         if [ "${LBench_Result_CPUVirtualization}" = "2" ]; then
+#             echo -e " ${Font_Yellow}CPU Number:${Font_Suffix}\t\t${LBench_Result_CPUThreadNumber} ${Font_SkyBlue}vCPU${Font_Suffix}"
+#             echo -e " ${Font_Yellow}VirtReady:${Font_Suffix}\t\t${Font_SkyBlue}Yes${Font_Suffix} ${Font_SkyBlue}(Nested Virtualization)${Font_Suffix}"
+#         else
+#             echo -e " ${Font_Yellow}CPU Number:${Font_Suffix}\t\t${LBench_Result_CPUThreadNumber} ${Font_SkyBlue}vCPU${Font_Suffix}"
+#         fi
+#     fi
+#     echo -e " ${Font_Yellow}Virt Type:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_VirtType}${Font_Suffix}"
+#     # 内存使用率 分支判断
+#     if [ "${LBench_Result_MemoryUsed_KB}" -lt "1024" ] && [ "${LBench_Result_MemoryTotal_KB}" -lt "1048576" ]; then
+#         LBench_Result_Memory="${LBench_Result_MemoryUsed_KB} KB / ${LBench_Result_MemoryTotal_MB} MB"
+#         echo -e " ${Font_Yellow}Memory Usage:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_MemoryUsed_MB} KB${Font_Suffix} / ${Font_SkyBlue}${LBench_Result_MemoryTotal_MB} MB${Font_Suffix}"
+#     elif [ "${LBench_Result_MemoryUsed_KB}" -lt "1048576" ] && [ "${LBench_Result_MemoryTotal_KB}" -lt "1048576" ]; then
+#         LBench_Result_Memory="${LBench_Result_MemoryUsed_MB} MB / ${LBench_Result_MemoryTotal_MB} MB"
+#         echo -e " ${Font_Yellow}Memory Usage:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_MemoryUsed_MB} MB${Font_Suffix} / ${Font_SkyBlue}${LBench_Result_MemoryTotal_MB} MB${Font_Suffix}"
+#     elif [ "${LBench_Result_MemoryUsed_KB}" -lt "1048576" ] && [ "${LBench_Result_MemoryTotal_KB}" -lt "1073741824" ]; then
+#         LBench_Result_Memory="${LBench_Result_MemoryUsed_MB} MB / ${LBench_Result_MemoryTotal_GB} GB"
+#         echo -e " ${Font_Yellow}Memory Usage:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_MemoryUsed_MB} MB${Font_Suffix} / ${Font_SkyBlue}${LBench_Result_MemoryTotal_GB} GB${Font_Suffix}"
+#     else
+#         LBench_Result_Memory="${LBench_Result_MemoryUsed_GB} GB / ${LBench_Result_MemoryTotal_GB} GB"
+#         echo -e " ${Font_Yellow}Memory Usage:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_MemoryUsed_GB} GB${Font_Suffix} / ${Font_SkyBlue}${LBench_Result_MemoryTotal_GB} GB${Font_Suffix}"
+#     fi
+#     # Swap使用率 分支判断
+#     if [ "${LBench_Result_SwapTotal_KB}" -eq "0" ]; then
+#         LBench_Result_Swap="[ No Swapfile / Swap partition ]"
+#         echo -e " ${Font_Yellow}Swap Usage:${Font_Suffix}\t\t${Font_SkyBlue}[ No Swapfile/Swap Partition ]${Font_Suffix}"
+#     elif [ "${LBench_Result_SwapUsed_KB}" -lt "1024" ] && [ "${LBench_Result_SwapTotal_KB}" -lt "1048576" ]; then
+#         LBench_Result_Swap="${LBench_Result_SwapUsed_KB} KB / ${LBench_Result_SwapTotal_MB} MB"
+#         echo -e " ${Font_Yellow}Swap Usage:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_SwapUsed_KB} KB${Font_Suffix} / ${Font_SkyBlue}${LBench_Result_SwapTotal_MB} MB${Font_Suffix}"
+#     elif [ "${LBench_Result_SwapUsed_KB}" -lt "1024" ] && [ "${LBench_Result_SwapTotal_KB}" -lt "1073741824" ]; then
+#         LBench_Result_Swap="${LBench_Result_SwapUsed_KB} KB / ${LBench_Result_SwapTotal_GB} GB"
+#         echo -e " ${Font_Yellow}Swap Usage:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_SwapUsed_KB} KB${Font_Suffix} / ${Font_SkyBlue}${LBench_Result_SwapTotal_GB} GB${Font_Suffix}"
+#     elif [ "${LBench_Result_SwapUsed_KB}" -lt "1048576" ] && [ "${LBench_Result_SwapTotal_KB}" -lt "1048576" ]; then
+#         LBench_Result_Swap="${LBench_Result_SwapUsed_MB} MB / ${LBench_Result_SwapTotal_MB} MB"
+#         echo -e " ${Font_Yellow}Swap Usage:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_SwapUsed_MB} MB${Font_Suffix} / ${Font_SkyBlue}${LBench_Result_SwapTotal_MB} MB${Font_Suffix}"
+#     elif [ "${LBench_Result_SwapUsed_KB}" -lt "1048576" ] && [ "${LBench_Result_SwapTotal_KB}" -lt "1073741824" ]; then
+#         LBench_Result_Swap="${LBench_Result_SwapUsed_MB} MB / ${LBench_Result_SwapTotal_GB} GB"
+#         echo -e " ${Font_Yellow}Swap Usage:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_SwapUsed_MB} MB${Font_Suffix} / ${Font_SkyBlue}${LBench_Result_SwapTotal_GB} GB${Font_Suffix}"
+#     else
+#         LBench_Result_Swap="${LBench_Result_SwapUsed_GB} GB / ${LBench_Result_SwapTotal_GB} GB"
+#         echo -e " ${Font_Yellow}Swap Usage:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_SwapUsed_GB} GB${Font_Suffix} / ${Font_SkyBlue}${LBench_Result_SwapTotal_GB} GB${Font_Suffix}"
+#     fi
+#     # 启动磁盘
+#     echo -e " ${Font_Yellow}Boot Device:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_DiskRootPath}${Font_Suffix}"
+#     # 磁盘使用率 分支判断
+#     if [ "${LBench_Result_DiskUsed_KB}" -lt "1000000" ]; then
+#         LBench_Result_Disk="${LBench_Result_DiskUsed_MB} MB / ${LBench_Result_DiskTotal_MB} MB"
+#         echo -e " ${Font_Yellow}Disk Usage:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_DiskUsed_MB} MB${Font_Suffix} / ${Font_SkyBlue}${LBench_Result_DiskTotal_MB} MB${Font_Suffix}"
+#     elif [ "${LBench_Result_DiskUsed_KB}" -lt "1000000" ] && [ "${LBench_Result_DiskTotal_KB}" -lt "1000000000" ]; then
+#         LBench_Result_Disk="${LBench_Result_DiskUsed_MB} MB / ${LBench_Result_DiskTotal_GB} GB"
+#         echo -e " ${Font_Yellow}Disk Usage:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_DiskUsed_MB} MB${Font_Suffix} / ${Font_SkyBlue}${LBench_Result_DiskTotal_GB} GB${Font_Suffix}"
+#     elif [ "${LBench_Result_DiskUsed_KB}" -lt "1000000000" ] && [ "${LBench_Result_DiskTotal_KB}" -lt "1000000000" ]; then
+#         LBench_Result_Disk="${LBench_Result_DiskUsed_GB} GB / ${LBench_Result_DiskTotal_GB} GB"
+#         echo -e " ${Font_Yellow}Disk Usage:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_DiskUsed_GB} GB${Font_Suffix} / ${Font_SkyBlue}${LBench_Result_DiskTotal_GB} GB${Font_Suffix}"
+#     elif [ "${LBench_Result_DiskUsed_KB}" -lt "1000000000" ] && [ "${LBench_Result_DiskTotal_KB}" -ge "1000000000" ]; then
+#         LBench_Result_Disk="${LBench_Result_DiskUsed_GB} GB / ${LBench_Result_DiskTotal_TB} TB"
+#         echo -e " ${Font_Yellow}Disk Usage:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_DiskUsed_GB} GB${Font_Suffix} / ${Font_SkyBlue}${LBench_Result_DiskTotal_TB} TB${Font_Suffix}"
+#     else
+#         LBench_Result_Disk="${LBench_Result_DiskUsed_TB} TB / ${LBench_Result_DiskTotal_TB} TB"
+#         echo -e " ${Font_Yellow}Disk Usage:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_DiskUsed_TB} TB${Font_Suffix} / ${Font_SkyBlue}${LBench_Result_DiskTotal_TB} TB${Font_Suffix}"
+#     fi
+#     # CPU状态
+#     echo -e " ${Font_Yellow}CPU Usage:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_CPUStat_UsedAll}% used${Font_Suffix}, ${Font_SkyBlue}${LBench_Result_CPUStat_iowait}% iowait${Font_Suffix}, ${Font_SkyBlue}${LBench_Result_CPUStat_steal}% steal${Font_Suffix}"
+#     # 系统负载
+#     echo -e " ${Font_Yellow}Load (1/5/15min):${Font_Suffix}\t${Font_SkyBlue}${LBench_Result_LoadAverage_1min} ${LBench_Result_LoadAverage_5min} ${LBench_Result_LoadAverage_15min} ${Font_Suffix}"
+#     # 系统开机时间
+#     echo -e " ${Font_Yellow}Uptime:${Font_Suffix}\t\t${Font_SkyBlue}${LBench_Result_SystemInfo_Uptime_Day} Days, ${LBench_Result_SystemInfo_Uptime_Hour} Hours, ${LBench_Result_SystemInfo_Uptime_Minute} Minutes, ${LBench_Result_SystemInfo_Uptime_Second} Seconds${Font_Suffix}"
+#     # 内核版本
+#     echo -e " ${Font_Yellow}Kernel Version:${Font_Suffix}\t${Font_SkyBlue}${LBench_Result_KernelVersion}${Font_Suffix}"
+#     # 网络拥塞控制方式
+#     echo -e " ${Font_Yellow}Network CC Method:${Font_Suffix}\t${Font_SkyBlue}${LBench_Result_NetworkCCMethod}${Font_Suffix}"
+#     # 执行完成, 标记FLAG
+#     LBench_Flag_FinishSystemInfo="1"
+# }
 
 
 Entrance_SysBench_CPU_Fast() {
-    Check_SysBench >/dev/null 2>&1
+    Check_SysBench
     SystemInfo_GetCPUInfo
     Function_SysBench_CPU_Fast
+    Function_BenchFinish
+    # Function_GenerateResult
 }
 
 speed_test(){
