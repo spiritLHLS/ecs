@@ -2023,6 +2023,7 @@ pre_check(){
     checkwget
     checksystem
     checkcurl
+    curl -L https://gitlab.com/spiritysdx/za/-/raw/main/yabsiotest.sh -o yabsiotest.sh && chmod +x yabsiotest.sh  >/dev/null 2>&1
     ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
     ! _exists "free" && _red "Error: free command not found.\n" && exit 1
 }
