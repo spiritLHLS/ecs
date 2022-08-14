@@ -467,28 +467,28 @@ Check_Sysbench_InstantBuild() {
     if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ]; then
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
-        yum install -y epel-release
-        yum install -y wget curl make gcc gcc-c++ make automake libtool pkgconfig libaio-devel
+        yum install -y epel-release >/dev/null 2>&1
+        yum install -y wget curl make gcc gcc-c++ make automake libtool pkgconfig libaio-devel >/dev/null 2>&1
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Downloading Source code (Version 1.0.20)..."
         mkdir -p /tmp/_LBench/src/
-        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://github.com/akopytov/sysbench/archive/1.0.20.zip
+        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://github.com/akopytov/sysbench/archive/1.0.20.zip >/dev/null 2>&1
         echo -e "${Msg_Info}Compiling Sysbench Module ..."
         cd /tmp/_LBench/src/
-        unzip sysbench.zip && cd sysbench-1.0.20
+        unzip sysbench.zip && cd sysbench-1.0.20 >/dev/null 2>&1
         ./autogen.sh && ./configure --without-mysql && make -j8 && make install
         echo -e "${Msg_Info}Cleaning up ..."
         cd /tmp && rm -rf /tmp/_LBench/src/sysbench*  >/dev/null 2>&1
     elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
-        apt -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip
+        apt -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip >/dev/null 2>&1
         echo -e "${Msg_Info}Downloading Source code (Version 1.0.20)..."
         mkdir -p /tmp/_LBench/src/
-        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://github.com/akopytov/sysbench/archive/1.0.20.zip
+        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://github.com/akopytov/sysbench/archive/1.0.20.zip >/dev/null 2>&1
         echo -e "${Msg_Info}Compiling Sysbench Module ..."
         cd /tmp/_LBench/src/
-        unzip sysbench.zip && cd sysbench-1.0.20
+        unzip sysbench.zip && cd sysbench-1.0.20 >/dev/null 2>&1
         ./autogen.sh && ./configure --without-mysql && make -j8 && make install
         echo -e "${Msg_Info}Cleaning up ..."
         cd /tmp && rm -rf /tmp/_LBench/src/sysbench*  >/dev/null 2>&1
@@ -498,10 +498,10 @@ Check_Sysbench_InstantBuild() {
         dnf install -y wget curl gcc gcc-c++ make automake libtool pkgconfig libaio-devel
         echo -e "${Msg_Info}Downloading Source code (Version 1.0.20)..."
         mkdir -p /tmp/_LBench/src/
-        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://github.com/akopytov/sysbench/archive/1.0.20.zip
+        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://github.com/akopytov/sysbench/archive/1.0.20.zip >/dev/null 2>&1
         echo -e "${Msg_Info}Compiling Sysbench Module ..."
         cd /tmp/_LBench/src/
-        unzip sysbench.zip && cd sysbench-1.0.20
+        unzip sysbench.zip && cd sysbench-1.0.20 >/dev/null 2>&1
         ./autogen.sh && ./configure --without-mysql && make -j8 && make install
         echo -e "${Msg_Info}Cleaning up ..."
         cd /tmp && rm -rf /tmp/_LBench/src/sysbench*  >/dev/null 2>&1
@@ -1136,10 +1136,10 @@ SystemInfo_GetVirtType() {
 
 
 Entrance_SysBench_CPU_Fast() {
-    Check_SysBench
-    SystemInfo_GetCPUInfo
+    Check_SysBench > /dev/null 2>&1
+    SystemInfo_GetCPUInfo > /dev/null 2>&1
     Function_SysBench_CPU_Fast
-    Function_BenchFinish
+    Function_BenchFinish > /dev/null 2>&1
     # Function_GenerateResult
 }
 
