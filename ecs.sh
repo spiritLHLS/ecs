@@ -1651,7 +1651,7 @@ Run_DiskTest_DD() {
     # 清理缓存, 避免影响测试结果
     sync
     if [ "${Var_VirtType}" != "docker" ] && [ "${Var_VirtType}" != "openvz" ] && [ "${Var_VirtType}" != "lxc" ] && [ "${Var_VirtType}" != "wsl" ]; then
-        echo 3 >/proc/sys/vm/drop_caches
+        echo 3 >/proc/sys/vm/drop_caches > /dev/null 2>&1
     fi
     # 避免磁盘压力过高, 启动测试前暂停1s
     sleep 1
