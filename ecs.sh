@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.08.01"
+ver="2022.08.14"
 changeLog="融合怪八代目(集合百家之长)(专为测评频道小鸡而生)"
 
 test_area=("广州电信" "广州联通" "广州移动")
@@ -1745,7 +1745,7 @@ all_script(){
     clear
     print_intro
     basic_script
-    io1_script
+    io2_script
     sjlleo_script
     RegionRestrictionCheck_script
     lmc999_script
@@ -1768,7 +1768,7 @@ minal_script(){
     clear
     print_intro
     basic_script
-    io1_script
+    io2_script
     superspeed_minal_script
     end_script
 }
@@ -1786,7 +1786,7 @@ minal_plus(){
     clear
     print_intro
     basic_script
-    io1_script
+    io2_script
     sjlleo_script
     RegionRestrictionCheck_script
     lmc999_script
@@ -1808,7 +1808,7 @@ minal_plus_network(){
     clear
     print_intro
     basic_script
-    io1_script
+    io2_script
     backtrace_script
     fscarmen_route_script
     superspeed_minal_script
@@ -1828,7 +1828,7 @@ minal_plus_media(){
     clear
     print_intro
     basic_script
-    io1_script
+    io2_script
     sjlleo_script
     RegionRestrictionCheck_script
     lmc999_script
