@@ -2175,6 +2175,8 @@ all_script(){
     clear
     print_intro
     basic_script
+    io1_script
+    sleep 1
     io2_script
     sjlleo_script
     RegionRestrictionCheck_script
@@ -2301,7 +2303,6 @@ hardware_script(){
     SystemInfo_GetSystemBit
     get_system_info
     check_virt
-    curl -L https://gitlab.com/spiritysdx/za/-/raw/main/yabsiotest.sh -o yabsiotest.sh && chmod +x yabsiotest.sh
     start_time=$(date +%s)
     clear
     print_intro
