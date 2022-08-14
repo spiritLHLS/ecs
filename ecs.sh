@@ -1932,7 +1932,7 @@ get_system_info() {
     disk_size2=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|snapd' | awk '{print $3}' ))
     disk_total_size=$( calc_disk "${disk_size1[@]}" )
     disk_used_size=$( calc_disk "${disk_size2[@]}" )
-    tcpctrl=$( sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )
+    tcpctrl=$( sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )  
 }
 # Print System information
 print_system_info() {
@@ -2164,7 +2164,7 @@ end_script(){
 all_script(){
     pre_check
     SystemInfo_GetSystemBit
-    get_system_info
+    get_system_info >/dev/null 2>&1
     check_virt
     # checkssh
     checkdnsutils
@@ -2192,7 +2192,7 @@ all_script(){
 minal_script(){
     pre_check
     SystemInfo_GetSystemBit
-    get_system_info
+    get_system_info >/dev/null 2>&1
     check_virt
     checkspeedtest
     install_speedtest
@@ -2208,7 +2208,7 @@ minal_script(){
 minal_plus(){
     pre_check
     SystemInfo_GetSystemBit
-    get_system_info
+    get_system_info >/dev/null 2>&1
     check_virt
     python_tk_script
     checkdnsutils
@@ -2232,7 +2232,7 @@ minal_plus(){
 minal_plus_network(){
     pre_check
     SystemInfo_GetSystemBit
-    get_system_info
+    get_system_info >/dev/null 2>&1
     check_virt
     checkspeedtest
     install_speedtest
@@ -2250,7 +2250,7 @@ minal_plus_network(){
 minal_plus_media(){
     pre_check
     SystemInfo_GetSystemBit
-    get_system_info
+    get_system_info >/dev/null 2>&1
     check_virt
     checkdnsutils
     python_tk_script
@@ -2301,7 +2301,7 @@ media_script(){
 hardware_script(){
     pre_check
     SystemInfo_GetSystemBit
-    get_system_info
+    get_system_info >/dev/null 2>&1
     check_virt
     start_time=$(date +%s)
     clear
@@ -2315,7 +2315,7 @@ hardware_script(){
 port_script(){
     pre_check
     SystemInfo_GetSystemBit
-    get_system_info
+    get_system_info >/dev/null 2>&1
     check_virt
     # checkssh
     start_time=$(date +%s)
