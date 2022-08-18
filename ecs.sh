@@ -660,40 +660,40 @@ SystemInfo_GetSystemBit() {
         # X86平台 64位
         LBench_Result_SystemBit_Short="64"
         LBench_Result_SystemBit_Full="amd64"
-	    [[ ! -e dp ]] && curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 -o dp && chmod +x dp
-	sleep 0.5
-        [[ ! -e nf ]] && curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
-	sleep 0.5
-        [[ ! -e tubecheck ]] && curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
-	sleep 0.5
+	    curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 -o dp && chmod +x dp
+        sleep 0.5
+        curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
+        sleep 0.5
+        curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
+        sleep 0.5
     elif [ "${sysarch}" = "i386" ] || [ "${sysarch}" = "i686" ]; then
         # X86平台 32位
         LBench_Result_SystemBit_Short="32"
         LBench_Result_SystemBit_Full="i386"
-        [[ ! -e dp ]] && curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_386 -o dp && chmod +x dp
+        curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_386 -o dp && chmod +x dp
 	sleep 0.5
-        [[ ! -e nf ]] && curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
+        curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
         sleep 0.5
-	    [[ ! -e tubecheck ]] && curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_386 -o tubecheck && chmod +x tubecheck
+	    curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_386 -o tubecheck && chmod +x tubecheck
 	sleep 0.5
     elif [ "${sysarch}" = "armv7l" ] || [ "${sysarch}" = "armv8" ] || [ "${sysarch}" = "armv8l" ] || [ "${sysarch}" = "aarch64" ]; then
         # ARM平台 暂且将32位/64位统一对待
         LBench_Result_SystemBit_Short="arm"
         LBench_Result_SystemBit_Full="arm"
-        [[ ! -e dp ]] && curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_arm -o dp && chmod +x dp
+        curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_arm -o dp && chmod +x dp
 	sleep 0.5
-        [[ ! -e nf ]] && curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_arm64 -o nf && chmod +x nf
+        curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_arm64 -o nf && chmod +x nf
 	sleep 0.5
-        [[ ! -e tubecheck ]] && curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_arm -o tubecheck && chmod +x tubecheck
+        curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_arm -o tubecheck && chmod +x tubecheck
 	sleep 0.5
     else
         LBench_Result_SystemBit_Short="unknown"
         LBench_Result_SystemBit_Full="unknown"
-        [[ ! -e dp ]] && curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 -o dp && chmod +x dp
+        curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 -o dp && chmod +x dp
 	sleep 0.5
-        [[ ! -e cf ]] && curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
+        curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
 	sleep 0.5
-        [[ ! -e tubecheck ]] && curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
+        curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
 	sleep 0.5
     fi
 }
