@@ -1497,7 +1497,7 @@ speed() {
 #    speed_test '27594' '电信广东广州5G' '电信'
     speed_test '5396' '电信江苏苏州5G' '电信'
     speed_test '24447' '联通上海' '联通'
-    speed_test '4870' '联通湖南长沙' '联通'
+#    speed_test '4870' '联通湖南长沙' '联通'
 #    speed_test '4870' '联通湖南长沙' '联通'
     speed_test '15863' '移动广西南宁' '移动'
     speed_test '16398' '移动贵州贵阳' '移动'
