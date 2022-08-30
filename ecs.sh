@@ -1955,20 +1955,20 @@ lmc999_script(){
     local Ftmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -s --max-time 10 "https://www.tiktok.com/")
 
     if [[ "$Ftmpresult" = "curl"* ]]; then
-        _red "\r Tiktok Region: Failed (Network Connection)\n"
+        _red "\r Tiktok Region: Failed (Network Connection)"
         return
     fi
 
     local FRegion=$(echo $Ftmpresult | grep '"$region":"' | sed 's/.*"$region//' | cut -f3 -d'"')
     if [ -n "$FRegion" ]; then
-        _green "\r Tiktok Region: 【${FRegion}】\n"
+        _green "\r Tiktok Region: 【${FRegion}】"
         return
     fi
 
     local STmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -sL --max-time 10 -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9" -H "Accept-Encoding: gzip" -H "Accept-Language: en" "https://www.tiktok.com" | gunzip 2>/dev/null)
     local SRegion=$(echo $STmpresult | grep '"$region":"' | sed 's/.*"$region//' | cut -f3 -d'"')
     if [ -n "$SRegion" ]; then
-        _yellow "\r Tiktok Region: 【${SRegion}】(可能为IDC IP)}\n"
+        _yellow "\r Tiktok Region: 【${SRegion}】(可能为IDC IP)}"
         return
     else
         _red "\r Tiktok Region: Failed \n"
