@@ -1951,7 +1951,7 @@ RegionRestrictionCheck_script(){
 }
 
 lmc999_script(){
-    echo -e "-------------------TikTok解锁--感谢lmc999加密脚本及fscarmen PR----------------------"
+    echo -e "-------------TikTok解锁--感谢lmc999加密脚本及fscarmen PR--------------"
     local Ftmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -s --max-time 10 "https://www.tiktok.com/")
 
     if [[ "$Ftmpresult" = "curl"* ]]; then
