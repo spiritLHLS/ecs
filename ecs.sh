@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-ver="2022.08.14"
+ver="2022.08.30"
 changeLog="融合怪八代目(集合百家之长)(专为测评频道小鸡而生)"
 
+UA_Browser="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36"
 test_area=("广州电信" "广州联通" "广州移动")
 test_ip=("58.60.188.222" "210.21.196.6" "120.196.165.2")
 TEMP_FILE='ip.test'
@@ -1950,8 +1951,30 @@ RegionRestrictionCheck_script(){
 }
 
 lmc999_script(){
-    echo -e "-------------------TikTok解锁--感谢lmc999提供检测----------------------"
-    python3 tk.py 
+    echo -e "-------------------TikTok解锁--感谢lmc999加密脚本及fscarmen PR----------------------"
+    local Ftmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -s --max-time 10 "https://www.tiktok.com/")
+
+    if [[ "$Ftmpresult" = "curl"* ]]; then
+        _red "\r Tiktok Region: Failed (Network Connection)\n"
+        return
+    fi
+
+    local FRegion=$(echo $Ftmpresult | grep '"$region":"' | sed 's/.*"$region//' | cut -f3 -d'"')
+    if [ -n "$FRegion" ]; then
+        _green "\r Tiktok Region: 【${FRegion}】\n"
+        return
+    fi
+
+    local STmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -sL --max-time 10 -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9" -H "Accept-Encoding: gzip" -H "Accept-Language: en" "https://www.tiktok.com" | gunzip 2>/dev/null)
+    local SRegion=$(echo $STmpresult | grep '"$region":"' | sed 's/.*"$region//' | cut -f3 -d'"')
+    if [ -n "$SRegion" ]; then
+        _yellow "\r Tiktok Region: 【${SRegion}】(可能为IDC IP)}\n"
+        return
+    else
+        _red "\r Tiktok Region: Failed \n"
+        return
+    fi
+
 }
 
 spiritlhl_script(){
