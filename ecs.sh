@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.08.30"
+ver="2022.08.31"
 changeLog="融合怪八代目(集合百家之长)(专为测评频道小鸡而生)"
 
 UA_Browser="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36"
@@ -2020,7 +2020,7 @@ fscarmen_route_script(){
     chmod 777 $FILE >/dev/null 2>&1
     _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
     for ((a=0;a<${#test_area[@]};a++)); do
-    _yellow "\n${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
+    _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
     ./"$FILE" "${test_ip[a]}" -g cn | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
     done
     cat $TEMP_FILE
