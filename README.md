@@ -36,6 +36,10 @@ bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/m
 bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/main/qzcheck.sh)
 ```
 
+# 更新
+
+2022.08.31 增加三网路由延迟，Tiktok解锁测试提速
+
 # 功能
 
 - [x] 自由组合测试方面和单项测试--原创
@@ -46,8 +50,8 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 - [x] 硬盘IO读写测试--感谢yabs开源
 - [x] 御三家流媒体解锁--感谢sjlleo的二进制文件
 - [x] 常用流媒体解锁--感谢RegionRestrictionCheck开源
-- [x] Tiktok解锁--感谢lmc999的二进制文件
-- [x] 三网回程--感谢zhanghanyun/backtrace开源
+- [x] Tiktok解锁--感谢lmc999的二进制文件以及fscarmen的PR
+- [x] 三网回程以及路由延迟--感谢zhanghanyun/backtrace开源
 - [x] 回程路由以及带宽类型检测(商宽/家宽/数据中心)--由fscarmen的PR以及本人的技术思路提供
 - [x] 端口检测(检测是否被墙)--由fscarmen的PR以及本人的技术思路提供
 - [x] IP质量检测(检测IP白不白)(含IPV4和IPV6)--本人独创，感谢互联网提供的查询资源
