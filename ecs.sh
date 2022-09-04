@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.08.31"
+ver="2022.09.04"
 changeLog="融合怪八代目(集合百家之长)(专为测评频道小鸡而生)"
 
 UA_Browser="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36"
@@ -482,6 +482,7 @@ Check_Sysbench_InstantBuild() {
         ./autogen.sh && ./configure --without-mysql && make -j8 && make install
         echo -e "${Msg_Info}Cleaning up ..."
         cd /tmp && rm -rf /tmp/_LBench/src/sysbench*  >/dev/null 2>&1
+        cd .. >/dev/null 2>&1
     elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
@@ -495,6 +496,7 @@ Check_Sysbench_InstantBuild() {
         ./autogen.sh && ./configure --without-mysql && make -j8 && make install
         echo -e "${Msg_Info}Cleaning up ..."
         cd /tmp && rm -rf /tmp/_LBench/src/sysbench*  >/dev/null 2>&1
+        cd .. >/dev/null 2>&1
     elif [ "${Var_OSRelease}" = "fedora" ]; then
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
@@ -508,9 +510,11 @@ Check_Sysbench_InstantBuild() {
         ./autogen.sh && ./configure --without-mysql && make -j8 && make install
         echo -e "${Msg_Info}Cleaning up ..."
         cd /tmp && rm -rf /tmp/_LBench/src/sysbench*  >/dev/null 2>&1
+        cd .. >/dev/null 2>&1
     else
         echo -e "${Msg_Error}Cannot compile on current enviorment！ (Only Support CentOS/Debian/Ubuntu/Fedora) "
     fi
+    
 }
 
 # =============== SysBench - CPU性能 部分 ===============
@@ -543,6 +547,7 @@ Run_SysBench_CPU() {
 }
 
 Function_SysBench_CPU_Fast() {
+    
     mkdir -p ${WorkDir}/SysBench/CPU/ >/dev/null 2>&1
     echo -e " ${Font_Yellow}-> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}"
     echo -e " -> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/CPU/result.txt
@@ -1665,9 +1670,11 @@ Run_SysBench_Memory() {
         echo -e " $6:\t\t${ResultSpeed} MB/s" >>${WorkDir}/SysBench/Memory/result.txt
     fi
     sleep 0.5
+    
 }
 
 Function_SysBench_Memory_Fast() {
+    
     mkdir -p ${WorkDir}/SysBench/Memory/ >/dev/null 2>&1
     echo -e " ${Font_Yellow}-> 内存测试 Test (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}"
     echo -e " -> 内存测试 (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/Memory/result.txt
@@ -1774,6 +1781,7 @@ ipv4_info() {
 }
 
 print_intro() {
+    
     echo "--------------------- A Bench Script By spiritlhl ---------------------"
     echo "                   测评频道: https://t.me/vps_reviews                    "
     echo "版本：$ver"
@@ -1782,6 +1790,7 @@ print_intro() {
 
 # Get System information
 get_system_info() {
+    
     cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
     cores=$( awk -F: '/processor/ {core++} END {print core}' /proc/cpuinfo )
     freq=$( awk -F'[ :]' '/cpu MHz/ {print $4;exit}' /proc/cpuinfo )
@@ -1812,6 +1821,7 @@ get_system_info() {
 }
 # Print System information
 print_system_info() {
+    
     if [ -n "$cname" ]; then
         echo " CPU 型号          : $(_blue "$cname")"
     else
@@ -1905,6 +1915,7 @@ pre_check(){
 }
 
 sjlleo_script(){
+    
     echo "--------------------流媒体解锁--感谢sjlleo开源-------------------------"
     yellow "以下测试的解锁地区是准确的，但是不是完整解锁的判断可能有误，这方面仅作参考使用"
     yellow "Youtube"
@@ -1920,16 +1931,20 @@ sjlleo_script(){
 }
 
 basic_script(){
+    
     echo "-----------------感谢teddysun和misakabench和yabs开源-------------------"
     print_system_info
     ipv4_info
+    
     echo "-------------------CPU测试--感谢lemonbench开源------------------------"
     Entrance_SysBench_CPU_Fast
+    
     echo "-------------------内存测试--感谢lemonbench开源-----------------------"
     Entrance_SysBench_Memory_Fast
 }
 
 io1_script(){
+    
     echo "----------------磁盘IO读写测试--感谢lemonbench开源--------------------"
     Entrance_DiskTest_Fast
     # Function_GenerateResult
@@ -1937,12 +1952,14 @@ io1_script(){
 }
 
 io2_script(){
+    
     echo "-------------------磁盘IO读写测试--感谢yabs开源-----------------------"
     bash ./yabsiotest.sh 
     rm -rf yabsiotest.sh
 }
 
 RegionRestrictionCheck_script(){
+    
     echo -e "---------------流媒体解锁--感谢RegionRestrictionCheck开源-------------"
     yellow " 以下为IPV4网络测试"
     Global_UnlockTest 4
@@ -1951,6 +1968,7 @@ RegionRestrictionCheck_script(){
 }
 
 lmc999_script(){
+    
     echo -e "-------------TikTok解锁--感谢lmc999加密脚本及fscarmen PR--------------"
     local Ftmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -s --max-time 10 "https://www.tiktok.com/")
 
@@ -1978,12 +1996,14 @@ lmc999_script(){
 }
 
 spiritlhl_script(){
+    
     echo -e "------------------欺诈分数以及IP质量检测--本频道原创-------------------"
     yellow "得分仅作参考，不代表100%准确"
     python3 qzcheck_ecs.py 
 }
 
 backtrace_script(){
+    
     echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
     rm -f $TEMP_FILE2
     curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
