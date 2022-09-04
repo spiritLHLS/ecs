@@ -13,6 +13,8 @@ GREEN="\033[32m"
 YELLOW="\033[33m"
 PLAIN="\033[0m"
 
+cd /root >/dev/null 2>&1
+
 red(){
     echo -e "\033[31m\033[01m$1\033[0m"
 }
@@ -482,7 +484,7 @@ Check_Sysbench_InstantBuild() {
         ./autogen.sh && ./configure --without-mysql && make -j8 && make install
         echo -e "${Msg_Info}Cleaning up ..."
         cd /tmp && rm -rf /tmp/_LBench/src/sysbench*  >/dev/null 2>&1
-        cd .. >/dev/null 2>&1
+        cd /root >/dev/null 2>&1
     elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
@@ -496,7 +498,7 @@ Check_Sysbench_InstantBuild() {
         ./autogen.sh && ./configure --without-mysql && make -j8 && make install
         echo -e "${Msg_Info}Cleaning up ..."
         cd /tmp && rm -rf /tmp/_LBench/src/sysbench*  >/dev/null 2>&1
-        cd .. >/dev/null 2>&1
+        cd /root >/dev/null 2>&1
     elif [ "${Var_OSRelease}" = "fedora" ]; then
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
@@ -510,7 +512,7 @@ Check_Sysbench_InstantBuild() {
         ./autogen.sh && ./configure --without-mysql && make -j8 && make install
         echo -e "${Msg_Info}Cleaning up ..."
         cd /tmp && rm -rf /tmp/_LBench/src/sysbench*  >/dev/null 2>&1
-        cd .. >/dev/null 2>&1
+        cd /root >/dev/null 2>&1
     else
         echo -e "${Msg_Error}Cannot compile on current enviorment！ (Only Support CentOS/Debian/Ubuntu/Fedora) "
     fi
@@ -1915,7 +1917,7 @@ pre_check(){
 }
 
 sjlleo_script(){
-    
+    cd /root >/dev/null 2>&1
     echo "--------------------流媒体解锁--感谢sjlleo开源-------------------------"
     yellow "以下测试的解锁地区是准确的，但是不是完整解锁的判断可能有误，这方面仅作参考使用"
     yellow "Youtube"
@@ -1935,16 +1937,16 @@ basic_script(){
     echo "-----------------感谢teddysun和misakabench和yabs开源-------------------"
     print_system_info
     ipv4_info
-    
+    cd /root >/dev/null 2>&1
     echo "-------------------CPU测试--感谢lemonbench开源------------------------"
     Entrance_SysBench_CPU_Fast
-    
+    cd /root >/dev/null 2>&1
     echo "-------------------内存测试--感谢lemonbench开源-----------------------"
     Entrance_SysBench_Memory_Fast
 }
 
 io1_script(){
-    
+    cd /root >/dev/null 2>&1
     echo "----------------磁盘IO读写测试--感谢lemonbench开源--------------------"
     Entrance_DiskTest_Fast
     # Function_GenerateResult
@@ -1968,7 +1970,7 @@ RegionRestrictionCheck_script(){
 }
 
 lmc999_script(){
-    
+    cd /root >/dev/null 2>&1
     echo -e "-------------TikTok解锁--感谢lmc999加密脚本及fscarmen PR--------------"
     local Ftmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -s --max-time 10 "https://www.tiktok.com/")
 
@@ -1989,14 +1991,14 @@ lmc999_script(){
         _yellow "\r Tiktok Region: 【${SRegion}】(可能为IDC IP)}"
         return
     else
-        _red "\r Tiktok Region: Failed \n"
+        _red "\r Tiktok Region: Failed"
         return
     fi
 
 }
 
 spiritlhl_script(){
-    
+    cd /root >/dev/null 2>&1
     echo -e "------------------欺诈分数以及IP质量检测--本频道原创-------------------"
     yellow "得分仅作参考，不代表100%准确"
     python3 qzcheck_ecs.py 
