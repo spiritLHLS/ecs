@@ -1288,7 +1288,7 @@ function MediaUnlockTest_YouTube_Premium() {
 
 function MediaUnlockTest_PrimeVideo_Region() {
     echo -n -e " Amazon Prime Video:\t\t\t->\c"
-    local tmpresult=$(curl $useNIC $xForward -${1} ${ssll} --user-agent "${UA_Browser}" -s --max-time 10 "https://www.primevideo.com")
+    local tmpresult=$(curl $useNIC $xForward -${1} ${ssll} --user-agent "${UA_Browser}" -sL --max-time 10 "https://www.primevideo.com")
 
     if [[ "$tmpresult" = "curl"* ]]; then
         echo -n -e "\r Amazon Prime Video:\t\t\t${Font_Red}Failed (Network Connection)${Font_Suffix}\n"
