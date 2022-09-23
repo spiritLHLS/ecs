@@ -2147,7 +2147,7 @@ fscarmen_route_script(){
     ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
     PE_4=$(curl -sm5 ping.pe/$WAN_4) &&
     COOKIE_4=$(echo $PE_4 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
-    TYPE_4=$(curl -sm5 --header "cookie: $COOKIE_4" ping.pe/$WAN_4 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g") &&
+    TYPE_4=$(curl -sm5 --header "cookie: $COOKIE_4" ping.pe/$WAN_4 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g;s/cellular/蜂窝网络/g;s/business/商业带宽/g") &&
     _blue " IPv4 宽带类型: $TYPE_4\t ASN: $ASNORG_4" >> $TEMP_FILE
     IP_6=$(curl -s6m5 https:/ip.gs/json) &&
     WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
