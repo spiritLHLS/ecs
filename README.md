@@ -39,6 +39,7 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 # 更新
 
 2022.08.31 增加三网路由延迟，Tiktok解锁测试提速
+
 2022.9.23 增加全国网络延迟测试，新增两个原始版本的三网测速的选项
 
 # 功能
