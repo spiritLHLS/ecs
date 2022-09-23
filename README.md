@@ -39,6 +39,7 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 # 更新
 
 2022.08.31 增加三网路由延迟，Tiktok解锁测试提速
+2022.9.23 增加全国网络延迟测试，新增两个原始版本的三网测速的选项
 
 # 功能
 
@@ -56,8 +57,18 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 - [x] 端口检测(检测是否被墙)--由fscarmen的PR以及本人的技术思路提供
 - [x] IP质量检测(检测IP白不白)(含IPV4和IPV6)--本人独创，感谢互联网提供的查询资源
 - [x] speedtest测速--由teddysun和superspeed的开源以及个人整理
-- [ ] 全国网络延迟测试 
+- [x] 全国网络延迟测试 
 
 # 测评频道
 
 https://t.me/vps_reviews
+
+# 脚本概况
+
+![](https://github.com/spiritLHLS/ecs/raw/main/page/zhuye.png)
+![](https://github.com/spiritLHLS/ecs/raw/main/page/1.png)
+![](https://github.com/spiritLHLS/ecs/raw/main/page/2.png)
+![](https://github.com/spiritLHLS/ecs/raw/main/page/3.png)
+![](https://github.com/spiritLHLS/ecs/raw/main/page/4.png)
+![](https://github.com/spiritLHLS/ecs/raw/main/page/5.png)
+![](https://github.com/spiritLHLS/ecs/raw/main/page/6.png)
