@@ -62,7 +62,7 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 
 # 测评频道
 
-https://t.me/vps_reviews
+# https://t.me/vps_reviews
 
 # 脚本概况
 
