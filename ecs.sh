@@ -1868,10 +1868,11 @@ latency() {
 			rtt=$(printf "%03d" $rtt)
 			break
 		done
-		result="${rtt}ms : $host ,$ipaddr"
+		result="${rtt}ms : $host , $ipaddr"
 		CHINALIST[${#CHINALIST[@]}]=$result		
 	fi
 }
+# https://github.com/xsidc/zbench/blob/master/ZPing-CN.py
 # https://ipasn.com/bench.sh
 chinaping() {
     # start=$(date +%s)
