@@ -25,6 +25,27 @@ yellow(){
     echo -e "\033[33m\033[01m$1\033[0m"
 }
 
+REGEX=("debian" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora")
+RELEASE=("Debian" "Ubuntu" "CentOS" "CentOS" "Fedora")
+PACKAGE_UPDATE=("apt-get update" "apt-get update" "yum -y update" "yum -y update" "yum -y update")
+PACKAGE_INSTALL=("apt -y install" "apt -y install" "yum -y install" "yum -y install" "yum -y install")
+PACKAGE_REMOVE=("apt -y remove" "apt -y remove" "yum -y remove" "yum -y remove" "yum -y remove")
+PACKAGE_UNINSTALL=("apt -y autoremove" "apt -y autoremove" "yum -y autoremove" "yum -y autoremove" "yum -y autoremove")
+
+CMD=("$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(hostnamectl 2>/dev/null | grep -i system | cut -d : -f2)" "$(lsb_release -sd 2>/dev/null)" "$(grep -i description /etc/lsb-release 2>/dev/null | cut -d \" -f2)" "$(grep . /etc/redhat-release 2>/dev/null)" "$(grep . /etc/issue 2>/dev/null | cut -d \\ -f1 | sed '/^[ ]*$/d')") 
+
+for i in "${CMD[@]}"; do
+    SYS="$i" && [[ -n $SYS ]] && break
+done
+
+for ((int = 0; int < ${#REGEX[@]}; int++)); do
+    if [[ $(echo "$SYS" | tr '[:upper:]' '[:lower:]') =~ ${REGEX[int]} ]]; then
+        SYSTEM="${RELEASE[int]}" && [[ -n $SYSTEM ]] && break
+    fi
+done
+
+
+
 
 trap _exit INT QUIT TERM
 
@@ -93,18 +114,12 @@ checkupdate(){
 
 
 checkpython() {
-	if  [ ! -e '/usr/bin/python' ]; then
-	        echo "正在安装 Python"
-	            if [ "${release}" == "centos" ]; then
-# 	            	    yum update > /dev/null 2>&1
-	                    yum -y install python > /dev/null 2>&1
-	                else
-# 	                    apt-get update > /dev/null 2>&1
-	                    apt-get -y install python > /dev/null 2>&1
-	                fi
-
-	fi
+    ! type -p python3 >/dev/null 2>&1 && yellow "\n Install python3\n" && ${PACKAGE_INSTALL[int]} python3
+    ! type -p pip3 install requests >/dev/null 2>&1 && yellow "\n Install pip3\n" && ${PACKAGE_INSTALL[int]} python3-pip
+    pip3 install requests
+    sleep 0.5
 }
+
 
 checkdnsutils() {
 	if  [ ! -e '/usr/bin/dnsutils' ]; then
