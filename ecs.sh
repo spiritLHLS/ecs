@@ -2604,9 +2604,9 @@ Yuanshi_script(){
 Yuanchuang_script(){
     head_script
     echo -e "${GREEN}1.${PLAIN} 完整的IP质量检测(平均运行10~20秒)"
-    echo -e "${GREEN}2.${PLAIN} 回程路由测试(预设广州)(平均运行10~20秒)"
-    echo -e "${GREEN}3.${PLAIN} 回程路由测试(预设上海)(平均运行10~20秒)"
-    echo -e "${GREEN}4.${PLAIN} 回程路由测试(预设北京)(平均运行10~20秒)"
+    echo -e "${GREEN}2.${PLAIN} 回程路由测试(预设广州)(平均运行1分钟)"
+    echo -e "${GREEN}3.${PLAIN} 回程路由测试(预设上海)(平均运行1分钟)"
+    echo -e "${GREEN}4.${PLAIN} 回程路由测试(预设北京)(平均运行1分钟)"
     echo -e "${GREEN}4.${PLAIN} 回程路由测试(自定义，需自行输入IP)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
