@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 
-ver="2022.09.23"
+ver="2022.10.02"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 
 UA_Browser="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36"
-test_area=("广州电信" "广州联通" "广州移动")
-test_ip=("58.60.188.222" "210.21.196.6" "120.196.165.2")
+test_area_g=("广州电信" "广州联通" "广州移动")
+test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
+test_area_s=("上海电信" "上海联通" "上海移动")
+test_ip_s=("202.96.209.133" "210.22.97.1" "211.136.112.200")
+test_area_b=("北京电信" "北京联通" "北京移动")
+test_ip_b=("219.141.136.12" "202.106.50.1" "221.179.155.161")
 TEMP_FILE='ip.test'
 
 RED="\033[31m"
@@ -2138,7 +2142,7 @@ backtrace_script(){
 }
 
 
-fscarmen_route_script(){
+fscarmen_route_g_script(){
     echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
     yellow "以下测试的带宽类型可能有误，商宽可能被判断为家宽，仅作参考使用"
     rm -f $TEMP_FILE
@@ -2167,9 +2171,83 @@ fscarmen_route_script(){
     [[ ! -e $FILE ]] && wget -q https://github.com/fscarmen/tools/raw/main/besttrace/$FILE >/dev/null 2>&1
     chmod 777 $FILE >/dev/null 2>&1
     _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
-    for ((a=0;a<${#test_area[@]};a++)); do
-    _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
-    ./"$FILE" "${test_ip[a]}" -g cn | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
+    for ((a=0;a<${#test_area_g[@]};a++)); do
+    _yellow "${test_area_g[a]} ${test_ip_g[a]}" >> $TEMP_FILE
+    ./"$FILE" "${test_ip_g[a]}" -g cn | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
+    done
+    cat $TEMP_FILE
+    rm -f $TEMP_FILE
+}
+
+fscarmen_route_s_script(){
+    echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
+    yellow "以下测试的带宽类型可能有误，商宽可能被判断为家宽，仅作参考使用"
+    rm -f $TEMP_FILE
+    IP_4=$(curl -s4m5 https:/ip.gs/json) &&
+    WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
+    ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
+    PE_4=$(curl -sm5 ping.pe/$WAN_4) &&
+    COOKIE_4=$(echo $PE_4 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
+    TYPE_4=$(curl -sm5 --header "cookie: $COOKIE_4" ping.pe/$WAN_4 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g;s/cellular/蜂窝网络/g;s/business/商业带宽/g;s#</b>##g") &&
+    _blue " IPv4 宽带类型: $TYPE_4\t ASN: $ASNORG_4" >> $TEMP_FILE
+    IP_6=$(curl -s6m5 https:/ip.gs/json) &&
+    WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
+    ASNORG_6=$(expr "$IP_6" : '.*asn_org\":\"\([^"]*\).*') &&
+    PE_6=$(curl -sm5 ping6.ping.pe/$WAN_6) &&
+    COOKIE_6=$(echo $PE_6 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
+    TYPE_6=$(curl -sm5 --header "cookie: $COOKIE_6" ping6.ping.pe/$WAN_6 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g;s/cellular/蜂窝网络/g;s/business/商业带宽/g;s#</b>##g") &&
+    _blue " IPv6 宽带类型: $TYPE_6\t ASN: $ASNORG_6" >> $TEMP_FILE
+    local ARCHITECTURE="$(arch)"
+      case $ARCHITECTURE in
+        x86_64 )  local FILE=besttrace;;
+        aarch64 ) local FILE=besttracearm;;
+        i386 )    local FILE=besttracemac;;
+        * ) red " 只支持 AMD64、ARM64、Mac 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && return;;
+      esac
+
+    [[ ! -e $FILE ]] && wget -q https://github.com/fscarmen/tools/raw/main/besttrace/$FILE >/dev/null 2>&1
+    chmod 777 $FILE >/dev/null 2>&1
+    _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
+    for ((a=0;a<${#test_area_s[@]};a++)); do
+    _yellow "${test_area_s[a]} ${test_ip_g[a]}" >> $TEMP_FILE
+    ./"$FILE" "${test_ip_s[a]}" -g cn | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
+    done
+    cat $TEMP_FILE
+    rm -f $TEMP_FILE
+}
+
+fscarmen_route_b_script(){
+    echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
+    yellow "以下测试的带宽类型可能有误，商宽可能被判断为家宽，仅作参考使用"
+    rm -f $TEMP_FILE
+    IP_4=$(curl -s4m5 https:/ip.gs/json) &&
+    WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
+    ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
+    PE_4=$(curl -sm5 ping.pe/$WAN_4) &&
+    COOKIE_4=$(echo $PE_4 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
+    TYPE_4=$(curl -sm5 --header "cookie: $COOKIE_4" ping.pe/$WAN_4 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g;s/cellular/蜂窝网络/g;s/business/商业带宽/g;s#</b>##g") &&
+    _blue " IPv4 宽带类型: $TYPE_4\t ASN: $ASNORG_4" >> $TEMP_FILE
+    IP_6=$(curl -s6m5 https:/ip.gs/json) &&
+    WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
+    ASNORG_6=$(expr "$IP_6" : '.*asn_org\":\"\([^"]*\).*') &&
+    PE_6=$(curl -sm5 ping6.ping.pe/$WAN_6) &&
+    COOKIE_6=$(echo $PE_6 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
+    TYPE_6=$(curl -sm5 --header "cookie: $COOKIE_6" ping6.ping.pe/$WAN_6 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g;s/cellular/蜂窝网络/g;s/business/商业带宽/g;s#</b>##g") &&
+    _blue " IPv6 宽带类型: $TYPE_6\t ASN: $ASNORG_6" >> $TEMP_FILE
+    local ARCHITECTURE="$(arch)"
+      case $ARCHITECTURE in
+        x86_64 )  local FILE=besttrace;;
+        aarch64 ) local FILE=besttracearm;;
+        i386 )    local FILE=besttracemac;;
+        * ) red " 只支持 AMD64、ARM64、Mac 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && return;;
+      esac
+
+    [[ ! -e $FILE ]] && wget -q https://github.com/fscarmen/tools/raw/main/besttrace/$FILE >/dev/null 2>&1
+    chmod 777 $FILE >/dev/null 2>&1
+    _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
+    for ((a=0;a<${#test_area_b[@]};a++)); do
+    _yellow "${test_area_b[a]} ${test_ip_g[a]}" >> $TEMP_FILE
+    ./"$FILE" "${test_ip_b[a]}" -g cn | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
     done
     cat $TEMP_FILE
     rm -f $TEMP_FILE
@@ -2238,7 +2316,7 @@ all_script(){
     lmc999_script
     spiritlhl_script
     backtrace_script
-    fscarmen_route_script
+    fscarmen_route_g_script
     fscarmen_port_script
     superspeed_all_script
     end_script
@@ -2278,7 +2356,7 @@ minal_plus(){
     RegionRestrictionCheck_script
     lmc999_script
     backtrace_script
-    fscarmen_route_script
+    fscarmen_route_g_script
     superspeed_minal_script
     end_script
 }
@@ -2297,7 +2375,7 @@ minal_plus_network(){
     basic_script
     io2_script
     backtrace_script
-    fscarmen_route_script
+    fscarmen_route_g_script
     superspeed_minal_script
     end_script
 }
@@ -2333,7 +2411,7 @@ network_script(){
     print_intro
     spiritlhl_script
     backtrace_script
-    fscarmen_route_script
+    fscarmen_route_g_script
     fscarmen_port_script
     superspeed_all_script
     end_script
@@ -2395,9 +2473,37 @@ sw_script(){
     clear
     print_intro
     backtrace_script
-    fscarmen_route_script
+    fscarmen_route_g_script
     end_script
 }
+
+network_g_script(){
+    pre_check
+    start_time=$(date +%s)
+    clear
+    print_intro
+    fscarmen_route_g_script
+    end_script
+}
+
+network_s_script(){
+    pre_check
+    start_time=$(date +%s)
+    clear
+    print_intro
+    fscarmen_route_s_script
+    end_script
+}
+
+network_b_script(){
+    pre_check
+    start_time=$(date +%s)
+    clear
+    print_intro
+    fscarmen_route_b_script
+    end_script
+}
+
 
 rm_script(){
     rm -rf return.sh
@@ -2418,8 +2524,105 @@ rm_script(){
     rm -rf $TEMP_FILE
 }
 
+Jinjian_script(){
+    head_script
+    echo -e "${GREEN}1.${PLAIN} 极简版(基础系统信息+CPU+内存+磁盘IO+测速节点4个)(平均运行3分钟不到)"
+    echo -e "${GREEN}2.${PLAIN} 精简版(基础系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体解锁+TikTok解锁+回程+路由+测速节点4个)(平均运行4分钟左右)"
+    echo -e "${GREEN}3.${PLAIN} 精简网络版(基础系统信息+CPU+内存+磁盘IO+回程+路由+测速节点4个)(平均运行不到4分钟)"
+    echo -e "${GREEN}4.${PLAIN} 精简解锁版(基础系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体解锁+TikTok解锁+测速节点4个)(平均运行4分钟左右)"
+    echo " -------------"
+    echo -e "${GREEN}0.${PLAIN} 回到主菜单"
+    echo ""
+    read -rp "请输入选项:" StartInput1
+	case $StartInput1 in
+        1) minal_script ;;
+        2) minal_plus ;;
+        3) minal_plus_network ;;
+        4) minal_plus_media ;;
+        0) Start_script ;;
+    esac
+}
 
-Start_script(){
+Danxiang_script(){
+    head_script
+    echo -e "${GREEN}1.${PLAIN} 网络方面(简化的IP质量检测+三网回程+三网路由与延迟+测速节点11个)(平均运行7分钟左右)"
+    echo -e "${GREEN}2.${PLAIN} 解锁方面(御三家解锁+常用流媒体解锁+TikTok解锁)(平均运行30~60秒)"
+    echo -e "${GREEN}3.${PLAIN} 硬件方面(基础系统信息+CPU+内存+双重磁盘IO测试)(平均运行1分半钟)"
+    echo -e "${GREEN}4.${PLAIN} 完整的IP质量检测(平均运行10~20秒)"
+    echo -e "${GREEN}5.${PLAIN} 常用端口开通情况(是否有阻断)(平均运行1分钟左右)(暂时有bug未修复)"
+    echo -e "${GREEN}6.${PLAIN} 测三网回程+三网路由与延迟(平均运行1分钟)"
+    echo -e "${GREEN}7.${PLAIN} 全国网络延迟测试(平均运行1分钟)"
+    echo " -------------"
+    echo -e "${GREEN}0.${PLAIN} 回到主菜单"
+    echo ""
+    read -rp "请输入选项:" StartInput2
+	case $StartInput2 in
+        1) network_script;;
+        2) media_script;;
+        3) hardware_script;;
+        4) bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh);;
+        5) port_script ;;
+        6) sw_script ;;
+        7) ping_script ;;
+        0) Start_script ;;
+    esac
+}
+
+Yuanshi_script(){
+    head_script
+    echo -e "${GREEN}1.${PLAIN} misakabench VPS测试脚本"
+    echo -e "${GREEN}2.${PLAIN} lemonbench VPS测试脚本"
+    echo -e "${GREEN}3.${PLAIN} superbench VPS测试脚本"
+    echo -e "${GREEN}4.${PLAIN} yabs VPS测试脚本"
+    echo -e "${GREEN}5.${PLAIN} NetFlix解锁检测脚本 "
+    echo -e "${GREEN}6.${PLAIN} 检测/诊断Youtube地域信息脚本"
+    echo -e "${GREEN}7.${PLAIN} 检测是否解锁DisneyPlus脚本"
+    echo -e "${GREEN}8.${PLAIN} 流媒体检测RegionRestrictionCheck脚本"
+    echo -e "${GREEN}9.${PLAIN} TikTok解锁区域检测脚本"
+    echo -e "${GREEN}10.${PLAIN} superspeed的三网测速脚本"
+    echo -e "${GREEN}11.${PLAIN} hyperspeed的三网测速脚本"
+    echo " -------------"
+    echo -e "${GREEN}0.${PLAIN} 回到主菜单"
+    echo ""
+    read -rp "请输入选项:" StartInput3
+	case $StartInput3 in
+        1) bash <(curl -Lso- https://cdn.jsdelivr.net/gh/misaka-gh/misakabench@master/misakabench.sh) ;;
+        2) curl -fsL https://ilemonra.in/LemonBenchIntl | bash -s fast ;;
+        3) wget -qO- --no-check-certificate https://raw.githubusercontent.com/oooldking/script/master/superbench.sh | bash ;;
+        4) curl -sL yabs.sh | bash ;;
+        5) wget -O nf https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 && chmod +x nf && ./nf ;;
+        6) wget -O tubecheck https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck/CDN/tubecheck_1.0beta_linux_amd64 && chmod +x tubecheck && clear && ./tubecheck ;;
+        7) wget -O dp https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 && chmod +x dp && clear && ./dp ;;
+        8) bash <(curl -L -s check.unlock.media) ;;
+        9) curl -fsL -o ./t.sh.x https://github.com/lmc999/TikTokCheck/raw/main/t.sh.x && chmod +x ./t.sh.x && ./t.sh.x && rm ./t.sh.x ;;
+        10) bash <(curl -Lso- https://git.io/superspeed.sh) ;;
+        11) bash <(curl -Lso- https://bench.im/hyperspeed) ;;
+        0) Start_script ;;
+    esac
+}
+
+Yuanchuang_script(){
+    head_script
+    echo -e "${GREEN}1.${PLAIN} 完整的IP质量检测(平均运行10~20秒)"
+    echo -e "${GREEN}2.${PLAIN} 回程路由测试(预设广州)(平均运行10~20秒)"
+    echo -e "${GREEN}3.${PLAIN} 回程路由测试(预设上海)(平均运行10~20秒)"
+    echo -e "${GREEN}4.${PLAIN} 回程路由测试(预设北京)(平均运行10~20秒)"
+    echo -e "${GREEN}4.${PLAIN} 回程路由测试(自定义，需自行输入IP)"
+    echo " -------------"
+    echo -e "${GREEN}0.${PLAIN} 回到主菜单"
+    echo ""
+    read -rp "请输入选项:" StartInput4
+	case $StartInput4 in
+        1) bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh);;
+        2) network_g_script ;;
+        3) network_s_script ;;
+        4) network_b_script ;;
+        5) bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) ;;
+        0) Start_script ;;
+    esac
+}
+
+head_script(){
     clear
     echo "#############################################################"
     echo -e "#                     ${YELLOW}融合怪测评脚本${PLAIN}                        #"
@@ -2433,39 +2636,26 @@ Start_script(){
     echo "#############################################################"
     echo ""
     green "请选择你接下来测评的组合或单项"
+}
+
+
+Start_script(){
+    head_script
     echo -e "${GREEN}1.${PLAIN} 完全体(所有项目都测试)(平均运行8分钟以上)"
-    echo -e "${GREEN}2.${PLAIN} 极简版(基础系统信息+CPU+内存+磁盘IO+测速节点4个)(平均运行3分钟不到)"
-    echo -e "${GREEN}3.${PLAIN} 精简版(基础系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体解锁+TikTok解锁+回程+路由+测速节点4个)(平均运行4分钟左右)"
-    echo -e "${GREEN}4.${PLAIN} 精简网络版(基础系统信息+CPU+内存+磁盘IO+回程+路由+测速节点4个)(平均运行不到4分钟)"
-    echo -e "${GREEN}5.${PLAIN} 精简解锁版(基础系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体解锁+TikTok解锁+测速节点4个)(平均运行4分钟左右)"
-    echo -e "${GREEN}6.${PLAIN} 网络方面(简化的IP质量检测+三网回程+三网路由与延迟+测速节点11个)(平均运行7分钟左右)"
-    echo -e "${GREEN}7.${PLAIN} 解锁方面(御三家解锁+常用流媒体解锁+TikTok解锁)(平均运行30~60秒)"
-    echo -e "${GREEN}8.${PLAIN} 硬件方面(基础系统信息+CPU+内存+双重磁盘IO测试)(平均运行1分半钟)"
-    echo -e "${GREEN}9.${PLAIN} 完整的IP质量检测(平均运行10~20秒)"
-    echo -e "${GREEN}10.${PLAIN} 常用端口开通情况(是否有阻断)(平均运行1分钟左右)(暂时有bug未修复)"
-    echo -e "${GREEN}11.${PLAIN} 测三网回程+三网路由与延迟"
-    echo -e "${GREEN}12.${PLAIN} 全国网络延迟测试(平均运行1分钟)"
-    echo -e "${GREEN}13.${PLAIN} superspeed的三网测速(原始版本)"
-    echo -e "${GREEN}14.${PLAIN} hyperspeed的三网测速(原始版本)"
+    echo -e "${GREEN}2.${PLAIN} 精简区(融合怪的各种精简版并含单项测试精简版)"
+    echo -e "${GREEN}3.${PLAIN} 单项区(融合怪的单项测试完整版)"
+    echo -e "${GREEN}4.${PLAIN} 原始区(借鉴脚本的原始脚本)"
+    echo -e "${GREEN}5.${PLAIN} 原创区(原创脚本)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 退出"
     echo ""
     read -rp "请输入选项:" StartInput
 	case $StartInput in
         1) all_script ;;
-        2) minal_script ;;
-        3) minal_plus ;;
-        4) minal_plus_network ;;
-        5) minal_plus_media ;;
-        6) network_script;;
-        7) media_script;;
-        8) hardware_script;;
-        9) bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh);;
-        10) port_script ;;
-        11) sw_script ;;
-        12) ping_script ;;
-        13) bash <(curl -Lso- https://git.io/superspeed.sh) ;;
-        14) bash <(curl -Lso- https://bench.im/hyperspeed) ;;
+        2) Jinjian_script ;;
+        3) Danxiang_script ;;
+        4) Yuanshi_script ;;
+        5) Yuanchuang_script ;;
         0) exit 1 ;;
     esac
 }
