@@ -75,3 +75,7 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 ![](https://github.com/spiritLHLS/ecs/raw/main/page/4.png)
 ![](https://github.com/spiritLHLS/ecs/raw/main/page/5.png)
 ![](https://github.com/spiritLHLS/ecs/raw/main/page/6.png)
+
+原创区选项
+
+![](https://github.com/spiritLHLS/ecs/raw/main/page/yc.png)
