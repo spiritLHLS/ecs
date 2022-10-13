@@ -19,6 +19,8 @@ PLAIN="\033[0m"
 
 cd /root >/dev/null 2>&1
 
+WorkDir="/tmp/.LemonBench"
+
 red(){
     echo -e "\033[31m\033[01m$1\033[0m"
 }
@@ -564,12 +566,12 @@ Check_SysBench() {
     # 垂死挣扎 (尝试编译安装)
     if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
         echo -e "${Msg_Warning}Sysbench Module install Failure, trying compile modules ..."
-        Check_Sysbench_InstantBuild >/dev/null 2>&1
+        Check_Sysbench_InstantBuild
     fi
     # 最终检测
     if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
         echo -e "${Msg_Error}SysBench Moudle install Failure! Try Restart Bench or Manually install it! (/usr/bin/sysbench)"
-        # exit 1
+        exit 1
     fi
 }
 
@@ -579,51 +581,48 @@ Check_Sysbench_InstantBuild() {
     if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ]; then
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
-        yum install -y epel-release >/dev/null 2>&1
-        yum install -y wget curl make gcc gcc-c++ make automake libtool pkgconfig libaio-devel >/dev/null 2>&1
+        yum install -y epel-release
+        yum install -y wget curl make gcc gcc-c++ make automake libtool pkgconfig libaio-devel
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
-        echo -e "${Msg_Info}Downloading Source code (Version 1.0.20)..."
+        echo -e "${Msg_Info}Downloading Source code (Version 1.0.17)..."
         mkdir -p /tmp/_LBench/src/
-        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://cdn.spiritlhl.workers.dev/akopytov/sysbench/archive/1.0.20.zip >/dev/null 2>&1
+        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://github.com/akopytov/sysbench/archive/1.0.17.zip
         echo -e "${Msg_Info}Compiling Sysbench Module ..."
         cd /tmp/_LBench/src/
-        unzip sysbench.zip && cd sysbench-1.0.20 >/dev/null 2>&1
+        unzip sysbench.zip && cd sysbench-1.0.17
         ./autogen.sh && ./configure --without-mysql && make -j8 && make install
         echo -e "${Msg_Info}Cleaning up ..."
-        cd /tmp && rm -rf /tmp/_LBench/src/sysbench*  >/dev/null 2>&1
-        cd /root >/dev/null 2>&1
+        cd /tmp && rm -rf /tmp/_LBench/src/sysbench*
     elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
-        apt -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip >/dev/null 2>&1
-        echo -e "${Msg_Info}Downloading Source code (Version 1.0.20)..."
+        apt-get update
+        apt -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip
+        echo -e "${Msg_Info}Downloading Source code (Version 1.0.17)..."
         mkdir -p /tmp/_LBench/src/
-        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://cdn.spiritlhl.workers.dev/akopytov/sysbench/archive/1.0.20.zip >/dev/null 2>&1
+        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://github.com/akopytov/sysbench/archive/1.0.17.zip
         echo -e "${Msg_Info}Compiling Sysbench Module ..."
         cd /tmp/_LBench/src/
-        unzip sysbench.zip && cd sysbench-1.0.20 >/dev/null 2>&1
+        unzip sysbench.zip && cd sysbench-1.0.17
         ./autogen.sh && ./configure --without-mysql && make -j8 && make install
         echo -e "${Msg_Info}Cleaning up ..."
-        cd /tmp && rm -rf /tmp/_LBench/src/sysbench*  >/dev/null 2>&1
-        cd /root >/dev/null 2>&1
+        cd /tmp && rm -rf /tmp/_LBench/src/sysbench*
     elif [ "${Var_OSRelease}" = "fedora" ]; then
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
         dnf install -y wget curl gcc gcc-c++ make automake libtool pkgconfig libaio-devel
-        echo -e "${Msg_Info}Downloading Source code (Version 1.0.20)..."
+        echo -e "${Msg_Info}Downloading Source code (Version 1.0.17)..."
         mkdir -p /tmp/_LBench/src/
-        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://cdn.spiritlhl.workers.dev/akopytov/sysbench/archive/1.0.20.zip >/dev/null 2>&1
+        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://github.com/akopytov/sysbench/archive/1.0.17.zip
         echo -e "${Msg_Info}Compiling Sysbench Module ..."
         cd /tmp/_LBench/src/
-        unzip sysbench.zip && cd sysbench-1.0.20 >/dev/null 2>&1
+        unzip sysbench.zip && cd sysbench-1.0.17
         ./autogen.sh && ./configure --without-mysql && make -j8 && make install
         echo -e "${Msg_Info}Cleaning up ..."
-        cd /tmp && rm -rf /tmp/_LBench/src/sysbench*  >/dev/null 2>&1
-        cd /root >/dev/null 2>&1
+        cd /tmp && rm -rf /tmp/_LBench/src/sysbench*
     else
         echo -e "${Msg_Error}Cannot compile on current enviorment！ (Only Support CentOS/Debian/Ubuntu/Fedora) "
     fi
-    
 }
 
 # =============== SysBench - CPU性能 部分 ===============
