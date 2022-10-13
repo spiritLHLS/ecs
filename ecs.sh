@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.10.02"
+ver="2022.10.13"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 
 UA_Browser="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36"
@@ -97,7 +97,6 @@ PharseJSON() {
 
 # 程序启动动作
 Global_StartupInit_Action() {
-    Global_Startup_Header
     Function_CheckTracemode
     # 清理残留, 为新一次的运行做好准备
     echo -e "${Msg_Info}Initializing Running Enviorment, Please wait ..."
@@ -107,12 +106,116 @@ Global_StartupInit_Action() {
     echo -e "${Msg_Info}Checking Dependency ..."
     Check_Virtwhat
     Check_JSONQuery
-    Check_Speedtest
-    Check_BestTrace
-    Check_Spoofer
+    # Check_Speedtest
+    # Check_BestTrace
+    # Check_Spoofer
     Check_SysBench
     echo -e "${Msg_Info}Starting Test ...\n\n"
-    clear
+    # clear
+}
+
+Function_CheckTracemode() {
+    if [ "${Flag_TracerouteModeisSet}" = "1" ]; then
+        if [ "${GlobalVar_TracerouteMode}" = "icmp" ]; then
+            echo -e "${Msg_Info}Traceroute/BestTrace Tracemode is set to: ${Font_SkyBlue}ICMP Mode${Font_Suffix}"
+        elif [ "${GlobalVar_TracerouteMode}" = "tcp" ]; then
+            echo -e "${Msg_Info}Traceroute/BestTrace Tracemode is set to: ${Font_SkyBlue}TCP Mode${Font_Suffix}"
+        fi
+    else
+        GlobalVar_TracerouteMode="tcp"
+    fi
+}
+
+
+# =============== 检查 Virt-what 组件 ===============
+Check_Virtwhat() {
+    if [ ! -f "/usr/sbin/virt-what" ]; then
+        SystemInfo_GetOSRelease
+        if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ]; then
+            echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
+            yum -y install virt-what
+        elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
+            echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
+            apt-get update
+            apt-get install -y virt-what dmidecode
+        elif [ "${Var_OSRelease}" = "fedora" ]; then
+            echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
+            dnf -y install virt-what
+        elif [ "${Var_OSRelease}" = "alpinelinux" ]; then
+            echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
+            apk update
+            apk add virt-what
+        else
+            echo -e "${Msg_Warning}Virt-What Module not found, but we could not find the os's release ..."
+        fi
+    fi
+    # 二次检测
+    if [ ! -f "/usr/sbin/virt-what" ]; then
+        echo -e "Virt-What Moudle install Failure! Try Restart Bench or Manually install it! (/usr/sbin/virt-what)"
+        exit 1
+    fi
+}
+
+
+
+# =============== 检查 JSON Query 组件 ===============
+Check_JSONQuery() {
+    if [ ! -f "/usr/bin/jq" ]; then
+        SystemInfo_GetOSRelease
+        SystemInfo_GetSystemBit
+        if [ "${LBench_Result_SystemBit_Short}" = "64" ]; then
+            local DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/JSONQuery/jq-amd64.tar.gz"
+            # local DownloadSrc="https://raw.githubusercontent.com/LemonBench/LemonBench/master/Resources/JSONQuery/jq-amd64.tar.gz"
+            # local DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/jq/1.6/amd64/jq.tar.gz"
+        elif [ "${LBench_Result_SystemBit_Short}" = "32" ]; then
+            local DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/JSONQuery/jq-i386.tar.gz"
+            # local DownloadSrc="https://raw.githubusercontent.com/LemonBench/LemonBench/master/Resources/JSONQuery/jq-i386.tar.gz"
+            # local DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/jq/1.6/i386/jq.tar.gz"
+        else
+            local DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/JSONQuery/jq-i386.tar.gz"
+            # local DownloadSrc="https://raw.githubusercontent.com/LemonBench/LemonBench/master/Resources/JSONQuery/jq-i386.tar.gz"
+            # local DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/jq/1.6/i386/jq.tar.gz"
+        fi
+        mkdir -p ${WorkDir}/
+        if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ]; then
+            echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
+            echo -e "${Msg_Info}Installing Dependency ..."
+            yum install -y epel-release
+            yum install -y jq
+        elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
+            echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
+            echo -e "${Msg_Info}Installing Dependency ..."
+            apt-get update
+            apt-get install -y jq
+        elif [ "${Var_OSRelease}" = "fedora" ]; then
+            echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
+            echo -e "${Msg_Info}Installing Dependency ..."
+            dnf install -y jq
+        elif [ "${Var_OSRelease}" = "alpinelinux" ]; then
+            echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
+            echo -e "${Msg_Info}Installing Dependency ..."
+            apk update
+            apk add jq
+        else
+            echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
+            echo -e "${Msg_Info}Installing Dependency ..."
+            apk update
+            apk add wget unzip curl
+            echo -e "${Msg_Info}Downloading Json Query Module ..."
+            curl --user-agent "${UA_LemonBench}" ${DownloadSrc} -o ${WorkDir}/jq.tar.gz
+            echo -e "${Msg_Info}Installing JSON Query Module ..."
+            tar xvf ${WorkDir}/jq.tar.gz
+            mv ${WorkDir}/jq /usr/bin/jq
+            chmod +x /usr/bin/jq
+            echo -e "${Msg_Info}Cleaning up ..."
+            rm -rf ${WorkDir}/jq.tar.gz
+        fi
+    fi
+    # 二次检测
+    if [ ! -f "/usr/bin/jq" ]; then
+        echo -e "JSON Query Moudle install Failure! Try Restart Bench or Manually install it! (/usr/bin/jq)"
+        exit 1
+    fi
 }
 
 # 捕获异常信号后的动作
@@ -2041,6 +2144,7 @@ pre_check(){
     checkwget
     checksystem
     checkcurl
+    Global_StartupInit_Action
     curl -L https://gitlab.com/spiritysdx/za/-/raw/main/yabsiotest.sh -o yabsiotest.sh && chmod +x yabsiotest.sh  >/dev/null 2>&1
     ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
     ! _exists "free" && _red "Error: free command not found.\n" && exit 1
