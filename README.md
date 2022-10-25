@@ -35,6 +35,15 @@ bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/m
 ```bash
 bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/main/qzcheck.sh)
 ```
+# bug待修复
+
+ping.pe 增加了5秒盾抗ddos脚本未适配，10.26预计修复完成
+
+分区部分描述模糊难以理解，修复时间未知
+
+lemonbench测试中的IO读写有时候过高脱离实际，修复时间未知
+
+端口测试自动获取ssh的端口进行连通性测试替换默认端口测试，修复时间未知
 
 # 更新
 
