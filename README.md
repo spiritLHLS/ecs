@@ -37,7 +37,7 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 ```
 # bug待修复
 
-ping.pe 增加了5秒盾抗ddos脚本未适配，10.26预计修复完成
+ping.pe 增加了cloudflare的5秒盾抗ddos，本脚本未适配，同期cloudflare更新了防护页面，暂无新工具绕过，修复时间未知
 
 分区部分描述模糊难以理解，修复时间未知
 
