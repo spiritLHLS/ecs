@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.10.17"
+ver="2022.11.04"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 
 UA_Browser="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36"
@@ -11,6 +11,7 @@ test_ip_s=("202.96.209.133" "210.22.97.1" "211.136.112.200")
 test_area_b=("北京电信" "北京联通" "北京移动")
 test_ip_b=("219.141.136.12" "202.106.50.1" "221.179.155.161")
 TEMP_FILE='ip.test'
+BrowserUA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36"
 
 RED="\033[31m"
 GREEN="\033[32m"
@@ -2103,9 +2104,90 @@ print_end_time() {
     echo " 时间          : $date_time"
 }
 
+geekbench() {
+    cd /root >/dev/null 2>&1
+    echo -e "----------------Geekbenh得分--感谢supeerbench的开源--------------------"
+	echo -e " Geekbench v${GeekbenchVer} Test    :" | tee -a $log
+	if test -f "geekbench.license"; then
+		./geekbench/geekbench$GeekbenchVer --unlock `cat geekbench.license` > /dev/null 2>&1
+	fi
+	
+	GEEKBENCH_TEST=$(./geekbench/geekbench$GeekbenchVer --upload 2>/dev/null | grep "https://browser")
+	
+	if [[ -z "$GEEKBENCH_TEST" ]]; then
+		echo -e " ${RED}Geekbench v${GeekbenchVer} test failed. Run manually to determine cause.${PLAIN}" | tee -a $log
+		GEEKBENCH_URL=''
+		if [[ $GeekbenchVer == *5* && $ARCH != *aarch64* && $ARCH != *arm* ]]; then
+			rm -rf geekbench
+			download_geekbench4;
+			echo -n -e "\r" | tee -a $log
+			GeekbenchVer=4;
+			geekbench;
+		fi
+	else
+		GEEKBENCH_URL=$(echo -e $GEEKBENCH_TEST | head -1)
+		GEEKBENCH_URL_CLAIM=$(echo $GEEKBENCH_URL | awk '{ print $2 }')
+		GEEKBENCH_URL=$(echo $GEEKBENCH_URL | awk '{ print $1 }')
+		sleep 20
+		[[ $GeekbenchVer == *5* ]] && GEEKBENCH_SCORES=$(curl -s $GEEKBENCH_URL | grep "div class='score'") || GEEKBENCH_SCORES=$(curl -s $GEEKBENCH_URL | grep "span class='score'")
+		GEEKBENCH_SCORES_SINGLE=$(echo $GEEKBENCH_SCORES | awk -v FS="(>|<)" '{ print $3 }')
+		GEEKBENCH_SCORES_MULTI=$(echo $GEEKBENCH_SCORES | awk -v FS="(>|<)" '{ print $7 }')
+		
+		echo -e "       Single Core    : ${YELLOW}$GEEKBENCH_SCORES_SINGLE  $grank${PLAIN}"  | tee -a $log
+		echo -e "        Multi Core    : ${YELLOW}$GEEKBENCH_SCORES_MULTI${PLAIN}" | tee -a $log
+		[ ! -z "$GEEKBENCH_URL_CLAIM" ] && echo -e "$GEEKBENCH_URL_CLAIM" >> geekbench_claim.url 2> /dev/null
+	fi
+	rm -rf geekbench
+}
+
+download_geekbench4(){
+	if [[ ! -d ./geekbench ]]; then
+		mkdir geekbench
+	fi
+	if [[ ! -d ./geekbench/geekbench4 ]]; then
+		echo -n -e " Installing Geekbench 4..."
+		wget -qO- https://down.vpsaff.net/linux/geekbench/Geekbench-4.4.4-Linux.tar.gz | tar xz --strip-components=1 -C ./geekbench &>/dev/null
+	fi
+	chmod +x ./geekbench/geekbench4
+}
 
 
 #######################################################################################
+
+geekbench_script(){
+    pre_check
+    SystemInfo_GetSystemBit
+    get_system_info >/dev/null 2>&1
+    cd /root >/dev/null 2>&1
+    ARCH=$(uname -m)
+    if [[ ! -e './geekbench' ]]; then
+			mkdir geekbench
+    fi
+    GeekbenchVer=5
+    if [[ $ARCH = *x86* ]]; then
+        download_geekbench4;
+        $GeekbenchVer=4
+    elif [[ $ARCH != *aarch64* && $ARCH != *arm* ]]; then
+        if [ ! -e './geekbench/geekbench5' ]; then
+            echo " Installing Geekbench 5..."
+            wget -qO- https://down.vpsaff.net/linux/geekbench/Geekbench-5.4.4-Linux.tar.gz  | tar xz --strip-components=1 -C ./geekbench &>/dev/null
+        fi
+        chmod +x ./geekbench/geekbench5
+    else
+        if [ ! -e './geekbench/geekbench5' ]; then
+            echo " Installing Geekbench 5..."
+            wget -qO- https://down.vpsaff.net/linux/geekbench/Geekbench-5.4.4-LinuxARMPreview.tar.gz  | tar xz --strip-components=1 -C ./geekbench &>/dev/null
+        fi
+        chmod +x ./geekbench/geekbench5
+    fi
+    sleep 1
+    check_virt
+    start_time=$(date +%s)
+    clear
+    print_intro
+    geekbench
+    end_script
+}
 
 
 python_all_script(){
@@ -2202,33 +2284,54 @@ RegionRestrictionCheck_script(){
     Global_UnlockTest 6
 }
 
-lmc999_script(){
+# lmc999_script(){
+#     cd /root >/dev/null 2>&1
+#     echo -e "-------------TikTok解锁--感谢lmc999加密脚本及fscarmen PR--------------"
+#     local Ftmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -s --max-time 10 "https://www.tiktok.com/")
+
+#     if [[ "$Ftmpresult" = "curl"* ]]; then
+#         _red "\r Tiktok Region: Failed (Network Connection)"
+#         return
+#     fi
+
+#     local FRegion=$(echo $Ftmpresult | grep '"$region":"' | sed 's/.*"$region//' | cut -f3 -d'"')
+#     if [ -n "$FRegion" ]; then
+#         _green "\r Tiktok Region: 【${FRegion}】"
+#         return
+#     fi
+
+#     local STmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -sL --max-time 10 -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9" -H "Accept-Encoding: gzip" -H "Accept-Language: en" "https://www.tiktok.com" | gunzip 2>/dev/null)
+#     local SRegion=$(echo $STmpresult | grep '"$region":"' | sed 's/.*"$region//' | cut -f3 -d'"')
+#     if [ -n "$SRegion" ]; then
+#         _yellow "\r Tiktok Region: 【${SRegion}】(可能为IDC IP)}"
+#         return
+#     else
+#         _red "\r Tiktok Region: Failed"
+#         return
+#     fi
+# }
+
+function UnlockTiktokTest() {
     cd /root >/dev/null 2>&1
-    echo -e "-------------TikTok解锁--感谢lmc999加密脚本及fscarmen PR--------------"
-    local Ftmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -s --max-time 10 "https://www.tiktok.com/")
-
-    if [[ "$Ftmpresult" = "curl"* ]]; then
-        _red "\r Tiktok Region: Failed (Network Connection)"
-        return
-    fi
-
-    local FRegion=$(echo $Ftmpresult | grep '"$region":"' | sed 's/.*"$region//' | cut -f3 -d'"')
-    if [ -n "$FRegion" ]; then
-        _green "\r Tiktok Region: 【${FRegion}】"
-        return
-    fi
-
-    local STmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -sL --max-time 10 -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9" -H "Accept-Encoding: gzip" -H "Accept-Language: en" "https://www.tiktok.com" | gunzip 2>/dev/null)
-    local SRegion=$(echo $STmpresult | grep '"$region":"' | sed 's/.*"$region//' | cut -f3 -d'"')
-    if [ -n "$SRegion" ]; then
-        _yellow "\r Tiktok Region: 【${SRegion}】(可能为IDC IP)}"
-        return
+    echo -e "---------------TikTok解锁--感谢superbench的开源脚本----------------"
+	local result=$(curl --user-agent "${BrowserUA}" -fsSL --max-time 10 "https://www.tiktok.com/" 2>&1);
+    if [[ "$result" != "curl"* ]]; then
+        result="$(echo ${result} | grep 'region' | awk -F 'region":"' '{print $2}' | awk -F '"' '{print $1}')";
+		if [ -n "$result" ]; then
+			if [[ "$result" == "The #TikTokTraditions"* ]] || [[ "$result" == "This LIVE isn't available"* ]]; then
+				echo -e " TikTok               : ${RED}No${PLAIN}" | tee -a $log
+			else
+				echo -e " TikTok               : ${GREEN}Yes (Region: ${result})${PLAIN}" | tee -a $log
+			fi
+		else
+			echo -e " TikTok               : ${RED}Failed${PLAIN}" | tee -a $log
+			return
+		fi
     else
-        _red "\r Tiktok Region: Failed"
-        return
-    fi
-
+		echo -e " TikTok               : ${RED}Network connection failed${PLAIN}" | tee -a $log
+	fi
 }
+
 
 spiritlhl_script(){
     cd /root >/dev/null 2>&1
@@ -2357,25 +2460,25 @@ fscarmen_route_b_script(){
 }
 
 
-fscarmen_port_script(){
-    echo -e "-----------------测端口开通--感谢fscarmen开源及PR----------------------"
-    IP_4=$(curl -s4m5 https:/ip.gs/json)
-    sleep 0.5
-    if [ -n "$IP_4" ]; then
-    PORT4=(22 80 443 8080)
-    for i in ${PORT4[@]}; do
-        bash <(curl -s4SL https://raw.githubusercontent.com/fscarmen/tools/main/check_port.sh) $WAN_4:$i > PORT4_$i
-        sed -i "1,5 d; s/状态/$i/g" PORT4_$i
-        cut -f 1 PORT4_$i > PORT4_${i}_1
-        cut -f 2,3  PORT4_$i > PORT4_${i}_2
-    done
-    paste PORT4_${PORT4[0]}_1 PORT4_${PORT4[1]}_1 PORT4_${PORT4[2]}_1 PORT4_${PORT4[3]} > PORT4_RESULT
-    _blue " IPv4 端口开通情况 "
-    cat PORT4_RESULT
-    rm -f PORT4_*
-    else _red " VPS 没有 IPv4 "
-    fi
-}
+# fscarmen_port_script(){
+#     echo -e "-----------------测端口开通--感谢fscarmen开源及PR----------------------"
+#     IP_4=$(curl -s4m5 https:/ip.gs/json)
+#     sleep 0.5
+#     if [ -n "$IP_4" ]; then
+#     PORT4=(22 80 443 8080)
+#     for i in ${PORT4[@]}; do
+#         bash <(curl -s4SL https://raw.githubusercontent.com/fscarmen/tools/main/check_port.sh) $WAN_4:$i > PORT4_$i
+#         sed -i "1,5 d; s/状态/$i/g" PORT4_$i
+#         cut -f 1 PORT4_$i > PORT4_${i}_1
+#         cut -f 2,3  PORT4_$i > PORT4_${i}_2
+#     done
+#     paste PORT4_${PORT4[0]}_1 PORT4_${PORT4[1]}_1 PORT4_${PORT4[2]}_1 PORT4_${PORT4[3]} > PORT4_RESULT
+#     _blue " IPv4 端口开通情况 "
+#     cat PORT4_RESULT
+#     rm -f PORT4_*
+#     else _red " VPS 没有 IPv4 "
+#     fi
+# }
 
 superspeed_all_script(){
     echo "--------网络测速--由teddysun和superspeed开源及spiritlhls整理----------"
@@ -2416,11 +2519,11 @@ all_script(){
     io2_script
     sjlleo_script
     RegionRestrictionCheck_script
-    lmc999_script
+    UnlockTiktokTest
     spiritlhl_script
     backtrace_script
     fscarmen_route_g_script
-    fscarmen_port_script
+    # fscarmen_port_script
     superspeed_all_script
     end_script
 }
@@ -2457,7 +2560,7 @@ minal_plus(){
     io2_script
     sjlleo_script
     RegionRestrictionCheck_script
-    lmc999_script
+    UnlockTiktokTest
     backtrace_script
     fscarmen_route_g_script
     superspeed_minal_script
@@ -2499,7 +2602,7 @@ minal_plus_media(){
     io2_script
     sjlleo_script
     RegionRestrictionCheck_script
-    lmc999_script
+    UnlockTiktokTest
     superspeed_minal_script
     end_script
 }
@@ -2515,7 +2618,7 @@ network_script(){
     spiritlhl_script
     backtrace_script
     fscarmen_route_g_script
-    fscarmen_port_script
+    # fscarmen_port_script
     superspeed_all_script
     end_script
 }
@@ -2530,7 +2633,7 @@ media_script(){
     print_intro
     sjlleo_script
     RegionRestrictionCheck_script
-    lmc999_script
+    UnlockTiktokTest
     end_script
 }
 
@@ -2557,7 +2660,7 @@ port_script(){
     start_time=$(date +%s)
     clear
     print_intro
-    fscarmen_port_script
+    # fscarmen_port_script
     end_script
 }
 
@@ -2676,14 +2779,15 @@ Yuanshi_script(){
     echo -e "${GREEN}1.${PLAIN} misakabench VPS测试脚本"
     echo -e "${GREEN}2.${PLAIN} lemonbench VPS测试脚本"
     echo -e "${GREEN}3.${PLAIN} superbench VPS测试脚本"
-    echo -e "${GREEN}4.${PLAIN} yabs VPS测试脚本"
-    echo -e "${GREEN}5.${PLAIN} NetFlix解锁检测脚本 "
-    echo -e "${GREEN}6.${PLAIN} 检测/诊断Youtube地域信息脚本"
-    echo -e "${GREEN}7.${PLAIN} 检测是否解锁DisneyPlus脚本"
-    echo -e "${GREEN}8.${PLAIN} 流媒体检测RegionRestrictionCheck脚本"
-    echo -e "${GREEN}9.${PLAIN} TikTok解锁区域检测脚本"
+    echo -e "${GREEN}4.${PLAIN} YABS VPS测试脚本"
+    echo -e "${GREEN}5.${PLAIN} sjlleo的NetFlix解锁检测脚本 "
+    echo -e "${GREEN}6.${PLAIN} sjlleo的Youtube地域信息检测脚本"
+    echo -e "${GREEN}7.${PLAIN} sjlleo的DisneyPlus解锁区域检测脚本"
+    echo -e "${GREEN}8.${PLAIN} lmc999的流媒体检测脚本"
+    echo -e "${GREEN}9.${PLAIN} supeerbench的TikTok解锁区域检测脚本"
     echo -e "${GREEN}10.${PLAIN} superspeed的三网测速脚本"
     echo -e "${GREEN}11.${PLAIN} hyperspeed的三网测速脚本"
+    echo -e "${GREEN}12.${PLAIN} supeerbench的Geekbench5得分查询"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
@@ -2697,9 +2801,11 @@ Yuanshi_script(){
         6) wget -O tubecheck https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck/CDN/tubecheck_1.0beta_linux_amd64 && chmod +x tubecheck && clear && ./tubecheck ;;
         7) wget -O dp https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 && chmod +x dp && clear && ./dp ;;
         8) bash <(curl -L -s check.unlock.media) ;;
-        9) curl -fsL -o ./t.sh.x https://github.com/lmc999/TikTokCheck/raw/main/t.sh.x && chmod +x ./t.sh.x && ./t.sh.x && rm ./t.sh.x ;;
+        9) UnlockTiktokTest ;;
+        #curl -fsL -o ./t.sh.x https://github.com/lmc999/TikTokCheck/raw/main/t.sh.x && chmod +x ./t.sh.x && ./t.sh.x && rm ./t.sh.x ;;
         10) bash <(curl -Lso- https://git.io/superspeed.sh) ;;
         11) bash <(curl -Lso- https://bench.im/hyperspeed) ;;
+        12) geekbench_script ;;
         0) Start_script ;;
     esac
 }
@@ -2732,7 +2838,7 @@ head_script(){
     echo "# 版本：$ver                                          #"
     echo "# 更新日志：$changeLog#"
     echo -e "# ${GREEN}作者${PLAIN}: spiritlhl                                           #"
-    echo -e "# ${GREEN}测评站点${PLAIN}: https://vps.spiritysdx.top                      #"
+   # echo -e "# ${GREEN}测评站点${PLAIN}: https://vps.spiritysdx.top                      #"
     echo -e "# ${GREEN}TG频道${PLAIN}: https://t.me/vps_reviews                          #"
     echo -e "# ${GREEN}GitHub${PLAIN}: https://github.com/spiritLHLS                     #"
     echo -e "# ${GREEN}GitLab${PLAIN}: https://gitlab.com/spiritysdx                     #"
@@ -2747,8 +2853,8 @@ Start_script(){
     echo -e "${GREEN}1.${PLAIN} 完全体(所有项目都测试)(平均运行8分钟以上)"
     echo -e "${GREEN}2.${PLAIN} 精简区(融合怪的各种精简版并含单项测试精简版)"
     echo -e "${GREEN}3.${PLAIN} 单项区(融合怪的单项测试完整版)"
-    echo -e "${GREEN}4.${PLAIN} 原始区(借鉴脚本的原始脚本)"
-    echo -e "${GREEN}5.${PLAIN} 原创区(原创脚本)"
+    echo -e "${GREEN}4.${PLAIN} 第三方脚本(借鉴脚本的原始脚本)"
+    echo -e "${GREEN}5.${PLAIN} 原创脚本"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 退出"
     echo ""
