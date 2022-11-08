@@ -31,6 +31,8 @@ ping.pe 增加了cloudflare的5秒盾抗ddos，本脚本未适配，同期cloudf
 
 lemonbench测试中的IO读写有时候过高脱离实际，修复时间未知
 
+lemonbench测试中的CPU测试依赖Python第三方包，低版本系统不兼容，修复时间未知
+
 端口测试自动获取ssh的端口进行连通性测试替换默认端口测试，修复时间未知
 
 # 更新
