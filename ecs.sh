@@ -2793,7 +2793,7 @@ Yuanshi_script(){
     echo ""
     read -rp "请输入选项:" StartInput3
 	case $StartInput3 in
-        1) bash <(curl -L -kso- https://cdn.jsdelivr.net/gh/misaka-gh/misakabench@master/misakabench.sh) ;;
+        1) bash <(curl -L -Lso- https://cdn.jsdelivr.net/gh/misaka-gh/misakabench@master/misakabench.sh) ;;
         2) curl -fsL https://ilemonra.in/LemonBenchIntl | bash -s fast ;;
         3) wget -qO- --no-check-certificate https://raw.githubusercontent.com/oooldking/script/master/superbench.sh | bash ;;
         4) curl -sL yabs.sh | bash ;;
@@ -2803,8 +2803,8 @@ Yuanshi_script(){
         8) bash <(curl -L -k -s check.unlock.media) ;;
         9) UnlockTiktokTest ;;
         #curl -fsL -o ./t.sh.x https://github.com/lmc999/TikTokCheck/raw/main/t.sh.x && chmod +x ./t.sh.x && ./t.sh.x && rm ./t.sh.x ;;
-        10) bash <(curl -L -kso- https://git.io/superspeed.sh) ;;
-        11) bash <(curl -L -kso- https://bench.im/hyperspeed) ;;
+        10) bash <(curl -L -Lso- https://git.io/superspeed.sh) ;;
+        11) bash <(curl -L -Lso- https://bench.im/hyperspeed) ;;
         12) geekbench_script ;;
         0) Start_script ;;
     esac
