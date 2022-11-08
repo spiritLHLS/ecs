@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.07.29"
+ver="2022.11.08"
 changeLog="IP质量测试(欺诈得分)，由频道 https://t.me/vps_reviews 原创"
 
 red(){
@@ -99,6 +99,19 @@ checkupdate(){
 
 }
 
+checkupdate(){
+	    echo "正在更新包管理源"
+	    if [ "${release}" == "centos" ]; then
+		    yum update > /dev/null 2>&1
+			yum install dos2unix -y
+		else
+		    apt-get update > /dev/null 2>&1
+			apt install dos2unix -y
+		fi
+
+}
+
+
 checkdnsutils() {
 	if  [ ! -e '/usr/bin/dnsutils' ]; then
 	        echo "正在安装 dnsutils"
@@ -180,6 +193,8 @@ checksystem
 checkpython
 curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck.py -o qzcheck.py 
 curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
+dos2unix qzcheck.py 
+dos2unix googlesearchcheck.py
 if [ "${release}" == "centos" ]; then
     yum -y install python3.7 > /dev/null 2>&1
 else
