@@ -12,18 +12,6 @@ bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/m
 bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/main/ecs.sh)
 ```
 
-### 纯测路由端口，不测其他
-
-```bash
-bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/route.sh)
-```
-
-或
-
-```bash
-bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/main/route.sh)
-```
-
 ### 纯测IP质量(IP黑还是白)(含IPV4和IPV6)
 
 ```bash
@@ -38,6 +26,8 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 # bug待修复
 
 ping.pe 增加了cloudflare的5秒盾抗ddos，本脚本未适配，同期cloudflare更新了防护页面，暂无新工具绕过，修复时间未知
+
+流媒体解锁部分脚本函数老旧，待替换更新，修复时间未知
 
 lemonbench测试中的IO读写有时候过高脱离实际，修复时间未知
 
