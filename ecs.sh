@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.11.04"
+ver="2022.11.08"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 
 UA_Browser="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36"
@@ -656,7 +656,7 @@ Run_SysBench_CPU() {
 }
 
 Function_SysBench_CPU_Fast() {
-    
+    cd /root >/dev/null 2>&1
     mkdir -p ${WorkDir}/SysBench/CPU/ >/dev/null 2>&1
     echo -e " ${Font_Yellow}-> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}"
     echo -e " -> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/CPU/result.txt
@@ -775,40 +775,40 @@ SystemInfo_GetSystemBit() {
         # X86平台 64位
         LBench_Result_SystemBit_Short="64"
         LBench_Result_SystemBit_Full="amd64"
-	    curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 -o dp && chmod +x dp
+	    curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 -o dp && chmod +x dp
         sleep 0.5
-        curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
+        curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
         sleep 0.5
-        curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
+        curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
         sleep 0.5
     elif [ "${sysarch}" = "i386" ] || [ "${sysarch}" = "i686" ]; then
         # X86平台 32位
         LBench_Result_SystemBit_Short="32"
         LBench_Result_SystemBit_Full="i386"
-        curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_386 -o dp && chmod +x dp
+        curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_386 -o dp && chmod +x dp
 	sleep 0.5
-        curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
+        curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
         sleep 0.5
-	    curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_386 -o tubecheck && chmod +x tubecheck
+	    curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_386 -o tubecheck && chmod +x tubecheck
 	sleep 0.5
     elif [ "${sysarch}" = "armv7l" ] || [ "${sysarch}" = "armv8" ] || [ "${sysarch}" = "armv8l" ] || [ "${sysarch}" = "aarch64" ]; then
         # ARM平台 暂且将32位/64位统一对待
         LBench_Result_SystemBit_Short="arm"
         LBench_Result_SystemBit_Full="arm"
-        curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_arm -o dp && chmod +x dp
+        curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_arm -o dp && chmod +x dp
 	sleep 0.5
-        curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_arm64 -o nf && chmod +x nf
+        curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_arm64 -o nf && chmod +x nf
 	sleep 0.5
-        curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_arm -o tubecheck && chmod +x tubecheck
+        curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_arm -o tubecheck && chmod +x tubecheck
 	sleep 0.5
     else
         LBench_Result_SystemBit_Short="unknown"
         LBench_Result_SystemBit_Full="unknown"
-        curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 -o dp && chmod +x dp
+        curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 -o dp && chmod +x dp
 	sleep 0.5
-        curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
+        curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
 	sleep 0.5
-        curl -L https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
+        curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
 	sleep 0.5
     fi
 }
@@ -2194,9 +2194,9 @@ python_all_script(){
     checkpython
     checkmagic
     export PYTHONIOENCODING=utf-8
-    curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py -o qzcheck_ecs.py 
-    curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
-    curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
+    curl -L -k https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py -o qzcheck_ecs.py 
+    curl -L -k https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
+    curl -L -k https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
     sleep 0.5
     python3 googlesearchcheck.py
 }
@@ -2204,7 +2204,7 @@ python_all_script(){
 python_tk_script(){
     checkpython
     export PYTHONIOENCODING=utf-8
-    curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
+    curl -L -k https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
     sleep 0.5
 }
 
@@ -2212,8 +2212,8 @@ python_gd_script(){
     checkpython
     checkmagic
     export PYTHONIOENCODING=utf-8
-    curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py -o qzcheck_ecs.py 
-    curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
+    curl -L -k https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py -o qzcheck_ecs.py 
+    curl -L -k https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
     sleep 0.5
     python3 googlesearchcheck.py
 }
@@ -2226,7 +2226,7 @@ pre_check(){
     checksystem
     checkcurl
     Global_StartupInit_Action
-    curl -L https://gitlab.com/spiritysdx/za/-/raw/main/yabsiotest.sh -o yabsiotest.sh && chmod +x yabsiotest.sh  >/dev/null 2>&1
+    curl -L -k https://gitlab.com/spiritysdx/za/-/raw/main/yabsiotest.sh -o yabsiotest.sh && chmod +x yabsiotest.sh  >/dev/null 2>&1
     ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
     ! _exists "free" && _red "Error: free command not found.\n" && exit 1
 }
@@ -2793,18 +2793,18 @@ Yuanshi_script(){
     echo ""
     read -rp "请输入选项:" StartInput3
 	case $StartInput3 in
-        1) bash <(curl -Lso- https://cdn.jsdelivr.net/gh/misaka-gh/misakabench@master/misakabench.sh) ;;
+        1) bash <(curl -L -kso- https://cdn.jsdelivr.net/gh/misaka-gh/misakabench@master/misakabench.sh) ;;
         2) curl -fsL https://ilemonra.in/LemonBenchIntl | bash -s fast ;;
         3) wget -qO- --no-check-certificate https://raw.githubusercontent.com/oooldking/script/master/superbench.sh | bash ;;
         4) curl -sL yabs.sh | bash ;;
         5) wget -O nf https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 && chmod +x nf && ./nf ;;
         6) wget -O tubecheck https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck/CDN/tubecheck_1.0beta_linux_amd64 && chmod +x tubecheck && clear && ./tubecheck ;;
         7) wget -O dp https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 && chmod +x dp && clear && ./dp ;;
-        8) bash <(curl -L -s check.unlock.media) ;;
+        8) bash <(curl -L -k -s check.unlock.media) ;;
         9) UnlockTiktokTest ;;
         #curl -fsL -o ./t.sh.x https://github.com/lmc999/TikTokCheck/raw/main/t.sh.x && chmod +x ./t.sh.x && ./t.sh.x && rm ./t.sh.x ;;
-        10) bash <(curl -Lso- https://git.io/superspeed.sh) ;;
-        11) bash <(curl -Lso- https://bench.im/hyperspeed) ;;
+        10) bash <(curl -L -kso- https://git.io/superspeed.sh) ;;
+        11) bash <(curl -L -kso- https://bench.im/hyperspeed) ;;
         12) geekbench_script ;;
         0) Start_script ;;
     esac
