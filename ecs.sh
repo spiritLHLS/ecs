@@ -2226,6 +2226,7 @@ pre_check(){
     checksystem
     checkcurl
     Global_StartupInit_Action
+    cd /root >/dev/null 2>&1
     curl -L -k https://gitlab.com/spiritysdx/za/-/raw/main/yabsiotest.sh -o yabsiotest.sh && chmod +x yabsiotest.sh  >/dev/null 2>&1
     ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
     ! _exists "free" && _red "Error: free command not found.\n" && exit 1
@@ -2269,7 +2270,7 @@ io1_script(){
 }
 
 io2_script(){
-    
+    cd /root >/dev/null 2>&1
     echo "-------------------磁盘IO读写测试--感谢yabs开源-----------------------"
     bash ./yabsiotest.sh 
     rm -rf yabsiotest.sh
@@ -2481,6 +2482,7 @@ fscarmen_route_b_script(){
 # }
 
 superspeed_all_script(){
+    cd /root >/dev/null 2>&1
     echo "--------网络测速--由teddysun和superspeed开源及spiritlhls整理----------"
     sleep 0.5
     echo -e "测速点位置\t 上传速度\t 下载速度\t 延迟"
@@ -2488,6 +2490,7 @@ superspeed_all_script(){
 }
 
 superspeed_minal_script(){
+    cd /root >/dev/null 2>&1
     echo "--------网络测速--由teddysun和superspeed开源及spiritlhls整理----------"
     sleep 0.5
     echo -e "测速点位置\t 上传速度\t 下载速度\t 延迟"
