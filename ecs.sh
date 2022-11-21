@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.11.08"
+ver="2022.11.22"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 
 UA_Browser="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36"
@@ -534,7 +534,7 @@ Check_SysBench() {
             yum -y install sysbench
         elif [ "${Var_OSRelease}" = "ubuntu" ]; then
             echo -e "${Msg_Warning}Sysbench Module not found, installing ..."
-            apt-get install -y sysbench
+            apt install sysbench -y
         elif [ "${Var_OSRelease}" = "debian" ]; then
             echo -e "${Msg_Warning}Sysbench Module not found, installing ..."
             local mirrorbase="https://raindrop.ilemonrain.com/LemonBench"
@@ -550,7 +550,7 @@ Check_SysBench() {
             pushd ${WorkDir}/download/ >/dev/null
             wget -U "${UA_LemonBench}" -O ${filenamebase}_${version}_${bit}.deb ${downurl}
             dpkg -i ./${filename}
-            apt-get install -f -y
+            apt-get install sysbench -y
             popd
             if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
                 echo -e "${Msg_Warning}Sysbench Module Install Failed!"
