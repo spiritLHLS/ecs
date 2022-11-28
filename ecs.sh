@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.11.22"
+ver="2022.11.28"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 
 UA_Browser="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36"
@@ -140,7 +140,8 @@ Check_Virtwhat() {
         elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             apt-get update
-            apt-get install -y virt-what dmidecode
+            apt-get install -y dmidecode
+            apt-get install -y virt-what
         elif [ "${Var_OSRelease}" = "fedora" ]; then
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             dnf -y install virt-what
