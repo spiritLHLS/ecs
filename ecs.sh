@@ -140,6 +140,7 @@ Check_Virtwhat() {
         elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             apt-get update
+            apt --fix-broken install -y
             apt-get install -y dmidecode
             apt-get install -y virt-what
         elif [ "${Var_OSRelease}" = "fedora" ]; then
