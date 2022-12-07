@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.11.28"
+ver="2022.12.07"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 
 UA_Browser="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36"
@@ -1616,10 +1616,11 @@ speed() {
     speed_test '24447' '联通上海' '联通'
     speed_test '4870' '联通湖南长沙' '联通'
 #    speed_test '4870' '联通湖南长沙' '联通'
-    speed_test '25637' '移动上海5G' '移动'
+#    speed_test '25637' '移动上海5G' '移动'
 #    speed_test '16398' '移动贵州贵阳' '移动'
-    speed_test '6715' '移动浙江宁波' '移动'
-
+#    speed_test '6715' '移动浙江宁波' '移动'
+     speed_test '3356' '移动广西南宁' '移动'
+     speed_test '26940' '移动宁夏银川' '移动'
 #https://raw.githubusercontent.com/zq/superspeed/master/superspeed.sh
 }
 
@@ -1627,10 +1628,10 @@ speed2() {
     speed_test2 '' 'speedtest'
     speed_test '3633' '电信上海' '电信'
     speed_test '24447' '联通上海' '联通'
-    speed_test '25637' '移动上海5G' '移动'
+    # speed_test '25637' '移动上海5G' '移动'
     # speed_test '595' '电信上海' '电信'
     # speed_test '5135' '联通上海5G' '联通'
-    # speed_test '3356' '移动广西南宁' '移动'
+    speed_test '3356' '移动广西南宁' '移动'
 #https://raw.githubusercontent.com/zq/superspeed/master/superspeed.sh
 }
 
