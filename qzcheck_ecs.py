@@ -103,7 +103,7 @@ head = {
 }
 
 ip4 = excuteCommand("curl -sm8 ip.sb").replace("\n", "").replace(" ", "")
-ip6 = excuteCommand("curl -s6m8 ip.gs -k").replace("\n", "").replace(" ", "")
+ip6 = excuteCommand("curl -s6m8 api.ipify.org -k").replace("\n", "").replace(" ", "")
 scamalytics(ip4)
 # cloudflare()
 abuse(ip4)
