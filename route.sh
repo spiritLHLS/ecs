@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.09.23"
+ver="2022.12.11"
 changeLog="路由相关工具合集，由频道 https://t.me/vps_reviews 整理修改"
 
 
@@ -165,14 +165,14 @@ fscarmen_route_script(){
     echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
     yellow "以下测试的带宽类型可能有误，商宽可能被判断为家宽，仅作参考使用"
     rm -f $TEMP_FILE
-    IP_4=$(curl -s4m5 https:/ip.gs/json) &&
+    IP_4=$(curl -s4m5 https://api.ipify.org) &&
     WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
     ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
     PE_4=$(curl -sm5 ping.pe/$WAN_4) &&
     COOKIE_4=$(echo $PE_4 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
     TYPE_4=$(curl -sm5 --header "cookie: $COOKIE_4" ping.pe/$WAN_4 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g;s/cellular/蜂窝网络/g;s/business/商业带宽/g;s#</b>##g") &&
     _blue " IPv4 宽带类型: $TYPE_4\t ASN: $ASNORG_4" >> $TEMP_FILE
-    IP_6=$(curl -s6m5 https:/ip.gs/json) &&
+    IP_6=$(curl -s6m5 https://api.ipify.org) &&
     WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
     ASNORG_6=$(expr "$IP_6" : '.*asn_org\":\"\([^"]*\).*') &&
     PE_6=$(curl -sm5 ping6.ping.pe/$WAN_6) &&
@@ -190,13 +190,14 @@ fscarmen_route_script(){
     [[ ! -e $FILE ]] && wget -q https://github.com/fscarmen/tools/raw/main/besttrace/$FILE >/dev/null 2>&1
     chmod 777 $FILE >/dev/null 2>&1
     _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
-    for ((a=0;a<${#test_area[@]};a++)); do
-    _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
-    ./"$FILE" "${test_ip[a]}" -g cn | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
+    for ((a=0;a<${#test_area_s[@]};a++)); do
+    _yellow "${test_area_s[a]} ${test_ip_g[a]}" >> $TEMP_FILE
+    ./"$FILE" "${test_ip_s[a]}" -g cn | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
     done
     cat $TEMP_FILE
     rm -f $TEMP_FILE
 }
+
 
 print_intro() {
     echo "--------------------- A Bench Script By spiritlhl --------------------"
