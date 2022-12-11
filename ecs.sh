@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.12.07"
+ver="2022.12.11"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 
 UA_Browser="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36"
@@ -2356,14 +2356,14 @@ fscarmen_route_g_script(){
     echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
     yellow "以下测试的带宽类型可能有误，商宽可能被判断为家宽，仅作参考使用"
     rm -f $TEMP_FILE
-    IP_4=$(curl -s4m5 https:/ip.gs/json) &&
+    IP_4=$(curl -s4m5 api.ipify.org) &&
     WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
     ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
     PE_4=$(curl -sm5 ping.pe/$WAN_4) &&
     COOKIE_4=$(echo $PE_4 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
     TYPE_4=$(curl -sm5 --header "cookie: $COOKIE_4" ping.pe/$WAN_4 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g;s/cellular/蜂窝网络/g;s/business/商业带宽/g;s#</b>##g") &&
     _blue " IPv4 宽带类型: $TYPE_4\t ASN: $ASNORG_4" >> $TEMP_FILE
-    IP_6=$(curl -s6m5 https:/ip.gs/json) &&
+    IP_6=$(curl -s6m5 https://api.ipify.org) &&
     WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
     ASNORG_6=$(expr "$IP_6" : '.*asn_org\":\"\([^"]*\).*') &&
     PE_6=$(curl -sm5 ping6.ping.pe/$WAN_6) &&
@@ -2393,14 +2393,14 @@ fscarmen_route_s_script(){
     echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
     yellow "以下测试的带宽类型可能有误，商宽可能被判断为家宽，仅作参考使用"
     rm -f $TEMP_FILE
-    IP_4=$(curl -s4m5 https:/ip.gs/json) &&
+    IP_4=$(curl -s4m5 https://api.ipify.org) &&
     WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
     ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
     PE_4=$(curl -sm5 ping.pe/$WAN_4) &&
     COOKIE_4=$(echo $PE_4 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
     TYPE_4=$(curl -sm5 --header "cookie: $COOKIE_4" ping.pe/$WAN_4 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g;s/cellular/蜂窝网络/g;s/business/商业带宽/g;s#</b>##g") &&
     _blue " IPv4 宽带类型: $TYPE_4\t ASN: $ASNORG_4" >> $TEMP_FILE
-    IP_6=$(curl -s6m5 https:/ip.gs/json) &&
+    IP_6=$(curl -s6m5 https://api.ipify.org) &&
     WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
     ASNORG_6=$(expr "$IP_6" : '.*asn_org\":\"\([^"]*\).*') &&
     PE_6=$(curl -sm5 ping6.ping.pe/$WAN_6) &&
@@ -2430,14 +2430,14 @@ fscarmen_route_b_script(){
     echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
     yellow "以下测试的带宽类型可能有误，商宽可能被判断为家宽，仅作参考使用"
     rm -f $TEMP_FILE
-    IP_4=$(curl -s4m5 https:/ip.gs/json) &&
+    IP_4=$(curl -s4m5 https://api.ipify.org) &&
     WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
     ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
     PE_4=$(curl -sm5 ping.pe/$WAN_4) &&
     COOKIE_4=$(echo $PE_4 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
     TYPE_4=$(curl -sm5 --header "cookie: $COOKIE_4" ping.pe/$WAN_4 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g;s/cellular/蜂窝网络/g;s/business/商业带宽/g;s#</b>##g") &&
     _blue " IPv4 宽带类型: $TYPE_4\t ASN: $ASNORG_4" >> $TEMP_FILE
-    IP_6=$(curl -s6m5 https:/ip.gs/json) &&
+    IP_6=$(curl -s6m5 https://api.ipify.org) &&
     WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
     ASNORG_6=$(expr "$IP_6" : '.*asn_org\":\"\([^"]*\).*') &&
     PE_6=$(curl -sm5 ping6.ping.pe/$WAN_6) &&
@@ -2466,7 +2466,7 @@ fscarmen_route_b_script(){
 
 # fscarmen_port_script(){
 #     echo -e "-----------------测端口开通--感谢fscarmen开源及PR----------------------"
-#     IP_4=$(curl -s4m5 https:/ip.gs/json)
+#     IP_4=$(curl -s4m5 https://api.ipify.org)
 #     sleep 0.5
 #     if [ -n "$IP_4" ]; then
 #     PORT4=(22 80 443 8080)
