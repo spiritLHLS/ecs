@@ -139,8 +139,7 @@ Check_Virtwhat() {
             yum -y install virt-what
         elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
-            apt-get update
-            apt --fix-broken install -y
+            ! apt-get update && apt --fix-broken install -y && apt-get update
             apt-get install -y dmidecode
             apt-get install -y virt-what
         elif [ "${Var_OSRelease}" = "fedora" ]; then
@@ -190,7 +189,7 @@ Check_JSONQuery() {
         elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
             echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
             echo -e "${Msg_Info}Installing Dependency ..."
-            apt-get update
+            ! apt-get update &&  apt --fix-broken install -y && apt-get update
             apt-get install -y jq
         elif [ "${Var_OSRelease}" = "fedora" ]; then
             echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
@@ -599,7 +598,7 @@ Check_Sysbench_InstantBuild() {
     elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
-        apt-get update
+        ! apt-get update &&  apt --fix-broken install -y && apt-get update
         apt -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip
         echo -e "${Msg_Info}Downloading Source code (Version 1.0.17)..."
         mkdir -p /tmp/_LBench/src/
