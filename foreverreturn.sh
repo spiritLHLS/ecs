@@ -60,7 +60,7 @@ green "\n 本脚说明：测 VPS ——> 对端 经过的地区及线路，填�
 [[ -z "$ip" || $ip = '[DESTINATION_IP]' ]] && reading "\n 请输入目的地 IP: " ip
 yellow "\n 检测中，请稍等片刻。\n"
 
-IP_4=$(curl -s4m5 https:/ip.gs/json) &&
+IP_4=$(curl -s4m5 https://api.ipify.org) &&
 WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
 COUNTRY_4E=$(expr "$IP_4" : '.*country\":\"\([^"]*\).*') &&
 COUNTRY_4=$(translate "$COUNTRY_4E") &&
@@ -70,7 +70,7 @@ COOKIE_4=$(echo $PE_4 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
 TYPE_4=$(curl -sm5 --header "cookie: $COOKIE_4" ping.pe/$WAN_4 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g") &&
 green " IPv4: $WAN_4\t\t 地区: $COUNTRY_4\t 类型: $TYPE_4\t ASN: $ASNORG_4\n"
   
-IP_6=$(curl -s6m5 https:/ip.gs/json) &&
+IP_6=$(curl -s6m5 https://api.ipify.org) &&
 WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
 COUNTRY_6E=$(expr "$IP_6" : '.*country\":\"\([^"]*\).*') &&
 COUNTRY_6=$(translate "$COUNTRY_6E") &&
@@ -85,7 +85,7 @@ green " IPv6: $WAN_6\t 地区: $COUNTRY_6\t 类型: $TYPE_6\t ASN: $ASNORG_6\n"
 
 [[ ! -e "$FILE" ]] && curl -sO https://cdn.jsdelivr.net/gh/fscarmen/tools/besttrace/$FILE &&
 chmod +x "$FILE" >/dev/null 2>&1
-sudo ./"$FILE" "$ip" -g cn > $TEMP_FILE
+sudo ./"$FILE" "$ip" -g cn | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
 green "$(cat $TEMP_FILE | cut -d \* -f2 | sed "s/.*\(  AS[0-9]\)/\1/" | sed "/\*$/d;/^$/d;1d" | uniq | awk '{printf("%d.%s\n"),NR,$0}')"
 rm -f $TEMP_FILE
 }
