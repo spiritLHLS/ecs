@@ -2198,7 +2198,7 @@ python_all_script(){
     export PYTHONIOENCODING=utf-8
     curl -L -k https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py -o qzcheck_ecs.py 
     curl -L -k https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
-    curl -L -k https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
+    # curl -L -k https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
     sleep 0.5
     python3 googlesearchcheck.py
 }
@@ -2206,7 +2206,7 @@ python_all_script(){
 python_tk_script(){
     checkpython
     export PYTHONIOENCODING=utf-8
-    curl -L -k https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
+    # curl -L -k https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
     sleep 0.5
 }
 
@@ -2720,8 +2720,8 @@ rm_script(){
     rm -rf return.sh
     rm -rf speedtest.tgz*
     rm -rf wget-log*
-    rm -rf ipip.py*
-    rm -rf tk.py*
+    # rm -rf ipip.py*
+    # rm -rf tk.py*
     rm -rf qzcheck_ecs.py*
     rm -rf dp
     rm -rf nf
