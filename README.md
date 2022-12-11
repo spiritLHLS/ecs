@@ -53,6 +53,8 @@ lemonbench测试中的CPU测试依赖Python第三方包，低版本系统不兼�
 
 2022.11.04 更新替换Tiktok检测脚本为superbench脚本，暂时移除端口检测，第三方脚本增加Geekbench选项，修改部分分区描述
 
+2022.12.11 不再使用ip.gs改用api.ipify.org进行IP识别
+
 # 功能
 
 - [x] 自由组合测试方面和单项测试--原创
