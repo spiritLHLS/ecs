@@ -185,6 +185,15 @@ Check_JSONQuery() {
             echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
             echo -e "${Msg_Info}Installing Dependency ..."
             yum install -y epel-release
+            if [ $? -ne 0 ]; then
+                cd /etc/yum.repos.d/
+                sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+                sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+                yum makecache
+                if [ $? -ne 0 ]; then
+                    yum -y update && yum install -y epel-release
+                fi
+            fi
             yum install -y jq
         elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
             echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
