@@ -161,8 +161,8 @@ ip6 = excuteCommand("curl -s6m8 api.ipify.org -k").replace("\n", "").replace(
 scamalytics(ip4)
 cloudflare()
 abuse(ip4)
-ping0(ip4)
 liveipmap(ip4)
+ping0(ip4)
 google()
 if ip6 != "":
   print("------以下为IPV6检测------")
