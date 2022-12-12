@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.12.11"
+ver="2022.12.12"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 
 UA_Browser="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36"
@@ -140,8 +140,8 @@ Check_Virtwhat() {
         elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             ! apt-get update && apt --fix-broken install -y && apt-get update
-            apt-get install -y dmidecode
-            apt-get install -y virt-what
+            ! apt-get install -y dmidecode && apt --fix-broken install -y && apt-get install -y dmidecode
+            ! apt-get install -y virt-what && apt --fix-broken install -y && apt-get install -y virt-what
         elif [ "${Var_OSRelease}" = "fedora" ]; then
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             dnf -y install virt-what
@@ -190,7 +190,7 @@ Check_JSONQuery() {
             echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
             echo -e "${Msg_Info}Installing Dependency ..."
             ! apt-get update &&  apt --fix-broken install -y && apt-get update
-            apt-get install -y jq
+            ! apt-get install -y jq &&  apt --fix-broken install -y && apt-get install -y jq
         elif [ "${Var_OSRelease}" = "fedora" ]; then
             echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
             echo -e "${Msg_Info}Installing Dependency ..."
@@ -535,7 +535,7 @@ Check_SysBench() {
             yum -y install sysbench
         elif [ "${Var_OSRelease}" = "ubuntu" ]; then
             echo -e "${Msg_Warning}Sysbench Module not found, installing ..."
-            apt install sysbench -y
+            ! apt install sysbench -y && apt --fix-broken install -y && apt install sysbench -y
         elif [ "${Var_OSRelease}" = "debian" ]; then
             echo -e "${Msg_Warning}Sysbench Module not found, installing ..."
             local mirrorbase="https://raindrop.ilemonrain.com/LemonBench"
@@ -599,7 +599,7 @@ Check_Sysbench_InstantBuild() {
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
         ! apt-get update &&  apt --fix-broken install -y && apt-get update
-        apt -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip
+        ! apt -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip && apt --fix-broken install -y && apt -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip
         echo -e "${Msg_Info}Downloading Source code (Version 1.0.17)..."
         mkdir -p /tmp/_LBench/src/
         wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://github.com/akopytov/sysbench/archive/1.0.17.zip
