@@ -73,7 +73,7 @@ def abuse(ip):
         except:
           pass
     print("abuse得分：", str(context2.json()["data"]["abuseConfidenceScore"]))
-    print("abuseipdb数据库IP类型：", str(context2.json()["data"]["usageType"]))
+    print("IP2Location数据库IP类型：", str(context2.json()["data"]["usageType"]))
   except Exception as e:
     print(f"abuseipdb数据库IP类型：未知，爆错{e}")
     #print(e)
