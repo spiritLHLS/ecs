@@ -209,7 +209,7 @@ clear
 start_time=$(date +%s)
 print_intro
 echo -e "------------------欺诈分数以及IP质量检测--本频道独创--------------------"
-yellow "得分仅作参考，不代表100%准确"
+yellow "得分仅作参考，不代表100%准确，IP类型如果不一致请手动查询多个数据库比对"
 python3 qzcheck.py 
 next
 print_end_time
