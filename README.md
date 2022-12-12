@@ -55,7 +55,7 @@ lemonbench测试中的CPU测试依赖Python第三方包，低版本系统不兼�
 
 2022.12.11 不再使用ip.gs改用api.ipify.org进行IP识别
 
-2022.12.12 新增两个IP类型数据库，IP检测已包含三个数据库，修补debian10系统apt源broken的问题，内置```apt --fix-broken install -y```
+2022.12.12 新增两个IP类型数据库，IP检测已包含三个数据库，修复debian10系统apt源broken的问题，内置```apt --fix-broken install -y```，修复centos8的源失效问题，自动替换新源下载```AppStream```
 
 # 功能
 
