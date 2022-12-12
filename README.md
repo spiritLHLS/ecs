@@ -1,5 +1,7 @@
 # ecs
 
+支持系统：Ubuntu 18+，Debian 8+，centos 7+
+
 ### 融合怪测评脚本
 
 ```bash
