@@ -134,7 +134,7 @@ Function_CheckTracemode() {
 Check_Virtwhat() {
     if [ ! -f "/usr/sbin/virt-what" ]; then
         SystemInfo_GetOSRelease
-        if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ]; then
+        if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux"]; then
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             yum -y install virt-what
         elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
@@ -181,7 +181,7 @@ Check_JSONQuery() {
             # local DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/jq/1.6/i386/jq.tar.gz"
         fi
         mkdir -p ${WorkDir}/
-        if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ]; then
+        if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux"]; then
             echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
             echo -e "${Msg_Info}Installing Dependency ..."
             yum install -y epel-release
@@ -194,6 +194,7 @@ Check_JSONQuery() {
                     yum -y update && yum install -y epel-release
                 fi
             fi
+            yum install -y tar
             yum install -y jq
         elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
             echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
@@ -508,6 +509,12 @@ SystemInfo_GetOSRelease() {
         local Var_OSReleaseVersion="$(cat /etc/alpine-release | awk '{print $1}')"
         local Var_OSReleaseArch="$(arch)"
         LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
+    elif [ -f "/etc/almalinux-release" ]; then # almalinux
+        Var_OSRelease="almalinux"
+        local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3}')"
+        local Var_OSReleaseVersion="$(cat /etc/almalinux-release | awk '{print $3,$4,$5,$6,$7}')"
+        local Var_OSReleaseArch="$(arch)"
+        LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
     else
         Var_OSRelease="unknown" # 未知系统分支
         LBench_Result_OSReleaseFullName="[Error: Unknown Linux Branch !]"
@@ -538,7 +545,7 @@ Check_SysBench() {
     if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
         SystemInfo_GetOSRelease
         SystemInfo_GetSystemBit
-        if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ]; then
+        if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux"]; then
             echo -e "${Msg_Warning}Sysbench Module not found, installing ..."
             yum -y install epel-release
             yum -y install sysbench
@@ -589,7 +596,7 @@ Check_SysBench() {
 Check_Sysbench_InstantBuild() {
     SystemInfo_GetOSRelease
     SystemInfo_GetCPUInfo
-    if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ]; then
+    if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux"]; then
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
         yum install -y epel-release
@@ -2882,7 +2889,6 @@ Start_script(){
         0) exit 1 ;;
     esac
 }
-
 
 Start_script
 rm_script
