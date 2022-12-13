@@ -77,7 +77,7 @@ def abuse(ip):
     print("abuse得分：", str(context2.json()["data"]["abuseConfidenceScore"]))
     print("IP2Location数据库IP类型：", str(context2.json()["data"]["usageType"]))
   except Exception as e:
-    print(f"abuseipdb数据库IP类型：未知，爆错{e}")
+    print(f"abuseipdb数据库IP类型：未知，爆错{e}".encode('utf-8'))
     #print(e)
 
 
@@ -110,7 +110,7 @@ def ping0(ip):
         ct = ct + kk
       print(f"ping0数据库IP类型：{ct}")
   except Exception as e:
-    print(f"ping0数据库IP类型：未知，爆错{e}")
+    print(f"ping0数据库IP类型：未知，爆错{e}".encode('utf-8'))
     # print(e)
 
 
@@ -131,7 +131,7 @@ def liveipmap(ip):
     except:
       pass
   except Exception as e:
-    print(f"liveipmap数据库IP类型：未知，爆错{e}")
+    print(f"liveipmap数据库IP类型：未知，爆错{e}".encode('utf-8'))
     # print(e)
 
 
