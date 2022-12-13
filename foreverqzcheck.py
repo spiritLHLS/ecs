@@ -5,6 +5,7 @@ import re, sys
 import random
 
 ip4 = str(sys.argv[1])
+print(ip4)
 
 def excuteCommand(com):
   ex = subprocess.Popen(com, stdout=subprocess.PIPE, shell=True)
@@ -157,7 +158,6 @@ head = {
 }
 
 scamalytics(ip4)
-cloudflare()
 abuse(ip4)
 liveipmap(ip4)
 ping0(ip4)
