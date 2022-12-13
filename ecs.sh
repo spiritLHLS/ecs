@@ -2294,6 +2294,8 @@ rm_script(){
     rm -rf wget-log*
     # rm -rf ipip.py*
     # rm -rf tk.py*
+    rm -rf media_lmc_check.sh*
+    rm -rf check.py*
     rm -rf qzcheck_ecs.py*
     rm -rf dp
     rm -rf nf
