@@ -25,10 +25,6 @@ for ((int = 0; int < ${#REGEX[@]}; int++)); do
     fi
 done
 
-
-
-
-
 trap _exit INT QUIT TERM
 
 _red() { echo -e "\033[31m\033[01m$@\033[0m"; }
@@ -181,7 +177,7 @@ checkcurl
 checksystem
 checkpython
 curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/foreverqzcheck.py -o foreverqzcheck.py
-dos2unix qzcheck.py 
+dos2unix foreverqzcheck.py
 if [ "${release}" == "centos" ]; then
     yum -y install python3.7 > /dev/null 2>&1
 else
