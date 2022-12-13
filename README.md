@@ -26,20 +26,6 @@ bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/m
 bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/main/qzcheck.sh)
 ```
 
-### 死循环
-
-测路由
-
-```bash
-bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/foreverreturn.sh)
-```
-
-测IP质量 - 自定义IP
-
-```bash
-bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/foreverqzcheck.sh)
-```
-
 # bug待修复
 
 ping.pe 增加了cloudflare的5秒盾抗ddos，本脚本未适配
