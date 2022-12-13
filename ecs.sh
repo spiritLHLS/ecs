@@ -2821,7 +2821,7 @@ Yuanshi_script(){
         5) wget -O nf https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 && chmod +x nf && ./nf ;;
         6) wget -O tubecheck https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck/CDN/tubecheck_1.0beta_linux_amd64 && chmod +x tubecheck && clear && ./tubecheck ;;
         7) wget -O dp https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 && chmod +x dp && clear && ./dp ;;
-        8) bash <(curl -L -k -s check.unlock.media) ;;
+        8) bash <(curl -L -s check.unlock.media) ;;
         9) UnlockTiktokTest ;;
         #curl -fsL -o ./t.sh.x https://github.com/lmc999/TikTokCheck/raw/main/t.sh.x && chmod +x ./t.sh.x && ./t.sh.x && rm ./t.sh.x ;;
         10) bash <(curl -L -Lso- https://git.io/superspeed.sh) ;;
