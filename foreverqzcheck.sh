@@ -193,12 +193,11 @@ main() {
   print_intro
   echo -e "------------------欺诈分数以及IP质量检测--本频道独创--------------------"
   yellow "得分仅作参考，不代表100%准确，IP类型如果不一致请手动查询多个数据库比对"
-  python3 qzcheck.py "${ip}"
+  python3 foreverqzcheck.py "${ip}"
   next
   print_end_time
   next
   rm -rf wget-log*
-  rm -rf qzcheck.py*
   rm -rf googlesearchcheck.py*
   rm -rf gdlog*
 }
@@ -209,7 +208,7 @@ checkwget
 checkcurl
 checksystem
 checkpython
-curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/foreverqzcheck.py -o qzcheck.py 
+curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/foreverqzcheck.py -o foreverqzcheck.py
 # curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
 dos2unix qzcheck.py 
 # dos2unix googlesearchcheck.py
