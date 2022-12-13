@@ -185,6 +185,25 @@ checkpython() {
     sleep 0.5
 }
 
+main() {
+  ip=$1
+  [[ -z "$ip" || $ip = '[DESTINATION_IP]' ]] && reading "\n 请输入需要查询的 IP: " ip
+  yellow "\n 检测中，请稍等片刻。\n"
+  clear
+  start_time=$(date +%s)
+  print_intro
+  echo -e "------------------欺诈分数以及IP质量检测--本频道独创--------------------"
+  yellow "得分仅作参考，不代表100%准确，IP类型如果不一致请手动查询多个数据库比对"
+  python3 qzcheck.py "${ip}"
+  next
+  print_end_time
+  next
+  rm -rf wget-log*
+  rm -rf qzcheck.py*
+  rm -rf googlesearchcheck.py*
+  rm -rf gdlog*
+}
+
 checkupdate
 checkroot
 checkwget
@@ -205,25 +224,6 @@ export PYTHONIOENCODING=utf-8
 ! _exists "free" && _red "Error: free command not found.\n" && exit 1
 sleep 0.5
 # python3 googlesearchcheck.py
-
-def main(){
-  ip=$1
-  [[ -z "$ip" || $ip = '[DESTINATION_IP]' ]] && reading "\n 请输入需要查询的 IP: " ip
-  yellow "\n 检测中，请稍等片刻。\n"
-  clear
-  start_time=$(date +%s)
-  print_intro
-  echo -e "------------------欺诈分数以及IP质量检测--本频道独创--------------------"
-  yellow "得分仅作参考，不代表100%准确，IP类型如果不一致请手动查询多个数据库比对"
-  python3 qzcheck.py "${ip}"
-  next
-  print_end_time
-  next
-  rm -rf wget-log*
-  rm -rf qzcheck.py*
-  rm -rf googlesearchcheck.py*
-  rm -rf gdlog*
-}
 
 while [ "1" = "1" ]
   do
