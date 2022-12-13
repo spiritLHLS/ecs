@@ -4,7 +4,7 @@ import subprocess
 import re, sys
 import random
 
-ip4 = str(sys.argv[2])
+ip4 = str(sys.argv[1])
 
 def excuteCommand(com):
   ex = subprocess.Popen(com, stdout=subprocess.PIPE, shell=True)
