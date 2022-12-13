@@ -1819,7 +1819,7 @@ sjlleo_script(){
     yellow "DisneyPlus"
     ./dp | sed "/@sjlleo/d"
     sleep 0.5
-    yellow "解锁Youtube，Netflix，DisneyPlus的地区以上面为准，下面这三测的不准"
+    yellow "解锁Youtube，Netflix，DisneyPlus上面和下面进行比较，不同之处自行判断"
 }
 
 basic_script(){
