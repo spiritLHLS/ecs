@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.12.12"
+ver="2022.12.13"
 changeLog="IP质量测试(含欺诈得分)，由频道 https://t.me/vps_reviews 原创"
 
 red(){
