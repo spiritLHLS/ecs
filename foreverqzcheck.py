@@ -5,7 +5,6 @@ import re, sys
 import random
 
 ip4 = str(sys.argv[1])
-print(ip4)
 
 def excuteCommand(com):
   ex = subprocess.Popen(com, stdout=subprocess.PIPE, shell=True)
@@ -26,32 +25,6 @@ def scamalytics(ip):
     for i, j in zip(temp2, nlist):
       temp3 = re.findall(f"\">(.*?)</", i)[0]
       print(f"{j}: {temp3}")
-  except:
-    pass
-
-
-def cloudflare():
-  try:
-    status = 0
-    for i in range(1, 101):
-      try:
-        context1 = requests.get(
-          f"https://cf-threat.sukkaw.com/hello.json?threat={str(i)}",
-          timeout=10).text
-        try:
-          if "pong!" not in context1:
-            print(
-              "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60")
-            print("Cloudflare威胁得分：", str(i))
-            status = 1
-            break
-        except:
-          pass
-      except:
-        status = -1
-        pass
-    if i == 100 and status == 0:
-      print("Cloudflare威胁得分(0为低风险): 0")
   except:
     pass
 
@@ -77,7 +50,7 @@ def abuse(ip):
     print("abuse得分：", str(context2.json()["data"]["abuseConfidenceScore"]))
     print("IP2Location数据库IP类型：", str(context2.json()["data"]["usageType"]))
   except Exception as e:
-    print(f"abuseipdb数据库IP类型：未知，爆错{e}".encode('utf-8'))
+    print(f"abuseipdb数据库IP类型：未知，爆错{e}")
     #print(e)
 
 
@@ -110,7 +83,7 @@ def ping0(ip):
         ct = ct + kk
       print(f"ping0数据库IP类型：{ct}")
   except Exception as e:
-    print(f"ping0数据库IP类型：未知，爆错{e}".encode('utf-8'))
+    print(f"ping0数据库IP类型：未知，爆错{e}")
     # print(e)
 
 
@@ -133,18 +106,6 @@ def liveipmap(ip):
   except Exception as e:
     print(f"liveipmap数据库IP类型：未知，爆错{e}".encode('utf-8'))
     # print(e)
-
-
-def google():
-  try:
-    with open("gdlog", "r") as fp:
-      context3 = fp.read()
-    if "https" in context3:
-      print("Google搜索可行性：YES")
-    else:
-      print("Google搜索可行性：NO")
-  except:
-    print("Google搜索可行性：未知")
 
 
 keys_list = [
