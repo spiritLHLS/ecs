@@ -28,9 +28,6 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 
 # bug待修复
 
-ping.pe 增加了cloudflare的5秒盾抗ddos，本脚本未适配
-同期cloudflare更新了防护页面，暂无好工具绕过(或者说现有的解决方案过于重型)，修复时间未知
-
 流媒体解锁部分脚本函数老旧，待替换更新，修复时间未知
 
 lemonbench测试中的IO读写有时候过高脱离实际，修复时间未知
