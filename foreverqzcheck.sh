@@ -170,7 +170,7 @@ checkpython() {
 main() {
   reading "\n 请输入需要查询的 IP: " ip
   yellow "\n 检测中，请稍等片刻。\n"
-  clear
+  # clear
   echo "------------------欺诈分数以及IP质量检测--本频道独创--------------------"
   echo "                   测评频道: https://t.me/vps_reviews                    "
   yellow "得分仅作参考，不代表100%准确，IP类型如果不一致请手动查询多个数据库比对"
