@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.12.12"
+ver="2022.12.13"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 
 UA_Browser="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36"
@@ -519,24 +519,6 @@ SystemInfo_GetOSRelease() {
         Var_OSRelease="unknown" # 未知系统分支
         LBench_Result_OSReleaseFullName="[Error: Unknown Linux Branch !]"
     fi
-}
-
-function Global_UnlockTest() {
-    echo "============[ Multination ]============"
-    MediaUnlockTest_Dazn ${1}
-    MediaUnlockTest_HotStar ${1}
-    MediaUnlockTest_DisneyPlus ${1}
-    MediaUnlockTest_Netflix ${1}
-    MediaUnlockTest_YouTube_Premium ${1}
-    MediaUnlockTest_PrimeVideo_Region ${1}
-    MediaUnlockTest_TVBAnywhere ${1}
-    MediaUnlockTest_iQYI_Region ${1}
-    MediaUnlockTest_Viu.com ${1}
-    MediaUnlockTest_YouTube_CDN ${1}
-    MediaUnlockTest_NetflixCDN ${1}
-    MediaUnlockTest_Spotify ${1}
-    GameTest_Steam ${1}
-    echo "======================================="
 }
 
 
@@ -1191,434 +1173,6 @@ speed_test2() {
     fi
 }
 
-function MediaUnlockTest_Dazn() {
-    echo -n -e " Dazn:\t\t\t\t\t->\c"
-    local tmpresult=$(curl $useNIC $xForward -${1} -sS --max-time 10 -X POST -H "Content-Type: application/json" -d '{"LandingPageKey":"generic","Languages":"zh-CN,zh,en","Platform":"web","PlatformAttributes":{},"Manufacturer":"","PromoCode":"","Version":"2"}' "https://startup.core.indazn.com/misl/v5/Startup" 2>&1)
-
-    if [[ "$tmpresult" == "curl"* ]]; then
-        echo -n -e "\r Dazn:\t\t\t\t\t${Font_Red}Failed (Network Connection)${Font_Suffix}\n"
-        return
-    fi
-    isAllowed=$(echo $tmpresult | python -m json.tool 2>/dev/null | grep 'isAllowed' | awk '{print $2}' | cut -f1 -d',')
-    local result=$(echo $tmpresult | python -m json.tool 2>/dev/null | grep '"GeolocatedCountry":' | awk '{print $2}' | cut -f2 -d'"')
-
-    if [[ "$isAllowed" == "true" ]]; then
-        local CountryCode=$(echo $result | tr [:lower:] [:upper:])
-        echo -n -e "\r Dazn:\t\t\t\t\t${Font_Green}Yes (Region: ${CountryCode})${Font_Suffix}\n"
-        return
-    elif [[ "$isAllowed" == "false" ]]; then
-        echo -n -e "\r Dazn:\t\t\t\t\t${Font_Red}No${Font_Suffix}\n"
-        return
-    else
-        echo -n -e "\r Dazn:\t\t\t\t\t${Font_Red}Unsupport${Font_Suffix}\n"
-        return
-    fi
-}
-
-function MediaUnlockTest_Netflix() {
-    echo -n -e " Netflix:\t\t\t\t->\c"
-    local result1=$(curl $useNIC $xForward -${1} --user-agent "${UA_Browser}" -fsL --write-out %{http_code} --output /dev/null --max-time 10 "https://www.netflix.com/title/81215567" 2>&1)
-
-    if [[ "$result1" == "404" ]]; then
-        echo -n -e "\r Netflix:\t\t\t\t${Font_Yellow}Originals Only${Font_Suffix}\n"
-        return
-    elif [[ "$result1" == "403" ]]; then
-        echo -n -e "\r Netflix:\t\t\t\t${Font_Red}No${Font_Suffix}\n"
-        return
-    elif [[ "$result1" == "200" ]]; then
-        local region=$(curl $useNIC $xForward -${1} --user-agent "${UA_Browser}" -fs --max-time 10 --write-out %{redirect_url} --output /dev/null "https://www.netflix.com/title/80018499" | cut -d '/' -f4 | cut -d '-' -f1 | tr [:lower:] [:upper:])
-        if [[ ! -n "$region" ]]; then
-            region="US"
-        fi
-        echo -n -e "\r Netflix:\t\t\t\t${Font_Green}Yes (Region: ${region})${Font_Suffix}\n"
-        return
-    elif [[ "$result1" == "000" ]]; then
-        echo -n -e "\r Netflix:\t\t\t\t${Font_Red}Failed (Network Connection)${Font_Suffix}\n"
-        return
-    fi
-}
-
-
-function MediaUnlockTest_DisneyPlus() {
-    echo -n -e " Disney+:\t\t\t\t->\c"
-    local PreAssertion=$(curl $useNIC $xForward -${1} --user-agent "${UA_Browser}" -s --max-time 10 -X POST "https://disney.api.edge.bamgrid.com/devices" -H "authorization: Bearer ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84" -H "content-type: application/json; charset=UTF-8" -d '{"deviceFamily":"browser","applicationRuntime":"chrome","deviceProfile":"windows","attributes":{}}' 2>&1)
-    if [[ "$PreAssertion" == "curl"* ]] && [[ "$1" == "6" ]]; then
-        echo -n -e "\r Disney+:\t\t\t\t${Font_Red}IPv6 Not Support${Font_Suffix}\n"
-        return
-    elif [[ "$PreAssertion" == "curl"* ]]; then
-        echo -n -e "\r Disney+:\t\t\t\t${Font_Red}Failed (Network Connection)${Font_Suffix}\n"
-        return
-    fi
-
-    local assertion=$(echo $PreAssertion | python -m json.tool 2>/dev/null | grep assertion | cut -f4 -d'"')
-    local PreDisneyCookie=$(curl -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/cookies" | sed -n '1p')
-    local disneycookie=$(echo $PreDisneyCookie | sed "s/DISNEYASSERTION/${assertion}/g")
-    local TokenContent=$(curl $useNIC $xForward -${1} --user-agent "${UA_Browser}" -s --max-time 10 -X POST "https://disney.api.edge.bamgrid.com/token" -H "authorization: Bearer ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84" -d "$disneycookie")
-    local isBanned=$(echo $TokenContent | python -m json.tool 2>/dev/null | grep 'forbidden-location')
-    local is403=$(echo $TokenContent | grep '403 ERROR')
-
-    if [ -n "$isBanned" ] || [ -n "$is403" ]; then
-        echo -n -e "\r Disney+:\t\t\t\t${Font_Red}No${Font_Suffix}\n"
-        return
-    fi
-
-    local fakecontent=$(curl -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/cookies" | sed -n '8p')
-    local refreshToken=$(echo $TokenContent | python -m json.tool 2>/dev/null | grep 'refresh_token' | awk '{print $2}' | cut -f2 -d'"')
-    local disneycontent=$(echo $fakecontent | sed "s/ILOVEDISNEY/${refreshToken}/g")
-    local tmpresult=$(curl $useNIC $xForward -${1} --user-agent "${UA_Browser}" -X POST -sSL --max-time 10 "https://disney.api.edge.bamgrid.com/graph/v1/device/graphql" -H "authorization: ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84" -d "$disneycontent" 2>&1)
-    local previewcheck=$(curl $useNIC $xForward -${1} -s -o /dev/null -L --max-time 10 -w '%{url_effective}\n' "https://disneyplus.com" | grep preview)
-    local isUnabailable=$(echo $previewcheck | grep 'unavailable')
-    local region=$(echo $tmpresult | python -m json.tool 2>/dev/null | grep 'countryCode' | cut -f4 -d'"')
-    local inSupportedLocation=$(echo $tmpresult | python -m json.tool 2>/dev/null | grep 'inSupportedLocation' | awk '{print $2}' | cut -f1 -d',')
-
-    if [[ "$region" == "JP" ]]; then
-        echo -n -e "\r Disney+:\t\t\t\t${Font_Green}Yes (Region: JP)${Font_Suffix}\n"
-        return
-    elif [ -n "$region" ] && [[ "$inSupportedLocation" == "false" ]] && [ -z "$isUnabailable" ]; then
-        echo -n -e "\r Disney+:\t\t\t\t${Font_Yellow}Available For [Disney+ $region] Soon${Font_Suffix}\n"
-        return
-    elif [ -n "$region" ] && [ -n "$isUnavailable" ]; then
-        echo -n -e "\r Disney+:\t\t\t\t${Font_Red}No${Font_Suffix}\n"
-        return
-    elif [ -n "$region" ] && [[ "$inSupportedLocation" == "true" ]]; then
-        echo -n -e "\r Disney+:\t\t\t\t${Font_Green}Yes (Region: $region)${Font_Suffix}\n"
-        return
-    elif [ -z "$region" ]; then
-        echo -n -e "\r Disney+:\t\t\t\t${Font_Red}No${Font_Suffix}\n"
-        return
-    else
-        echo -n -e "\r Disney+:\t\t\t\t${Font_Red}Failed${Font_Suffix}\n"
-        return
-    fi
-
-}
-
-
-function MediaUnlockTest_HotStar() {
-    echo -n -e " HotStar:\t\t\t\t->\c"
-    local result=$(curl $useNIC $xForward --user-agent "${UA_Browser}" -${1} ${ssll} -fsL --write-out %{http_code} --output /dev/null --max-time 10 "https://api.hotstar.com/o/v1/page/1557?offset=0&size=20&tao=0&tas=20")
-    if [ "$result" = "000" ]; then
-        echo -n -e "\r HotStar:\t\t\t\t${Font_Red}Failed (Network Connection)${Font_Suffix}\n"
-        return
-    elif [ "$result" = "401" ]; then
-        local region=$(curl $useNIC $xForward --user-agent "${UA_Browser}" -${1} ${ssll} -sI "https://www.hotstar.com" | grep 'geo=' | sed 's/.*geo=//' | cut -f1 -d",")
-        local site_region=$(curl $useNIC $xForward -${1} ${ssll} -s -o /dev/null -L --max-time 10 -w '%{url_effective}\n' "https://www.hotstar.com" | sed 's@.*com/@@' | tr [:lower:] [:upper:])
-        if [ -n "$region" ] && [ "$region" = "$site_region" ]; then
-            echo -n -e "\r HotStar:\t\t\t\t${Font_Green}Yes (Region: $region)${Font_Suffix}\n"
-            return
-        else
-            echo -n -e "\r HotStar:\t\t\t\t${Font_Red}No${Font_Suffix}\n"
-            return
-        fi
-    elif [ "$result" = "475" ]; then
-        echo -n -e "\r HotStar:\t\t\t\t${Font_Red}No${Font_Suffix}\n"
-        return
-    else
-        echo -n -e "\r HotStar:\t\t\t\t${Font_Red}Failed${Font_Suffix}\n"
-    fi
-
-}
-
-function MediaUnlockTest_NetflixCDN() {
-    echo -n -e " Netflix Preferred CDN:\t\t\t->\c"
-    local tmpresult=$(curl $useNIC $xForward -${1} ${ssll} -s --max-time 10 "https://api.fast.com/netflix/speedtest/v2?https=true&token=YXNkZmFzZGxmbnNkYWZoYXNkZmhrYWxm&urlCount=1")
-    if [ -z "$tmpresult" ]; then
-        echo -n -e "\r Netflix Preferred CDN:\t\t\t${Font_Red}Failed${Font_Suffix}\n"
-        return
-    elif [ -n "$(echo $tmpresult | grep '>403<')" ]; then
-        echo -n -e "\r Netflix Preferred CDN:\t\t\t${Font_Red}Failed (IP Banned By Netflix)${Font_Suffix}\n"
-        return
-    fi
-
-    local CDNAddr=$(echo $tmpresult | sed 's/.*"url":"//' | cut -f3 -d"/")
-    if [[ "$1" == "6" ]]; then
-        nslookup -q=AAAA $CDNAddr >~/v6_addr.txt
-        ifAAAA=$(cat ~/v6_addr.txt | grep 'AAAA address' | awk '{print $NF}')
-        if [ -z "$ifAAAA" ]; then
-            CDNIP=$(cat ~/v6_addr.txt | grep Address | sed -n '$p' | awk '{print $NF}')
-        else
-            CDNIP=${ifAAAA}
-        fi
-    else
-        CDNIP=$(nslookup $CDNAddr | sed '/^\s*$/d' | awk 'END {print}' | awk '{print $2}')
-    fi
-
-    if [ -z "$CDNIP" ]; then
-        echo -n -e "\r Netflix Preferred CDN:\t\t\t${Font_Red}Failed (CDN IP Not Found)${Font_Suffix}\n"
-        rm -rf ~/v6_addr.txt
-        return
-    fi
-
-    local CDN_ISP=$(curl $useNIC $xForward --user-agent "${UA_Browser}" -s --max-time 20 "https://api.ip.sb/geoip/$CDNIP" | python -m json.tool 2>/dev/null | grep 'isp' | cut -f4 -d'"')
-    local iata=$(echo $CDNAddr | cut -f3 -d"-" | sed 's/.\{3\}$//' | tr [:lower:] [:upper:])
-    local isIataFound1=$(curl -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/reference/IATACode.txt" | grep $iata)
-    local isIataFound2=$(curl -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/reference/IATACode2.txt" | grep $iata)
-
-    if [ -n "$isIataFound1" ]; then
-        local lineNo=$(curl $useNIC $xForward -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/reference/IATACode.txt" | cut -f3 -d"|" | sed -n "/${iata}/=")
-        local location=$(curl $useNIC $xForward -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/reference/IATACode.txt" | awk "NR==${lineNo}" | cut -f1 -d"|" | sed -e 's/^[[:space:]]*//')
-    elif [ -z "$isIataFound1" ] && [ -n "$isIataFound2" ]; then
-        local lineNo=$(curl $useNIC $xForward -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/reference/IATACode2.txt" | awk '{print $1}' | sed -n "/${iata}/=")
-        local location=$(curl $useNIC $xForward -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/reference/IATACode2.txt" | awk "NR==${lineNo}" | cut -f2 -d"," | sed -e 's/^[[:space:]]*//' | tr [:upper:] [:lower:] | sed 's/\b[a-z]/\U&/g')
-    fi
-
-    if [ -n "$location" ] && [[ "$CDN_ISP" == "Netflix Streaming Services" ]]; then
-        echo -n -e "\r Netflix Preferred CDN:\t\t\t${Font_Green}$location ${Font_Suffix}\n"
-        rm -rf ~/v6_addr.txt
-        return
-    elif [ -n "$location" ] && [[ "$CDN_ISP" != "Netflix Streaming Services" ]]; then
-        echo -n -e "\r Netflix Preferred CDN:\t\t\t${Font_Yellow}Associated with [$CDN_ISP] in [$location]${Font_Suffix}\n"
-        rm -rf ~/v6_addr.txt
-        return
-    elif [ -n "$location" ] && [ -z "$CDN_ISP" ]; then
-        echo -n -e "\r Netflix Preferred CDN:\t\t\t${Font_Red}No ISP Info Founded${Font_Suffix}\n"
-        rm -rf ~/v6_addr.txt
-        return
-    fi
-}
-
-function MediaUnlockTest_YouTube_Premium() {
-    echo -n -e " YouTube Premium:\t\t\t->\c"
-    local tmpresult=$(curl $useNIC $xForward --user-agent "${UA_Browser}" -${1} --max-time 10 -sSL -H "Accept-Language: en" -b "YSC=BiCUU3-5Gdk; CONSENT=YES+cb.20220301-11-p0.en+FX+700; GPS=1; VISITOR_INFO1_LIVE=4VwPMkB7W5A; PREF=tz=Asia.Shanghai; _gcl_au=1.1.1809531354.1646633279" "https://www.youtube.com/premium" 2>&1)
-
-    if [[ "$tmpresult" == "curl"* ]]; then
-        echo -n -e "\r YouTube Premium:\t\t\t${Font_Red}Failed (Network Connection)${Font_Suffix}\n"
-        return
-    fi
-
-    local isCN=$(echo $tmpresult | grep 'www.google.cn')
-    if [ -n "$isCN" ]; then
-        echo -n -e "\r YouTube Premium:\t\t\t${Font_Red}No${Font_Suffix} ${Font_Green} (Region: CN)${Font_Suffix} \n"
-        return
-    fi
-    local isNotAvailable=$(echo $tmpresult | grep 'Premium is not available in your country')
-    local region=$(echo $tmpresult | grep "countryCode" | sed 's/.*"countryCode"//' | cut -f2 -d'"')
-    local isAvailable=$(echo $tmpresult | grep 'manageSubscriptionButton')
-
-    if [ -n "$isNotAvailable" ]; then
-        echo -n -e "\r YouTube Premium:\t\t\t${Font_Red}No${Font_Suffix} \n"
-        return
-    elif [ -n "$isAvailable" ] && [ -n "$region" ]; then
-        echo -n -e "\r YouTube Premium:\t\t\t${Font_Green}Yes (Region: $region)${Font_Suffix}\n"
-        return
-    elif [ -z "$region" ] && [ -n "$isAvailable" ]; then
-        echo -n -e "\r YouTube Premium:\t\t\t${Font_Green}Yes${Font_Suffix}\n"
-        return
-    else
-        echo -n -e "\r YouTube Premium:\t\t\t${Font_Red}Failed${Font_Suffix}\n"
-    fi
-
-}
-
-function MediaUnlockTest_PrimeVideo_Region() {
-    echo -n -e " Amazon Prime Video:\t\t\t->\c"
-    local tmpresult=$(curl $useNIC $xForward -${1} ${ssll} --user-agent "${UA_Browser}" -sL --max-time 10 "https://www.primevideo.com")
-
-    if [[ "$tmpresult" = "curl"* ]]; then
-        echo -n -e "\r Amazon Prime Video:\t\t\t${Font_Red}Failed (Network Connection)${Font_Suffix}\n"
-        return
-    fi
-
-    local result=$(echo $tmpresult | grep '"currentTerritory":' | sed 's/.*currentTerritory//' | cut -f3 -d'"' | head -n 1)
-    if [ -n "$result" ]; then
-        echo -n -e "\r Amazon Prime Video:\t\t\t${Font_Green}Yes (Region: $result)${Font_Suffix}\n"
-        return
-    else
-        echo -n -e "\r Amazon Prime Video:\t\t\t${Font_Red}Unsupported${Font_Suffix}\n"
-        return
-    fi
-
-}
-
-function MediaUnlockTest_TVBAnywhere() {
-    echo -n -e " TVBAnywhere+:\t\t\t\t->\c"
-    local tmpresult=$(curl $useNIC $xForward -${1} ${ssll} -s --max-time 10 "https://uapisfm.tvbanywhere.com.sg/geoip/check/platform/android")
-    if [ -z "$tmpresult" ]; then
-        echo -n -e "\r TVBAnywhere+:\t\t\t\t${Font_Red}Failed (Network Connection)${Font_Suffix}\n"
-        return
-    fi
-
-    local result=$(echo $tmpresult | python -m json.tool 2>/dev/null | grep 'allow_in_this_country' | awk '{print $2}' | cut -f1 -d",")
-    if [[ "$result" == "true" ]]; then
-        echo -n -e "\r TVBAnywhere+:\t\t\t\t${Font_Green}Yes${Font_Suffix}\n"
-        return
-    elif [[ "$result" == "false" ]]; then
-        echo -n -e "\r TVBAnywhere+:\t\t\t\t${Font_Red}No${Font_Suffix}\n"
-        return
-    else
-        echo -n -e "\r TVBAnywhere+:\t\t\t\t${Font_Red}Failed${Font_Suffix}\n"
-    fi
-
-}
-
-function MediaUnlockTest_iQYI_Region() {
-    echo -n -e " iQyi Oversea Region:\t\t\t->\c"
-    curl $useNIC $xForward -${1} ${ssll} -s -I --max-time 10 "https://www.iq.com/" >~/iqiyi
-
-    if [ $? -eq 1 ]; then
-        echo -n -e "\r iQyi Oversea Region:\t\t\t${Font_Red}Failed (Network Connection)${Font_Suffix}\n"
-        return
-    fi
-
-    result=$(cat ~/iqiyi | grep 'mod=' | awk '{print $2}' | cut -f2 -d'=' | cut -f1 -d';')
-    rm ~/iqiyi >/dev/null 2>&1
-
-    if [ -n "$result" ]; then
-        if [[ "$result" == "ntw" ]]; then
-            result=TW
-            echo -n -e "\r iQyi Oversea Region:\t\t\t${Font_Green}${result}${Font_Suffix}\n"
-            return
-        else
-            result=$(echo $result | tr [:lower:] [:upper:])
-            echo -n -e "\r iQyi Oversea Region:\t\t\t${Font_Green}${result}${Font_Suffix}\n"
-            return
-        fi
-    else
-        echo -n -e "\r iQyi Oversea Region:\t\t\t${Font_Red}Failed${Font_Suffix}\n"
-        return
-    fi
-}
-
-function MediaUnlockTest_Viu.com() {
-    echo -n -e " Viu.com:\t\t\t\t->\c"
-    local tmpresult=$(curl $useNIC $xForward -${1} ${ssll} -s -o /dev/null -L --max-time 10 -w '%{url_effective}\n' "https://www.viu.com/")
-    if [ "$tmpresult" = "000" ]; then
-        echo -n -e "\r Viu.com:\t\t\t\t${Font_Red}Failed (Network Connection)${Font_Suffix}\n"
-        return
-    fi
-
-    result=$(echo $tmpresult | cut -f5 -d"/")
-    if [ -n "$result" ]; then
-        if [[ "$result" == "no-service" ]]; then
-            echo -n -e "\r Viu.com:\t\t\t\t${Font_Red}No${Font_Suffix}\n"
-            return
-        else
-            result=$(echo $result | tr [:lower:] [:upper:])
-            echo -n -e "\r Viu.com:\t\t\t\t${Font_Green}Yes (Region: ${result})${Font_Suffix}\n"
-            return
-        fi
-
-    else
-        echo -n -e "\r Viu.com:\t\t\t\t${Font_Red}Failed${Font_Suffix}\n"
-        return
-    fi
-}
-
-function MediaUnlockTest_YouTube_CDN() {
-    echo -n -e " YouTube CDN:\t\t\t\t->\c"
-    local tmpresult=$(curl $useNIC $xForward -${1} ${ssll} -sS --max-time 10 "https://redirector.googlevideo.com/report_mapping" 2>&1)
-
-    if [[ "$tmpresult" == "curl"* ]]; then
-        echo -n -e "\r YouTube Region:\t\t\t${Font_Red}Check Failed (Network Connection)${Font_Suffix}\n"
-        return
-    fi
-
-    local iata=$(echo $tmpresult | grep router | cut -f2 -d'"' | cut -f2 -d"." | sed 's/.\{2\}$//' | tr [:lower:] [:upper:])
-    local checkfailed=$(echo $tmpresult | grep "=>")
-    if [ -z "$iata" ] && [ -n "$checkfailed" ]; then
-        CDN_ISP=$(echo $checkfailed | awk '{print $3}' | cut -f1 -d"-" | tr [:lower:] [:upper:])
-        echo -n -e "\r YouTube CDN:\t\t\t\t${Font_Yellow}Associated with [$CDN_ISP]${Font_Suffix}\n"
-        return
-    elif [ -n "$iata" ]; then
-        local lineNo=$(curl $useNIC $xForward -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/reference/IATACode.txt" | cut -f3 -d"|" | sed -n "/${iata}/=")
-        local location=$(curl $useNIC $xForward -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/reference/IATACode.txt" | awk "NR==${lineNo}" | cut -f1 -d"|" | sed -e 's/^[[:space:]]*//')
-        echo -n -e "\r YouTube CDN:\t\t\t\t${Font_Green}$location${Font_Suffix}\n"
-        return
-    else
-        echo -n -e "\r YouTube CDN:\t\t\t\t${Font_Red}Undetectable${Font_Suffix}\n"
-        return
-    fi
-
-}
-
-function MediaUnlockTest_NetflixCDN() {
-    echo -n -e " Netflix Preferred CDN:\t\t\t->\c"
-    local tmpresult=$(curl $useNIC $xForward -${1} ${ssll} -s --max-time 10 "https://api.fast.com/netflix/speedtest/v2?https=true&token=YXNkZmFzZGxmbnNkYWZoYXNkZmhrYWxm&urlCount=1")
-    if [ -z "$tmpresult" ]; then
-        echo -n -e "\r Netflix Preferred CDN:\t\t\t${Font_Red}Failed${Font_Suffix}\n"
-        return
-    elif [ -n "$(echo $tmpresult | grep '>403<')" ]; then
-        echo -n -e "\r Netflix Preferred CDN:\t\t\t${Font_Red}Failed (IP Banned By Netflix)${Font_Suffix}\n"
-        return
-    fi
-
-    local CDNAddr=$(echo $tmpresult | sed 's/.*"url":"//' | cut -f3 -d"/")
-    if [[ "$1" == "6" ]]; then
-        nslookup -q=AAAA $CDNAddr >~/v6_addr.txt
-        ifAAAA=$(cat ~/v6_addr.txt | grep 'AAAA address' | awk '{print $NF}')
-        if [ -z "$ifAAAA" ]; then
-            CDNIP=$(cat ~/v6_addr.txt | grep Address | sed -n '$p' | awk '{print $NF}')
-        else
-            CDNIP=${ifAAAA}
-        fi
-    else
-        CDNIP=$(nslookup $CDNAddr | sed '/^\s*$/d' | awk 'END {print}' | awk '{print $2}')
-    fi
-
-    if [ -z "$CDNIP" ]; then
-        echo -n -e "\r Netflix Preferred CDN:\t\t\t${Font_Red}Failed (CDN IP Not Found)${Font_Suffix}\n"
-        rm -rf ~/v6_addr.txt
-        return
-    fi
-
-    local CDN_ISP=$(curl $useNIC $xForward --user-agent "${UA_Browser}" -s --max-time 20 "https://api.ip.sb/geoip/$CDNIP" | python -m json.tool 2>/dev/null | grep 'isp' | cut -f4 -d'"')
-    local iata=$(echo $CDNAddr | cut -f3 -d"-" | sed 's/.\{3\}$//' | tr [:lower:] [:upper:])
-    local isIataFound1=$(curl -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/reference/IATACode.txt" | grep $iata)
-    local isIataFound2=$(curl -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/reference/IATACode2.txt" | grep $iata)
-
-    if [ -n "$isIataFound1" ]; then
-        local lineNo=$(curl $useNIC $xForward -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/reference/IATACode.txt" | cut -f3 -d"|" | sed -n "/${iata}/=")
-        local location=$(curl $useNIC $xForward -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/reference/IATACode.txt" | awk "NR==${lineNo}" | cut -f1 -d"|" | sed -e 's/^[[:space:]]*//')
-    elif [ -z "$isIataFound1" ] && [ -n "$isIataFound2" ]; then
-        local lineNo=$(curl $useNIC $xForward -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/reference/IATACode2.txt" | awk '{print $1}' | sed -n "/${iata}/=")
-        local location=$(curl $useNIC $xForward -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/reference/IATACode2.txt" | awk "NR==${lineNo}" | cut -f2 -d"," | sed -e 's/^[[:space:]]*//' | tr [:upper:] [:lower:] | sed 's/\b[a-z]/\U&/g')
-    fi
-
-    if [ -n "$location" ] && [[ "$CDN_ISP" == "Netflix Streaming Services" ]]; then
-        echo -n -e "\r Netflix Preferred CDN:\t\t\t${Font_Green}$location ${Font_Suffix}\n"
-        rm -rf ~/v6_addr.txt
-        return
-    elif [ -n "$location" ] && [[ "$CDN_ISP" != "Netflix Streaming Services" ]]; then
-        echo -n -e "\r Netflix Preferred CDN:\t\t\t${Font_Yellow}Associated with [$CDN_ISP] in [$location]${Font_Suffix}\n"
-        rm -rf ~/v6_addr.txt
-        return
-    elif [ -n "$location" ] && [ -z "$CDN_ISP" ]; then
-        echo -n -e "\r Netflix Preferred CDN:\t\t\t${Font_Red}No ISP Info Founded${Font_Suffix}\n"
-        rm -rf ~/v6_addr.txt
-        return
-    fi
-}
-
-function MediaUnlockTest_Spotify() {
-    local tmpresult=$(curl $useNIC $xForward -${1} ${ssll} --user-agent "${UA_Browser}" -s --max-time 10 -X POST "https://spclient.wg.spotify.com/signup/public/v1/account" -d "birth_day=11&birth_month=11&birth_year=2000&collect_personal_info=undefined&creation_flow=&creation_point=https%3A%2F%2Fwww.spotify.com%2Fhk-en%2F&displayname=Gay%20Lord&gender=male&iagree=1&key=a1e486e2729f46d6bb368d6b2bcda326&platform=www&referrer=&send-email=0&thirdpartyemail=0&identifier_token=AgE6YTvEzkReHNfJpO114514" -H "Accept-Language: en")
-    local region=$(echo $tmpresult | python -m json.tool 2>/dev/null | grep '"country":' | cut -f4 -d'"')
-    local isLaunched=$(echo $tmpresult | python -m json.tool 2>/dev/null | grep is_country_launched | cut -f1 -d',' | awk '{print $2}')
-    local StatusCode=$(echo $tmpresult | python -m json.tool 2>/dev/null | grep status | cut -f1 -d',' | awk '{print $2}')
-    echo -n -e " Spotify Registration:\t\t\t->\c"
-
-    if [ "$tmpresult" = "000" ]; then
-        echo -n -e "\r Spotify Registration:\t\t\t${Font_Red}Failed (Network Connection)${Font_Suffix}\n"
-        return
-    elif [ "$StatusCode" = "320" ]; then
-        echo -n -e "\r Spotify Registration:\t\t\t${Font_Red}No${Font_Suffix}\n"
-        return
-    elif [ "$StatusCode" = "311" ] && [ "$isLaunched" = "true" ]; then
-        echo -n -e "\r Spotify Registration:\t\t\t${Font_Green}Yes (Region: $region)${Font_Suffix}\n"
-        return
-    fi
-}
-
-function GameTest_Steam() {
-    echo -n -e " Steam Currency:\t\t\t->\c"
-    local result=$(curl $useNIC $xForward --user-agent "${UA_Browser}" -${1} -fsSL --max-time 10 "https://store.steampowered.com/app/761830" 2>&1 | grep priceCurrency | cut -d '"' -f4)
-
-    if [ ! -n "$result" ]; then
-        echo -n -e "\r Steam Currency:\t\t\t${Font_Red}Failed (Network Connection)${Font_Suffix}\n"
-    else
-        echo -n -e "\r Steam Currency:\t\t\t${Font_Green}${result}${Font_Suffix}\n"
-    fi
-}
-
 speed() {
     speed_test2 '' 'speedtest'
     speed_test '21541' '洛杉矶\t'
@@ -2212,9 +1766,9 @@ python_all_script(){
     checkpython
     checkmagic
     export PYTHONIOENCODING=utf-8
-    curl -L -k https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py -o qzcheck_ecs.py 
-    curl -L -k https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
-    # curl -L -k https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
+    curl -L -k https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py -o qzcheck_ecs.py 
+    curl -L -k https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
+    # curl -L -k https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
     sleep 0.5
     python3 googlesearchcheck.py
 }
@@ -2222,7 +1776,9 @@ python_all_script(){
 python_tk_script(){
     checkpython
     export PYTHONIOENCODING=utf-8
-    # curl -L -k https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
+    # curl -L -k https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
+    curl https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh -o media_lmc_check.sh
+    chmod 777 media_lmc_check.sh
     sleep 0.5
 }
 
@@ -2230,8 +1786,8 @@ python_gd_script(){
     checkpython
     checkmagic
     export PYTHONIOENCODING=utf-8
-    curl -L -k https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py -o qzcheck_ecs.py 
-    curl -L -k https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
+    curl -L -k https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py -o qzcheck_ecs.py 
+    curl -L -k https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
     sleep 0.5
     python3 googlesearchcheck.py
 }
@@ -2297,10 +1853,10 @@ io2_script(){
 RegionRestrictionCheck_script(){
     
     echo -e "---------------流媒体解锁--感谢RegionRestrictionCheck开源-------------"
-    yellow " 以下为IPV4网络测试"
-    Global_UnlockTest 4
-    yellow " 以下为IPV6网络测试"
-    Global_UnlockTest 6
+    yellow " 以下为IPV4网络测试，若无IPV4网络则无输出"
+    echo 0 | bash media_lmc_check.sh -M 4 | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
+    yellow " 以下为IPV6网络测试，若无IPV6网络则无输出"
+    echo 0 | bash media_lmc_check.sh -M 6 | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
 }
 
 # lmc999_script(){
@@ -2363,7 +1919,7 @@ backtrace_script(){
     
     echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
     rm -f $TEMP_FILE2
-    curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
+    curl https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
 }
 
 
@@ -2486,7 +2042,7 @@ fscarmen_route_b_script(){
 #     if [ -n "$IP_4" ]; then
 #     PORT4=(22 80 443 8080)
 #     for i in ${PORT4[@]}; do
-#         bash <(curl -s4SL https://raw.githubusercontent.com/fscarmen/tools/main/check_port.sh) $WAN_4:$i > PORT4_$i
+#         bash <(curl -s4SL https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/fscarmen/tools/main/check_port.sh) $WAN_4:$i > PORT4_$i
 #         sed -i "1,5 d; s/状态/$i/g" PORT4_$i
 #         cut -f 1 PORT4_$i > PORT4_${i}_1
 #         cut -f 2,3  PORT4_$i > PORT4_${i}_2
@@ -2816,7 +2372,7 @@ Yuanshi_script(){
 	case $StartInput3 in
         1) bash <(curl -L -Lso- https://cdn.jsdelivr.net/gh/misaka-gh/misakabench@master/misakabench.sh) ;;
         2) curl -fsL https://ilemonra.in/LemonBenchIntl | bash -s fast ;;
-        3) wget -qO- --no-check-certificate https://raw.githubusercontent.com/oooldking/script/master/superbench.sh | bash ;;
+        3) wget -qO- --no-check-certificate https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/oooldking/script/master/superbench.sh | bash ;;
         4) curl -sL yabs.sh | bash ;;
         5) wget -O nf https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 && chmod +x nf && ./nf ;;
         6) wget -O tubecheck https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck/CDN/tubecheck_1.0beta_linux_amd64 && chmod +x tubecheck && clear && ./tubecheck ;;
@@ -2847,7 +2403,7 @@ Yuanchuang_script(){
         2) network_g_script ;;
         3) network_s_script ;;
         4) network_b_script ;;
-        5) bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) ;;
+        5) bash <(curl -sSL https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) ;;
         0) Start_script ;;
     esac
 }
