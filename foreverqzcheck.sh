@@ -62,6 +62,9 @@ _exit() {
     _red "\n检测到退出操作，脚本终止！\n"
     # clean up
     rm -fr benchtest_*
+    rm -rf wget-log*
+    rm -rf gdlog*
+    rm -rf foreverqzcheck.py*
     exit 1
 }
 
@@ -152,29 +155,8 @@ checkwget() {
 	fi
 }
 
-print_intro() {
-    echo "--------------------- A Bench Script By spiritlhl --------------------"
-    echo "                   测评频道: https://t.me/vps_reviews                    "
-    echo "版本：$ver"
-    echo "更新日志：$changeLog"
-}
-
 next() {
     printf "%-70s\n" "-" | sed 's/\s/-/g'
-}
-
-print_end_time() {
-    end_time=$(date +%s)
-    time=$(( ${end_time} - ${start_time} ))
-    if [ ${time} -gt 60 ]; then
-        min=$(expr $time / 60)
-        sec=$(expr $time % 60)
-        echo " 总共花费        : ${min} 分 ${sec} 秒"
-    else
-        echo " 总共花费        : ${time} 秒"
-    fi
-    date_time=$(date +%Y-%m-%d" "%H:%M:%S)
-    echo " 时间          : $date_time"
 }
 
 checkpython() {
@@ -186,19 +168,15 @@ checkpython() {
 }
 
 main() {
-  [[ -z "$ip" || $ip = '[DESTINATION_IP]' ]] && reading "\n 请输入需要查询的 IP: " ip
+  [[ -z "$ip" ]] && reading "\n 请输入需要查询的 IP: " ip
   yellow "\n 检测中，请稍等片刻。\n"
   clear
-  start_time=$(date +%s)
-  print_intro
-  echo -e "------------------欺诈分数以及IP质量检测--本频道独创--------------------"
+  echo "------------------欺诈分数以及IP质量检测--本频道独创--------------------"
+  echo "                   测评频道: https://t.me/vps_reviews                    "
   yellow "得分仅作参考，不代表100%准确，IP类型如果不一致请手动查询多个数据库比对"
-  python3 foreverqzcheck.py "${ip}"
-  next
-  print_end_time
+  python3 foreverqzcheck.py "$ip"
   next
   rm -rf wget-log*
-  rm -rf googlesearchcheck.py*
   rm -rf gdlog*
 }
 
@@ -209,9 +187,7 @@ checkcurl
 checksystem
 checkpython
 curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/foreverqzcheck.py -o foreverqzcheck.py
-# curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
 dos2unix qzcheck.py 
-# dos2unix googlesearchcheck.py
 if [ "${release}" == "centos" ]; then
     yum -y install python3.7 > /dev/null 2>&1
 else
@@ -221,7 +197,6 @@ export PYTHONIOENCODING=utf-8
 ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
 ! _exists "free" && _red "Error: free command not found.\n" && exit 1
 sleep 0.5
-# python3 googlesearchcheck.py
 
 while [ "1" = "1" ]
   do
