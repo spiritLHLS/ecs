@@ -168,7 +168,7 @@ checkpython() {
 }
 
 main() {
-  [[ -z "$ip" ]] && reading "\n 请输入需要查询的 IP: " ip
+  reading "\n 请输入需要查询的 IP: " ip
   yellow "\n 检测中，请稍等片刻。\n"
   clear
   echo "------------------欺诈分数以及IP质量检测--本频道独创--------------------"
