@@ -191,10 +191,10 @@ checkwget
 checkcurl
 checksystem
 checkpython
-curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck.py -o qzcheck.py 
-curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
+curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/foreverqzcheck.py -o qzcheck.py 
+# curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
 dos2unix qzcheck.py 
-dos2unix googlesearchcheck.py
+# dos2unix googlesearchcheck.py
 if [ "${release}" == "centos" ]; then
     yum -y install python3.7 > /dev/null 2>&1
 else
