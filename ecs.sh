@@ -134,7 +134,7 @@ Function_CheckTracemode() {
 Check_Virtwhat() {
     if [ ! -f "/usr/sbin/virt-what" ]; then
         SystemInfo_GetOSRelease
-        if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux"]; then
+        if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux" ]; then
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             yum -y install virt-what
         elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
@@ -181,7 +181,7 @@ Check_JSONQuery() {
             # local DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/jq/1.6/i386/jq.tar.gz"
         fi
         mkdir -p ${WorkDir}/
-        if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux"]; then
+        if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux" ]; then
             echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
             echo -e "${Msg_Info}Installing Dependency ..."
             yum install -y epel-release
@@ -527,7 +527,7 @@ Check_SysBench() {
     if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
         SystemInfo_GetOSRelease
         SystemInfo_GetSystemBit
-        if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux"]; then
+        if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux" ]; then
             echo -e "${Msg_Warning}Sysbench Module not found, installing ..."
             yum -y install epel-release
             yum -y install sysbench
@@ -578,7 +578,7 @@ Check_SysBench() {
 Check_Sysbench_InstantBuild() {
     SystemInfo_GetOSRelease
     SystemInfo_GetCPUInfo
-    if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux"]; then
+    if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux" ]; then
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
         yum install -y epel-release
