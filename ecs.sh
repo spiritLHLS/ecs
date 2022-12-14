@@ -1773,7 +1773,7 @@ python_all_script(){
     python3 googlesearchcheck.py
 }
 
-python_tk_script(){
+check_lmc_script(){
     checkpython
     export PYTHONIOENCODING=utf-8
     # curl -L -k https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
@@ -1781,6 +1781,7 @@ python_tk_script(){
     chmod 777 media_lmc_check.sh
     sleep 0.5
 }
+
 
 python_gd_script(){
     checkpython
@@ -2087,6 +2088,7 @@ all_script(){
     python_all_script
     checkspeedtest
     install_speedtest
+    check_lmc_script
     start_time=$(date +%s)
     clear
     print_intro
@@ -2126,7 +2128,7 @@ minal_plus(){
     SystemInfo_GetSystemBit
     get_system_info >/dev/null 2>&1
     check_virt
-    python_tk_script
+    check_lmc_script
     checkdnsutils
     checkspeedtest
     install_speedtest
@@ -2169,7 +2171,7 @@ minal_plus_media(){
     get_system_info >/dev/null 2>&1
     check_virt
     checkdnsutils
-    python_tk_script
+    check_lmc_script
     checkspeedtest
     install_speedtest
     start_time=$(date +%s)
@@ -2204,7 +2206,7 @@ media_script(){
     pre_check
     SystemInfo_GetSystemBit
     checkdnsutils
-    python_tk_script
+    check_lmc_script
     start_time=$(date +%s)
     clear
     print_intro
