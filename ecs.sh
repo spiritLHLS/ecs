@@ -2034,6 +2034,7 @@ rm_script(){
 
 Jinjian_script(){
     head_script
+    yellow "融合怪的精简脚本如下"
     echo -e "${GREEN}1.${PLAIN} 极简版(基础系统信息+CPU+内存+磁盘IO+测速节点4个)(平均运行3分钟不到)"
     echo -e "${GREEN}2.${PLAIN} 精简版(基础系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体解锁+TikTok解锁+回程+路由+测速节点4个)(平均运行4分钟左右)"
     echo -e "${GREEN}3.${PLAIN} 精简网络版(基础系统信息+CPU+内存+磁盘IO+回程+路由+测速节点4个)(平均运行不到4分钟)"
@@ -2053,6 +2054,7 @@ Jinjian_script(){
 
 Danxiang_script(){
     head_script
+    yellow "融合怪拆分的单项测试脚本如下"
     echo -e "${GREEN}1.${PLAIN} 网络方面(简化的IP质量检测+三网回程+三网路由与延迟+测速节点11个)(平均运行7分钟左右)"
     echo -e "${GREEN}2.${PLAIN} 解锁方面(御三家解锁+常用流媒体解锁+TikTok解锁)(平均运行30~60秒)"
     echo -e "${GREEN}3.${PLAIN} 硬件方面(基础系统信息+CPU+内存+双重磁盘IO测试)(平均运行1分半钟)"
@@ -2078,6 +2080,7 @@ Danxiang_script(){
 
 Yuanshi_script(){
     head_script
+    yellow "融合怪借鉴的脚本以及部分竞品脚本如下"
     echo -e "${GREEN}1.${PLAIN} misakabench VPS测试脚本"
     echo -e "${GREEN}2.${PLAIN} lemonbench VPS测试脚本"
     echo -e "${GREEN}3.${PLAIN} superbench VPS测试脚本"
@@ -2087,9 +2090,11 @@ Yuanshi_script(){
     echo -e "${GREEN}7.${PLAIN} sjlleo的DisneyPlus解锁区域检测脚本"
     echo -e "${GREEN}8.${PLAIN} lmc999的流媒体检测脚本"
     echo -e "${GREEN}9.${PLAIN} supeerbench的TikTok解锁区域检测脚本"
-    echo -e "${GREEN}10.${PLAIN} superspeed的三网测速脚本"
-    echo -e "${GREEN}11.${PLAIN} hyperspeed的三网测速脚本"
-    echo -e "${GREEN}12.${PLAIN} supeerbench的Geekbench5得分查询"
+    echo -e "${GREEN}10.${PLAIN} zhanghanyun的backtrace三网回程检测脚本"
+    echo -e "${GREEN}11.${PLAIN} zhucaidan的mtr_trace三网回程检测脚本"
+    echo -e "${GREEN}12.${PLAIN} superspeed的三网测速脚本"
+    echo -e "${GREEN}13.${PLAIN} hyperspeed的三网测速脚本"
+    echo -e "${GREEN}14.${PLAIN} supeerbench的Geekbench5得分查询"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
@@ -2105,20 +2110,24 @@ Yuanshi_script(){
         8) bash <(curl -L -s check.unlock.media) ;;
         9) UnlockTiktokTest ;;
         #curl -fsL -o ./t.sh.x https://github.com/lmc999/TikTokCheck/raw/main/t.sh.x && chmod +x ./t.sh.x && ./t.sh.x && rm ./t.sh.x ;;
-        10) bash <(curl -L -Lso- https://git.io/superspeed.sh) ;;
-        11) bash <(curl -L -Lso- https://bench.im/hyperspeed) ;;
-        12) geekbench_script ;;
+        10) curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh ;;
+        11) curl https://raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh|bash ;;
+        12) bash <(curl -L -Lso- https://git.io/superspeed.sh) ;;
+        13) bash <(curl -L -Lso- https://bench.im/hyperspeed) ;;
+        14) geekbench_script ;;
         0) Start_script ;;
     esac
 }
 
 Yuanchuang_script(){
     head_script
-    echo -e "${GREEN}1.${PLAIN} 完整的IP质量检测(平均运行10~20秒)"
+    yellow "频道有原创成分的脚本如下"
+    echo -e "${GREEN}1.${PLAIN} 完整的本机IP的质量检测(平均运行10~20秒)"
     echo -e "${GREEN}2.${PLAIN} 回程路由测试(预设广州)(平均运行1分钟)"
     echo -e "${GREEN}3.${PLAIN} 回程路由测试(预设上海)(平均运行1分钟)"
     echo -e "${GREEN}4.${PLAIN} 回程路由测试(预设北京)(平均运行1分钟)"
-    echo -e "${GREEN}5.${PLAIN} 回程路由测试(自定义，需自行输入IP)"
+    echo -e "${GREEN}5.${PLAIN} 回程路由测试(自定义IP，需自行输入IP)"
+    echo -e "${GREEN}6.${PLAIN} 自定义IP的质量检测(自定义IP，需自行输入IP)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
@@ -2129,6 +2138,7 @@ Yuanchuang_script(){
         3) network_s_script ;;
         4) network_b_script ;;
         5) bash <(curl -sSL https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) ;;
+        6) bash <(curl -sSL https://cdn.spiritlhl.workers.dev/https://github.com/spiritLHLS/ecs/raw/main/customizeqzcheck.sh) ;;
         0) Start_script ;;
     esac
 }
@@ -2162,7 +2172,7 @@ Start_script(){
     echo ""
     read -rp "请输入选项:" StartInput
 	case $StartInput in
-        1) all_script ;;
+        1) all_script | tee -i test_result.txt ;;
         2) Jinjian_script ;;
         3) Danxiang_script ;;
         4) Yuanshi_script ;;
