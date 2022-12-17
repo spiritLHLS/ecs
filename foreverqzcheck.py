@@ -87,25 +87,25 @@ def ping0(ip):
     # print(e)
 
 
-def liveipmap(ip):
-  try:
-    try:
-      context4 = excuteCommand(f"curl -sm8 https://www.liveipmap.com/?ip={ip}")
-    except:
-      pass
-    try:
-      # print(context4)
-      if "Usage Type" in context4:
-        temp = context4.split('tr')
-        for k in temp:
-          if "Usage Type" in k:
-            res = k.split("<td>")[1].split('>')[2].split('<')[0]
-            print(f"liveipmap数据库IP类型：{res}")
-    except:
-      pass
-  except Exception as e:
-    print(f"liveipmap数据库IP类型：未知，爆错{e}".encode('utf-8'))
-    # print(e)
+# def liveipmap(ip):
+#   try:
+#     try:
+#       context4 = excuteCommand(f"curl -sm8 https://www.liveipmap.com/?ip={ip}")
+#     except:
+#       pass
+#     try:
+#       # print(context4)
+#       if "Usage Type" in context4:
+#         temp = context4.split('tr')
+#         for k in temp:
+#           if "Usage Type" in k:
+#             res = k.split("<td>")[1].split('>')[2].split('<')[0]
+#             print(f"liveipmap数据库IP类型：{res}")
+#     except:
+#       pass
+#   except Exception as e:
+#     print(f"liveipmap数据库IP类型：未知，爆错{e}".encode('utf-8'))
+#     # print(e)
 
 
 keys_list = [
@@ -120,5 +120,5 @@ head = {
 
 scamalytics(ip4)
 abuse(ip4)
-liveipmap(ip4)
+# liveipmap(ip4)
 ping0(ip4)
