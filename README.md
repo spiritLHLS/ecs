@@ -32,6 +32,8 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 
 https://github.com/spiritLHLS/one-click-installation-script
 
+如若还有bug请到上面仓库的issues反映
+
 # bug待修复
 
 lemonbench测试中的IO读写有时候过高脱离实际，修复时间未知
