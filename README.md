@@ -26,6 +26,12 @@ bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/m
 bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/main/qzcheck.sh)
 ```
 
+### 部分服务器运行测试有各类bug一键修复后再测试
+
+一键修复各种bug的仓库：
+
+https://github.com/spiritLHLS/one-click-installation-script
+
 # bug待修复
 
 lemonbench测试中的IO读写有时候过高脱离实际，修复时间未知
