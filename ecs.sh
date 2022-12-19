@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
+# by spiritlhl
+# from https://github.com/spiritLHLS/ecs
 
+cd /root >/dev/null 2>&1
 ver="2022.12.14"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
-
-UA_Browser="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Safari/537.36"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
 test_area_s=("上海电信" "上海联通" "上海移动")
@@ -12,93 +13,45 @@ test_area_b=("北京电信" "北京联通" "北京移动")
 test_ip_b=("219.141.136.12" "202.106.50.1" "221.179.155.161")
 TEMP_FILE='ip.test'
 BrowserUA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36"
-
+WorkDir="/tmp/.LemonBench"
 RED="\033[31m"
 GREEN="\033[32m"
 YELLOW="\033[33m"
 PLAIN="\033[0m"
-
-cd /root >/dev/null 2>&1
-
-WorkDir="/tmp/.LemonBench"
-
-red(){
-    echo -e "\033[31m\033[01m$1\033[0m"
-}
-
-green(){
-    echo -e "\033[32m\033[01m$1\033[0m"
-}
-
-yellow(){
-    echo -e "\033[33m\033[01m$1\033[0m"
-}
-
+red(){ echo -e "\033[31m\033[01m$1$2\033[0m"; }
+green(){ echo -e "\033[32m\033[01m$1$2\033[0m"; }
+yellow(){ echo -e "\033[33m\033[01m$1$2\033[0m"; }
 _red() { echo -e "\033[31m\033[01m$@\033[0m"; }
-
 _green() { echo -e "\033[32m\033[01m$@\033[0m"; }
-
 _yellow() { echo -e "\033[33m\033[01m$@\033[0m"; }
-
 _blue() { echo -e "\033[36m\033[01m$@\033[0m"; }
-
 REGEX=("debian" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora")
 RELEASE=("Debian" "Ubuntu" "CentOS" "CentOS" "Fedora")
 PACKAGE_UPDATE=("apt-get update" "apt-get update" "yum -y update" "yum -y update" "yum -y update")
 PACKAGE_INSTALL=("apt -y install" "apt -y install" "yum -y install" "yum -y install" "yum -y install")
 PACKAGE_REMOVE=("apt -y remove" "apt -y remove" "yum -y remove" "yum -y remove" "yum -y remove")
 PACKAGE_UNINSTALL=("apt -y autoremove" "apt -y autoremove" "yum -y autoremove" "yum -y autoremove" "yum -y autoremove")
-
 CMD=("$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(hostnamectl 2>/dev/null | grep -i system | cut -d : -f2)" "$(lsb_release -sd 2>/dev/null)" "$(grep -i description /etc/lsb-release 2>/dev/null | cut -d \" -f2)" "$(grep . /etc/redhat-release 2>/dev/null)" "$(grep . /etc/issue 2>/dev/null | cut -d \\ -f1 | sed '/^[ ]*$/d')") 
 
-for i in "${CMD[@]}"; do
-    SYS="$i" && [[ -n $SYS ]] && break
-done
+SYS="${CMD[0]}"
+[[ -n $SYS ]] || exit 1
 
 for ((int = 0; int < ${#REGEX[@]}; int++)); do
     if [[ $(echo "$SYS" | tr '[:upper:]' '[:lower:]') =~ ${REGEX[int]} ]]; then
-        SYSTEM="${RELEASE[int]}" && [[ -n $SYSTEM ]] && break
+        SYSTEM="${RELEASE[int]}"
+        [[ -n $SYSTEM ]] && break
     fi
 done
 
 # Trap终止信号捕获
-trap "Global_TrapSigExit_Sig1" 1
-trap "Global_TrapSigExit_Sig2" 2
-trap "Global_TrapSigExit_Sig3" 3
-trap "Global_TrapSigExit_Sig15" 15
+_exit() {
+    echo -e "\n\n${Msg_Error}Exiting ...\n"
+    Global_Exit_Action
+    rm_script
+    exit 1
+}
+
 trap _exit INT QUIT TERM
-
-# Trap终止信号1 - 处理
-Global_TrapSigExit_Sig1() {
-    echo -e "\n\n${Msg_Error}Caught Signal SIGHUP, Exiting ...\n"
-    Global_TrapSigExit_Action
-    rm_script
-    exit 1
-}
-
-# Trap终止信号2 - 处理 (Ctrl+C)
-Global_TrapSigExit_Sig2() {
-    echo -e "\n\n${Msg_Error}Caught Signal SIGINT (or Ctrl+C), Exiting ...\n"
-    Global_TrapSigExit_Action
-    rm_script
-    exit 1
-}
-
-# Trap终止信号3 - 处理
-Global_TrapSigExit_Sig3() {
-    echo -e "\n\n${Msg_Error}Caught Signal SIGQUIT, Exiting ...\n"
-    Global_TrapSigExit_Action
-    rm_script
-    exit 1
-}
-
-# Trap终止信号15 - 处理 (进程被杀)
-Global_TrapSigExit_Sig15() {
-    echo -e "\n\n${Msg_Error}Caught Signal SIGTERM, Exiting ...\n"
-    Global_TrapSigExit_Action
-    rm_script
-    exit 1
-}
 
 # 新版JSON解析
 PharseJSON() {
@@ -107,22 +60,19 @@ PharseJSON() {
     echo -n $1 | jq -r .$2
 }
 
-# 程序启动动作
 Global_StartupInit_Action() {
     Function_CheckTracemode
     # 清理残留, 为新一次的运行做好准备
     echo -e "${Msg_Info}Initializing Running Enviorment, Please wait ..."
-    rm -rf ${WorkDir}
+    rm -rf "$WorkDir"
     rm -rf /.tmp_LBench/
-    mkdir ${WorkDir}/
+    mkdir "$WorkDir"/
     echo -e "${Msg_Info}Checking Dependency ..."
     Check_Virtwhat
     Check_JSONQuery
     Check_SysBench
     echo -e "${Msg_Info}Starting Test ...\n\n"
-    # clear
 }
-
 
 # 捕获异常信号后的动作
 Global_TrapSigExit_Action() {
@@ -132,11 +82,6 @@ Global_TrapSigExit_Action() {
 
 Global_Exit_Action() {
     rm -rf ${WorkDir}/
-}
-
-Function_BenchFinish() {
-    # 清理临时文件
-    sleep 1
 }
 
 _exists() {
@@ -170,17 +115,16 @@ next() {
 }
 
 Function_CheckTracemode() {
-    if [ "${Flag_TracerouteModeisSet}" = "1" ]; then
-        if [ "${GlobalVar_TracerouteMode}" = "icmp" ]; then
-            echo -e "${Msg_Info}Traceroute/BestTrace Tracemode is set to: ${Font_SkyBlue}ICMP Mode${Font_Suffix}"
-        elif [ "${GlobalVar_TracerouteMode}" = "tcp" ]; then
-            echo -e "${Msg_Info}Traceroute/BestTrace Tracemode is set to: ${Font_SkyBlue}TCP Mode${Font_Suffix}"
+    if [ "$Flag_TracerouteModeisSet" = "1" ]; then
+        if [ "$GlobalVar_TracerouteMode" = "icmp" ]; then
+            printf "%sTraceroute/BestTrace Tracemode is set to: %sICMP Mode%s\n" "$Msg_Info" "$Font_SkyBlue" "$Font_Suffix"
+        elif [ "$GlobalVar_TracerouteMode" = "tcp" ]; then
+            printf "%sTraceroute/BestTrace Tracemode is set to: %sTCP Mode%s\n" "$Msg_Info" "$Font_SkyBlue" "$Font_Suffix"
         fi
     else
         GlobalVar_TracerouteMode="tcp"
     fi
 }
-
 
 # =============== 检查 Virt-what 组件 ===============
 Check_Virtwhat() {
@@ -212,29 +156,28 @@ Check_Virtwhat() {
     fi
 }
 
-
-
 # =============== 检查 JSON Query 组件 ===============
 Check_JSONQuery() {
-    if [ ! -f "/usr/bin/jq" ]; then
-        SystemInfo_GetOSRelease
+    # 判断 jq 命令是否存在
+    if ! command -v jq > /dev/null; then
+        # 获取系统位数
         SystemInfo_GetSystemBit
-        if [ "${LBench_Result_SystemBit_Short}" = "64" ]; then
-            local DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/JSONQuery/jq-amd64.tar.gz"
+        # 获取操作系统版本
+        SystemInfo_GetOSRelease
+        # 根据系统位数设置下载地址
+        local DownloadSrc
+        if [ -z "${LBench_Result_SystemBit_Short}" ] || [ "${LBench_Result_SystemBit_Short}" != "amd64" ] || [ "${LBench_Result_SystemBit_Short}" != "i386" ]; then
+            DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/JSONQuery/jq-i386.tar.gz"
+        else
+            DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/JSONQuery/jq-${LBench_Result_SystemBit_Short}.tar.gz"
             # local DownloadSrc="https://raw.githubusercontent.com/LemonBench/LemonBench/master/Resources/JSONQuery/jq-amd64.tar.gz"
             # local DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/jq/1.6/amd64/jq.tar.gz"
-        elif [ "${LBench_Result_SystemBit_Short}" = "32" ]; then
-            local DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/JSONQuery/jq-i386.tar.gz"
-            # local DownloadSrc="https://raw.githubusercontent.com/LemonBench/LemonBench/master/Resources/JSONQuery/jq-i386.tar.gz"
-            # local DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/jq/1.6/i386/jq.tar.gz"
-        else
-            local DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/JSONQuery/jq-i386.tar.gz"
             # local DownloadSrc="https://raw.githubusercontent.com/LemonBench/LemonBench/master/Resources/JSONQuery/jq-i386.tar.gz"
             # local DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/jq/1.6/i386/jq.tar.gz"
         fi
         mkdir -p ${WorkDir}/
+        echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
         if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux" ]; then
-            echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
             echo -e "${Msg_Info}Installing Dependency ..."
             yum install -y epel-release
             if [ $? -ne 0 ]; then
@@ -249,21 +192,18 @@ Check_JSONQuery() {
             yum install -y tar
             yum install -y jq
         elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
-            echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
             echo -e "${Msg_Info}Installing Dependency ..."
             ! apt-get update &&  apt --fix-broken install -y && apt-get update
             ! apt-get install -y jq &&  apt --fix-broken install -y && apt-get install -y jq
         elif [ "${Var_OSRelease}" = "fedora" ]; then
-            echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
             echo -e "${Msg_Info}Installing Dependency ..."
             dnf install -y jq
         elif [ "${Var_OSRelease}" = "alpinelinux" ]; then
-            echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
+            
             echo -e "${Msg_Info}Installing Dependency ..."
             apk update
             apk add jq
         else
-            echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
             echo -e "${Msg_Info}Installing Dependency ..."
             apk update
             apk add wget unzip curl
@@ -283,7 +223,6 @@ Check_JSONQuery() {
         exit 1
     fi
 }
-
 
 checkroot(){
 	[[ $EUID -ne 0 ]] && echo -e "${RED}请使用 root 用户运行本脚本！${PLAIN}" && exit 1
@@ -307,12 +246,10 @@ checksystem() {
 	fi
 }
 
-
 checkupdate(){
 	    echo "正在更新包管理源"
 		${PACKAGE_UPDATE[int]} > /dev/null 2>&1
         ${PACKAGE_INSTALL[int]} dmidecode > /dev/null 2>&1
-
 }
 
 checkpython() {
@@ -322,12 +259,10 @@ checkpython() {
     sleep 0.5
 }
 
-
 checkmagic(){
     pip3 install magic_google
     sleep 0.4
 }
-
 
 checkdnsutils() {
 	if  [ ! -e '/usr/bin/dnsutils' ]; then
@@ -518,7 +453,6 @@ SystemInfo_GetOSRelease() {
     fi
 }
 
-
 # =============== 检查 SysBench 组件 ===============
 Check_SysBench() {
     if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
@@ -666,13 +600,10 @@ Function_SysBench_CPU_Fast() {
     LBench_Flag_FinishSysBenchCPUFast="1"
 }
 
-
 # =============== SystemInfo模块 部分 ===============
 SystemInfo_GetHostname() {
     LBench_Result_Hostname="$(hostname)"
 }
-
-
 
 SystemInfo_GetCPUInfo() {
     mkdir -p ${WorkDir}/data >/dev/null 2>&1
@@ -809,7 +740,6 @@ SystemInfo_GetSystemBit() {
     fi
 }
 
-
 SystemInfo_GetVirtType() {
     if [ -f "/usr/bin/systemd-detect-virt" ]; then
         Var_VirtType="$(/usr/bin/systemd-detect-virt)"
@@ -898,8 +828,7 @@ Entrance_SysBench_CPU_Fast() {
     Check_SysBench > /dev/null 2>&1
     SystemInfo_GetCPUInfo > /dev/null 2>&1
     Function_SysBench_CPU_Fast
-    Function_BenchFinish > /dev/null 2>&1
-    # Function_GenerateResult
+    sleep 1
 }
 
 speed_test(){
@@ -911,15 +840,12 @@ speed_test(){
 	        local REDownload=$(cat $speedLog | awk -F ' ' '/Download/{print $3}')
 	        local reupload=$(cat $speedLog | awk -F ' ' '/Upload/{print $3}')
 	        local relatency=$(cat $speedLog | awk -F ' ' '/Latency/{print $2}')
-
 			local nodeID=$1
 			local nodeLocation=$2
 			local nodeISP=$3
-
 			strnodeLocation="${nodeLocation}　　　　　　"
 			LANG=C
 			#echo $LANG
-
 			temp=$(echo "${REDownload}" | awk -F ' ' '{print $1}')
 	        if [[ $(awk -v num1=${temp} -v num2=0 'BEGIN{print(num1>num2)?"1":"0"}') -eq 1 ]]; then
 	       		echo -e "${strnodeLocation:0:20}\t ${reupload}Mbps\t ${REDownload}Mbps\t ${relatency}ms"
@@ -1129,7 +1055,6 @@ Run_SysBench_Memory() {
 }
 
 Function_SysBench_Memory_Fast() {
-    
     mkdir -p ${WorkDir}/SysBench/Memory/ >/dev/null 2>&1
     echo -e " ${Font_Yellow}-> 内存测试 Test (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}"
     echo -e " -> 内存测试 (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/Memory/result.txt
@@ -1146,7 +1071,6 @@ Entrance_SysBench_Memory_Fast() {
 
 Entrance_DiskTest_Fast() {
     Function_DiskTest_Fast
-#    Function_BenchFinish
 }
 
 calc_disk() {
@@ -1236,7 +1160,6 @@ ipv4_info() {
 }
 
 print_intro() {
-    
     echo "--------------------- A Bench Script By spiritlhl ---------------------"
     echo "                   测评频道: https://t.me/vps_reviews                    "
     echo "版本：$ver"
@@ -1245,7 +1168,6 @@ print_intro() {
 
 # Get System information
 get_system_info() {
-    
     cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
     cores=$( awk -F: '/processor/ {core++} END {print core}' /proc/cpuinfo )
     freq=$( awk -F'[ :]' '/cpu MHz/ {print $4;exit}' /proc/cpuinfo )
@@ -1274,6 +1196,7 @@ get_system_info() {
     disk_used_size=$( calc_disk "${disk_size2[@]}" )
     tcpctrl=$( sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )  
 }
+
 isvalidipv4()
 {
     local ipaddr=$1
@@ -1289,6 +1212,7 @@ isvalidipv4()
     fi
     return $stat
 }
+
 latency() {    
     ipaddr=$(getent ahostsv4 $1 | grep STREAM | head -n 1 | cut -d ' ' -f 1)
 	if isvalidipv4 "$ipaddr"; then
@@ -1473,7 +1397,6 @@ geekbench() {
 		[[ $GeekbenchVer == *5* ]] && GEEKBENCH_SCORES=$(curl -s $GEEKBENCH_URL | grep "div class='score'") || GEEKBENCH_SCORES=$(curl -s $GEEKBENCH_URL | grep "span class='score'")
 		GEEKBENCH_SCORES_SINGLE=$(echo $GEEKBENCH_SCORES | awk -v FS="(>|<)" '{ print $3 }')
 		GEEKBENCH_SCORES_MULTI=$(echo $GEEKBENCH_SCORES | awk -v FS="(>|<)" '{ print $7 }')
-		
 		echo -e "       Single Core    : ${YELLOW}$GEEKBENCH_SCORES_SINGLE  $grank${PLAIN}"  | tee -a $log
 		echo -e "        Multi Core    : ${YELLOW}$GEEKBENCH_SCORES_MULTI${PLAIN}" | tee -a $log
 		[ ! -z "$GEEKBENCH_URL_CLAIM" ] && echo -e "$GEEKBENCH_URL_CLAIM" >> geekbench_claim.url 2> /dev/null
@@ -1491,7 +1414,6 @@ download_geekbench4(){
 	fi
 	chmod +x ./geekbench/geekbench4
 }
-
 
 #######################################################################################
 
@@ -1551,7 +1473,6 @@ check_lmc_script(){
     sleep 0.5
 }
 
-
 python_gd_script(){
     checkpython
     checkmagic
@@ -1561,7 +1482,6 @@ python_gd_script(){
     sleep 0.5
     python3 googlesearchcheck.py
 }
-
 
 pre_check(){
     checkupdate
@@ -1621,7 +1541,6 @@ io2_script(){
 }
 
 RegionRestrictionCheck_script(){
-    
     echo -e "---------------流媒体解锁--感谢RegionRestrictionCheck开源-------------"
     yellow " 以下为IPV4网络测试，若无IPV4网络则无输出"
     echo 0 | bash media_lmc_check.sh -M 4 | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
@@ -1631,7 +1550,7 @@ RegionRestrictionCheck_script(){
 
 function UnlockTiktokTest() {
     cd /root >/dev/null 2>&1
-    echo -e "---------------TikTok解锁--感谢superbench的开源脚本----------------"
+    echo -e "-----------------TikTok解锁--感谢superbench的开源脚本------------------"
 	local result=$(curl --user-agent "${BrowserUA}" -fsSL --max-time 10 "https://www.tiktok.com/" 2>&1);
     if [[ "$result" != "curl"* ]]; then
         result="$(echo ${result} | grep 'region' | awk -F 'region":"' '{print $2}' | awk -F '"' '{print $1}')";
@@ -1650,7 +1569,6 @@ function UnlockTiktokTest() {
 	fi
 }
 
-
 spiritlhl_script(){
     cd /root >/dev/null 2>&1
     echo -e "------------------欺诈分数以及IP质量检测--本频道原创-------------------"
@@ -1664,7 +1582,6 @@ backtrace_script(){
     rm -f $TEMP_FILE2
     curl https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
 }
-
 
 fscarmen_route_g_script(){
     echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
@@ -1867,7 +1784,6 @@ minal_plus(){
     end_script
 }
 
-
 minal_plus_network(){
     pre_check
     SystemInfo_GetSystemBit
@@ -2009,7 +1925,6 @@ network_b_script(){
     fscarmen_route_b_script
     end_script
 }
-
 
 rm_script(){
     rm -rf return.sh
@@ -2158,7 +2073,6 @@ head_script(){
     echo ""
     green "请选择你接下来测评的组合或单项"
 }
-
 
 Start_script(){
     head_script
