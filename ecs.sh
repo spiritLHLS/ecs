@@ -600,10 +600,6 @@ Function_SysBench_CPU_Fast() {
 }
 
 # =============== SystemInfo模块 部分 ===============
-SystemInfo_GetHostname() {
-    LBench_Result_Hostname="$(hostname)"
-}
-
 SystemInfo_GetCPUInfo() {
     mkdir -p ${WorkDir}/data >/dev/null 2>&1
     cat /proc/cpuinfo >${WorkDir}/data/cpuinfo
@@ -657,21 +653,6 @@ SystemInfo_GetCPUInfo() {
     fi
 }
 
-SystemInfo_GetCPUStat() {
-    local CPUStat_Result="$(top -bn1 | grep Cpu)"
-    # 原始数据
-    LBench_Result_CPUStat_user="$(Function_ReadCPUStat "${CPUStat_Result}" "us")"
-    LBench_Result_CPUStat_system="$(Function_ReadCPUStat "${CPUStat_Result}" "sy")"
-    LBench_Result_CPUStat_anice="$(Function_ReadCPUStat "${CPUStat_Result}" "ni")"
-    LBench_Result_CPUStat_idle="$(Function_ReadCPUStat "${CPUStat_Result}" "id")"
-    LBench_Result_CPUStat_iowait="$(Function_ReadCPUStat "${CPUStat_Result}" "wa")"
-    LBench_Result_CPUStat_hardint="$(Function_ReadCPUStat "${CPUStat_Result}" "hi")"
-    LBench_Result_CPUStat_softint="$(Function_ReadCPUStat "${CPUStat_Result}" "si")"
-    LBench_Result_CPUStat_steal="$(Function_ReadCPUStat "${CPUStat_Result}" "st")"
-    # 加工后的数据
-    LBench_Result_CPUStat_UsedAll="$(echo ${LBench_Result_CPUStat_user} ${LBench_Result_CPUStat_system} ${LBench_Result_CPUStat_nice} | awk '{printf "%.1f\n",$1+$2+$3}')"
-}
-
 Function_ReadCPUStat() {
     if [ "$1" == "" ]; then
         echo -n "nil"
@@ -679,17 +660,6 @@ Function_ReadCPUStat() {
         local result="$(echo $1 | grep -oE "[0-9]{1,2}.[0-9]{1} $2" | awk '{print $1}')"
         echo $result
     fi
-}
-
-SystemInfo_GetKernelVersion() {
-    local version="$(uname -r)"
-    LBench_Result_KernelVersion="${version}"
-}
-
-SystemInfo_GetNetworkCCMethod() {
-    local val_cc="$(sysctl -n net.ipv4.tcp_congestion_control)"
-    local val_qdisc="$(sysctl -n net.core.default_qdisc)"
-    LBench_Result_NetworkCCMethod="${val_cc} + ${val_qdisc}"
 }
 
 SystemInfo_GetSystemBit() {
