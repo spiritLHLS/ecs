@@ -321,37 +321,27 @@ checkspeedtest() {
 	mkdir -p speedtest-cli && tar zxvf speedtest.tgz -C ./speedtest-cli/ > /dev/null 2>&1 && chmod a+rx ./speedtest-cli/speedtest
 }
 
+download_speedtest_file() {
+    local sys_bit="$1"
+    local url1="https://install.speedtest.net/app/cli/ookla-speedtest-1.1.1-linux-${sys_bit}.tgz"
+    local url2="https://dl.lamp.sh/files/ookla-speedtest-1.1.1-linux-${sys_bit}.tgz"
+    curl --fail -s -m 10 -o speedtest.tgz "${url1}" || curl --fail -s -m 10 -o speedtest.tgz "${url2}"
+}
+
 install_speedtest() {
     if [ ! -e "./speedtest-cli/speedtest" ]; then
         sys_bit=""
-        local sysarch="$(uname -m)"
-        if [ "${sysarch}" = "unknown" ] || [ "${sysarch}" = "" ]; then
-            local sysarch="$(arch)"
+        local sysarch="$(uname -p)"
+        case "${sysarch}" in
+            "x86_64") sys_bit="x86_64";;
+            "i686") sys_bit="i386";;
+            *) _red "Error: Unsupported system architecture (${sysarch}).\n" && return 1;;
+        esac
+        if ! download_speedtest_file "${sys_bit}"; then
+            _red "Error: Failed to download speedtest-cli.\n"
+            return 1
         fi
-        if [ "${sysarch}" = "x86_64" ]; then
-            sys_bit="x86_64"
-        fi
-        if [ "${sysarch}" = "i386" ] || [ "${sysarch}" = "i686" ]; then
-            sys_bit="i386"
-        fi
-        if [ "${sysarch}" = "armv8" ] || [ "${sysarch}" = "armv8l" ] || [ "${sysarch}" = "aarch64" ] || [ "${sysarch}" = "arm64" ]; then
-            sys_bit="aarch64"
-        fi
-        if [ "${sysarch}" = "armv7" ] || [ "${sysarch}" = "armv7l" ]; then
-            sys_bit="armhf"
-        fi
-        if [ "${sysarch}" = "armv6" ]; then
-            sys_bit="armel"
-        fi
-        [ -z "${sys_bit}" ] && _red "Error: Unsupported system architecture (${sysarch}).\n" && exit 1
-        url1="https://install.speedtest.net/app/cli/ookla-speedtest-1.1.1-linux-${sys_bit}.tgz"
-        url2="https://dl.lamp.sh/files/ookla-speedtest-1.1.1-linux-${sys_bit}.tgz"
-        wget --no-check-certificate -q -T10 -O speedtest.tgz ${url1}
-        if [ $? -ne 0 ]; then
-            wget --no-check-certificate -q -T10 -O speedtest.tgz ${url2}
-            [ $? -ne 0 ] && _red "Error: Failed to download speedtest-cli.\n" && exit 1
-        fi
-        mkdir -p speedtest-cli && tar zxf speedtest.tgz -C ./speedtest-cli && chmod +x ./speedtest-cli/speedtest
+        tar -zxf speedtest.tgz -C ./speedtest-cli
         rm -f speedtest.tgz
     fi
 }
@@ -453,56 +443,67 @@ SystemInfo_GetOSRelease() {
 }
 
 # =============== 检查 SysBench 组件 ===============
-Check_SysBench() {
-    if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
-        SystemInfo_GetOSRelease
-        SystemInfo_GetSystemBit
-        if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux" ]; then
-            echo -e "${Msg_Warning}Sysbench Module not found, installing ..."
-            yum -y install epel-release
-            yum -y install sysbench
-        elif [ "${Var_OSRelease}" = "ubuntu" ]; then
-            echo -e "${Msg_Warning}Sysbench Module not found, installing ..."
-            ! apt-get install sysbench -y && apt-get --fix-broken install -y && apt-get install sysbench -y
-        elif [ "${Var_OSRelease}" = "debian" ]; then
-            echo -e "${Msg_Warning}Sysbench Module not found, installing ..."
-            local mirrorbase="https://raindrop.ilemonrain.com/LemonBench"
-            local componentname="Sysbench"
-            local version="1.0.19-1"
-            local arch="debian"
-            local codename="${Var_OSReleaseVersion_Codename}"
-            local bit="${LBench_Result_SystemBit_Full}"
-            local filenamebase="sysbench"
-            local filename="${filenamebase}_${version}_${bit}.deb"
-            local downurl="${mirrorbase}/include/${componentname}/${version}/${arch}/${codename}/${filename}"
-            mkdir -p ${WorkDir}/download/
-            pushd ${WorkDir}/download/ >/dev/null
-            wget -U "${UA_LemonBench}" -O ${filenamebase}_${version}_${bit}.deb ${downurl}
-            dpkg -i ./${filename}
-            apt-get install sysbench -y
-            popd
-            if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
-                echo -e "${Msg_Warning}Sysbench Module Install Failed!"
-            fi
-        elif [ "${Var_OSRelease}" = "fedora" ]; then
-            echo -e "${Msg_Warning}Sysbench Module not found, installing ..."
-            dnf -y install sysbench
-        elif [ "${Var_OSRelease}" = "alpinelinux" ]; then
-            echo -e "${Msg_Warning}Sysbench Module not found, installing ..."
-            echo -e "${Msg_Warning}SysBench Current not support Alpine Linux, Skipping..."
-            Var_Skip_SysBench="1"
-        fi
+GetOSRelease() {
+  SystemInfo_GetOSRelease
+  case "${Var_OSRelease}" in
+    centos|rhel|almalinux) return "redhat";;
+    ubuntu) return "ubuntu";;
+    debian) return "debian";;
+    fedora) return "fedora";;
+    alpinelinux) return "alpinelinux";;
+    *) return "unknown";;
+  esac
+}
+
+InstallSysbench() {
+  local os_release=$1
+  case "$os_release" in
+    redhat) yum -y install epel-release && yum -y install sysbench ;;
+    ubuntu) ! apt-get install sysbench -y && apt-get --fix-broken install -y && apt-get install sysbench -y ;;
+    debian)
+      local mirrorbase="https://raindrop.ilemonrain.com/LemonBench"
+      local componentname="Sysbench"
+      local version="1.0.19-1"
+      local arch="debian"
+      local codename="${Var_OSReleaseVersion_Codename}"
+      local bit="${LBench_Result_SystemBit_Full}"
+      local filenamebase="sysbench"
+      local filename="${filenamebase}_${version}_${bit}.deb"
+      local downurl="${mirrorbase}/include/${componentname}/${version}/${arch}/${codename}/${filename}"
+      mkdir -p ${WorkDir}/download/
+      pushd ${WorkDir}/download/ >/dev/null
+      wget -U "${UA_LemonBench}" -O ${filenamebase}_${version}_${bit}.deb ${downurl}
+      dpkg -i ./${filename}
+      apt-get install sysbench -y
+      popd
+      if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
+        echo -e "${Msg_Warning}Sysbench Module Install Failed!"
+      fi ;;
+    fedora) dnf -y install sysbench ;;
+    alpinelinux) echo -e "${Msg_Warning}Sysbench Module not found, installing ..." && echo -e "${Msg_Warning}SysBench Current not support Alpine Linux, Skipping..." && Var_Skip_SysBench="1" ;;
+    *) echo "Error: Unknown OS release: $os_release" && exit 1 ;;
+  esac
+}
+
+Check_Sysbench() {
+  if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
+    local os_release=$(GetOSRelease)
+    if [ "$os_release" = "alpinelinux" ]; then
+      Var_Skip_SysBench="1"
+    else
+      InstallSysbench "$os_release"
     fi
-    # 垂死挣扎 (尝试编译安装)
-    if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
-        echo -e "${Msg_Warning}Sysbench Module install Failure, trying compile modules ..."
-        Check_Sysbench_InstantBuild
-    fi
-    # 最终检测
-    if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
-        echo -e "${Msg_Error}SysBench Moudle install Failure! Try Restart Bench or Manually install it! (/usr/bin/sysbench)"
-        exit 1
-    fi
+  fi
+  # 垂死挣扎 (尝试编译安装)
+  if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
+    echo -e "${Msg_Warning}Sysbench Module install Failure, trying compile modules ..."
+    Check_Sysbench_InstantBuild
+  fi
+  # 最终检测
+  if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
+    echo -e "${Msg_Error}SysBench Moudle install Failure! Try Restart Bench or Manually install it! (/usr/bin/sysbench)"
+    exit 1
+  fi
 }
 
 Check_Sysbench_InstantBuild() {
@@ -590,6 +591,7 @@ Function_SysBench_CPU_Fast() {
     echo -e " ${Font_Yellow}-> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}"
     echo -e " -> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/CPU/result.txt
     Run_SysBench_CPU "1" "5" "1" "1 线程测试(1核)得分"
+    sleep 1
     if [ "${LBench_Result_CPUThreadNumber}" -ge "2" ]; then
         Run_SysBench_CPU "${LBench_Result_CPUThreadNumber}" "5" "1" "${LBench_Result_CPUThreadNumber} 线程测试(多核)得分"
     elif [ "${LBench_Result_CPUProcessorNumber}" -ge "2" ]; then
@@ -662,6 +664,15 @@ Function_ReadCPUStat() {
     fi
 }
 
+DownloadFiles() {
+    curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_${LBench_Result_SystemBit_Full} -o dp && chmod +x dp
+    sleep 0.5
+    curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_${LBench_Result_SystemBit_Full} -o nf && chmod +x nf
+    sleep 0.5
+    curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_${LBench_Result_SystemBit_Full} -o tubecheck && chmod +x tubecheck
+    sleep 0.5
+}
+
 SystemInfo_GetSystemBit() {
     local sysarch="$(uname -m)"
     if [ "${sysarch}" = "unknown" ] || [ "${sysarch}" = "" ]; then
@@ -690,15 +701,6 @@ SystemInfo_GetSystemBit() {
             DownloadFiles
             ;;
     esac
-}
-
-DownloadFiles() {
-    curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_${LBench_Result_SystemBit_Full} -o dp && chmod +x dp
-    sleep 0.5
-    curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_${LBench_Result_SystemBit_Full} -o nf && chmod +x nf
-    sleep 0.5
-    curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_${LBench_Result_SystemBit_Full} -o tubecheck && chmod +x tubecheck
-    sleep 0.5
 }
 
 SystemInfo_GetVirtType() {
@@ -831,6 +833,7 @@ speed_test2() {
 }
 
 speed() {
+    # https://raw.githubusercontent.com/zq/superspeed/master/superspeed.sh
     speed_test2 '' 'speedtest'
     speed_test '21541' '洛杉矶\t'
     speed_test '13623' '新加坡\t'
@@ -847,10 +850,10 @@ speed() {
 #    speed_test '6715' '移动浙江宁波' '移动'
      speed_test '3356' '移动广西南宁' '移动'
      speed_test '26940' '移动宁夏银川' '移动'
-#https://raw.githubusercontent.com/zq/superspeed/master/superspeed.sh
 }
 
 speed2() {
+    # https://raw.githubusercontent.com/zq/superspeed/master/superspeed.sh
     speed_test2 '' 'speedtest'
     speed_test '3633' '电信上海' '电信'
     speed_test '24447' '联通上海' '联通'
@@ -858,7 +861,6 @@ speed2() {
     # speed_test '595' '电信上海' '电信'
     # speed_test '5135' '联通上海5G' '联通'
     speed_test '3356' '移动广西南宁' '移动'
-#https://raw.githubusercontent.com/zq/superspeed/master/superspeed.sh
 }
 
 # =============== 磁盘测试 部分 ===============
@@ -1273,7 +1275,6 @@ chinaping() {
 
 # Print System information
 print_system_info() {
-    
     if [ -n "$cname" ]; then
         echo " CPU 型号          : $(_blue "$cname")"
     else
@@ -1328,9 +1329,7 @@ geekbench() {
 	if test -f "geekbench.license"; then
 		./geekbench/geekbench$GeekbenchVer --unlock `cat geekbench.license` > /dev/null 2>&1
 	fi
-	
 	GEEKBENCH_TEST=$(./geekbench/geekbench$GeekbenchVer --upload 2>/dev/null | grep "https://browser")
-	
 	if [[ -z "$GEEKBENCH_TEST" ]]; then
 		echo -e " ${RED}Geekbench v${GeekbenchVer} test failed. Run manually to determine cause.${PLAIN}" | tee -a $log
 		GEEKBENCH_URL=''
@@ -1366,8 +1365,6 @@ download_geekbench4(){
 	fi
 	chmod +x ./geekbench/geekbench4
 }
-
-#######################################################################################
 
 geekbench_script(){
     pre_check
@@ -1464,7 +1461,6 @@ sjlleo_script(){
 }
 
 basic_script(){
-    
     echo "-----------------感谢teddysun和misakabench和yabs开源------------------"
     print_system_info
     ipv4_info
@@ -1530,7 +1526,6 @@ spiritlhl_script(){
 }
 
 backtrace_script(){
-    
     echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
     rm -f $TEMP_FILE2
     curl https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
@@ -1561,7 +1556,6 @@ fscarmen_route_g_script(){
         i386 )    local FILE=besttracemac;;
         * ) red " 只支持 AMD64、ARM64、Mac 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && return;;
       esac
-
     [[ ! -e $FILE ]] && wget -q https://github.com/fscarmen/tools/raw/main/besttrace/$FILE >/dev/null 2>&1
     chmod 777 $FILE >/dev/null 2>&1
     _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
@@ -1582,15 +1576,15 @@ fscarmen_route_s_script(){
     ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
     PE_4=$(curl -sm5 ping.pe/$WAN_4) &&
     COOKIE_4=$(echo $PE_4 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
-    TYPE_4=$(curl -sm5 --header "cookie: $COOKIE_4" ping.pe/$WAN_4 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g;s/cellular/蜂窝网络/g;s/business/商业带宽/g;s#</b>##g") &&
-    _blue " IPv4 宽带类型: $TYPE_4\t ASN: $ASNORG_4" >> $TEMP_FILE
+    # TYPE_4=$(curl -sm5 --header "cookie: $COOKIE_4" ping.pe/$WAN_4 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g;s/cellular/蜂窝网络/g;s/business/商业带宽/g;s#</b>##g") &&
+    _blue " IPv4 ASN: $ASNORG_4" >> $TEMP_FILE
     IP_6=$(curl -s6m5 https://api.ipify.org) &&
     WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
     ASNORG_6=$(expr "$IP_6" : '.*asn_org\":\"\([^"]*\).*') &&
     PE_6=$(curl -sm5 ping6.ping.pe/$WAN_6) &&
     COOKIE_6=$(echo $PE_6 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
-    TYPE_6=$(curl -sm5 --header "cookie: $COOKIE_6" ping6.ping.pe/$WAN_6 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g;s/cellular/蜂窝网络/g;s/business/商业带宽/g;s#</b>##g") &&
-    _blue " IPv6 宽带类型: $TYPE_6\t ASN: $ASNORG_6" >> $TEMP_FILE
+    # TYPE_6=$(curl -sm5 --header "cookie: $COOKIE_6" ping6.ping.pe/$WAN_6 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g;s/cellular/蜂窝网络/g;s/business/商业带宽/g;s#</b>##g") &&
+    _blue " IPv6 ASN: $ASNORG_6" >> $TEMP_FILE
     local ARCHITECTURE="$(arch)"
       case $ARCHITECTURE in
         x86_64 )  local FILE=besttrace;;
@@ -1598,7 +1592,6 @@ fscarmen_route_s_script(){
         i386 )    local FILE=besttracemac;;
         * ) red " 只支持 AMD64、ARM64、Mac 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && return;;
       esac
-
     [[ ! -e $FILE ]] && wget -q https://github.com/fscarmen/tools/raw/main/besttrace/$FILE >/dev/null 2>&1
     chmod 777 $FILE >/dev/null 2>&1
     _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
@@ -1635,7 +1628,6 @@ fscarmen_route_b_script(){
         i386 )    local FILE=besttracemac;;
         * ) red " 只支持 AMD64、ARM64、Mac 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && return;;
       esac
-
     [[ ! -e $FILE ]] && wget -q https://github.com/fscarmen/tools/raw/main/besttrace/$FILE >/dev/null 2>&1
     chmod 777 $FILE >/dev/null 2>&1
     _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
@@ -1883,8 +1875,6 @@ rm_script(){
     rm -rf return.sh
     rm -rf speedtest.tgz*
     rm -rf wget-log*
-    # rm -rf ipip.py*
-    # rm -rf tk.py*
     rm -rf media_lmc_check.sh*
     rm -rf check.py*
     rm -rf qzcheck_ecs.py*
