@@ -28,9 +28,9 @@ _blue() { echo -e "\033[36m\033[01m$@\033[0m"; }
 REGEX=("debian" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora")
 RELEASE=("Debian" "Ubuntu" "CentOS" "CentOS" "Fedora")
 PACKAGE_UPDATE=("apt-get update" "apt-get update" "yum -y update" "yum -y update" "yum -y update")
-PACKAGE_INSTALL=("apt -y install" "apt -y install" "yum -y install" "yum -y install" "yum -y install")
-PACKAGE_REMOVE=("apt -y remove" "apt -y remove" "yum -y remove" "yum -y remove" "yum -y remove")
-PACKAGE_UNINSTALL=("apt -y autoremove" "apt -y autoremove" "yum -y autoremove" "yum -y autoremove" "yum -y autoremove")
+PACKAGE_INSTALL=("apt-get -y install" "apt-get -y install" "yum -y install" "yum -y install" "yum -y install")
+PACKAGE_REMOVE=("apt-get -y remove" "apt-get -y remove" "yum -y remove" "yum -y remove" "yum -y remove")
+PACKAGE_UNINSTALL=("apt-get -y autoremove" "apt-get -y autoremove" "yum -y autoremove" "yum -y autoremove" "yum -y autoremove")
 CMD=("$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(hostnamectl 2>/dev/null | grep -i system | cut -d : -f2)" "$(lsb_release -sd 2>/dev/null)" "$(grep -i description /etc/lsb-release 2>/dev/null | cut -d \" -f2)" "$(grep . /etc/redhat-release 2>/dev/null)" "$(grep . /etc/issue 2>/dev/null | cut -d \\ -f1 | sed '/^[ ]*$/d')") 
 
 SYS="${CMD[0]}"
@@ -135,9 +135,9 @@ Check_Virtwhat() {
             yum -y install virt-what
         elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
-            ! apt-get update && apt --fix-broken install -y && apt-get update
-            ! apt-get install -y dmidecode && apt --fix-broken install -y && apt-get install -y dmidecode
-            ! apt-get install -y virt-what && apt --fix-broken install -y && apt-get install -y virt-what
+            ! apt-get update && apt-get --fix-broken install -y && apt-get update
+            ! apt-get install -y dmidecode && apt-get --fix-broken install -y && apt-get install -y dmidecode
+            ! apt-get install -y virt-what && apt-get --fix-broken install -y && apt-get install -y virt-what
         elif [ "${Var_OSRelease}" = "fedora" ]; then
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             dnf -y install virt-what
@@ -193,8 +193,8 @@ Check_JSONQuery() {
             yum install -y jq
         elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
             echo -e "${Msg_Info}Installing Dependency ..."
-            ! apt-get update &&  apt --fix-broken install -y && apt-get update
-            ! apt-get install -y jq &&  apt --fix-broken install -y && apt-get install -y jq
+            ! apt-get update && apt-get --fix-broken install -y && apt-get update
+            ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install -y jq
         elif [ "${Var_OSRelease}" = "fedora" ]; then
             echo -e "${Msg_Info}Installing Dependency ..."
             dnf install -y jq
@@ -463,7 +463,7 @@ Check_SysBench() {
             yum -y install sysbench
         elif [ "${Var_OSRelease}" = "ubuntu" ]; then
             echo -e "${Msg_Warning}Sysbench Module not found, installing ..."
-            ! apt install sysbench -y && apt --fix-broken install -y && apt install sysbench -y
+            ! apt-get install sysbench -y && apt-get --fix-broken install -y && apt-get install sysbench -y
         elif [ "${Var_OSRelease}" = "debian" ]; then
             echo -e "${Msg_Warning}Sysbench Module not found, installing ..."
             local mirrorbase="https://raindrop.ilemonrain.com/LemonBench"
@@ -526,8 +526,8 @@ Check_Sysbench_InstantBuild() {
     elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
-        ! apt-get update &&  apt --fix-broken install -y && apt-get update
-        ! apt -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip && apt --fix-broken install -y && apt -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip
+        ! apt-get update &&  apt-get --fix-broken install -y && apt-get update
+        ! apt-get -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip && apt-get --fix-broken install -y && apt-get -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip
         echo -e "${Msg_Info}Downloading Source code (Version 1.0.17)..."
         mkdir -p /tmp/_LBench/src/
         wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://github.com/akopytov/sysbench/archive/1.0.17.zip
@@ -1499,15 +1499,18 @@ basic_script(){
     print_system_info
     ipv4_info
     cd /root >/dev/null 2>&1
+    sleep 1
     echo "-------------------CPU测试--感谢lemonbench开源------------------------"
     Entrance_SysBench_CPU_Fast
     cd /root >/dev/null 2>&1
+    sleep 1
     echo "-------------------内存测试--感谢lemonbench开源-----------------------"
     Function_SysBench_Memory_Fast
 }
 
 io1_script(){
     cd /root >/dev/null 2>&1
+    sleep 1
     echo "----------------磁盘IO读写测试--感谢lemonbench开源--------------------"
     Function_DiskTest_Fast
     Global_Exit_Action >/dev/null 2>&1
