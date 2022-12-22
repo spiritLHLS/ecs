@@ -485,7 +485,7 @@ InstallSysbench() {
   esac
 }
 
-Check_Sysbench() {
+Check_SysBench() {
   if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
     local os_release=$(GetOSRelease)
     if [ "$os_release" = "alpinelinux" ]; then
