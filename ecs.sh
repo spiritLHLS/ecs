@@ -295,7 +295,6 @@ checkssh() {
 	for i in "${CMD[@]}"; do
 		SYS="$i" && [[ -n $SYS ]] && break
 	done
-
 	for ((int=0; int<${#REGEX[@]}; int++)); do
 		[[ $(echo "$SYS" | tr '[:upper:]' '[:lower:]') =~ ${REGEX[int]} ]] && SYSTEM="${RELEASE[int]}" && [[ -n $SYSTEM ]] && break
 	done
@@ -698,46 +697,38 @@ SystemInfo_GetSystemBit() {
     if [ "${sysarch}" = "unknown" ] || [ "${sysarch}" = "" ]; then
         local sysarch="$(arch)"
     fi
-    if [ "${sysarch}" = "x86_64" ]; then
-        # X86平台 64位
-        LBench_Result_SystemBit_Short="64"
-        LBench_Result_SystemBit_Full="amd64"
-	    curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 -o dp && chmod +x dp
-        sleep 0.5
-        curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
-        sleep 0.5
-        curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
-        sleep 0.5
-    elif [ "${sysarch}" = "i386" ] || [ "${sysarch}" = "i686" ]; then
-        # X86平台 32位
-        LBench_Result_SystemBit_Short="32"
-        LBench_Result_SystemBit_Full="i386"
-        curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_386 -o dp && chmod +x dp
-	sleep 0.5
-        curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
-        sleep 0.5
-	    curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_386 -o tubecheck && chmod +x tubecheck
-	sleep 0.5
-    elif [ "${sysarch}" = "armv7l" ] || [ "${sysarch}" = "armv8" ] || [ "${sysarch}" = "armv8l" ] || [ "${sysarch}" = "aarch64" ]; then
-        # ARM平台 暂且将32位/64位统一对待
-        LBench_Result_SystemBit_Short="arm"
-        LBench_Result_SystemBit_Full="arm"
-        curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_arm -o dp && chmod +x dp
-	sleep 0.5
-        curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_arm64 -o nf && chmod +x nf
-	sleep 0.5
-        curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_arm -o tubecheck && chmod +x tubecheck
-	sleep 0.5
-    else
-        LBench_Result_SystemBit_Short="unknown"
-        LBench_Result_SystemBit_Full="unknown"
-        curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 -o dp && chmod +x dp
-	sleep 0.5
-        curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 -o nf && chmod +x nf
-	sleep 0.5
-        curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_amd64 -o tubecheck && chmod +x tubecheck
-	sleep 0.5
-    fi
+    # 根据架构信息设置系统位数并下载文件
+    case "${sysarch}" in
+        "x86_64")
+            LBench_Result_SystemBit_Short="64"
+            LBench_Result_SystemBit_Full="amd64"
+            DownloadFiles
+            ;;
+        "i386" | "i686")
+            LBench_Result_SystemBit_Short="32"
+            LBench_Result_SystemBit_Full="i386"
+            DownloadFiles
+            ;;
+        "armv7l" | "armv8" | "armv8l" | "aarch64")
+            LBench_Result_SystemBit_Short="arm"
+            LBench_Result_SystemBit_Full="arm"
+            DownloadFiles
+            ;;
+        *)
+            LBench_Result_SystemBit_Short="64"
+            LBench_Result_SystemBit_Full="amd64"
+            DownloadFiles
+            ;;
+    esac
+}
+
+DownloadFiles() {
+    curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_${LBench_Result_SystemBit_Full} -o dp && chmod +x dp
+    sleep 0.5
+    curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_${LBench_Result_SystemBit_Full} -o nf && chmod +x nf
+    sleep 0.5
+    curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_${LBench_Result_SystemBit_Full} -o tubecheck && chmod +x tubecheck
+    sleep 0.5
 }
 
 SystemInfo_GetVirtType() {
@@ -1065,14 +1056,6 @@ Function_SysBench_Memory_Fast() {
     sleep 0.5
 }
 
-Entrance_SysBench_Memory_Fast() {
-    Function_SysBench_Memory_Fast
-}
-
-Entrance_DiskTest_Fast() {
-    Function_DiskTest_Fast
-}
-
 calc_disk() {
     local total_size=0
     local array=$@
@@ -1160,7 +1143,7 @@ ipv4_info() {
 }
 
 print_intro() {
-    echo "--------------------- A Bench Script By spiritlhl ---------------------"
+    echo "-------------------- A Bench Script By spiritlhl ---------------------"
     echo "                   测评频道: https://t.me/vps_reviews                    "
     echo "版本：$ver"
     echo "更新日志：$changeLog"
@@ -1316,7 +1299,6 @@ chinaping() {
     do
         echo " $arr" | tee -a $LOG
     done
-    # finishedtime;
 }
 
 # Print System information
@@ -1452,7 +1434,6 @@ geekbench_script(){
     end_script
 }
 
-
 python_all_script(){
     checkpython
     checkmagic
@@ -1498,7 +1479,7 @@ pre_check(){
 
 sjlleo_script(){
     cd /root >/dev/null 2>&1
-    echo "--------------------流媒体解锁--感谢sjlleo开源-------------------------"
+    echo "--------------------流媒体解锁--感谢sjlleo开源------------------------"
     yellow "以下测试的解锁地区是准确的，但是不是完整解锁的判断可能有误，这方面仅作参考使用"
     yellow "Youtube"
     ./tubecheck | sed "/@sjlleo/d"
@@ -1514,7 +1495,7 @@ sjlleo_script(){
 
 basic_script(){
     
-    echo "-----------------感谢teddysun和misakabench和yabs开源-------------------"
+    echo "-----------------感谢teddysun和misakabench和yabs开源------------------"
     print_system_info
     ipv4_info
     cd /root >/dev/null 2>&1
@@ -1522,14 +1503,13 @@ basic_script(){
     Entrance_SysBench_CPU_Fast
     cd /root >/dev/null 2>&1
     echo "-------------------内存测试--感谢lemonbench开源-----------------------"
-    Entrance_SysBench_Memory_Fast
+    Function_SysBench_Memory_Fast
 }
 
 io1_script(){
     cd /root >/dev/null 2>&1
     echo "----------------磁盘IO读写测试--感谢lemonbench开源--------------------"
-    Entrance_DiskTest_Fast
-    # Function_GenerateResult
+    Function_DiskTest_Fast
     Global_Exit_Action >/dev/null 2>&1
 }
 
@@ -1550,7 +1530,7 @@ RegionRestrictionCheck_script(){
 
 function UnlockTiktokTest() {
     cd /root >/dev/null 2>&1
-    echo -e "-----------------TikTok解锁--感谢superbench的开源脚本------------------"
+    echo -e "----------------TikTok解锁--感谢superbench的开源脚本------------------"
 	local result=$(curl --user-agent "${BrowserUA}" -fsSL --max-time 10 "https://www.tiktok.com/" 2>&1);
     if [[ "$result" != "curl"* ]]; then
         result="$(echo ${result} | grep 'region' | awk -F 'region":"' '{print $2}' | awk -F '"' '{print $1}')";
@@ -1571,7 +1551,7 @@ function UnlockTiktokTest() {
 
 spiritlhl_script(){
     cd /root >/dev/null 2>&1
-    echo -e "------------------欺诈分数以及IP质量检测--本频道原创-------------------"
+    echo -e "-----------------欺诈分数以及IP质量检测--本频道原创-------------------"
     yellow "得分仅作参考，不代表100%准确，IP类型如果不一致请手动查询多个数据库比对"
     python3 qzcheck_ecs.py 
 }
