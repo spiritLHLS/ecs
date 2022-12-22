@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2022.12.14"
+ver="2022.12.22"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -444,15 +444,17 @@ SystemInfo_GetOSRelease() {
 
 # =============== 检查 SysBench 组件 ===============
 GetOSRelease() {
+  local OS_TYPE
   SystemInfo_GetOSRelease
   case "${Var_OSRelease}" in
-    centos|rhel|almalinux) return "redhat";;
-    ubuntu) return "ubuntu";;
-    debian) return "debian";;
-    fedora) return "fedora";;
-    alpinelinux) return "alpinelinux";;
-    *) return "unknown";;
+    centos|rhel|almalinux) OS_TYPE="redhat";;
+    ubuntu) OS_TYPE="ubuntu";;
+    debian) OS_TYPE="debian";;
+    fedora) OS_TYPE="fedora";;
+    alpinelinux) OS_TYPE="alpinelinux";;
+    *) OS_TYPE="unknown";;
   esac
+  echo "${OS_TYPE}"
 }
 
 InstallSysbench() {
@@ -1967,7 +1969,7 @@ Yuanshi_script(){
         7) wget -O dp https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 && chmod +x dp && clear && ./dp ;;
         8) bash <(curl -L -s check.unlock.media) ;;
         9) UnlockTiktokTest ;;
-        #curl -fsL -o ./t.sh.x https://github.com/lmc999/TikTokCheck/raw/main/t.sh.x && chmod +x ./t.sh.x && ./t.sh.x && rm ./t.sh.x ;;
+        # curl -fsL -o ./t.sh.x https://github.com/lmc999/TikTokCheck/raw/main/t.sh.x && chmod +x ./t.sh.x && ./t.sh.x && rm ./t.sh.x ;;
         10) curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh ;;
         11) curl https://raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh|bash ;;
         12) bash <(curl -L -Lso- https://git.io/superspeed.sh) ;;
