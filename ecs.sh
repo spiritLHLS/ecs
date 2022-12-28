@@ -686,22 +686,22 @@ SystemInfo_GetVirtType() {
         Var_VirtType="$(/usr/bin/systemd-detect-virt)"
         # 虚拟机检测
         case "${Var_VirtType}" in
-            "qemu") LBench_Result_VirtType="QEMU" ;;
-            "kvm") LBench_Result_VirtType="KVM" ;;
-            "zvm") LBench_Result_VirtType="S390 Z/VM" ;;
-            "vmware") LBench_Result_VirtType="VMware" ;;
-            "microsoft") LBench_Result_VirtType="Microsoft Hyper-V" ;;
-            "xen") LBench_Result_VirtType="Xen Hypervisor" ;;
-            "bochs") LBench_Result_VirtType="BOCHS" ;;
-            "uml") LBench_Result_VirtType="User-mode Linux" ;;
-            "parallels") LBench_Result_VirtType="Parallels" ;;
-            "bhyve") LBench_Result_VirtType="FreeBSD Hypervisor" ;;
-            "openvz") LBench_Result_VirtType="OpenVZ" ;;
+            "*qemu*") LBench_Result_VirtType="QEMU" ;;
+            "*kvm*") LBench_Result_VirtType="KVM" ;;
+            "*zvm*") LBench_Result_VirtType="S390 Z/VM" ;;
+            "*vmware*") LBench_Result_VirtType="VMware" ;;
+            "*microsoft*") LBench_Result_VirtType="Microsoft Hyper-V" ;;
+            "*xen*") LBench_Result_VirtType="Xen Hypervisor" ;;
+            "*bochs*") LBench_Result_VirtType="BOCHS" ;;
+            "*uml*") LBench_Result_VirtType="User-mode Linux" ;;
+            "*parallels*") LBench_Result_VirtType="Parallels" ;;
+            "*bhyve*") LBench_Result_VirtType="FreeBSD Hypervisor" ;;
+            "*openvz*") LBench_Result_VirtType="OpenVZ" ;;
             "lxc") LBench_Result_VirtType="LXC" ;;
             "lxc-libvirt") LBench_Result_VirtType="LXC (libvirt)" ;;
-            "systemd-nspawn") LBench_Result_VirtType="Systemd nspawn" ;;
-            "docker") LBench_Result_VirtType="Docker" ;;
-            "rkt") LBench_Result_VirtType="RKT" ;;
+            "*systemd-nspawn*") LBench_Result_VirtType="Systemd nspawn" ;;
+            "*docker*") LBench_Result_VirtType="Docker" ;;
+            "*rkt*") LBench_Result_VirtType="RKT" ;;
             "none")
                 sleep 1
                 Var_VirtType="$(/usr/bin/systemd-detect-virt)"
