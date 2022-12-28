@@ -71,17 +71,12 @@ Global_StartupInit_Action() {
     Check_Virtwhat
     Check_JSONQuery
     Check_SysBench
-    echo -e "${Msg_Info}Starting Test ...\n\n"
-}
-
-# 捕获异常信号后的动作
-Global_TrapSigExit_Action() {
-    rm -rf ${WorkDir}
-    rm -rf /.tmp_LBench/
+    echo -e "${Msg_Info}Starting Test ..."
 }
 
 Global_Exit_Action() {
     rm -rf ${WorkDir}/
+    rm -rf /.tmp_LBench/
 }
 
 _exists() {
@@ -993,8 +988,6 @@ Function_SysBench_Memory_Fast() {
     echo -e " -> 内存测试 (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/Memory/result.txt
     Run_SysBench_Memory "1" "5" "1" "read" "seq" "单线程读测试"
     Run_SysBench_Memory "1" "5" "1" "write" "seq" "单线程写测试"
-    # 完成FLAG
-    LBench_Flag_FinishSysBenchMemoryFast="1"
     sleep 0.5
 }
 
@@ -1091,7 +1084,6 @@ print_intro() {
     echo "更新日志：$changeLog"
 }
 
-# Get System information
 get_system_info() {
     cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
     cores=$( awk -F: '/processor/ {core++} END {print core}' /proc/cpuinfo )
@@ -1119,7 +1111,16 @@ get_system_info() {
     disk_size2=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|snapd' | awk '{print $3}' ))
     disk_total_size=$( calc_disk "${disk_size1[@]}" )
     disk_used_size=$( calc_disk "${disk_size2[@]}" )
-    tcpctrl=$( sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )  
+    if [ -f "/usr/sbin/sysctl" ]; then
+        tcpctrl=$( /usr/sbin/sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )
+    elif [ -f "/sbin/sysctl" ]; then
+        tcpctrl=$( /sbin/sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )
+    else
+        tcpctrl=$( sysctl net.ipv4.tcp_congestion_control 2> /dev/null | awk -F ' ' '{print $3}' )
+        if [ $? -ne 0 ]; then
+            tcpctrl="None"
+        fi
+    fi
 }
 
 isvalidipv4()
@@ -1243,7 +1244,6 @@ chinaping() {
     done
 }
 
-# Print System information
 print_system_info() {
     if [ -n "$cname" ]; then
         echo " CPU 型号          : $(_blue "$cname")"
