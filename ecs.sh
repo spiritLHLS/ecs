@@ -242,7 +242,7 @@ checksystem() {
 }
 
 checkupdate(){
-	    echo "正在更新包管理源"
+	    yellow "Updating package management sources"
 		${PACKAGE_UPDATE[int]} > /dev/null 2>&1
         ${PACKAGE_INSTALL[int]} dmidecode > /dev/null 2>&1
 }
@@ -261,7 +261,7 @@ checkmagic(){
 
 checkdnsutils() {
 	if  [ ! -e '/usr/bin/dnsutils' ]; then
-	        echo "正在安装 dnsutils"
+            yellow "Installing dnsutils"
 	            if [ "${release}" == "centos" ]; then
 	                    yum -y install dnsutils > /dev/null 2>&1
                         yum -y install bind-utils > /dev/null 2>&1
@@ -274,14 +274,14 @@ checkdnsutils() {
 
 checkcurl() {
 	if  [ ! -e '/usr/bin/curl' ]; then
-	        echo "正在安装 Curl"
+            yellow "Installing curl"
 	        ${PACKAGE_INSTALL[int]} curl > /dev/null 2>&1
 	fi
 }
 
 checkwget() {
 	if  [ ! -e '/usr/bin/wget' ]; then
-	        echo "正在安装 Wget"
+            yellow "Installing wget"
 	        ${PACKAGE_INSTALL[int]} wget > /dev/null 2>&1
 	fi
 }
@@ -305,7 +305,7 @@ checkssh() {
 
 checkspeedtest() {
 	if  [ ! -e './speedtest-cli/speedtest' ]; then
-		echo "正在安装 Speedtest-cli"
+        yellow "Installing Speedtest-cli"
                 arch=$(uname -m)
                 if [ "${arch}" == "i686" ]; then
                     arch="i386"
@@ -690,83 +690,50 @@ SystemInfo_GetVirtType() {
     if [ -f "/usr/bin/systemd-detect-virt" ]; then
         Var_VirtType="$(/usr/bin/systemd-detect-virt)"
         # 虚拟机检测
-        if [ "${Var_VirtType}" = "qemu" ]; then
-            LBench_Result_VirtType="QEMU"
-        elif [ "${Var_VirtType}" = "kvm" ]; then
-            LBench_Result_VirtType="KVM"
-        elif [ "${Var_VirtType}" = "zvm" ]; then
-            LBench_Result_VirtType="S390 Z/VM"
-        elif [ "${Var_VirtType}" = "vmware" ]; then
-            LBench_Result_VirtType="VMware"
-        elif [ "${Var_VirtType}" = "microsoft" ]; then
-            LBench_Result_VirtType="Microsoft Hyper-V"
-        elif [ "${Var_VirtType}" = "xen" ]; then
-            LBench_Result_VirtType="Xen Hypervisor"
-        elif [ "${Var_VirtType}" = "bochs" ]; then
-            LBench_Result_VirtType="BOCHS"   
-        elif [ "${Var_VirtType}" = "uml" ]; then
-            LBench_Result_VirtType="User-mode Linux"   
-        elif [ "${Var_VirtType}" = "parallels" ]; then
-            LBench_Result_VirtType="Parallels"   
-        elif [ "${Var_VirtType}" = "bhyve" ]; then
-            LBench_Result_VirtType="FreeBSD Hypervisor"
-        # 容器虚拟化检测
-        elif [ "${Var_VirtType}" = "openvz" ]; then
-            LBench_Result_VirtType="OpenVZ"
-        elif [ "${Var_VirtType}" = "lxc" ]; then
-            LBench_Result_VirtType="LXC"        
-        elif [ "${Var_VirtType}" = "lxc-libvirt" ]; then
-            LBench_Result_VirtType="LXC (libvirt)"        
-        elif [ "${Var_VirtType}" = "systemd-nspawn" ]; then
-            LBench_Result_VirtType="Systemd nspawn"        
-        elif [ "${Var_VirtType}" = "docker" ]; then
-            LBench_Result_VirtType="Docker"        
-        elif [ "${Var_VirtType}" = "rkt" ]; then
-            LBench_Result_VirtType="RKT"
-        # 特殊处理
-        elif [ -c "/dev/lxss" ]; then # 处理WSL虚拟化
-            Var_VirtType="wsl"
-            LBench_Result_VirtType="Windows Subsystem for Linux (WSL)"
-        # 未匹配到任何结果, 或者非虚拟机 
-        elif [ "${Var_VirtType}" = "none" ]; then
-            Var_VirtType="dedicated"
-            LBench_Result_VirtType="None"
-            local Var_BIOSVendor="$(dmidecode -s bios-vendor)"
-            if [ "${Var_BIOSVendor}" = "SeaBIOS" ]; then
-                Var_VirtType="Unknown"
-                LBench_Result_VirtType="Unknown with SeaBIOS BIOS"
-            else
-                Var_VirtType="dedicated"
-                LBench_Result_VirtType="Dedicated with ${Var_BIOSVendor} BIOS"
-            fi
-        fi
-    elif [ ! -f "/usr/sbin/virt-what" ]; then
-        Var_VirtType="Unknown"
-        LBench_Result_VirtType="[Error: virt-what not found !]"
-    elif [ -f "/.dockerenv" ]; then # 处理Docker虚拟化
-        Var_VirtType="docker"
-        LBench_Result_VirtType="Docker"
-    elif [ -c "/dev/lxss" ]; then # 处理WSL虚拟化
-        Var_VirtType="wsl"
-        LBench_Result_VirtType="Windows Subsystem for Linux (WSL)"
-    else # 正常判断流程
-        Var_VirtType="$(virt-what | xargs)"
-        local Var_VirtTypeCount="$(echo $Var_VirtTypeCount | wc -l)"
-        if [ "${Var_VirtTypeCount}" -gt "1" ]; then # 处理嵌套虚拟化
-            LBench_Result_VirtType="echo ${Var_VirtType}"
-            Var_VirtType="$(echo ${Var_VirtType} | head -n1)" # 使用检测到的第一种虚拟化继续做判断
-        elif [ "${Var_VirtTypeCount}" -eq "1" ] && [ "${Var_VirtType}" != "" ]; then # 只有一种虚拟化
-            LBench_Result_VirtType="${Var_VirtType}"
-        else
-            local Var_BIOSVendor="$(dmidecode -s bios-vendor)"
-            if [ "${Var_BIOSVendor}" = "SeaBIOS" ]; then
-                Var_VirtType="Unknown"
-                LBench_Result_VirtType="Unknown with SeaBIOS BIOS"
-            else
-                Var_VirtType="dedicated"
-                LBench_Result_VirtType="Dedicated with ${Var_BIOSVendor} BIOS"
-            fi
-        fi
+        case "${Var_VirtType}" in
+            "qemu") LBench_Result_VirtType="QEMU";;
+            "kvm") LBench_Result_VirtType="KVM";;
+            "zvm") LBench_Result_VirtType="S390 Z/VM";;
+            "vmware") LBench_Result_VirtType="VMware";;
+            "microsoft") LBench_Result_VirtType="Microsoft Hyper-V";;
+            "xen") LBench_Result_VirtType="Xen Hypervisor";;
+            "bochs") LBench_Result_VirtType="BOCHS";;
+            "uml") LBench_Result_VirtType="User-mode Linux";;
+            "parallels") LBench_Result_VirtType="Parallels";;
+            "bhyve") LBench_Result_VirtType="FreeBSD Hypervisor";;
+            # 容器虚拟化检测
+            "openvz") LBench_Result_VirtType="OpenVZ";;
+            "lxc") LBench_Result_VirtType="LXC";;
+            "lxc-libvirt") LBench_Result_VirtType="LXC (libvirt)";;
+            "systemd-nspawn") LBench_Result_VirtType="Systemd nspawn";;
+            "docker") LBench_Result_VirtType="Docker";;
+            "rkt") LBench_Result_VirtType="RKT";;
+            # 特殊处理
+            *)
+                if [ -c "/dev/lxss" ]; then # 处理WSL虚拟化
+                    Var_VirtType="wsl"
+                    LBench_Result_VirtType="Windows Subsystem for Linux (WSL)"
+                # 未匹配到任何结果, 或者非虚拟机 
+                elif [ "${Var_VirtType}" = "none" ]; then
+                    Var_VirtType="dedicated"
+                    LBench_Result_VirtType="None"
+                    local Var_BIOSVendor="$(dmidecode -s bios-vendor)"
+                    if [ "${Var_BIOSVendor}" = "SeaBIOS" ]; then
+                        Var_VirtType="Unknown"
+                        LBench_Result_VirtType="Unknown with SeaBIOS BIOS"
+                    else
+                        Var_VirtType="dedicated"
+                        LBench_Result_VirtType="Dedicated"
+                    fi
+                else
+                    Var_VirtType="Unknown"
+                    LBench_Result_VirtType="Unknown"
+                fi
+                ;;
+        esac
+    else
+        Var_VirtType="Unsupported"
+        LBench_Result_VirtType="Unsupported"
     fi
 }
 
