@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2022.12.22"
+ver="2022.12.28"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -130,10 +130,10 @@ Function_CheckTracemode() {
 Check_Virtwhat() {
     if [ ! -f "/usr/sbin/virt-what" ]; then
         SystemInfo_GetOSRelease
-        if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux" ]; then
+        if [[ "${Var_OSRelease}" =~ ^(centos|rhel|almalinux)$ ]]; then
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             yum -y install virt-what
-        elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
+        elif [[ "${Var_OSRelease}" =~ ^(ubuntu|debian)$ ]]; then
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             ! apt-get update && apt-get --fix-broken install -y && apt-get update
             ! apt-get install -y dmidecode && apt-get --fix-broken install -y && apt-get install -y dmidecode
@@ -177,8 +177,8 @@ Check_JSONQuery() {
         fi
         mkdir -p ${WorkDir}/
         echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
-        if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux" ]; then
-            echo -e "${Msg_Info}Installing Dependency ..."
+        echo -e "${Msg_Info}Installing Dependency ..."
+        if [[ "${Var_OSRelease}" =~ ^(centos|rhel|almalinux)$ ]]; then
             yum install -y epel-release
             if [ $? -ne 0 ]; then
                 cd /etc/yum.repos.d/
@@ -191,20 +191,15 @@ Check_JSONQuery() {
             fi
             yum install -y tar
             yum install -y jq
-        elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
-            echo -e "${Msg_Info}Installing Dependency ..."
+        elif [[ "${Var_OSRelease}" =~ ^(ubuntu|debian)$ ]]; then
             ! apt-get update && apt-get --fix-broken install -y && apt-get update
             ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install -y jq
         elif [ "${Var_OSRelease}" = "fedora" ]; then
-            echo -e "${Msg_Info}Installing Dependency ..."
             dnf install -y jq
         elif [ "${Var_OSRelease}" = "alpinelinux" ]; then
-            
-            echo -e "${Msg_Info}Installing Dependency ..."
             apk update
             apk add jq
         else
-            echo -e "${Msg_Info}Installing Dependency ..."
             apk update
             apk add wget unzip curl
             echo -e "${Msg_Info}Downloading Json Query Module ..."
@@ -253,8 +248,8 @@ checkupdate(){
 }
 
 checkpython() {
-    ! type -p python3 >/dev/null 2>&1 && yellow "\n Install python3\n" && ${PACKAGE_INSTALL[int]} python3
-    ! type -p pip3 install requests >/dev/null 2>&1 && yellow "\n Install pip3\n" && ${PACKAGE_INSTALL[int]} python3-pip
+    ! type -p python3 >/dev/null 2>&1 && yellow "Install python3" && ${PACKAGE_INSTALL[int]} python3
+    ! type -p pip3 install requests >/dev/null 2>&1 && yellow "Install pip3" && ${PACKAGE_INSTALL[int]} python3-pip
     pip3 install requests
     sleep 0.5
 }
@@ -511,39 +506,10 @@ Check_SysBench() {
 Check_Sysbench_InstantBuild() {
     SystemInfo_GetOSRelease
     SystemInfo_GetCPUInfo
-    if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux" ]; then
+    if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux" ] || [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ] || [ "${Var_OSRelease}" = "fedora" ]; then
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
-        yum install -y epel-release
-        yum install -y wget curl make gcc gcc-c++ make automake libtool pkgconfig libaio-devel
-        echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
-        echo -e "${Msg_Info}Downloading Source code (Version 1.0.17)..."
-        mkdir -p /tmp/_LBench/src/
-        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://github.com/akopytov/sysbench/archive/1.0.17.zip
-        echo -e "${Msg_Info}Compiling Sysbench Module ..."
-        cd /tmp/_LBench/src/
-        unzip sysbench.zip && cd sysbench-1.0.17
-        ./autogen.sh && ./configure --without-mysql && make -j8 && make install
-        echo -e "${Msg_Info}Cleaning up ..."
-        cd /tmp && rm -rf /tmp/_LBench/src/sysbench*
-    elif [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ]; then
-        echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
-        echo -e "${Msg_Info}Preparing compile enviorment ..."
-        ! apt-get update &&  apt-get --fix-broken install -y && apt-get update
-        ! apt-get -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip && apt-get --fix-broken install -y && apt-get -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip
-        echo -e "${Msg_Info}Downloading Source code (Version 1.0.17)..."
-        mkdir -p /tmp/_LBench/src/
-        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://github.com/akopytov/sysbench/archive/1.0.17.zip
-        echo -e "${Msg_Info}Compiling Sysbench Module ..."
-        cd /tmp/_LBench/src/
-        unzip sysbench.zip && cd sysbench-1.0.17
-        ./autogen.sh && ./configure --without-mysql && make -j8 && make install
-        echo -e "${Msg_Info}Cleaning up ..."
-        cd /tmp && rm -rf /tmp/_LBench/src/sysbench*
-    elif [ "${Var_OSRelease}" = "fedora" ]; then
-        echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
-        echo -e "${Msg_Info}Preparing compile enviorment ..."
-        dnf install -y wget curl gcc gcc-c++ make automake libtool pkgconfig libaio-devel
+        prepare_compile_env "${Var_OSRelease}"
         echo -e "${Msg_Info}Downloading Source code (Version 1.0.17)..."
         mkdir -p /tmp/_LBench/src/
         wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://github.com/akopytov/sysbench/archive/1.0.17.zip
@@ -554,7 +520,22 @@ Check_Sysbench_InstantBuild() {
         echo -e "${Msg_Info}Cleaning up ..."
         cd /tmp && rm -rf /tmp/_LBench/src/sysbench*
     else
-        echo -e "${Msg_Error}Cannot compile on current enviorment！ (Only Support CentOS/Debian/Ubuntu/Fedora) "
+        echo -e "${Msg_Warning}Unsupported operating system: ${Var_OSRelease}"
+    fi
+}
+
+prepare_compile_env() {
+    local system="$1"
+    if [ "${system}" = "centos" ] || [ "${system}" = "rhel" ] || [ "${system}" = "almalinux" ]; then
+        yum install -y epel-release
+        yum install -y wget curl make gcc gcc-c++ make automake libtool pkgconfig libaio-devel
+    elif [ "${system}" = "ubuntu" ] || [ "${system}" = "debian" ]; then
+        ! apt-get update &&  apt-get --fix-broken install -y && apt-get update
+        ! apt-get -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip && apt-get --fix-broken install -y && apt-get -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip
+    elif [ "${system}" = "fedora" ]; then
+        dnf install -y wget curl gcc gcc-c++ make automake libtool pkgconfig libaio-devel
+    else
+        echo -e "${Msg_Warning}Unsupported operating system: ${system}"
     fi
 }
 
@@ -1535,21 +1516,18 @@ backtrace_script(){
 
 fscarmen_route_g_script(){
     echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
-    # yellow "以下测试的带宽类型可能有误，商宽可能被判断为家宽，仅作参考使用"
     rm -f $TEMP_FILE
     IP_4=$(curl -s4m5 api.ipify.org) &&
     WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
     ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
     PE_4=$(curl -sm5 ping.pe/$WAN_4) &&
     COOKIE_4=$(echo $PE_4 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
-    # TYPE_4=$(curl -sm5 --header "cookie: $COOKIE_4" ping.pe/$WAN_4 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g;s/cellular/蜂窝网络/g;s/business/商业带宽/g;s#</b>##g") &&
     _blue " IPv4 ASN: $ASNORG_4" >> $TEMP_FILE
     IP_6=$(curl -s6m5 https://api.ipify.org) &&
     WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
     ASNORG_6=$(expr "$IP_6" : '.*asn_org\":\"\([^"]*\).*') &&
     PE_6=$(curl -sm5 ping6.ping.pe/$WAN_6) &&
     COOKIE_6=$(echo $PE_6 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
-    # TYPE_6=$(curl -sm5 --header "cookie: $COOKIE_6" ping6.ping.pe/$WAN_6 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g;s/cellular/蜂窝网络/g;s/business/商业带宽/g;s#</b>##g") &&
     _blue " IPv6 ASN: $ASNORG_6" >> $TEMP_FILE
     local ARCHITECTURE="$(arch)"
       case $ARCHITECTURE in
@@ -1578,14 +1556,12 @@ fscarmen_route_s_script(){
     ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
     PE_4=$(curl -sm5 ping.pe/$WAN_4) &&
     COOKIE_4=$(echo $PE_4 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
-    # TYPE_4=$(curl -sm5 --header "cookie: $COOKIE_4" ping.pe/$WAN_4 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g;s/cellular/蜂窝网络/g;s/business/商业带宽/g;s#</b>##g") &&
     _blue " IPv4 ASN: $ASNORG_4" >> $TEMP_FILE
     IP_6=$(curl -s6m5 https://api.ipify.org) &&
     WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
     ASNORG_6=$(expr "$IP_6" : '.*asn_org\":\"\([^"]*\).*') &&
     PE_6=$(curl -sm5 ping6.ping.pe/$WAN_6) &&
     COOKIE_6=$(echo $PE_6 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
-    # TYPE_6=$(curl -sm5 --header "cookie: $COOKIE_6" ping6.ping.pe/$WAN_6 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g;s/cellular/蜂窝网络/g;s/business/商业带宽/g;s#</b>##g") &&
     _blue " IPv6 ASN: $ASNORG_6" >> $TEMP_FILE
     local ARCHITECTURE="$(arch)"
       case $ARCHITECTURE in
