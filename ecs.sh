@@ -1054,7 +1054,8 @@ check_virt(){
             fi
         fi
     else
-        virt="Dedicated"
+        SystemInfo_GetVirtType
+        virt="${Var_VirtType}"
     fi
 }
 
