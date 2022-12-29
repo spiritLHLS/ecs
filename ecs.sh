@@ -1133,7 +1133,7 @@ isvalidipv4()
     return $stat
 }
 
-latency() {    
+cnlatency() {    
     ipaddr=$(getent ahostsv4 $1 | grep STREAM | head -n 1 | cut -d ' ' -f 1)
 	if isvalidipv4 "$ipaddr"; then
 		host=$2
@@ -1144,18 +1144,14 @@ latency() {
 			rtt=$(ping -c1 -w1 $ipaddr | sed -nE 's/.*time=([0-9.]+).*/\1/p')				
 			if [[ -z "$rtt" ]]; then
 				rtt=999
-				retry=$(( $retry + 1 ))
+				retry=$((retry+1))
 				continue
 			fi
-			[[ "$rtt" > 0 && "$rtt" < 1 ]] && rtt=1
+			[[ "$rtt" < 1 ]] && rtt=1
 			int=${rtt%.*}
-			if [[ "$int" -gt 999 ]]; then
+			if [[ "$int" -gt 999 || "$int" -eq 0 ]]; then
 				rtt=999
 				break
-			fi
-			if [[ "$int" -eq 0 ]]; then
-				retry=$(( $retry + 1 ))
-				continue
 			fi
 			rtt=$(printf "%.0f" $rtt)
 			rtt=$(printf "%03d" $rtt)
@@ -1227,7 +1223,7 @@ chinaping() {
         INDEX=$(( $INDEX + 1 ))
 		param1=$( awk '{split($0, val, "•"); print val[1]}' <<< $arr )
 		param2=$( awk '{split($0, val, "•"); print val[2]}' <<< $arr )
-        latency "$param1" "$param2" "${INDEX}" "${TOTAL}"
+        cnlatency "$param1" "$param2" "${INDEX}" "${TOTAL}"
     done
     IFS=$'\n' SORTED=($(sort <<<"${CHINALIST[*]}"))
     unset IFS
