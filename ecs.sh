@@ -1009,27 +1009,22 @@ calc_disk() {
 check_virt(){
     _exists "dmesg" && virtualx="$(dmesg 2>/dev/null)"
     if _exists "dmidecode"; then
-        sys_manu="$(dmidecode -s system-manufacturer 2>/dev/null)"
-        sys_product="$(dmidecode -s system-product-name 2>/dev/null)"
-        sys_ver="$(dmidecode -s system-version 2>/dev/null)"
+        output="$(dmidecode -s system-manufacturer -s system-product-name -s system-version 2>/dev/null)"
+        sys_manu="$(echo "$output" | sed -n 1p)"
+        sys_product="$(echo "$output" | sed -n 2p)"
+        sys_ver="$(echo "$output" | sed -n 3p)"
     else
         sys_manu=""
         sys_product=""
         sys_ver=""
     fi
-    if   grep -qa docker /proc/1/cgroup; then
-        virt="Docker"
-    elif grep -qa lxc /proc/1/cgroup; then
-        virt="LXC"
-    elif grep -qa container=lxc /proc/1/environ; then
+    if grep -qa docker /proc/1/cgroup || grep -qa lxc /proc/1/cgroup || grep -qa container=lxc /proc/1/environ; then
         virt="LXC"
     elif [[ -f /proc/user_beancounters ]]; then
         virt="OpenVZ"
     elif [[ "${virtualx}" == *kvm-clock* ]]; then
         virt="KVM"
-    elif [[ "${cname}" == *KVM* ]]; then
-        virt="KVM"
-    elif [[ "${cname}" == *QEMU* ]]; then
+    elif [[ "${cname}" == *KVM* ]] || [[ "${cname}" == *QEMU* ]]; then
         virt="KVM"
     elif [[ "${virtualx}" == *"VMware Virtual Platform"* ]]; then
         virt="VMware"
@@ -1043,15 +1038,13 @@ check_virt(){
         else
             virt="Xen-DomU"
         fi
-    elif [ -f "/sys/hypervisor/type" ] && grep -q "xen" "/sys/hypervisor/type"; then
+    elif [[ -f "/sys/hypervisor/type" ]] && grep -q "xen" "/sys/hypervisor/type"; then
         virt="Xen"
-    elif [[ "${sys_manu}" == *"Microsoft Corporation"* ]]; then
-        if [[ "${sys_product}" == *"Virtual Machine"* ]]; then
-            if [[ "${sys_ver}" == *"7.0"* || "${sys_ver}" == *"Hyper-V" ]]; then
-                virt="Hyper-V"
-            else
-                virt="Microsoft Virtual Machine"
-            fi
+    elif [[ "${sys_manu}" == *"Microsoft Corporation"* ]] && [[ "${sys_product}" == *"Virtual Machine"* ]]; then
+        if [[ "${sys_ver}" == *"7.0"* || "${sys_ver}" == *"Hyper-V" ]]; then
+            virt="Hyper-V"
+        else
+            virt="Microsoft Virtual Machine"
         fi
     else
         SystemInfo_GetVirtType
