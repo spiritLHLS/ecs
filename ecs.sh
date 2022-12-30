@@ -1487,8 +1487,8 @@ spiritlhl_script(){
 
 backtrace_script(){
     echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
-    rm -f $TEMP_FILE2
-    curl https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
+    backtrace_o=$(curl https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf)
+    source <(echo "$backtrace_o")
 }
 
 fscarmen_route_g_script(){
@@ -1526,7 +1526,6 @@ fscarmen_route_g_script(){
 
 fscarmen_route_s_script(){
     echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
-    yellow "以下测试的带宽类型可能有误，商宽可能被判断为家宽，仅作参考使用"
     rm -f $TEMP_FILE
     IP_4=$(curl -s4m5 https://api.ipify.org) &&
     WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
@@ -1560,7 +1559,6 @@ fscarmen_route_s_script(){
 
 fscarmen_route_b_script(){
     echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
-    yellow "以下测试的带宽类型可能有误，商宽可能被判断为家宽，仅作参考使用"
     rm -f $TEMP_FILE
     IP_4=$(curl -s4m5 https://api.ipify.org) &&
     WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
