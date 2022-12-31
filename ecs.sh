@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2022.12.28"
+ver="2022.12.31"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -243,7 +243,7 @@ checkupdate(){
 }
 
 checkpython() {
-    ! type -p python3 >/dev/null 2>&1 && yellow "Install python3" && ${PACKAGE_INSTALL[int]} python3
+    ! type -p python3 >/dev/null 2>&1 && yellow "Install python3" && ${PACKAGE_INSTALL[int]} python3 
     ! type -p pip3 install requests >/dev/null 2>&1 && yellow "Install pip3" && ${PACKAGE_INSTALL[int]} python3-pip
     pip3 install requests
     sleep 0.5
@@ -466,7 +466,7 @@ InstallSysbench() {
       pushd ${WorkDir}/download/ >/dev/null
       wget -U "${UA_LemonBench}" -O ${filenamebase}_${version}_${bit}.deb ${downurl}
       dpkg -i ./${filename}
-      apt-get install sysbench -y
+      ! apt-get install sysbench -y && apt-get --fix-broken install -y && apt-get install sysbench -y
       popd
       if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
         echo -e "${Msg_Warning}Sysbench Module Install Failed!"
