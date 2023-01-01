@@ -1108,14 +1108,18 @@ get_system_info() {
     disk_size2=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|snapd' | awk '{print $3}' ))
     disk_total_size=$( calc_disk "${disk_size1[@]}" )
     disk_used_size=$( calc_disk "${disk_size2[@]}" )
-    if [ -f "/usr/sbin/sysctl" ]; then
-        tcpctrl=$( /usr/sbin/sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )
-    elif [ -f "/sbin/sysctl" ]; then
-        tcpctrl=$( /sbin/sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )
+    if [ ! -f /proc/sys/net/ipv4/tcp_congestion_control ]; then
+        echo "未设置TCP拥塞控制算法"
     else
-        tcpctrl=$( sysctl net.ipv4.tcp_congestion_control 2> /dev/null | awk -F ' ' '{print $3}' )
-        if [ $? -ne 0 ]; then
-            tcpctrl="None"
+        if [ -f "/usr/sbin/sysctl" ]; then
+            tcpctrl=$( /usr/sbin/sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )
+        elif [ -f "/sbin/sysctl" ]; then
+            tcpctrl=$( /sbin/sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )
+        else
+            tcpctrl=$( sysctl net.ipv4.tcp_congestion_control 2> /dev/null | awk -F ' ' '{print $3}' )
+            if [ $? -ne 0 ]; then
+                tcpctrl="None"
+            fi
         fi
     fi
 }
