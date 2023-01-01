@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2022.12.31"
+ver="2023.01.01"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -865,7 +865,9 @@ Run_DiskTest_DD() {
     # 清理缓存, 避免影响测试结果
     sync
     if [ "${Var_VirtType}" != "docker" ] && [ "${Var_VirtType}" != "wsl" ]; then
-        echo 3 >/proc/sys/vm/drop_caches > /dev/null 2>&1
+        if [ -w /proc/sys/vm/drop_caches ]; then
+            echo 3 >/proc/sys/vm/drop_caches > /dev/null 2>&1
+        fi
     fi
     sleep 0.5
     # 正式读测试
@@ -1377,7 +1379,7 @@ check_lmc_script(){
     checkpython
     export PYTHONIOENCODING=utf-8
     # curl -L -k https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
-    curl https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh -o media_lmc_check.sh
+    curl -L -k https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh -o media_lmc_check.sh
     chmod 777 media_lmc_check.sh
     sleep 0.5
 }
@@ -1483,12 +1485,16 @@ spiritlhl_script(){
     cd /root >/dev/null 2>&1
     echo -e "-----------------欺诈分数以及IP质量检测--本频道原创-------------------"
     yellow "得分仅作参考，不代表100%准确，IP类型如果不一致请手动查询多个数据库比对"
-    python3 qzcheck_ecs.py 
+    if ! python3 qzcheck_ecs.py 2> /dev/null ; then
+        if ! python3 qzcheck_ecs.py 2> /dev/null ; then
+            echo "执行失败，可能是Python版本过低，也可能是安装失败"
+        fi
+    fi
 }
 
 backtrace_script(){
     echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
-    backtrace_o=$(curl https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf)
+    backtrace_o=$(curl -k https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf)
     source <(echo "$backtrace_o")
 }
 
