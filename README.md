@@ -38,13 +38,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # bug待修复
 
-替换支持国内服务器测试的链接
-
-lemonbench测试中的IO读写有时候过高脱离实际，修复时间未知
-
-lemonbench测试中的CPU测试依赖Python第三方包，低版本系统不兼容，修复时间未知
-
-端口测试自动获取ssh的端口进行连通性测试替换默认端口测试，修复时间未知
+脚本未支持国内服务器测试，待检测和自动替换支持，修复时间未知
 
 # 更新
 
