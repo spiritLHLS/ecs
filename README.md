@@ -38,11 +38,13 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # bug待修复
 
-脚本使用CDN加速以支持国内服务器测试，但速度不理想，待修复
+脚本使用CDN加速以支持国内服务器测试，但速度不理想，待修复，修复时间未知
+
+部分OVZ和KVM服务器测试三网回程和硬盘读写仍然有BUG，估算是配置过于拉跨导致的(IO或者CPU)，待修复，修复时间未知
 
 # 更新
 
-2023.01.02 下载环境前预加载CDN加速判断，如若无可用CDN才用原链接，解决国内服务器无法访问部分资源的问题。
+2023.01.02 下载环境前预加载CDN加速轮询判断，如若无可用CDN才用原链接，解决国内服务器无法访问部分资源的问题，加速各种环境文件的下载，减少脚本环境准备时长。
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
