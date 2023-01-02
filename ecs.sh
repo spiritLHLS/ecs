@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.01.01"
+ver="2023.01.02"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -32,10 +32,8 @@ PACKAGE_INSTALL=("apt-get -y install" "apt-get -y install" "yum -y install" "yum
 PACKAGE_REMOVE=("apt-get -y remove" "apt-get -y remove" "yum -y remove" "yum -y remove" "yum -y remove")
 PACKAGE_UNINSTALL=("apt-get -y autoremove" "apt-get -y autoremove" "yum -y autoremove" "yum -y autoremove" "yum -y autoremove")
 CMD=("$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(hostnamectl 2>/dev/null | grep -i system | cut -d : -f2)" "$(lsb_release -sd 2>/dev/null)" "$(grep -i description /etc/lsb-release 2>/dev/null | cut -d \" -f2)" "$(grep . /etc/redhat-release 2>/dev/null)" "$(grep . /etc/issue 2>/dev/null | cut -d \\ -f1 | sed '/^[ ]*$/d')") 
-
 SYS="${CMD[0]}"
 [[ -n $SYS ]] || exit 1
-
 for ((int = 0; int < ${#REGEX[@]}; int++)); do
     if [[ $(echo "$SYS" | tr '[:upper:]' '[:lower:]') =~ ${REGEX[int]} ]]; then
         SYSTEM="${RELEASE[int]}"
@@ -43,6 +41,27 @@ for ((int = 0; int < ${#REGEX[@]}; int++)); do
     fi
 done
 apt-get --fix-broken install -y > /dev/null 2>&1
+
+check_cdn() {
+  local o_url=$1
+  for cdn_url in "${cdn_urls[@]}"; do
+    if curl -L -k "$cdn_url$o_url" --max-time 6 | grep -q "success" > /dev/null 2>&1; then
+      export cdn_success_url="$cdn_url"
+      return
+    fi
+    sleep 0.5
+  done
+  export cdn_success_url=""
+}
+
+check_cdn_file() {
+    check_cdn "https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test"
+    if [ -n "$cdn_success_url" ]; then
+        yellow "CDN available, using CDN"
+    else
+        yellow "No CDN available, no use CDN"
+    fi
+}
 
 # Trap终止信号捕获
 _exit() {
@@ -508,7 +527,7 @@ Check_Sysbench_InstantBuild() {
         prepare_compile_env "${Var_OSRelease}"
         echo -e "${Msg_Info}Downloading Source code (Version 1.0.17)..."
         mkdir -p /tmp/_LBench/src/
-        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip https://github.com/akopytov/sysbench/archive/1.0.17.zip
+        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip "${cdn_success_url}https://github.com/akopytov/sysbench/archive/1.0.17.zip"
         echo -e "${Msg_Info}Compiling Sysbench Module ..."
         cd /tmp/_LBench/src/
         unzip sysbench.zip && cd sysbench-1.0.17
@@ -644,11 +663,11 @@ Function_ReadCPUStat() {
 }
 
 DownloadFiles() {
-    curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_${LBench_Result_SystemBit_Full} -o dp && chmod +x dp
+    curl -L -k "${cdn_success_url}https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_${LBench_Result_SystemBit_Full}" -o dp && chmod +x dp
     sleep 0.5
-    curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_${LBench_Result_SystemBit_Full} -o nf && chmod +x nf
+    curl -L -k "${cdn_success_url}https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_${LBench_Result_SystemBit_Full}" -o nf && chmod +x nf
     sleep 0.5
-    curl -L -k https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_${LBench_Result_SystemBit_Full} -o tubecheck && chmod +x tubecheck
+    curl -L -k "${cdn_success_url}https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_${LBench_Result_SystemBit_Full}" -o tubecheck && chmod +x tubecheck
     sleep 0.5
 }
 
@@ -1372,9 +1391,9 @@ python_all_script(){
     checkpython
     checkmagic
     export PYTHONIOENCODING=utf-8
-    curl -L -k https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py -o qzcheck_ecs.py 
-    curl -L -k https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
-    # curl -L -k https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
+    curl -L -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py" -o qzcheck_ecs.py 
+    curl -L -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py" -o googlesearchcheck.py
+    # curl -L -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py" -o tk.py
     sleep 0.5
     python3 googlesearchcheck.py
 }
@@ -1382,8 +1401,8 @@ python_all_script(){
 check_lmc_script(){
     checkpython
     export PYTHONIOENCODING=utf-8
-    # curl -L -k https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py -o tk.py
-    curl -L -k https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh -o media_lmc_check.sh
+    # curl -L -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py" -o tk.py
+    curl -L -k "${cdn_success_url}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh" -o media_lmc_check.sh
     chmod 777 media_lmc_check.sh
     sleep 0.5
 }
@@ -1392,11 +1411,13 @@ python_gd_script(){
     checkpython
     checkmagic
     export PYTHONIOENCODING=utf-8
-    curl -L -k https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py -o qzcheck_ecs.py 
-    curl -L -k https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py -o googlesearchcheck.py
+    curl -L -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py" -o qzcheck_ecs.py 
+    curl -L -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py" -o googlesearchcheck.py
     sleep 0.5
     python3 googlesearchcheck.py
 }
+
+cdn_urls=("https://cdn.spiritlhl.workers.dev/" "https://shrill-pond-3e81.hunsh.workers.dev/" "http://104.168.128.181:7823/" "https://gh.api.99988866.xyz/")
 
 pre_check(){
     checkupdate
@@ -1404,6 +1425,7 @@ pre_check(){
     checkwget
     checksystem
     checkcurl
+    check_cdn_file
     Global_StartupInit_Action
     cd /root >/dev/null 2>&1
     curl -L -k https://gitlab.com/spiritysdx/za/-/raw/main/yabsiotest.sh -o yabsiotest.sh && chmod +x yabsiotest.sh  >/dev/null 2>&1
@@ -1498,8 +1520,7 @@ spiritlhl_script(){
 
 backtrace_script(){
     echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
-    backtrace_o=$(curl -k https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf)
-    source <(echo "$backtrace_o")
+    curl -k "${cdn_success_url}https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh" -sSf | sh
 }
 
 fscarmen_route_g_script(){
@@ -1524,7 +1545,7 @@ fscarmen_route_g_script(){
         i386 )    local FILE=besttracemac;;
         * ) red " 只支持 AMD64、ARM64、Mac 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && return;;
       esac
-    [[ ! -e $FILE ]] && wget -q https://github.com/fscarmen/tools/raw/main/besttrace/$FILE >/dev/null 2>&1
+    [[ ! -e $FILE ]] && wget -q "${cdn_success_url}https://github.com/fscarmen/tools/raw/main/besttrace/${FILE}" >/dev/null 2>&1
     chmod 777 $FILE >/dev/null 2>&1
     _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
     for ((a=0;a<${#test_area_g[@]};a++)); do
@@ -1557,7 +1578,7 @@ fscarmen_route_s_script(){
         i386 )    local FILE=besttracemac;;
         * ) red " 只支持 AMD64、ARM64、Mac 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && return;;
       esac
-    [[ ! -e $FILE ]] && wget -q https://github.com/fscarmen/tools/raw/main/besttrace/$FILE >/dev/null 2>&1
+    [[ ! -e $FILE ]] && wget -q "${cdn_success_url}https://github.com/fscarmen/tools/raw/main/besttrace/${FILE}" >/dev/null 2>&1
     chmod 777 $FILE >/dev/null 2>&1
     _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
     for ((a=0;a<${#test_area_s[@]};a++)); do
@@ -1592,7 +1613,7 @@ fscarmen_route_b_script(){
         i386 )    local FILE=besttracemac;;
         * ) red " 只支持 AMD64、ARM64、Mac 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && return;;
       esac
-    [[ ! -e $FILE ]] && wget -q https://github.com/fscarmen/tools/raw/main/besttrace/$FILE >/dev/null 2>&1
+    [[ ! -e $FILE ]] && wget -q "${cdn_success_url}https://github.com/fscarmen/tools/raw/main/besttrace/${FILE}" >/dev/null 2>&1
     chmod 777 $FILE >/dev/null 2>&1
     _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
     for ((a=0;a<${#test_area_b[@]};a++)); do
@@ -1851,6 +1872,7 @@ rm_script(){
     rm -rf ecs.sh*
     rm -rf googlesearchcheck.py*
     rm -rf gdlog*
+    rm -rf test
     rm -rf $TEMP_FILE
 }
 
@@ -1926,14 +1948,14 @@ Yuanshi_script(){
         2) curl -fsL https://ilemonra.in/LemonBenchIntl | bash -s fast ;;
         3) wget -qO- --no-check-certificate https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/oooldking/script/master/superbench.sh | bash ;;
         4) curl -sL yabs.sh | bash ;;
-        5) wget -O nf https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 && chmod +x nf && ./nf ;;
+        5) wget -O nf https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 && chmod +x nf && ./nf ;;
         6) wget -O tubecheck https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck/CDN/tubecheck_1.0beta_linux_amd64 && chmod +x tubecheck && clear && ./tubecheck ;;
-        7) wget -O dp https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 && chmod +x dp && clear && ./dp ;;
+        7) wget -O dp https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 && chmod +x dp && clear && ./dp ;;
         8) bash <(curl -L -s check.unlock.media) ;;
         9) UnlockTiktokTest ;;
         # curl -fsL -o ./t.sh.x https://github.com/lmc999/TikTokCheck/raw/main/t.sh.x && chmod +x ./t.sh.x && ./t.sh.x && rm ./t.sh.x ;;
-        10) curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh ;;
-        11) curl https://raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh|bash ;;
+        10) curl https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh ;;
+        11) curl https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh|bash ;;
         12) bash <(curl -L -Lso- https://git.io/superspeed.sh) ;;
         13) bash <(curl -L -Lso- https://bench.im/hyperspeed) ;;
         14) geekbench_script ;;
