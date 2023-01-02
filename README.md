@@ -38,11 +38,11 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # bug待修复
 
-脚本未支持国内服务器测试，待检测和自动替换支持，修复时间未知
+脚本使用CDN加速以支持国内服务器测试，但速度不理想，待修复
 
 # 更新
 
-2023.01.01 修复脚本部分curl命令需要ssl验证的问题，已忽略校验，修复脚本OVZ运行时执行内核缓存清除报错显示的问题，修复python2版本不做IP质量检测以达到修复执行报错的问题，修复如果未设置TCP拥堵控制算法时显示为空的问题。
+2023.01.02 下载环境前预加载CDN加速判断，如若无可用CDN才用原链接，解决国内服务器无法访问部分资源的问题。
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
