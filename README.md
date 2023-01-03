@@ -16,6 +16,8 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 
 融合怪的执行结果保存在```/root```下的test_result.txt中，运行完毕可用```cat test_result.txt```查看记录
 
+理论上已支持国内外服务器测试，但国内受CDN口子或国内机器口子的限制会加载慢很多
+
 ### 纯测IP质量(IP黑还是白)(含IPV4和IPV6)
 
 ```bash
