@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.01.02"
+ver="2023.01.03"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1545,8 +1545,7 @@ fscarmen_route_g_script(){
         i386 )    local FILE=besttracemac;;
         * ) red " 只支持 AMD64、ARM64、Mac 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && return;;
       esac
-    [[ ! -e $FILE ]] && wget -q "${cdn_success_url}https://github.com/fscarmen/tools/raw/main/besttrace/${FILE}" >/dev/null 2>&1
-    chmod 777 $FILE >/dev/null 2>&1
+    curl -s -L -k "${cdn_success_url}https://github.com/fscarmen/tools/raw/main/besttrace/${FILE}" -o $FILE && chmod +x $FILE &>/dev/null
     _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
     for ((a=0;a<${#test_area_g[@]};a++)); do
     _yellow "${test_area_g[a]} ${test_ip_g[a]}" >> $TEMP_FILE
@@ -1578,9 +1577,8 @@ fscarmen_route_s_script(){
         i386 )    local FILE=besttracemac;;
         * ) red " 只支持 AMD64、ARM64、Mac 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && return;;
       esac
-    [[ ! -e $FILE ]] && wget -q "${cdn_success_url}https://github.com/fscarmen/tools/raw/main/besttrace/${FILE}" >/dev/null 2>&1
-    chmod 777 $FILE >/dev/null 2>&1
     _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
+    curl -s -L -k "${cdn_success_url}https://github.com/fscarmen/tools/raw/main/besttrace/${FILE}" -o $FILE && chmod +x $FILE &>/dev/null
     for ((a=0;a<${#test_area_s[@]};a++)); do
     _yellow "${test_area_s[a]} ${test_ip_g[a]}" >> $TEMP_FILE
     ./"$FILE" "${test_ip_s[a]}" -g cn | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
