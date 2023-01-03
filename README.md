@@ -46,7 +46,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 更新
 
-2023.01.02 下载环境前预加载CDN加速轮询判断，如若无可用CDN才用原链接，解决国内服务器无法访问部分资源的问题，加速各种环境文件的下载，减少脚本环境准备时长。
+2023.01.03 更改三网回程的环境文件下载方式，避免某些隐性bug
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
