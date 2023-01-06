@@ -16,7 +16,7 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 
 融合怪的执行结果保存在```/root```下的test_result.txt中，运行完毕可用```cat test_result.txt```查看记录
 
-理论上已支持国内外服务器测试，但国内受CDN口子或国内机器口子的限制会加载慢很多
+使用**CDN**加速理论上已支持**国内**和**国外**服务器测试，但国内受CDN口子或国内机器口子的限制会加载慢很多
 
 ### 纯测IP质量(IP黑还是白)(含IPV4和IPV6)
 
@@ -43,6 +43,8 @@ https://github.com/spiritLHLS/one-click-installation-script
 脚本使用CDN加速以支持国内服务器测试，但速度不理想，待修复，修复时间未知
 
 部分OVZ和KVM服务器测试三网回程和硬盘读写仍然有BUG，估算是配置过于拉跨导致的(IO或者CPU)，待修复，修复时间未知
+
+IP质量检测的curl有的服务器会curl到V6去，而不是最基础的V4，待修复，修复时间未知
 
 # 更新
 
