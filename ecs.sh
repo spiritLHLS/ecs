@@ -25,12 +25,12 @@ _red() { echo -e "\033[31m\033[01m$@\033[0m"; }
 _green() { echo -e "\033[32m\033[01m$@\033[0m"; }
 _yellow() { echo -e "\033[33m\033[01m$@\033[0m"; }
 _blue() { echo -e "\033[36m\033[01m$@\033[0m"; }
-REGEX=("debian" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora")
-RELEASE=("Debian" "Ubuntu" "CentOS" "CentOS" "Fedora")
-PACKAGE_UPDATE=("! apt-get update && apt-get --fix-broken install -y && apt-get update" "apt-get update" "yum -y update" "yum -y update" "yum -y update")
-PACKAGE_INSTALL=("apt-get -y install" "apt-get -y install" "yum -y install" "yum -y install" "yum -y install")
-PACKAGE_REMOVE=("apt-get -y remove" "apt-get -y remove" "yum -y remove" "yum -y remove" "yum -y remove")
-PACKAGE_UNINSTALL=("apt-get -y autoremove" "apt-get -y autoremove" "yum -y autoremove" "yum -y autoremove" "yum -y autoremove")
+REGEX=("debian" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora" "arch")
+RELEASE=("Debian" "Ubuntu" "CentOS" "CentOS" "Fedora" "Arch")
+PACKAGE_UPDATE=("! apt-get update && apt-get --fix-broken install -y && apt-get update" "apt-get update" "yum -y update" "yum -y update" "yum -y update" "pacman -Sy")
+PACKAGE_INSTALL=("apt-get -y install" "apt-get -y install" "yum -y install" "yum -y install" "yum -y install" "pacman -S --noconfirm --needed")
+PACKAGE_REMOVE=("apt-get -y remove" "apt-get -y remove" "yum -y remove" "yum -y remove" "yum -y remove" "pacman -Rsc --noconfirm")
+PACKAGE_UNINSTALL=("apt-get -y autoremove" "apt-get -y autoremove" "yum -y autoremove" "yum -y autoremove" "yum -y autoremove" "pacman -Rs --noconfirm $(pacman -Qdtq)")
 CMD=("$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(hostnamectl 2>/dev/null | grep -i system | cut -d : -f2)" "$(lsb_release -sd 2>/dev/null)" "$(grep -i description /etc/lsb-release 2>/dev/null | cut -d \" -f2)" "$(grep . /etc/redhat-release 2>/dev/null)" "$(grep . /etc/issue 2>/dev/null | cut -d \\ -f1 | sed '/^[ ]*$/d')") 
 SYS="${CMD[0]}"
 [[ -n $SYS ]] || exit 1
@@ -253,6 +253,8 @@ checksystem() {
 	    release="ubuntu"
 	elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
 	    release="centos"
+    elif cat /proc/version | grep -Eqi "arch"; then
+        release="arch"
 	fi
 }
 
@@ -280,7 +282,9 @@ checkdnsutils() {
 	            if [ "${release}" == "centos" ]; then
 	                    yum -y install dnsutils > /dev/null 2>&1
                         yum -y install bind-utils > /dev/null 2>&1
-	                else
+	                elif [ "${release}" == "arch" ]; then
+                        pacman -S --noconfirm --needed bind > /dev/null 2>$1
+                    else
 	                    ${PACKAGE_INSTALL[int]} dnsutils > /dev/null 2>&1
 	                fi
 
@@ -314,6 +318,8 @@ checkssh() {
 	[[ -z $(type -P curl) ]] && sudo ${PACKAGE_UPDATE[int]} && sudo ${PACKAGE_INSTALL[int]} curl
 	sudo sed -i "s/^#\?Port.*/Port $sshport/g" /etc/ssh/sshd_config;
 	sudo service ssh restart >/dev/null 2>&1  # 某些VPS系统的ssh服务名称为ssh，以防无法重启服务导致无法立刻使用密码登录
+    sudo systemctl restart sshd >/dev/null 2>&1 # Arch Linux没有使用init.d
+    sudo systemctl restart ssh >/dev/null 2>&1
 	sudo service sshd restart >/dev/null 2>&1
 	echo "开启22端口完毕"
 }
@@ -446,6 +452,11 @@ SystemInfo_GetOSRelease() {
         local Var_OSReleaseVersion="$(cat /etc/almalinux-release | awk '{print $3,$4,$5,$6,$7}')"
         local Var_OSReleaseArch="$(arch)"
         LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
+    elif [ -f "/etc/lsb-release" ]; then # archlinux
+        Var_OSRelease="arch"
+        local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3}')"
+        local Var_OSReleaseArch="$(arch)"
+        LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName ($Var_OSReleaseArch)" # 滚动发行版 不存在版本号
     else
         Var_OSRelease="unknown" # 未知系统分支
         LBench_Result_OSReleaseFullName="[Error: Unknown Linux Branch !]"
@@ -462,6 +473,7 @@ GetOSRelease() {
     debian) OS_TYPE="debian";;
     fedora) OS_TYPE="fedora";;
     alpinelinux) OS_TYPE="alpinelinux";;
+    arch) OS_TYPE="arch";;
     *) OS_TYPE="unknown";;
   esac
   echo "${OS_TYPE}"
@@ -494,6 +506,7 @@ InstallSysbench() {
     fedora) dnf -y install sysbench ;;
     alpinelinux) echo -e "${Msg_Warning}Sysbench Module not found, installing ..." && echo -e "${Msg_Warning}SysBench Current not support Alpine Linux, Skipping..." && Var_Skip_SysBench="1" ;;
     *) echo "Error: Unknown OS release: $os_release" && exit 1 ;;
+    arch) pacman -S --needed --noconfirm sysbench ;;
   esac
 }
 
@@ -521,7 +534,7 @@ Check_SysBench() {
 Check_Sysbench_InstantBuild() {
     SystemInfo_GetOSRelease
     SystemInfo_GetCPUInfo
-    if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux" ] || [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ] || [ "${Var_OSRelease}" = "fedora" ]; then
+    if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux" ] || [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ] || [ "${Var_OSRelease}" = "fedora" ] || [ "${Var_OSRelease}" = "arch" ]; then
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
         prepare_compile_env "${Var_OSRelease}"
@@ -549,6 +562,8 @@ prepare_compile_env() {
         ! apt-get -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip && apt-get --fix-broken install -y && apt-get -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip
     elif [ "${system}" = "fedora" ]; then
         dnf install -y wget curl gcc gcc-c++ make automake libtool pkgconfig libaio-devel
+    elif [ "${system}" = "arch" ]; then
+        pacman -S --needed --noconfirm wget curl gcc gcc make automake libtool pkgconfig libaio
     else
         echo -e "${Msg_Warning}Unsupported operating system: ${system}"
     fi
@@ -819,7 +834,7 @@ speed_test2() {
 
 speed() {
     # https://raw.githubusercontent.com/zq/superspeed/master/superspeed.sh
-    speed_test2 '' 'speedtest'
+    speed_test2 '' 'Speedtest.net' # 为了美观浅改一下（x
     speed_test '21541' '洛杉矶\t'
     speed_test '13623' '新加坡\t'
     speed_test '44988' '日本东京'
@@ -839,7 +854,7 @@ speed() {
 
 speed2() {
     # https://raw.githubusercontent.com/zq/superspeed/master/superspeed.sh
-    speed_test2 '' 'speedtest'
+    speed_test2 '' 'Speedtest.net'
     speed_test '3633' '电信上海' '电信'
     speed_test '24447' '联通上海' '联通'
     # speed_test '25637' '移动上海5G' '移动'
