@@ -155,9 +155,8 @@ head = {
   "c515467669330390a935a974506eef7f9e27d89e81f5835649711a858bdd7c0b61a6d9386e74ce24"
 }
 
-ip4 = excuteCommand("curl -sm8 ip.sb").replace("\n", "").replace(" ", "")
-ip6 = excuteCommand("curl -s6m8 api.ipify.org -k").replace("\n", "").replace(
-  " ", "")
+ip4 = excuteCommand("curl -s4m8 -k ip.sb").replace("\n", "").replace(" ", "")
+ip6 = excuteCommand("curl -s6m8 -k api.ipify.org").replace("\n", "").replace(" ", "")
 scamalytics(ip4)
 cloudflare()
 abuse(ip4)
