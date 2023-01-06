@@ -44,11 +44,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 部分OVZ和KVM服务器测试三网回程和硬盘读写仍然有BUG，估算是配置过于拉跨导致的(IO或者CPU)，待修复，修复时间未知
 
-IP质量检测的curl有的服务器会curl到V6去，而不是最基础的V4，待修复，修复时间未知
-
 # 更新
 
-2023.01.03 更改三网回程的环境文件下载方式，避免某些隐性bug
+2023.01.06 修复IP质量检测的curl有的服务器会curl到V6去，而不是最基础的V4的bug
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
