@@ -1432,7 +1432,7 @@ python_gd_script(){
     python3 googlesearchcheck.py
 }
 
-cdn_urls=("https://cdn.spiritlhl.workers.dev/" "https://shrill-pond-3e81.hunsh.workers.dev/" "http://104.168.128.181:7823/" "https://gh.api.99988866.xyz/")
+cdn_urls=("https://ghproxy.com/" "https://cdn.spiritlhl.workers.dev/" "https://shrill-pond-3e81.hunsh.workers.dev/" "http://104.168.128.181:7823/" "https://gh.api.99988866.xyz/")
 
 pre_check(){
     checkupdate
@@ -1541,13 +1541,13 @@ backtrace_script(){
 fscarmen_route_g_script(){
     echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
     rm -f $TEMP_FILE
-    IP_4=$(curl -s4m5 api.ipify.org) &&
-    WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
-    ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
+    IP_4=$(curl -ks4m8 -A Mozilla https://api.ip.sb/geoip) &&
+    WAN_4=$(expr "$IP_4" : '.*ip\":[ ]*\"\([^"]*\).*') &&
+    ASNORG_4=$(expr "$IP_4" : '.*isp\":[ ]*\"\([^"]*\).*') &&
     _blue " IPv4 ASN: $ASNORG_4" >> $TEMP_FILE
-    IP_6=$(curl -s6m5 https://api.ipify.org) &&
-    WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
-    ASNORG_6=$(expr "$IP_6" : '.*asn_org\":\"\([^"]*\).*') &&
+    IP_6=$(curl -ks6m8 -A Mozilla https://api.ip.sb/geoip) &&
+    WAN_6=$(expr "$IP_6" : '.*ip\":[ ]*\"\([^"]*\).*') &&
+    ASNORG_6=$(expr "$IP_6" : '.*isp\":[ ]*\"\([^"]*\).*') &&
     _blue " IPv6 ASN: $ASNORG_6" >> $TEMP_FILE
     local ARCHITECTURE="$(arch)"
       case $ARCHITECTURE in
@@ -1569,13 +1569,13 @@ fscarmen_route_g_script(){
 fscarmen_route_s_script(){
     echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
     rm -f $TEMP_FILE
-    IP_4=$(curl -s4m5 https://api.ipify.org) &&
-    WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
-    ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
+    IP_4=$(curl -ks4m8 -A Mozilla https://api.ip.sb/geoip) &&
+    WAN_4=$(expr "$IP_4" : '.*ip\":[ ]*\"\([^"]*\).*') &&
+    ASNORG_4=$(expr "$IP_4" : '.*isp\":[ ]*\"\([^"]*\).*') &&
     _blue " IPv4 ASN: $ASNORG_4" >> $TEMP_FILE
-    IP_6=$(curl -s6m5 https://api.ipify.org) &&
-    WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
-    ASNORG_6=$(expr "$IP_6" : '.*asn_org\":\"\([^"]*\).*') &&
+    IP_6=$(curl -ks6m8 -A Mozilla https://api.ip.sb/geoip) &&
+    WAN_6=$(expr "$IP_6" : '.*ip\":[ ]*\"\([^"]*\).*') &&
+    ASNORG_6=$(expr "$IP_6" : '.*isp\":[ ]*\"\([^"]*\).*') &&
     _blue " IPv6 ASN: $ASNORG_6" >> $TEMP_FILE
     local ARCHITECTURE="$(arch)"
       case $ARCHITECTURE in
@@ -1597,13 +1597,13 @@ fscarmen_route_s_script(){
 fscarmen_route_b_script(){
     echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
     rm -f $TEMP_FILE
-    IP_4=$(curl -s4m5 https://api.ipify.org) &&
-    WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
-    ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
+    IP_4=$(curl -ks4m8 -A Mozilla https://api.ip.sb/geoip) &&
+    WAN_4=$(expr "$IP_4" : '.*ip\":[ ]*\"\([^"]*\).*') &&
+    ASNORG_4=$(expr "$IP_4" : '.*isp\":[ ]*\"\([^"]*\).*') &&
     _blue " IPv4 ASN: $ASNORG_4" >> $TEMP_FILE
-    IP_6=$(curl -s6m5 https://api.ipify.org) &&
-    WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
-    ASNORG_6=$(expr "$IP_6" : '.*asn_org\":\"\([^"]*\).*') &&
+    IP_6=$(curl -ks6m8 -A Mozilla https://api.ip.sb/geoip) &&
+    WAN_6=$(expr "$IP_6" : '.*ip\":[ ]*\"\([^"]*\).*') &&
+    ASNORG_6=$(expr "$IP_6" : '.*isp\":[ ]*\"\([^"]*\).*') &&
     _blue " IPv6 \t ASN: $ASNORG_6" >> $TEMP_FILE
     local ARCHITECTURE="$(arch)"
       case $ARCHITECTURE in
