@@ -1,6 +1,6 @@
 # ecs
 
-支持系统：Ubuntu 18+，Debian 8+，centos 7+，Fedora，Almalinux 8.5+
+支持系统：Ubuntu 18+，Debian 8+，centos 7+，Fedora，Almalinux 8.5+, Arch
 
 ### 融合怪测评脚本
 
