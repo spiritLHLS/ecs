@@ -273,7 +273,7 @@ checkpython() {
 	if  [ ! -e '/usr/bin/python3' ]; then
             yellow "Installing python3"
 	            if [ "${release}" == "arch" ]; then
-	                    pacman -S --noconfirm --needed python > /dev/null 2>$1 
+	                    pacman -S --noconfirm --needed python > /dev/null 2>&1 
                     else
 	                    ${PACKAGE_INSTALL[int]} python3 > /dev/null 2>&1
 	                fi
