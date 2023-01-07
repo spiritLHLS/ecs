@@ -46,7 +46,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 更新
 
-2023.01.06 修复IP质量检测的curl有的服务器会curl到V6去，而不是最基础的V4的bug，merge一个pull，脚本支持arch系统测试了
+2023.01.07 删除部分无效代码
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
