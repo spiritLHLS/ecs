@@ -28,10 +28,10 @@ _blue() { echo -e "\033[36m\033[01m$@\033[0m"; }
 REGEX=("debian" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora" "arch")
 RELEASE=("Debian" "Ubuntu" "CentOS" "CentOS" "Fedora" "Arch")
 PACKAGE_UPDATE=("! apt-get update && apt-get --fix-broken install -y && apt-get update" "apt-get update" "yum -y update" "yum -y update" "yum -y update" "pacman -Sy")
-PACKAGE_INSTALL=("apt-get -y install" "apt-get -y install" "yum -y install" "yum -y install" "yum -y install" "pacman -S --noconfirm --needed")
+PACKAGE_INSTALL=("apt-get -y install" "apt-get -y install" "yum -y install" "yum -y install" "yum -y install" "pacman -Sy --noconfirm --needed")
 PACKAGE_REMOVE=("apt-get -y remove" "apt-get -y remove" "yum -y remove" "yum -y remove" "yum -y remove" "pacman -Rsc --noconfirm")
 PACKAGE_UNINSTALL=("apt-get -y autoremove" "apt-get -y autoremove" "yum -y autoremove" "yum -y autoremove" "yum -y autoremove" "'pacman -Rs --noconfirm $(pacman -Qdtq)'")
-CMD=("$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(hostnamectl 2>/dev/null | grep -i system | cut -d : -f2)" "$(lsb_release -sd 2>/dev/null)" "$(grep -i description /etc/lsb-release 2>/dev/null | cut -d \" -f2)" "$(grep . /etc/redhat-release 2>/dev/null)" "$(grep . /etc/issue 2>/dev/null | cut -d \\ -f1 | sed '/^[ ]*$/d')") 
+CMD=("$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(hostnamectl 2>/dev/null | grep -i system | cut -d : -f2)" "$(lsb_release -sd 2>/dev/null)" "$(grep -i description /etc/lsb-release 2>/dev/null | cut -d \" -f2)" "$(grep . /etc/redhat-release 2>/dev/null)" "$(grep . /etc/issue 2>/dev/null | cut -d \\ -f1 | sed '/^[ ]*$/d')" "$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)") 
 SYS="${CMD[0]}"
 [[ -n $SYS ]] || exit 1
 for ((int = 0; int < ${#REGEX[@]}; int++)); do
@@ -145,7 +145,7 @@ Function_CheckTracemode() {
 Check_Virtwhat() {
     if [ ! -f "/usr/sbin/virt-what" ]; then
         SystemInfo_GetOSRelease
-        if [[ "${Var_OSRelease}" =~ ^(centos|rhel|almalinux)$ ]]; then
+        if [[ "${Var_OSRelease}" =~ ^(centos|rhel|almalinux|arch)$ ]]; then
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             yum -y install virt-what
         elif [[ "${Var_OSRelease}" =~ ^(ubuntu|debian)$ ]]; then
@@ -160,6 +160,9 @@ Check_Virtwhat() {
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             apk update
             apk add virt-what
+        elif [ "${Var_OSRelease}" = "arch" ]; then
+            echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
+            pacman -Sy --needed --noconfirm virt-what
         else
             echo -e "${Msg_Warning}Virt-What Module not found, but we could not find the os's release ..."
         fi
@@ -214,6 +217,8 @@ Check_JSONQuery() {
         elif [ "${Var_OSRelease}" = "alpinelinux" ]; then
             apk update
             apk add jq
+        elif [ "${Var_OSRelease}" = "arch" ]; then
+            pacman -Sy --needed --noconfirm jq
         else
             apk update
             apk add wget unzip curl
@@ -265,9 +270,24 @@ checkupdate(){
 }
 
 checkpython() {
-    ! type -p python3 >/dev/null 2>&1 && yellow "Install python3" && ${PACKAGE_INSTALL[int]} python3 
-    ! type -p pip3 install requests >/dev/null 2>&1 && yellow "Install pip3" && ${PACKAGE_INSTALL[int]} python3-pip
-    pip3 install requests
+	if  [ ! -e '/usr/bin/python3' ]; then
+            yellow "Installing python3"
+	            if [ "${release}" == "arch" ]; then
+	                    pacman -S --noconfirm --needed python > /dev/null 2>$1 
+                    else
+	                    ${PACKAGE_INSTALL[int]} python3 > /dev/null 2>&1
+	                fi
+    fi
+	if  [ ! -e '/usr/bin/python3-pip' ]; then
+            yellow "Installing python3-pip"
+	            if [ "${release}" == "arch" ]; then
+	                    pacman -S --noconfirm --needed python-pip > /dev/null 2>&1
+                        pip3 install requests > /dev/null 2>&1
+                    else
+	                    ${PACKAGE_INSTALL[int]} python3-pip > /dev/null 2>&1
+                        pip3 install requests > /dev/null 2>&1
+	                fi
+    fi
     sleep 0.5
 }
 
@@ -283,7 +303,7 @@ checkdnsutils() {
 	                    yum -y install dnsutils > /dev/null 2>&1
                         yum -y install bind-utils > /dev/null 2>&1
 	                elif [ "${release}" == "arch" ]; then
-                        pacman -S --noconfirm --needed bind > /dev/null 2>$1
+                        pacman -S --noconfirm --needed bind > /dev/null 2>&1
                     else
 	                    ${PACKAGE_INSTALL[int]} dnsutils > /dev/null 2>&1
 	                fi
@@ -452,10 +472,10 @@ SystemInfo_GetOSRelease() {
         local Var_OSReleaseVersion="$(cat /etc/almalinux-release | awk '{print $3,$4,$5,$6,$7}')"
         local Var_OSReleaseArch="$(arch)"
         LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
-    elif [ -f "/etc/lsb-release" ]; then # archlinux
+    elif [ -f "/etc/arch-release" ]; then # archlinux
         Var_OSRelease="arch"
         local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3}')"
-        local Var_OSReleaseArch="$(arch)"
+        local Var_OSReleaseArch="$(uname -m)"
         LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName ($Var_OSReleaseArch)" # 滚动发行版 不存在版本号
     else
         Var_OSRelease="unknown" # 未知系统分支
@@ -504,9 +524,9 @@ InstallSysbench() {
         echo -e "${Msg_Warning}Sysbench Module Install Failed!"
       fi ;;
     fedora) dnf -y install sysbench ;;
+    arch) pacman -S --needed --noconfirm sysbench ;;
     alpinelinux) echo -e "${Msg_Warning}Sysbench Module not found, installing ..." && echo -e "${Msg_Warning}SysBench Current not support Alpine Linux, Skipping..." && Var_Skip_SysBench="1" ;;
     *) echo "Error: Unknown OS release: $os_release" && exit 1 ;;
-    arch) pacman -S --needed --noconfirm sysbench ;;
   esac
 }
 
@@ -563,7 +583,7 @@ prepare_compile_env() {
     elif [ "${system}" = "fedora" ]; then
         dnf install -y wget curl gcc gcc-c++ make automake libtool pkgconfig libaio-devel
     elif [ "${system}" = "arch" ]; then
-        pacman -S --needed --noconfirm wget curl gcc gcc make automake libtool pkgconfig libaio
+        pacman -S --needed --noconfirm wget curl gcc gcc make automake libtool pkgconfig libaio lib32-libaio
     else
         echo -e "${Msg_Warning}Unsupported operating system: ${system}"
     fi
@@ -882,7 +902,7 @@ Run_DiskTest_DD() {
     sleep 1
     # 正式写测试
     dd if=/dev/zero of=/.tmp_LBench/DiskTest/$1 bs=$2 count=$3 oflag=direct 2>${Var_DiskTestResultFile}
-    local DiskTest_WriteSpeed_ResultRAW="$(cat ${Var_DiskTestResultFile} | grep -oE "[0-9]{1,4} kB\/s|[0-9]{1,4}.[0-9]{1,2} kB\/s|[0-9]{1,4} KB\/s|[0-9]{1,4}.[0-9]{1,2} KB\/s|[0-9]{1,4} MB\/s|[0-9]{1,4}.[0-9]{1,2} MB\/s|[0-9]{1,4} GB\/s|[0-9]{1,4}.[0-9]{1,2} GB\/s|[0-9]{1,4} TB\/s|[0-9]{1,4}.[0-9]{1,2} TB\/s|[0-9]{1,4} kB\/秒|[0-9]{1,4}.[0-9]{1,2} kB\/秒|[0-9]{1,4} KB\/秒|[0-9]{1,4}.[0-9]{1,2} KB\/秒|[0-9]{1,4} MB\/秒|[0-9]{1,4}.[0-9]{1,2} MB\/秒|[0-9]{1,4} GB\/秒|[0-9]{1,4}.[0-9]{1,2} GB\/秒|[0-9]{1,4} TB\/秒|[0-9]{1,4}.[0-9]{1,2} TB\/秒")"
+    local DiskTest_WriteSpeed_ResultRAW="$(cat ${Var_DiskTestResultFile} | grep -oE "[0-9]{1,4} kB/s|[0-9]{1,4}.[0-9]{1,2} kB/s|[0-9]{1,4} KB/s|[0-9]{1,4}.[0-9]{1,2} KB/s|[0-9]{1,4} MB/s|[0-9]{1,4}.[0-9]{1,2} MB/s|[0-9]{1,4} GB/s|[0-9]{1,4}.[0-9]{1,2} GB/s|[0-9]{1,4} TB/s|[0-9]{1,4}.[0-9]{1,2} TB/s|[0-9]{1,4} kB/秒|[0-9]{1,4}.[0-9]{1,2} kB/秒|[0-9]{1,4} KB/秒|[0-9]{1,4}.[0-9]{1,2} KB/秒|[0-9]{1,4} MB/秒|[0-9]{1,4}.[0-9]{1,2} MB/秒|[0-9]{1,4} GB/秒|[0-9]{1,4}.[0-9]{1,2} GB/秒|[0-9]{1,4} TB/秒|[0-9]{1,4}.[0-9]{1,2} TB/秒")"
     DiskTest_WriteSpeed="$(echo "${DiskTest_WriteSpeed_ResultRAW}" | sed "s/秒/s/")"
     local DiskTest_WriteTime_ResultRAW="$(cat ${Var_DiskTestResultFile} | grep -oE "[0-9]{1,}.[0-9]{1,} s|[0-9]{1,}.[0-9]{1,} s|[0-9]{1,}.[0-9]{1,} 秒|[0-9]{1,}.[0-9]{1,} 秒")"
     DiskTest_WriteTime="$(echo ${DiskTest_WriteTime_ResultRAW} | awk '{print $1}')"
@@ -906,7 +926,7 @@ Run_DiskTest_DD() {
     sleep 0.5
     # 正式读测试
     dd if=/.tmp_LBench/DiskTest/$1 of=/dev/null bs=$2 count=$3 iflag=direct 2>${Var_DiskTestResultFile}
-    local DiskTest_ReadSpeed_ResultRAW="$(cat ${Var_DiskTestResultFile} | grep -oE "[0-9]{1,4} kB\/s|[0-9]{1,4}.[0-9]{1,2} kB\/s|[0-9]{1,4} KB\/s|[0-9]{1,4}.[0-9]{1,2} KB\/s|[0-9]{1,4} MB\/s|[0-9]{1,4}.[0-9]{1,2} MB\/s|[0-9]{1,4} GB\/s|[0-9]{1,4}.[0-9]{1,2} GB\/s|[0-9]{1,4} TB\/s|[0-9]{1,4}.[0-9]{1,2} TB\/s|[0-9]{1,4} kB\/秒|[0-9]{1,4}.[0-9]{1,2} kB\/秒|[0-9]{1,4} KB\/秒|[0-9]{1,4}.[0-9]{1,2} KB\/秒|[0-9]{1,4} MB\/秒|[0-9]{1,4}.[0-9]{1,2} MB\/秒|[0-9]{1,4} GB\/秒|[0-9]{1,4}.[0-9]{1,2} GB\/秒|[0-9]{1,4} TB\/秒|[0-9]{1,4}.[0-9]{1,2} TB\/秒")"
+    local DiskTest_ReadSpeed_ResultRAW="$(cat ${Var_DiskTestResultFile} | grep -oE "[0-9]{1,4} kB/s|[0-9]{1,4}.[0-9]{1,2} kB/s|[0-9]{1,4} KB/s|[0-9]{1,4}.[0-9]{1,2} KB/s|[0-9]{1,4} MB/s|[0-9]{1,4}.[0-9]{1,2} MB/s|[0-9]{1,4} GB/s|[0-9]{1,4}.[0-9]{1,2} GB/s|[0-9]{1,4} TB/s|[0-9]{1,4}.[0-9]{1,2} TB/s|[0-9]{1,4} kB/秒|[0-9]{1,4}.[0-9]{1,2} kB/秒|[0-9]{1,4} KB/秒|[0-9]{1,4}.[0-9]{1,2} KB/秒|[0-9]{1,4} MB/秒|[0-9]{1,4}.[0-9]{1,2} MB/秒|[0-9]{1,4} GB/秒|[0-9]{1,4}.[0-9]{1,2} GB/秒|[0-9]{1,4} TB/秒|[0-9]{1,4}.[0-9]{1,2} TB/秒")"
     DiskTest_ReadSpeed="$(echo "${DiskTest_ReadSpeed_ResultRAW}" | sed "s/s/s/")"
     local DiskTest_ReadTime_ResultRAW="$(cat ${Var_DiskTestResultFile} | grep -oE "[0-9]{1,}.[0-9]{1,} s|[0-9]{1,}.[0-9]{1,} s|[0-9]{1,}.[0-9]{1,} 秒|[0-9]{1,}.[0-9]{1,} 秒")"
     DiskTest_ReadTime="$(echo ${DiskTest_ReadTime_ResultRAW} | awk '{print $1}')"
@@ -968,8 +988,8 @@ Run_SysBench_Memory() {
         else
             local MiB_Flag="0"
         fi
-        local TestScore="$(echo "${TestResult}" | grep -oE "[0-9]{1,}.[0-9]{1,2} ops\/sec|[0-9]{1,}.[0-9]{1,2} per second" | grep -oE "[0-9]{1,}.[0-9]{1,2}")"
-        local TestSpeed="$(echo "${TestResult}" | grep -oE "[0-9]{1,}.[0-9]{1,2} MB\/sec|[0-9]{1,}.[0-9]{1,2} MiB\/sec" | grep -oE "[0-9]{1,}.[0-9]{1,2}")"
+        local TestScore="$(echo "${TestResult}" | grep -oE "[0-9]{1,}.[0-9]{1,2} ops/sec|[0-9]{1,}.[0-9]{1,2} per second" | grep -oE "[0-9]{1,}.[0-9]{1,2}")"
+        local TestSpeed="$(echo "${TestResult}" | grep -oE "[0-9]{1,}.[0-9]{1,2} MB/sec|[0-9]{1,}.[0-9]{1,2} MiB/sec" | grep -oE "[0-9]{1,}.[0-9]{1,2}")"
         local TotalScore="$(echo "${TotalScore} ${TestScore}" | awk '{printf "%.2f",$1+$2}')"
         local TotalSpeed="$(echo "${TotalSpeed} ${TestSpeed}" | awk '{printf "%.2f",$1+$2}')"
         let count=count+1
@@ -1549,7 +1569,7 @@ fscarmen_route_g_script(){
     WAN_6=$(expr "$IP_6" : '.*ip\":[ ]*\"\([^"]*\).*') &&
     ASNORG_6=$(expr "$IP_6" : '.*isp\":[ ]*\"\([^"]*\).*') &&
     _blue " IPv6 ASN: $ASNORG_6" >> $TEMP_FILE
-    local ARCHITECTURE="$(arch)"
+    local ARCHITECTURE="$(uname -m)"
       case $ARCHITECTURE in
         x86_64 )  local FILE=besttrace;;
         aarch64 ) local FILE=besttracearm;;
