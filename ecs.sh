@@ -1558,7 +1558,7 @@ backtrace_script(){
     curl -k "${cdn_success_url}https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh" -sSf | sh
 }
 
-fscarmen_route_g_script(){
+fscarmen_route_script(){
     echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
     rm -f $TEMP_FILE
     IP_4=$(curl -ks4m8 -A Mozilla https://api.ip.sb/geoip) &&
@@ -1570,74 +1570,19 @@ fscarmen_route_g_script(){
     ASNORG_6=$(expr "$IP_6" : '.*isp\":[ ]*\"\([^"]*\).*') &&
     _blue " IPv6 ASN: $ASNORG_6" >> $TEMP_FILE
     local ARCHITECTURE="$(uname -m)"
-      case $ARCHITECTURE in
+        case $ARCHITECTURE in
         x86_64 )  local FILE=besttrace;;
         aarch64 ) local FILE=besttracearm;;
         i386 )    local FILE=besttracemac;;
         * ) red " 只支持 AMD64、ARM64、Mac 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && return;;
-      esac
+        esac
     curl -s -L -k "${cdn_success_url}https://github.com/fscarmen/tools/raw/main/besttrace/${FILE}" -o $FILE && chmod +x $FILE &>/dev/null
     _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
-    for ((a=0;a<${#test_area_g[@]};a++)); do
-    _yellow "${test_area_g[a]} ${test_ip_g[a]}" >> $TEMP_FILE
-    ./"$FILE" "${test_ip_g[a]}" -g cn | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
-    done
-    cat $TEMP_FILE
-    rm -f $TEMP_FILE
-}
-
-fscarmen_route_s_script(){
-    echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
-    rm -f $TEMP_FILE
-    IP_4=$(curl -ks4m8 -A Mozilla https://api.ip.sb/geoip) &&
-    WAN_4=$(expr "$IP_4" : '.*ip\":[ ]*\"\([^"]*\).*') &&
-    ASNORG_4=$(expr "$IP_4" : '.*isp\":[ ]*\"\([^"]*\).*') &&
-    _blue " IPv4 ASN: $ASNORG_4" >> $TEMP_FILE
-    IP_6=$(curl -ks6m8 -A Mozilla https://api.ip.sb/geoip) &&
-    WAN_6=$(expr "$IP_6" : '.*ip\":[ ]*\"\([^"]*\).*') &&
-    ASNORG_6=$(expr "$IP_6" : '.*isp\":[ ]*\"\([^"]*\).*') &&
-    _blue " IPv6 ASN: $ASNORG_6" >> $TEMP_FILE
-    local ARCHITECTURE="$(arch)"
-      case $ARCHITECTURE in
-        x86_64 )  local FILE=besttrace;;
-        aarch64 ) local FILE=besttracearm;;
-        i386 )    local FILE=besttracemac;;
-        * ) red " 只支持 AMD64、ARM64、Mac 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && return;;
-      esac
-    _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
-    curl -s -L -k "${cdn_success_url}https://github.com/fscarmen/tools/raw/main/besttrace/${FILE}" -o $FILE && chmod +x $FILE &>/dev/null
-    for ((a=0;a<${#test_area_s[@]};a++)); do
-    _yellow "${test_area_s[a]} ${test_ip_g[a]}" >> $TEMP_FILE
-    ./"$FILE" "${test_ip_s[a]}" -g cn | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
-    done
-    cat $TEMP_FILE
-    rm -f $TEMP_FILE
-}
-
-fscarmen_route_b_script(){
-    echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
-    rm -f $TEMP_FILE
-    IP_4=$(curl -ks4m8 -A Mozilla https://api.ip.sb/geoip) &&
-    WAN_4=$(expr "$IP_4" : '.*ip\":[ ]*\"\([^"]*\).*') &&
-    ASNORG_4=$(expr "$IP_4" : '.*isp\":[ ]*\"\([^"]*\).*') &&
-    _blue " IPv4 ASN: $ASNORG_4" >> $TEMP_FILE
-    IP_6=$(curl -ks6m8 -A Mozilla https://api.ip.sb/geoip) &&
-    WAN_6=$(expr "$IP_6" : '.*ip\":[ ]*\"\([^"]*\).*') &&
-    ASNORG_6=$(expr "$IP_6" : '.*isp\":[ ]*\"\([^"]*\).*') &&
-    _blue " IPv6 \t ASN: $ASNORG_6" >> $TEMP_FILE
-    local ARCHITECTURE="$(arch)"
-      case $ARCHITECTURE in
-        x86_64 )  local FILE=besttrace;;
-        aarch64 ) local FILE=besttracearm;;
-        i386 )    local FILE=besttracemac;;
-        * ) red " 只支持 AMD64、ARM64、Mac 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && return;;
-      esac
-    [[ ! -e $FILE ]] && wget -q "${cdn_success_url}https://github.com/fscarmen/tools/raw/main/besttrace/${FILE}" >/dev/null 2>&1
-    chmod 777 $FILE >/dev/null 2>&1
-    _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
-    for ((a=0;a<${#test_area_b[@]};a++)); do
-    _yellow "${test_area_b[a]} ${test_ip_g[a]}" >> $TEMP_FILE
-    ./"$FILE" "${test_ip_b[a]}" -g cn | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
+    local test_area=("${!1}")
+    local test_ip=("${!2}")
+    for ((a=0;a<${#test_area[@]};a++)); do
+    _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
+    ./"$FILE" "${test_ip[a]}" -g cn | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
     done
     cat $TEMP_FILE
     rm -f $TEMP_FILE
@@ -1688,7 +1633,7 @@ all_script(){
     UnlockTiktokTest
     spiritlhl_script
     backtrace_script
-    fscarmen_route_g_script
+    fscarmen_route_script test_area_g[@] test_ip_g[@]
     # fscarmen_port_script
     superspeed_all_script
     end_script
@@ -1728,7 +1673,7 @@ minal_plus(){
     RegionRestrictionCheck_script
     UnlockTiktokTest
     backtrace_script
-    fscarmen_route_g_script
+    fscarmen_route_script test_area_g[@] test_ip_g[@]
     superspeed_minal_script
     end_script
 }
@@ -1746,7 +1691,7 @@ minal_plus_network(){
     basic_script
     io2_script
     backtrace_script
-    fscarmen_route_g_script
+    fscarmen_route_script test_area_g[@] test_ip_g[@]
     superspeed_minal_script
     end_script
 }
@@ -1782,7 +1727,7 @@ network_script(){
     print_intro
     spiritlhl_script
     backtrace_script
-    fscarmen_route_g_script
+    fscarmen_route_script test_area_g[@] test_ip_g[@]
     # fscarmen_port_script
     superspeed_all_script
     end_script
@@ -1844,7 +1789,7 @@ sw_script(){
     clear
     print_intro
     backtrace_script
-    fscarmen_route_g_script
+    fscarmen_route_script test_area_g[@] test_ip_g[@]
     end_script
 }
 
@@ -1853,7 +1798,7 @@ network_g_script(){
     start_time=$(date +%s)
     clear
     print_intro
-    fscarmen_route_g_script
+    fscarmen_route_script test_area_g[@] test_ip_g[@]
     end_script
 }
 
@@ -1862,7 +1807,7 @@ network_s_script(){
     start_time=$(date +%s)
     clear
     print_intro
-    fscarmen_route_s_script
+    fscarmen_route_script test_area_s[@] test_ip_s[@]
     end_script
 }
 
@@ -1871,7 +1816,7 @@ network_b_script(){
     start_time=$(date +%s)
     clear
     print_intro
-    fscarmen_route_b_script
+    fscarmen_route_script test_area_b[@] test_ip_b[@]
     end_script
 }
 
