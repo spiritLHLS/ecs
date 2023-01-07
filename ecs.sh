@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.01.06"
+ver="2023.01.07"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1544,14 +1544,10 @@ fscarmen_route_g_script(){
     IP_4=$(curl -s4m5 api.ipify.org) &&
     WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
     ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
-    PE_4=$(curl -sm5 ping.pe/$WAN_4) &&
-    COOKIE_4=$(echo $PE_4 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
     _blue " IPv4 ASN: $ASNORG_4" >> $TEMP_FILE
     IP_6=$(curl -s6m5 https://api.ipify.org) &&
     WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
     ASNORG_6=$(expr "$IP_6" : '.*asn_org\":\"\([^"]*\).*') &&
-    PE_6=$(curl -sm5 ping6.ping.pe/$WAN_6) &&
-    COOKIE_6=$(echo $PE_6 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
     _blue " IPv6 ASN: $ASNORG_6" >> $TEMP_FILE
     local ARCHITECTURE="$(arch)"
       case $ARCHITECTURE in
@@ -1576,14 +1572,10 @@ fscarmen_route_s_script(){
     IP_4=$(curl -s4m5 https://api.ipify.org) &&
     WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
     ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
-    PE_4=$(curl -sm5 ping.pe/$WAN_4) &&
-    COOKIE_4=$(echo $PE_4 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
     _blue " IPv4 ASN: $ASNORG_4" >> $TEMP_FILE
     IP_6=$(curl -s6m5 https://api.ipify.org) &&
     WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
     ASNORG_6=$(expr "$IP_6" : '.*asn_org\":\"\([^"]*\).*') &&
-    PE_6=$(curl -sm5 ping6.ping.pe/$WAN_6) &&
-    COOKIE_6=$(echo $PE_6 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
     _blue " IPv6 ASN: $ASNORG_6" >> $TEMP_FILE
     local ARCHITECTURE="$(arch)"
       case $ARCHITECTURE in
@@ -1608,17 +1600,11 @@ fscarmen_route_b_script(){
     IP_4=$(curl -s4m5 https://api.ipify.org) &&
     WAN_4=$(expr "$IP_4" : '.*ip\":\"\([^"]*\).*') &&
     ASNORG_4=$(expr "$IP_4" : '.*asn_org\":\"\([^"]*\).*') &&
-    PE_4=$(curl -sm5 ping.pe/$WAN_4) &&
-    COOKIE_4=$(echo $PE_4 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
-    TYPE_4=$(curl -sm5 --header "cookie: $COOKIE_4" ping.pe/$WAN_4 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g;s/cellular/蜂窝网络/g;s/business/商业带宽/g;s#</b>##g") &&
-    _blue " IPv4 宽带类型: $TYPE_4\t ASN: $ASNORG_4" >> $TEMP_FILE
+    _blue " IPv4 ASN: $ASNORG_4" >> $TEMP_FILE
     IP_6=$(curl -s6m5 https://api.ipify.org) &&
     WAN_6=$(expr "$IP_6" : '.*ip\":\"\([^"]*\).*') &&
     ASNORG_6=$(expr "$IP_6" : '.*asn_org\":\"\([^"]*\).*') &&
-    PE_6=$(curl -sm5 ping6.ping.pe/$WAN_6) &&
-    COOKIE_6=$(echo $PE_6 | sed "s/.*document.cookie=\"\([^;]\{1,\}\).*/\1/g") &&
-    TYPE_6=$(curl -sm5 --header "cookie: $COOKIE_6" ping6.ping.pe/$WAN_6 | grep "id='page-div'" | sed "s/.*\[\(.*\)\].*/\1/g" | sed "s/.*orange'>\([^<]\{1,\}\).*/\1/g" | sed "s/hosting/数据中心/g;s/residential/家庭宽带/g;s/cellular/蜂窝网络/g;s/business/商业带宽/g;s#</b>##g") &&
-    _blue " IPv6 宽带类型: $TYPE_6\t ASN: $ASNORG_6" >> $TEMP_FILE
+    _blue " IPv6 \t ASN: $ASNORG_6" >> $TEMP_FILE
     local ARCHITECTURE="$(arch)"
       case $ARCHITECTURE in
         x86_64 )  local FILE=besttrace;;
