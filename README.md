@@ -46,7 +46,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 更新
 
-2023.01.07 删除部分无效代码，三网回程路由优化使用ip.sb进行IP检测与ASN检测，再度缩减优化代码减少代码行数，merge了一个push以支持arch系统测试
+2023.01.07 删除部分无效代码，三网回程路由优化使用ip.sb进行IP检测与ASN检测，再度优化缩减代码行数，merge了一个push以支持arch系统测试
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
