@@ -54,25 +54,25 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 功能
 
-- [x] 自由组合测试方面和单项测试--原创
-- [x] 基础系统信息--感谢teddysun和misakabench和yabs开源，本人修改整理
-- [x] CPU测试--感谢lemonbench开源
+- [x] 自由组合测试方向和单项测试以及合集收录第三方脚本--原创
+- [x] 基础系统信息--感谢teddysun和superbench和yabs开源，本人修改整理优化
+- [x] CPU测试--感谢lemonbench开源，本人修改整理优化
 - [x] 内存测试--感谢lemonbench开源
-- [x] 磁盘IO读写测试--感谢lemonbench开源
-- [x] 硬盘IO读写测试--感谢yabs开源
-- [x] 御三家流媒体解锁--感谢sjlleo的二进制文件
-- [x] 常用流媒体解锁--感谢RegionRestrictionCheck开源
-- [x] Tiktok解锁--感谢superbench的开源
+- [x] 磁盘IO读写测试--感谢lemonbench开源，本人修改整理优化
+- [x] 硬盘IO读写测试--感谢yabs开源，本人修改整理优化
+- [x] 御三家流媒体解锁--感谢sjlleo的二进制文件，本人修改整理优化
+- [x] 常用流媒体解锁--感谢RegionRestrictionCheck开源，本人修改整理优化
+- [x] Tiktok解锁--感谢superbench的开源，本人修改整理优化
 - [x] 三网回程以及路由延迟--感谢zhanghanyun/backtrace开源
-- [x] 回程路由以及带宽类型检测(商宽/家宽/数据中心)--由fscarmen的PR以及本人的技术思路提供
-- [x] 端口检测(检测是否被墙)--由fscarmen的PR以及本人的技术思路提供
+- [x] 回程路由以及带宽类型检测(商宽/家宽/数据中心)--由fscarmen的PR以及本人的技术思路提供，本人修改整理优化
+- [ ] 端口检测(检测是否被墙)--由fscarmen的PR以及本人的技术思路提供 - 待修复
 - [x] IP质量检测(检测IP白不白)(含IPV4和IPV6)--本人独创，感谢互联网提供的查询资源
 - [x] speedtest测速--由teddysun和superspeed的开源以及个人整理
-- [x] 全国网络延迟测试--感谢IPASN开源
+- [x] 全国网络延迟测试--感谢IPASN开源，本人修改整理优化
 
 # 测评频道
 
-# https://t.me/vps_reviews
+## https://t.me/vps_reviews
 
 # 脚本概况
 
@@ -84,6 +84,6 @@ https://github.com/spiritLHLS/one-click-installation-script
 ![](https://github.com/spiritLHLS/ecs/raw/main/page/6.png)
 ![](https://github.com/spiritLHLS/ecs/raw/main/page/7.png)
 
-原创区选项
+本作者原创区选项
 
 ![](https://github.com/spiritLHLS/ecs/raw/main/page/yuanchuang.png)
