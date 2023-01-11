@@ -1163,9 +1163,13 @@ get_system_info() {
             :
         else
             if lsmod | grep bbr > /dev/null; then
-                echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
-                echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
-                $sysctl_path -p
+                reading "是否要开启bbr再进行测试？(回车则默认不开启) [y/n] " confirmbbr
+                echo ""
+                if [ "$confirmbbr" != "y" ]; then
+                    echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
+                    echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
+                    $sysctl_path -p
+                fi
                 tcpctrl=$($sysctl_path -n net.ipv4.tcp_congestion_control 2> /dev/null)
                 if [ $? -ne 0 ]; then
                     tcpctrl="None"
