@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.01.07"
+ver="2023.01.08"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -18,9 +18,6 @@ RED="\033[31m"
 GREEN="\033[32m"
 YELLOW="\033[33m"
 PLAIN="\033[0m"
-red(){ echo -e "\033[31m\033[01m$1$2\033[0m"; }
-green(){ echo -e "\033[32m\033[01m$1$2\033[0m"; }
-yellow(){ echo -e "\033[33m\033[01m$1$2\033[0m"; }
 _red() { echo -e "\033[31m\033[01m$@\033[0m"; }
 _green() { echo -e "\033[32m\033[01m$@\033[0m"; }
 _yellow() { echo -e "\033[33m\033[01m$@\033[0m"; }
@@ -57,15 +54,16 @@ check_cdn() {
 check_cdn_file() {
     check_cdn "https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test"
     if [ -n "$cdn_success_url" ]; then
-        yellow "CDN available, using CDN"
+        _yellow "CDN available, using CDN"
     else
-        yellow "No CDN available, no use CDN"
+        _yellow "No CDN available, no use CDN"
     fi
 }
 
 # Trap终止信号捕获
 _exit() {
     echo -e "\n\n${Msg_Error}Exiting ...\n"
+    _red "\n检测到退出操作，脚本终止！\n"
     Global_Exit_Action
     rm_script
     exit 1
@@ -110,13 +108,6 @@ _exists() {
     fi
     local rt=$?
     return ${rt}
-}
-
-_exit() {
-    _red "\n检测到退出操作，脚本终止！\n"
-    # clean up
-    rm -fr speedtest.tgz speedtest-cli benchtest_*
-    exit 1
 }
 
 get_opsy() {
@@ -264,14 +255,14 @@ checksystem() {
 }
 
 checkupdate(){
-	    yellow "Updating package management sources"
+	    _yellow "Updating package management sources"
 		${PACKAGE_UPDATE[int]} > /dev/null 2>&1
         ${PACKAGE_INSTALL[int]} dmidecode > /dev/null 2>&1
 }
 
 checkpython() {
 	if  [ ! -e '/usr/bin/python3' ]; then
-            yellow "Installing python3"
+            _yellow "Installing python3"
 	            if [ "${release}" == "arch" ]; then
 	                    pacman -S --noconfirm --needed python > /dev/null 2>&1 
                     else
@@ -279,7 +270,7 @@ checkpython() {
 	                fi
     fi
 	if  [ ! -e '/usr/bin/python3-pip' ]; then
-            yellow "Installing python3-pip"
+            _yellow "Installing python3-pip"
 	            if [ "${release}" == "arch" ]; then
 	                    pacman -S --noconfirm --needed python-pip > /dev/null 2>&1
                         pip3 install requests > /dev/null 2>&1
@@ -298,7 +289,7 @@ checkmagic(){
 
 checkdnsutils() {
 	if  [ ! -e '/usr/bin/dnsutils' ]; then
-            yellow "Installing dnsutils"
+            _yellow "Installing dnsutils"
 	            if [ "${release}" == "centos" ]; then
 	                    yum -y install dnsutils > /dev/null 2>&1
                         yum -y install bind-utils > /dev/null 2>&1
@@ -313,14 +304,14 @@ checkdnsutils() {
 
 checkcurl() {
 	if  [ ! -e '/usr/bin/curl' ]; then
-            yellow "Installing curl"
+            _yellow "Installing curl"
 	        ${PACKAGE_INSTALL[int]} curl > /dev/null 2>&1
 	fi
 }
 
 checkwget() {
 	if  [ ! -e '/usr/bin/wget' ]; then
-            yellow "Installing wget"
+            _yellow "Installing wget"
 	        ${PACKAGE_INSTALL[int]} wget > /dev/null 2>&1
 	fi
 }
@@ -346,7 +337,7 @@ checkssh() {
 
 checkspeedtest() {
 	if  [ ! -e './speedtest-cli/speedtest' ]; then
-        yellow "Installing Speedtest-cli"
+        _yellow "Installing Speedtest-cli"
                 arch=$(uname -m)
                 if [ "${arch}" == "i686" ]; then
                     arch="i386"
@@ -854,7 +845,7 @@ speed_test2() {
 
 speed() {
     # https://raw.githubusercontent.com/zq/superspeed/master/superspeed.sh
-    speed_test2 '' 'Speedtest.net' # 为了美观浅改一下（x
+    speed_test2 '' 'Speedtest.net'
     speed_test '21541' '洛杉矶\t'
     speed_test '13623' '新加坡\t'
     speed_test '44988' '日本东京'
@@ -952,8 +943,6 @@ Function_DiskTest_Fast() {
     echo -e " Test Name\t\tWrite Speed\t\t\t\tRead Speed" >>${WorkDir}/DiskTest/result.txt
     Run_DiskTest_DD "100MB.test" "4k" "25600" "100MB-4K Block"
     Run_DiskTest_DD "1GB.test" "1M" "1000" "1GB-1M Block"
-    # 执行完成, 标记FLAG
-    LBench_Flag_FinishDiskTestFast="1"
     sleep 0.5
 }
 
@@ -1162,17 +1151,25 @@ get_system_info() {
     disk_size2=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|snapd' | awk '{print $3}' ))
     disk_total_size=$( calc_disk "${disk_size1[@]}" )
     disk_used_size=$( calc_disk "${disk_size2[@]}" )
-    if [ ! -f /proc/sys/net/ipv4/tcp_congestion_control ]; then
-        echo "未设置TCP拥塞控制算法"
+    sysctl_path=$(which sysctl)
+    if [ -z "$sysctl_path" ]; then
+        tcpctrl="None"
+    fi
+    tcpctrl=$($sysctl_path -n net.ipv4.tcp_congestion_control 2> /dev/null)
+    if [ $? -ne 0 ]; then
+        tcpctrl="未设置TCP拥塞控制算法"
     else
-        if [ -f "/usr/sbin/sysctl" ]; then
-            tcpctrl=$( /usr/sbin/sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )
-        elif [ -f "/sbin/sysctl" ]; then
-            tcpctrl=$( /sbin/sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )
+        if [ $tcpctrl == "bbr" ]; then
+            :
         else
-            tcpctrl=$( sysctl net.ipv4.tcp_congestion_control 2> /dev/null | awk -F ' ' '{print $3}' )
-            if [ $? -ne 0 ]; then
-                tcpctrl="None"
+            if lsmod | grep bbr > /dev/null; then
+                echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
+                echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
+                $sysctl_path -p
+                tcpctrl=$($sysctl_path -n net.ipv4.tcp_congestion_control 2> /dev/null)
+                if [ $? -ne 0 ]; then
+                    tcpctrl="None"
+                fi
             fi
         fi
     fi
@@ -1343,85 +1340,6 @@ print_end_time() {
     echo " 时间          : $date_time"
 }
 
-geekbench() {
-    cd /root >/dev/null 2>&1
-    echo -e "----------------Geekbenh得分--感谢supeerbench的开源--------------------"
-	echo -e " Geekbench v${GeekbenchVer} Test    :" | tee -a $log
-	if test -f "geekbench.license"; then
-		./geekbench/geekbench$GeekbenchVer --unlock `cat geekbench.license` > /dev/null 2>&1
-	fi
-	GEEKBENCH_TEST=$(./geekbench/geekbench$GeekbenchVer --upload 2>/dev/null | grep "https://browser")
-	if [[ -z "$GEEKBENCH_TEST" ]]; then
-		echo -e " ${RED}Geekbench v${GeekbenchVer} test failed. Run manually to determine cause.${PLAIN}" | tee -a $log
-		GEEKBENCH_URL=''
-		if [[ $GeekbenchVer == *5* && $ARCH != *aarch64* && $ARCH != *arm* ]]; then
-			rm -rf geekbench
-			download_geekbench4;
-			echo -n -e "\r" | tee -a $log
-			GeekbenchVer=4;
-			geekbench;
-		fi
-	else
-		GEEKBENCH_URL=$(echo -e $GEEKBENCH_TEST | head -1)
-		GEEKBENCH_URL_CLAIM=$(echo $GEEKBENCH_URL | awk '{ print $2 }')
-		GEEKBENCH_URL=$(echo $GEEKBENCH_URL | awk '{ print $1 }')
-		sleep 20
-		[[ $GeekbenchVer == *5* ]] && GEEKBENCH_SCORES=$(curl -s $GEEKBENCH_URL | grep "div class='score'") || GEEKBENCH_SCORES=$(curl -s $GEEKBENCH_URL | grep "span class='score'")
-		GEEKBENCH_SCORES_SINGLE=$(echo $GEEKBENCH_SCORES | awk -v FS="(>|<)" '{ print $3 }')
-		GEEKBENCH_SCORES_MULTI=$(echo $GEEKBENCH_SCORES | awk -v FS="(>|<)" '{ print $7 }')
-		echo -e "       Single Core    : ${YELLOW}$GEEKBENCH_SCORES_SINGLE  $grank${PLAIN}"  | tee -a $log
-		echo -e "        Multi Core    : ${YELLOW}$GEEKBENCH_SCORES_MULTI${PLAIN}" | tee -a $log
-		[ ! -z "$GEEKBENCH_URL_CLAIM" ] && echo -e "$GEEKBENCH_URL_CLAIM" >> geekbench_claim.url 2> /dev/null
-	fi
-	rm -rf geekbench
-}
-
-download_geekbench4(){
-	if [[ ! -d ./geekbench ]]; then
-		mkdir geekbench
-	fi
-	if [[ ! -d ./geekbench/geekbench4 ]]; then
-		echo -n -e " Installing Geekbench 4..."
-		wget -qO- https://down.vpsaff.net/linux/geekbench/Geekbench-4.4.4-Linux.tar.gz | tar xz --strip-components=1 -C ./geekbench &>/dev/null
-	fi
-	chmod +x ./geekbench/geekbench4
-}
-
-geekbench_script(){
-    pre_check
-    SystemInfo_GetSystemBit
-    get_system_info >/dev/null 2>&1
-    cd /root >/dev/null 2>&1
-    ARCH=$(uname -m)
-    if [[ ! -e './geekbench' ]]; then
-			mkdir geekbench
-    fi
-    GeekbenchVer=5
-    if [[ $ARCH = *x86* ]]; then
-        download_geekbench4;
-        $GeekbenchVer=4
-    elif [[ $ARCH != *aarch64* && $ARCH != *arm* ]]; then
-        if [ ! -e './geekbench/geekbench5' ]; then
-            echo " Installing Geekbench 5..."
-            wget -qO- https://down.vpsaff.net/linux/geekbench/Geekbench-5.4.4-Linux.tar.gz  | tar xz --strip-components=1 -C ./geekbench &>/dev/null
-        fi
-        chmod +x ./geekbench/geekbench5
-    else
-        if [ ! -e './geekbench/geekbench5' ]; then
-            echo " Installing Geekbench 5..."
-            wget -qO- https://down.vpsaff.net/linux/geekbench/Geekbench-5.4.4-LinuxARMPreview.tar.gz  | tar xz --strip-components=1 -C ./geekbench &>/dev/null
-        fi
-        chmod +x ./geekbench/geekbench5
-    fi
-    sleep 1
-    check_virt
-    start_time=$(date +%s)
-    clear
-    print_intro
-    geekbench
-    end_script
-}
-
 python_all_script(){
     checkpython
     checkmagic
@@ -1452,7 +1370,7 @@ python_gd_script(){
     python3 googlesearchcheck.py
 }
 
-cdn_urls=("https://ghproxy.com/" "https://cdn.spiritlhl.workers.dev/" "https://shrill-pond-3e81.hunsh.workers.dev/" "http://104.168.128.181:7823/" "https://gh.api.99988866.xyz/")
+cdn_urls=("https://cdn.spiritlhl.workers.dev/" "https://shrill-pond-3e81.hunsh.workers.dev/" "https://ghproxy.com/" "http://104.168.128.181:7823/" "https://gh.api.99988866.xyz/")
 
 pre_check(){
     checkupdate
@@ -1471,17 +1389,17 @@ pre_check(){
 sjlleo_script(){
     cd /root >/dev/null 2>&1
     echo "--------------------流媒体解锁--感谢sjlleo开源------------------------"
-    yellow "以下测试的解锁地区是准确的，但是不是完整解锁的判断可能有误，这方面仅作参考使用"
-    yellow "Youtube"
+    _yellow "以下测试的解锁地区是准确的，但是不是完整解锁的判断可能有误，这方面仅作参考使用"
+    _yellow "Youtube"
     ./tubecheck | sed "/@sjlleo/d"
     sleep 0.5
-    yellow "Netflix"
+    _yellow "Netflix"
     ./nf | sed "/@sjlleo/d;/^$/d"
     sleep 0.5
-    yellow "DisneyPlus"
+    _yellow "DisneyPlus"
     ./dp | sed "/@sjlleo/d"
     sleep 0.5
-    yellow "解锁Youtube，Netflix，DisneyPlus上面和下面进行比较，不同之处自行判断"
+    _yellow "解锁Youtube，Netflix，DisneyPlus上面和下面进行比较，不同之处自行判断"
 }
 
 basic_script(){
@@ -1515,9 +1433,9 @@ io2_script(){
 
 RegionRestrictionCheck_script(){
     echo -e "---------------流媒体解锁--感谢RegionRestrictionCheck开源-------------"
-    yellow " 以下为IPV4网络测试，若无IPV4网络则无输出"
+    _yellow " 以下为IPV4网络测试，若无IPV4网络则无输出"
     echo 0 | bash media_lmc_check.sh -M 4 | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
-    yellow " 以下为IPV6网络测试，若无IPV6网络则无输出"
+    _yellow " 以下为IPV6网络测试，若无IPV6网络则无输出"
     echo 0 | bash media_lmc_check.sh -M 6 | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
 }
 
@@ -1545,7 +1463,7 @@ function UnlockTiktokTest() {
 spiritlhl_script(){
     cd /root >/dev/null 2>&1
     echo -e "-----------------欺诈分数以及IP质量检测--本频道原创-------------------"
-    yellow "得分仅作参考，不代表100%准确，IP类型如果不一致请手动查询多个数据库比对"
+    _yellow "得分仅作参考，不代表100%准确，IP类型如果不一致请手动查询多个数据库比对"
     if ! python3 qzcheck_ecs.py 2> /dev/null ; then
         if ! python3 qzcheck_ecs.py 2> /dev/null ; then
             echo "执行失败，可能是Python版本过低，也可能是安装失败"
@@ -1574,7 +1492,7 @@ fscarmen_route_script(){
         x86_64 )  local FILE=besttrace;;
         aarch64 ) local FILE=besttracearm;;
         i386 )    local FILE=besttracemac;;
-        * ) red " 只支持 AMD64、ARM64、Mac 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && return;;
+        * ) _red " 只支持 AMD64、ARM64、Mac 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && return;;
         esac
     curl -s -L -k "${cdn_success_url}https://github.com/fscarmen/tools/raw/main/besttrace/${FILE}" -o $FILE && chmod +x $FILE &>/dev/null
     _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
@@ -1840,9 +1758,125 @@ rm_script(){
     rm -rf $TEMP_FILE
 }
 
+Comprehensive_test_script(){
+    head_script
+    _yellow "具备综合性测试的脚本如下"
+    echo -e "${GREEN}1.${PLAIN} superbench VPS测试脚本-基于teddysun的二开"
+    echo -e "${GREEN}2.${PLAIN} lemonbench VPS测试脚本"
+    echo -e "${GREEN}3.${PLAIN} misakabench VPS测试脚本-基于superbench的二开"
+    echo -e "${GREEN}4.${PLAIN} YABS VPS测试脚本-英文论坛常用"
+    echo -e "${GREEN}5.${PLAIN} teddysun的bench.sh VPS测试脚本"
+    echo -e "${GREEN}6.${PLAIN} Aniverse的a.sh VPS测试脚本-特殊适配独服"
+    echo -e "${GREEN}7.${PLAIN} Zbench VPS测试脚本-国内测试"
+    echo -e "${GREEN}8.${PLAIN} UnixBench VPS测试脚本-特殊适配unix系统"
+    echo " -------------"
+    echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
+    echo ""
+    read -rp "请输入选项:" StartInputc
+	case $StartInputc in
+        1) wget -qO- --no-check-certificate https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/oooldking/script/master/superbench.sh | bash ;;
+        2) curl -fsL https://ilemonra.in/LemonBenchIntl | bash -s fast ;;
+        3) bash <(curl -L -Lso- https://cdn.jsdelivr.net/gh/misaka-gh/misakabench@master/misakabench.sh) ;;
+        4) curl -sL yabs.sh | bash ;;
+        5) wget -qO- bench.sh | bash ;;
+        6) bash <(wget -qO- git.io/ceshi) ;;
+        7) wget -N --no-check-certificate https://raw.githubusercontent.com/FunctionClub/ZBench/master/ZBench-CN.sh && bash ZBench-CN.sh ;;
+        8) wget --no-check-certificate https://github.com/teddysun/across/raw/master/unixbench.sh && chmod +x unixbench.sh && ./unixbench.sh ;;
+        0) Yuanshi_script ;;
+    esac
+}
+
+Media_test_script(){
+    head_script
+    _yellow "流媒体测试相关的脚本如下"
+    echo -e "${GREEN}1.${PLAIN} sjlleo的NetFlix解锁检测脚本 "
+    echo -e "${GREEN}2.${PLAIN} sjlleo的Youtube地域信息检测脚本"
+    echo -e "${GREEN}3.${PLAIN} sjlleo的DisneyPlus解锁区域检测脚本"
+    echo -e "${GREEN}4.${PLAIN} supeerbench的TikTok解锁区域检测脚本"
+    echo -e "${GREEN}5.${PLAIN} lmc999的TikTok解锁区域检测脚本"
+    echo -e "${GREEN}6.${PLAIN} lmc999的流媒体检测脚本-综合性地域流媒体全测的"
+    echo -e "${GREEN}7.${PLAIN} nkeonkeo的流媒体检测脚本-基于上者的GO重构版本"
+    echo " -------------"
+    echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
+    echo ""
+    read -rp "请输入选项:" StartInputm
+	case $StartInputm in
+        1) wget -O nf https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 && chmod +x nf && ./nf ;;
+        2) wget -O tubecheck https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck/CDN/tubecheck_1.0beta_linux_amd64 && chmod +x tubecheck && clear && ./tubecheck ;;
+        3) wget -O dp https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 && chmod +x dp && clear && ./dp ;;
+        4) UnlockTiktokTest ;;
+        5) curl -fsL -o ./t.sh.x https://github.com/lmc999/TikTokCheck/raw/main/t.sh.x && chmod +x ./t.sh.x && ./t.sh.x && rm ./t.sh.x ;;
+        6) bash <(curl -L -s check.unlock.media) ;;
+        7) bash <(curl -Ls unlock.moe) ;;
+        0) Yuanshi_script ;;
+    esac
+}
+
+Network_test_script(){
+    head_script
+    _yellow "网络测试相关的脚本如下"
+    echo -e "${GREEN}1.${PLAIN} zhanghanyun的backtrace三网回程线路检测脚本"
+    echo -e "${GREEN}2.${PLAIN} zhucaidan的mtr_trace三网回程线路测脚本"
+    echo -e "${GREEN}3.${PLAIN} 带详情信息的besttrace回程线路测脚本"
+    echo -e "${GREEN}4.${PLAIN} 由Netflixxp维护的四网路由测试脚本"
+    echo -e "${GREEN}5.${PLAIN} 原始作者维护的superspeed的三网测速脚本"
+    echo -e "${GREEN}6.${PLAIN} 未知作者修复的superspeed的三网测速脚本"
+    echo -e "${GREEN}7.${PLAIN} 由sunpma维护的superspeed的三网测速脚本"
+    echo -e "${GREEN}8.${PLAIN} 原始版hyperspeed的三网测速脚本"
+    echo -e "${GREEN}9.${PLAIN} 特殊版hyperspeedx的三网测速脚本"
+    echo " -------------"
+    echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
+    echo ""
+    read -rp "请输入选项:" StartInputn
+	case $StartInputn in
+        1) curl https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh ;;
+        2) curl https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh|bash ;;
+        3) wget -qO- git.io/besttrace | bash ;;
+        4) wget -O jcnf.sh https://raw.githubusercontent.com/Netflixxp/jcnfbesttrace/main/jcnf.sh && bash jcnf.sh ;;
+        5) bash <(curl -L -Lso- https://git.io/superspeed.sh) ;;
+        6) bash <(curl -Lso- https://git.io/superspeed_uxh) ;;
+        7) bash <(curl -Lso- https://git.io/J1SEh) ;;
+        8) bash <(curl -L -Lso- https://bench.im/hyperspeed) ;;
+        9) curl https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/hyperspeedx.sh -sSf | sh ;;
+        0) Yuanshi_script ;;
+    esac
+}
+
+Hardware_test_script(){
+    head_script
+    _yellow "硬件测试合集如下(暂时未添加，后续添加)"
+    echo " -------------"
+    echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
+    echo ""
+    read -rp "请输入选项:" StartInputh
+	case $StartInputh in
+        0) Yuanshi_script ;;
+    esac
+}
+
+Yuanshi_script(){
+    head_script
+    _yellow "融合怪借鉴的脚本以及部分竞品脚本合集如下"
+    echo -e "${GREEN}1.${PLAIN} 综合性测试脚本合集(比如yabs，superbench等)"
+    echo -e "${GREEN}2.${PLAIN} 流媒体测试脚本合集(各种流媒体解锁相关)"
+    echo -e "${GREEN}3.${PLAIN} 网络测试脚本合集(如三网回程和三网测速等)"
+    echo -e "${GREEN}4.${PLAIN} 硬件测试脚本合集(如gb5，硬盘通电时长等)(未添加，未来会添加)"
+    echo " -------------"
+    echo -e "${GREEN}0.${PLAIN} 回到主菜单"
+    echo ""
+    read -rp "请输入选项:" StartInput3
+	case $StartInput3 in
+        1) Comprehensive_test_script ;;
+        2) Media_test_script ;;
+        3) Network_test_script ;;
+        4) Hardware_test_script ;;
+        0) Start_script ;;
+    esac
+}
+
 Jinjian_script(){
     head_script
-    yellow "融合怪的精简脚本如下"
+    _yellow "融合怪的精简脚本如下"
     echo -e "${GREEN}1.${PLAIN} 极简版(基础系统信息+CPU+内存+磁盘IO+测速节点4个)(平均运行3分钟不到)"
     echo -e "${GREEN}2.${PLAIN} 精简版(基础系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体解锁+TikTok解锁+回程+路由+测速节点4个)(平均运行4分钟左右)"
     echo -e "${GREEN}3.${PLAIN} 精简网络版(基础系统信息+CPU+内存+磁盘IO+回程+路由+测速节点4个)(平均运行不到4分钟)"
@@ -1862,7 +1896,7 @@ Jinjian_script(){
 
 Danxiang_script(){
     head_script
-    yellow "融合怪拆分的单项测试脚本如下"
+    _yellow "融合怪拆分的单项测试脚本如下"
     echo -e "${GREEN}1.${PLAIN} 网络方面(简化的IP质量检测+三网回程+三网路由与延迟+测速节点11个)(平均运行7分钟左右)"
     echo -e "${GREEN}2.${PLAIN} 解锁方面(御三家解锁+常用流媒体解锁+TikTok解锁)(平均运行30~60秒)"
     echo -e "${GREEN}3.${PLAIN} 硬件方面(基础系统信息+CPU+内存+双重磁盘IO测试)(平均运行1分半钟)"
@@ -1886,50 +1920,9 @@ Danxiang_script(){
     esac
 }
 
-Yuanshi_script(){
-    head_script
-    yellow "融合怪借鉴的脚本以及部分竞品脚本如下"
-    echo -e "${GREEN}1.${PLAIN} misakabench VPS测试脚本"
-    echo -e "${GREEN}2.${PLAIN} lemonbench VPS测试脚本"
-    echo -e "${GREEN}3.${PLAIN} superbench VPS测试脚本"
-    echo -e "${GREEN}4.${PLAIN} YABS VPS测试脚本"
-    echo -e "${GREEN}5.${PLAIN} sjlleo的NetFlix解锁检测脚本 "
-    echo -e "${GREEN}6.${PLAIN} sjlleo的Youtube地域信息检测脚本"
-    echo -e "${GREEN}7.${PLAIN} sjlleo的DisneyPlus解锁区域检测脚本"
-    echo -e "${GREEN}8.${PLAIN} lmc999的流媒体检测脚本"
-    echo -e "${GREEN}9.${PLAIN} supeerbench的TikTok解锁区域检测脚本"
-    echo -e "${GREEN}10.${PLAIN} zhanghanyun的backtrace三网回程线路检测脚本"
-    echo -e "${GREEN}11.${PLAIN} zhucaidan的mtr_trace三网回程检线路测脚本"
-    echo -e "${GREEN}12.${PLAIN} superspeed的三网测速脚本"
-    echo -e "${GREEN}13.${PLAIN} hyperspeed的三网测速脚本"
-    echo -e "${GREEN}14.${PLAIN} supeerbench的Geekbench5得分查询"
-    echo " -------------"
-    echo -e "${GREEN}0.${PLAIN} 回到主菜单"
-    echo ""
-    read -rp "请输入选项:" StartInput3
-	case $StartInput3 in
-        1) bash <(curl -L -Lso- https://cdn.jsdelivr.net/gh/misaka-gh/misakabench@master/misakabench.sh) ;;
-        2) curl -fsL https://ilemonra.in/LemonBenchIntl | bash -s fast ;;
-        3) wget -qO- --no-check-certificate https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/oooldking/script/master/superbench.sh | bash ;;
-        4) curl -sL yabs.sh | bash ;;
-        5) wget -O nf https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 && chmod +x nf && ./nf ;;
-        6) wget -O tubecheck https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck/CDN/tubecheck_1.0beta_linux_amd64 && chmod +x tubecheck && clear && ./tubecheck ;;
-        7) wget -O dp https://cdn.spiritlhl.workers.dev/https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 && chmod +x dp && clear && ./dp ;;
-        8) bash <(curl -L -s check.unlock.media) ;;
-        9) UnlockTiktokTest ;;
-        # curl -fsL -o ./t.sh.x https://github.com/lmc999/TikTokCheck/raw/main/t.sh.x && chmod +x ./t.sh.x && ./t.sh.x && rm ./t.sh.x ;;
-        10) curl https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh ;;
-        11) curl https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh|bash ;;
-        12) bash <(curl -L -Lso- https://git.io/superspeed.sh) ;;
-        13) bash <(curl -L -Lso- https://bench.im/hyperspeed) ;;
-        14) geekbench_script ;;
-        0) Start_script ;;
-    esac
-}
-
 Yuanchuang_script(){
     head_script
-    yellow "频道有原创成分的脚本如下"
+    _yellow "本作者有原创成分的脚本如下"
     echo -e "${GREEN}1.${PLAIN} 完整的本机IP的质量检测(平均运行10~20秒)"
     echo -e "${GREEN}2.${PLAIN} 三网回程路由测试(预设广州)(平均运行1分钟)"
     echo -e "${GREEN}3.${PLAIN} 三网回程路由测试(预设上海)(平均运行1分钟)"
@@ -1964,16 +1957,16 @@ head_script(){
     echo -e "# ${GREEN}GitLab${PLAIN}: https://gitlab.com/spiritysdx                     #"
     echo "#############################################################"
     echo ""
-    green "请选择你接下来测评的组合或单项"
+    _green "请选择你接下来要使用的脚本"
 }
 
 Start_script(){
     head_script
-    echo -e "${GREEN}1.${PLAIN} 完全体(所有项目都测试)(平均运行8分钟以上)"
-    echo -e "${GREEN}2.${PLAIN} 精简区(融合怪的各种精简版并含单项测试精简版)"
-    echo -e "${GREEN}3.${PLAIN} 单项区(融合怪的单项测试完整版)"
-    echo -e "${GREEN}4.${PLAIN} 第三方脚本(借鉴脚本的原始脚本)"
-    echo -e "${GREEN}5.${PLAIN} 原创脚本"
+    echo -e "${GREEN}1.${PLAIN} 融合怪完全体(所有项目都测试)(平均运行8分钟以上)"
+    echo -e "${GREEN}2.${PLAIN} 融合怪精简区(融合怪的各种精简版并含单项测试精简版)"
+    echo -e "${GREEN}3.${PLAIN} 融合怪单项区(融合怪的单项测试完整版)"
+    echo -e "${GREEN}4.${PLAIN} 第三方脚本区(其他作者的各种测试脚本)"
+    echo -e "${GREEN}5.${PLAIN} 原创区(本作者独有的一些测试脚本)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 退出"
     echo ""
