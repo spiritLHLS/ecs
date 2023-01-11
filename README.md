@@ -76,14 +76,14 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 脚本概况
 
-![](https://github.com/spiritLHLS/ecs/raw/main/page/zhuye.png)
 ![](https://github.com/spiritLHLS/ecs/raw/main/page/1.png)
 ![](https://github.com/spiritLHLS/ecs/raw/main/page/2.png)
 ![](https://github.com/spiritLHLS/ecs/raw/main/page/3.png)
 ![](https://github.com/spiritLHLS/ecs/raw/main/page/4.png)
 ![](https://github.com/spiritLHLS/ecs/raw/main/page/5.png)
 ![](https://github.com/spiritLHLS/ecs/raw/main/page/6.png)
+![](https://github.com/spiritLHLS/ecs/raw/main/page/7.png)
 
 原创区选项
 
-![](https://github.com/spiritLHLS/ecs/raw/main/page/yc.png)
+![](https://github.com/spiritLHLS/ecs/raw/main/page/yuanchuang.png)
