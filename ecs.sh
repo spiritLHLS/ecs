@@ -305,14 +305,14 @@ checkdnsutils() {
 checkcurl() {
 	if  [ ! -e '/usr/bin/curl' ]; then
             _yellow "Installing curl"
-	        ${PACKAGE_INSTALL[int]} curl > /dev/null 2>&1
+	        ${PACKAGE_INSTALL[int]} curl
 	fi
 }
 
 checkwget() {
 	if  [ ! -e '/usr/bin/wget' ]; then
             _yellow "Installing wget"
-	        ${PACKAGE_INSTALL[int]} wget > /dev/null 2>&1
+	        ${PACKAGE_INSTALL[int]} wget
 	fi
 }
 
