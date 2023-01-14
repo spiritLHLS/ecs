@@ -48,7 +48,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 更新
 
-2023.01.11 由于部分新服务器刚开机不自启动bbr，现脚本询问是否需要启动了bbr后再进行测试(前提是服务器自身已安装bbr但未启动，未安装则不询问，已启动也不询问)，第三方脚本重新分区并整合为合集，相同类型脚本在同合集中，自行选择，部分脚本描述细微更改。
+2023.01.14 新增成都三网回程路由测试选项，改进测速部分的显示去除乱码，优化代码缩减了代码行数。
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
