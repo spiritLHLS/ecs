@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.01.11"
+ver="2023.01.14"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -11,6 +11,8 @@ test_area_s=("上海电信" "上海联通" "上海移动")
 test_ip_s=("202.96.209.133" "210.22.97.1" "211.136.112.200")
 test_area_b=("北京电信" "北京联通" "北京移动")
 test_ip_b=("219.141.136.12" "202.106.50.1" "221.179.155.161")
+test_area_c=("成都电信" "成都联通" "成都移动")
+test_ip_c=("61.139.2.69" "119.6.6.6" "211.137.96.205")
 TEMP_FILE='ip.test'
 BrowserUA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36"
 WorkDir="/tmp/.LemonBench"
@@ -262,22 +264,22 @@ checkupdate(){
 
 checkpython() {
 	if  [ ! -e '/usr/bin/python3' ]; then
-            _yellow "Installing python3"
-	            if [ "${release}" == "arch" ]; then
-	                    pacman -S --noconfirm --needed python > /dev/null 2>&1 
-                    else
-	                    ${PACKAGE_INSTALL[int]} python3 > /dev/null 2>&1
-	                fi
+        _yellow "Installing python3"
+        if [ "${release}" == "arch" ]; then
+            pacman -S --noconfirm --needed python > /dev/null 2>&1 
+        else
+            ${PACKAGE_INSTALL[int]} python3 > /dev/null 2>&1
+        fi
     fi
-	if  [ ! -e '/usr/bin/python3-pip' ]; then
-            _yellow "Installing python3-pip"
-	            if [ "${release}" == "arch" ]; then
-	                    pacman -S --noconfirm --needed python-pip > /dev/null 2>&1
-                        pip3 install requests > /dev/null 2>&1
-                    else
-	                    ${PACKAGE_INSTALL[int]} python3-pip > /dev/null 2>&1
-                        pip3 install requests > /dev/null 2>&1
-	                fi
+    if  [ ! -e '/usr/bin/python3-pip' ]; then
+        _yellow "Installing python3-pip"
+	        if [ "${release}" == "arch" ]; then
+	            pacman -S --noconfirm --needed python-pip > /dev/null 2>&1
+                pip3 install requests > /dev/null 2>&1
+            else
+	            ${PACKAGE_INSTALL[int]} python3-pip > /dev/null 2>&1
+                pip3 install requests > /dev/null 2>&1
+	        fi
     fi
     sleep 0.5
 }
@@ -805,31 +807,7 @@ Entrance_SysBench_CPU_Fast() {
     sleep 1
 }
 
-speed_test(){
-	speedLog="./speedtest.log"
-	true > $speedLog
-		speedtest-cli/speedtest -p no -s $1 --accept-license > $speedLog 2>&1
-		is_upload=$(cat $speedLog | grep 'Upload')
-		if [[ ${is_upload} ]]; then
-	        local REDownload=$(cat $speedLog | awk -F ' ' '/Download/{print $3}')
-	        local reupload=$(cat $speedLog | awk -F ' ' '/Upload/{print $3}')
-	        local relatency=$(cat $speedLog | awk -F ' ' '/Latency/{print $2}')
-			local nodeID=$1
-			local nodeLocation=$2
-			local nodeISP=$3
-			strnodeLocation="${nodeLocation}　　　　　　"
-			LANG=C
-			#echo $LANG
-			temp=$(echo "${REDownload}" | awk -F ' ' '{print $1}')
-	        if [[ $(awk -v num1=${temp} -v num2=0 'BEGIN{print(num1>num2)?"1":"0"}') -eq 1 ]]; then
-	       		echo -e "${strnodeLocation:0:20}\t ${reupload}Mbps\t ${REDownload}Mbps\t ${relatency}ms"
-			fi
-		else
-	        local cerror="ERROR"
-		fi
-}
-
-speed_test2() {
+speed_test() {
     local nodeName="$2"
     [ -z "$1" ] && ./speedtest-cli/speedtest --progress=no --accept-license --accept-gdpr > ./speedtest-cli/speedtest.log 2>&1 || \
     ./speedtest-cli/speedtest --progress=no --server-id=$1 --accept-license --accept-gdpr > ./speedtest-cli/speedtest.log 2>&1
@@ -845,7 +823,7 @@ speed_test2() {
 
 speed() {
     # https://raw.githubusercontent.com/zq/superspeed/master/superspeed.sh
-    speed_test2 '' 'Speedtest.net'
+    speed_test '' 'Speedtest.net'
     speed_test '21541' '洛杉矶\t'
     speed_test '13623' '新加坡\t'
     speed_test '44988' '日本东京'
@@ -859,13 +837,13 @@ speed() {
 #    speed_test '25637' '移动上海5G' '移动'
 #    speed_test '16398' '移动贵州贵阳' '移动'
 #    speed_test '6715' '移动浙江宁波' '移动'
-     speed_test '3356' '移动广西南宁' '移动'
-     speed_test '26940' '移动宁夏银川' '移动'
+    speed_test '3356' '移动广西南宁' '移动'
+    speed_test '26940' '移动宁夏银川' '移动'
 }
 
 speed2() {
     # https://raw.githubusercontent.com/zq/superspeed/master/superspeed.sh
-    speed_test2 '' 'Speedtest.net'
+    speed_test '' 'Speedtest.net'
     speed_test '3633' '电信上海' '电信'
     speed_test '24447' '联通上海' '联通'
     # speed_test '25637' '移动上海5G' '移动'
@@ -1467,7 +1445,7 @@ function UnlockTiktokTest() {
 spiritlhl_script(){
     cd /root >/dev/null 2>&1
     echo -e "-----------------欺诈分数以及IP质量检测--本频道原创-------------------"
-    _yellow "得分仅作参考，不代表100%准确，IP类型如果不一致请手动查询多个数据库比对"
+    _yellow "以下仅作参考，不代表100%准确，如果和实际情况不一致请手动查询多个数据库比对"
     if ! python3 qzcheck_ecs.py 2> /dev/null ; then
         if ! python3 qzcheck_ecs.py 2> /dev/null ; then
             echo "执行失败，可能是Python版本过低，也可能是安装失败"
@@ -1477,7 +1455,7 @@ spiritlhl_script(){
 
 backtrace_script(){
     echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
-    curl -k "${cdn_success_url}https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh" -sSf | sh
+    curl -k "${cdn_success_url}https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh" -sSf | sh 2>&1 | grep -v 'github.com/zhanghanyun/backtrace' | grep -v 正在测试
 }
 
 fscarmen_route_script(){
@@ -1486,11 +1464,11 @@ fscarmen_route_script(){
     IP_4=$(curl -ks4m8 -A Mozilla https://api.ip.sb/geoip) &&
     WAN_4=$(expr "$IP_4" : '.*ip\":[ ]*\"\([^"]*\).*') &&
     ASNORG_4=$(expr "$IP_4" : '.*isp\":[ ]*\"\([^"]*\).*') &&
-    _blue " IPv4 ASN: $ASNORG_4" >> $TEMP_FILE
+    _blue "IPv4 ASN: $ASNORG_4" >> $TEMP_FILE
     IP_6=$(curl -ks6m8 -A Mozilla https://api.ip.sb/geoip) &&
     WAN_6=$(expr "$IP_6" : '.*ip\":[ ]*\"\([^"]*\).*') &&
     ASNORG_6=$(expr "$IP_6" : '.*isp\":[ ]*\"\([^"]*\).*') &&
-    _blue " IPv6 ASN: $ASNORG_6" >> $TEMP_FILE
+    _blue "IPv6 ASN: $ASNORG_6" >> $TEMP_FILE
     local ARCHITECTURE="$(uname -m)"
         case $ARCHITECTURE in
         x86_64 )  local FILE=besttrace;;
@@ -1742,6 +1720,15 @@ network_b_script(){
     end_script
 }
 
+network_c_script() {
+    pre_check
+    start_time=$(date +%s)
+    clear
+    print_intro
+    fscarmen_route_script test_area_c[@] test_ip_c[@]
+    end_script
+}
+
 rm_script(){
     rm -rf return.sh
     rm -rf speedtest.tgz*
@@ -1931,8 +1918,9 @@ Yuanchuang_script(){
     echo -e "${GREEN}2.${PLAIN} 三网回程路由测试(预设广州)(平均运行1分钟)"
     echo -e "${GREEN}3.${PLAIN} 三网回程路由测试(预设上海)(平均运行1分钟)"
     echo -e "${GREEN}4.${PLAIN} 三网回程路由测试(预设北京)(平均运行1分钟)"
-    echo -e "${GREEN}5.${PLAIN} 自定义IP的回程路由测试(自定义IP，需自行输入IP)"
-    echo -e "${GREEN}6.${PLAIN} 自定义IP的质量检测(自定义IP，需自行输入IP)"
+    echo -e "${GREEN}5.${PLAIN} 三网回程路由测试(预设成都)(平均运行1分钟)"
+    echo -e "${GREEN}6.${PLAIN} 自定义IP的回程路由测试(自定义IP，需自行输入IP)"
+    echo -e "${GREEN}7.${PLAIN} 自定义IP的质量检测(自定义IP，需自行输入IP)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
@@ -1942,8 +1930,9 @@ Yuanchuang_script(){
         2) network_g_script ;;
         3) network_s_script ;;
         4) network_b_script ;;
-        5) bash <(curl -sSL https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) ;;
-        6) bash <(curl -sSL https://cdn.spiritlhl.workers.dev/https://github.com/spiritLHLS/ecs/raw/main/customizeqzcheck.sh) ;;
+        5) network_c_script ;;
+        6) bash <(curl -sSL https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) ;;
+        7) bash <(curl -sSL https://cdn.spiritlhl.workers.dev/https://github.com/spiritLHLS/ecs/raw/main/customizeqzcheck.sh) ;;
         0) Start_script ;;
     esac
 }
