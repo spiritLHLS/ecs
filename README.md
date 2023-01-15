@@ -21,6 +21,8 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 
 <details>
     <summary>融合怪测试说明以及部分测试结果的内容解释(小白特供)---点此展开</summary>
+ 
+融合怪脚本的粗略说明：
 
 除了已标注的原创内容，其余所有分区均为借鉴并进行优化修改后的版本，与原版本可能有部分不同
 
