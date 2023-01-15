@@ -28,7 +28,7 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 
 系统基础信息测试融合了三家还有我自己修补的部分检测，应该是目前最全面的了
 
-CPU测试使用sysbench测试得分，不是yabs的gb4或gb4，前者只是简单的计算质数测试速度快，后者geekbench是综合测试算加权得分，不是同一种东西，别互相比较了，没有任何用处
+CPU测试使用sysbench测试得分，不是yabs的gb4或gb5，前者只是简单的计算质数测试速度快，后者geekbench是综合测试算加权得分，不是同一种东西，别互相比较了，没有任何用处
 
 CPU测试单核得分在5000以上的可以算第一梯队，4000到5000分算第二梯队，每1000分算一档，自己看看自己在哪个挡位吧
 
