@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.01.14"
+ver="2023.01.15"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1421,25 +1421,31 @@ RegionRestrictionCheck_script(){
     echo 0 | bash media_lmc_check.sh -M 6 | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
 }
 
-function UnlockTiktokTest() {
+lmc999_script(){
     cd /root >/dev/null 2>&1
-    echo -e "----------------TikTok解锁--感谢superbench的开源脚本------------------"
-	local result=$(curl --user-agent "${BrowserUA}" -fsSL --max-time 10 "https://www.tiktok.com/" 2>&1);
-    if [[ "$result" != "curl"* ]]; then
-        result="$(echo ${result} | grep 'region' | awk -F 'region":"' '{print $2}' | awk -F '"' '{print $1}')";
-		if [ -n "$result" ]; then
-			if [[ "$result" == "The #TikTokTraditions"* ]] || [[ "$result" == "This LIVE isn't available"* ]]; then
-				echo -e " TikTok               : ${RED}No${PLAIN}" | tee -a $log
-			else
-				echo -e " TikTok               : ${GREEN}Yes (Region: ${result})${PLAIN}" | tee -a $log
-			fi
-		else
-			echo -e " TikTok               : ${RED}Failed${PLAIN}" | tee -a $log
-			return
-		fi
+    echo -e "-------------TikTok解锁--感谢lmc999加密脚本及fscarmen PR--------------"
+    local Ftmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -s --max-time 10 "https://www.tiktok.com/")
+
+    if [[ "$Ftmpresult" = "curl"* ]]; then
+        _red "\r Tiktok Region:\t\t${Font_Red}Failed (Network Connection)${Font_Suffix}"
+        return
+    fi
+
+    local FRegion=$(echo $Ftmpresult | grep '"region":' | sed 's/.*"region"//' | cut -f2 -d'"')
+    if [ -n "$FRegion" ]; then
+        _green "\r Tiktok Region:\t\t${Font_Green}【${FRegion}】${Font_Suffix}"
+        return
+    fi
+
+    local STmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -sL --max-time 10 -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9" -H "Accept-Encoding: gzip" -H "Accept-Language: en" "https://www.tiktok.com" | gunzip 2>/dev/null)
+    local SRegion=$(echo $STmpresult | grep '"region":' | sed 's/.*"region"//' | cut -f2 -d'"')
+    if [ -n "$SRegion" ]; then
+        _yellow "\r Tiktok Region:\t\t${Font_Yellow}【${SRegion}】(可能为IDC IP)${Font_Suffix}"
+        return
     else
-		echo -e " TikTok               : ${RED}Network connection failed${PLAIN}" | tee -a $log
-	fi
+        _red "\r Tiktok Region:\t\t${Font_Red}Failed${Font_Suffix}"
+        return
+    fi
 }
 
 spiritlhl_script(){
@@ -1530,7 +1536,7 @@ all_script(){
     io2_script
     sjlleo_script
     RegionRestrictionCheck_script
-    UnlockTiktokTest
+    lmc999_script
     spiritlhl_script
     backtrace_script
     fscarmen_route_script test_area_g[@] test_ip_g[@]
@@ -1571,7 +1577,7 @@ minal_plus(){
     io2_script
     sjlleo_script
     RegionRestrictionCheck_script
-    UnlockTiktokTest
+    lmc999_script
     backtrace_script
     fscarmen_route_script test_area_g[@] test_ip_g[@]
     superspeed_minal_script
@@ -1612,7 +1618,7 @@ minal_plus_media(){
     io2_script
     sjlleo_script
     RegionRestrictionCheck_script
-    UnlockTiktokTest
+    lmc999_script
     superspeed_minal_script
     end_script
 }
@@ -1643,7 +1649,7 @@ media_script(){
     print_intro
     sjlleo_script
     RegionRestrictionCheck_script
-    UnlockTiktokTest
+    lmc999_script
     end_script
 }
 
@@ -1783,7 +1789,7 @@ Media_test_script(){
     echo -e "${GREEN}1.${PLAIN} sjlleo的NetFlix解锁检测脚本 "
     echo -e "${GREEN}2.${PLAIN} sjlleo的Youtube地域信息检测脚本"
     echo -e "${GREEN}3.${PLAIN} sjlleo的DisneyPlus解锁区域检测脚本"
-    echo -e "${GREEN}4.${PLAIN} supeerbench的TikTok解锁区域检测脚本"
+    echo -e "${GREEN}4.${PLAIN} lmc999的TikTok解锁区域检测脚本"
     echo -e "${GREEN}5.${PLAIN} lmc999的TikTok解锁区域检测脚本"
     echo -e "${GREEN}6.${PLAIN} lmc999的流媒体检测脚本-综合性地域流媒体全测的"
     echo -e "${GREEN}7.${PLAIN} nkeonkeo的流媒体检测脚本-基于上者的GO重构版本"
@@ -1795,7 +1801,7 @@ Media_test_script(){
         1) wget -O nf https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 && chmod +x nf && ./nf ;;
         2) wget -O tubecheck https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck/CDN/tubecheck_1.0beta_linux_amd64 && chmod +x tubecheck && clear && ./tubecheck ;;
         3) wget -O dp https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 && chmod +x dp && clear && ./dp ;;
-        4) UnlockTiktokTest ;;
+        4) lmc999_script ;; 
         5) curl -fsL -o ./t.sh.x https://github.com/lmc999/TikTokCheck/raw/main/t.sh.x && chmod +x ./t.sh.x && ./t.sh.x && rm ./t.sh.x ;;
         6) bash <(curl -L -s check.unlock.media) ;;
         7) bash <(curl -Ls unlock.moe) ;;
