@@ -5,23 +5,23 @@
 #     local Ftmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -s --max-time 10 "https://www.tiktok.com/")
 
 #     if [[ "$Ftmpresult" = "curl"* ]]; then
-#         _red "\r Tiktok Region: Failed (Network Connection)"
+#         _red "\r Tiktok Region:\t\t${Font_Red}Failed (Network Connection)${Font_Suffix}"
 #         return
 #     fi
 
-#     local FRegion=$(echo $Ftmpresult | grep '"$region":"' | sed 's/.*"$region//' | cut -f3 -d'"')
+#     local FRegion=$(echo $Ftmpresult | grep '"region":' | sed 's/.*"region"//' | cut -f2 -d'"')
 #     if [ -n "$FRegion" ]; then
-#         _green "\r Tiktok Region: 【${FRegion}】"
+#         _green "\r Tiktok Region:\t\t${Font_Green}【${FRegion}】${Font_Suffix}"
 #         return
 #     fi
 
 #     local STmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -sL --max-time 10 -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9" -H "Accept-Encoding: gzip" -H "Accept-Language: en" "https://www.tiktok.com" | gunzip 2>/dev/null)
-#     local SRegion=$(echo $STmpresult | grep '"$region":"' | sed 's/.*"$region//' | cut -f3 -d'"')
+#     local SRegion=$(echo $STmpresult | grep '"region":' | sed 's/.*"region"//' | cut -f2 -d'"')
 #     if [ -n "$SRegion" ]; then
-#         _yellow "\r Tiktok Region: 【${SRegion}】(可能为IDC IP)}"
+#         _yellow "\r Tiktok Region:\t\t${Font_Yellow}【${SRegion}】(可能为IDC IP)${Font_Suffix}"
 #         return
 #     else
-#         _red "\r Tiktok Region: Failed"
+#         _red "\r Tiktok Region:\t\t${Font_Red}Failed${Font_Suffix}"
 #         return
 #     fi
 # }
