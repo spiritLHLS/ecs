@@ -26,7 +26,26 @@
 #     fi
 # }
 
-
+# function UnlockTiktokTest() {
+#     cd /root >/dev/null 2>&1
+#     echo -e "----------------TikTok解锁--感谢superbench的开源脚本------------------"
+# 	local result=$(curl --user-agent "${BrowserUA}" -fsSL --max-time 10 "https://www.tiktok.com/" 2>&1);
+#     if [[ "$result" != "curl"* ]]; then
+#         result="$(echo ${result} | grep 'region' | awk -F 'region":"' '{print $2}' | awk -F '"' '{print $1}')";
+# 		if [ -n "$result" ]; then
+# 			if [[ "$result" == "The #TikTokTraditions"* ]] || [[ "$result" == "This LIVE isn't available"* ]]; then
+# 				echo -e " TikTok               : ${RED}No${PLAIN}" | tee -a $log
+# 			else
+# 				echo -e " TikTok               : ${GREEN}Yes (Region: ${result})${PLAIN}" | tee -a $log
+# 			fi
+# 		else
+# 			echo -e " TikTok               : ${RED}Failed${PLAIN}" | tee -a $log
+# 			return
+# 		fi
+#     else
+# 		echo -e " TikTok               : ${RED}Network connection failed${PLAIN}" | tee -a $log
+# 	fi
+# }
 
 # fscarmen_port_script(){
 #     echo -e "-----------------测端口开通--感谢fscarmen开源及PR----------------------"
