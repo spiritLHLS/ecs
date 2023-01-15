@@ -1313,9 +1313,9 @@ print_end_time() {
     if [ ${time} -gt 60 ]; then
         min=$(expr $time / 60)
         sec=$(expr $time % 60)
-        echo " 总共花费        : ${min} 分 ${sec} 秒"
+        echo " 总共花费      : ${min} 分 ${sec} 秒"
     else
-        echo " 总共花费        : ${time} 秒"
+        echo " 总共花费      : ${time} 秒"
     fi
     date_time=$(date)
     # date_time=$(date +%Y-%m-%d" "%H:%M:%S)
