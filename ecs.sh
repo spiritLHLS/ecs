@@ -1802,7 +1802,7 @@ Media_test_script(){
         2) wget -O tubecheck https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck/CDN/tubecheck_1.0beta_linux_amd64 && chmod +x tubecheck && clear && ./tubecheck ;;
         3) wget -O dp https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 && chmod +x dp && clear && ./dp ;;
         4) lmc999_script ;; 
-        5) curl -fsL -o ./t.sh.x https://github.com/lmc999/TikTokCheck/raw/main/t.sh.x && chmod +x ./t.sh.x && ./t.sh.x && rm ./t.sh.x ;;
+        5) bash <(curl -s https://raw.githubusercontent.com/lmc999/TikTokCheck/main/tiktok.sh) ;;
         6) bash <(curl -L -s check.unlock.media) ;;
         7) bash <(curl -Ls unlock.moe) ;;
         0) Yuanshi_script ;;
