@@ -48,7 +48,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 更新
 
-2023.01.14 新增成都三网回程路由测试选项，改进测速部分的显示去除乱码，优化代码缩减了代码行数。
+2023.01.15 更新tiktok的检测，替换失效的函数
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -62,7 +62,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 - [x] 硬盘IO读写测试--感谢yabs开源，本人修改整理优化
 - [x] 御三家流媒体解锁--感谢sjlleo的二进制文件，本人修改整理优化
 - [x] 常用流媒体解锁--感谢RegionRestrictionCheck开源，本人修改整理优化
-- [x] Tiktok解锁--感谢superbench的开源，本人修改整理优化
+- [x] Tiktok解锁--感谢lmc999的开源，本人修改整理优化
 - [x] 三网回程以及路由延迟--感谢zhanghanyun/backtrace开源
 - [x] 回程路由以及带宽类型检测(商宽/家宽/数据中心)--由fscarmen的PR以及本人的技术思路提供，本人修改整理优化
 - [ ] 端口检测(检测是否被墙)--由fscarmen的PR以及本人的技术思路提供 - 待修复
