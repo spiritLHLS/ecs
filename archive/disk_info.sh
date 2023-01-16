@@ -59,7 +59,8 @@ then
     fi
 fi
 clear
-echo "标注老化的属性的数值过大或过小很可能是硬盘出问题了\n当然是正常还是老化只是参考，一切基于smartctl的判断结果"
+echo "标注老化的属性的数值过大或过小很可能是硬盘出问题了"
+echo "当然是正常还是老化只是参考，一切基于smartctl的判断结果"
 next
 # echo $disk_list
 for disk_dev in $disk_list
@@ -100,7 +101,9 @@ do
     if echo "$smart_info" | grep -q "No Errors Logged"; then
         echo "本次检查本盘正常"
     else
-        echo "本次检查本盘存在问题，请使用\nsmartctl -a 盘路径\n查看日志"
+        echo "本次检查本盘存在问题，请使用以下命令"
+        echo "smartctl -a 盘路径"
+        echo "查看日志"
     fi
     next
 done
