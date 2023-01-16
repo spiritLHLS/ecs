@@ -33,11 +33,11 @@ fi
 for disk_dev in $disk_list
 do
     smart_info=$(smartctl -i $disk_dev)
+    vendor=""
     vendor=$(echo "$smart_info" | grep "Vendor" | awk '{print $2}')
     echo "Disk: $disk_dev"
     echo "Vendor: $vendor"
     smart_info=$(smartctl -a $disk_dev)
-    vendor=""
     if [ $vendor == "ATA" ]; then
         #ATA硬盘
         if echo "$smart_info" | grep -q "Power_On_Hours" ; then
