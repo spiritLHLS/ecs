@@ -2,7 +2,7 @@
 # by https://github.com/spiritLHLS/ecs
 
 # 检测所有硬盘通电时长
-disk_list=$(ls /dev/sd* | grep -v [0-9])
+disk_list=$(ls /dev/sd* /dev/vd* /dev/hd* | grep -v [0-9])
 
 #检测smartctl是否安装
 if ! command -v smartctl &> /dev/null
@@ -35,5 +35,6 @@ do
         echo "$disk_dev does not support Power on hours"
     fi
 done
+
 
 
