@@ -1409,16 +1409,16 @@ io1_script(){
 io2_script(){
     cd /root >/dev/null 2>&1
     echo "-------------------磁盘IO读写测试--感谢yabs开源-----------------------"
-    bash ./yabsiotest.sh 
+    bash ./yabsiotest.sh 2>/dev/null
     rm -rf yabsiotest.sh
 }
 
 RegionRestrictionCheck_script(){
     echo -e "---------------流媒体解锁--感谢RegionRestrictionCheck开源-------------"
     _yellow " 以下为IPV4网络测试，若无IPV4网络则无输出"
-    echo 0 | bash media_lmc_check.sh -M 4 | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
+    echo 0 | bash media_lmc_check.sh -M 4 2>/dev/null | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
     _yellow " 以下为IPV6网络测试，若无IPV6网络则无输出"
-    echo 0 | bash media_lmc_check.sh -M 6 | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
+    echo 0 | bash media_lmc_check.sh -M 6 2>/dev/null | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
 }
 
 lmc999_script(){
