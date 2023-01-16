@@ -34,8 +34,11 @@ if ls -d /dev/hd* > /dev/null 2>&1; then
     disk_list="$disk_list $(ls /dev/hd*)"
 fi
 if ls -d /dev/vd* > /dev/null 2>&1; then
-    disk_list="$disk_list $(ls /dev/vd*)"
+    disk_list="$disk_list $(ls /dev/mmcblk*)"
 fi
+# if ls -d /dev/vd* > /dev/null 2>&1; then
+#     disk_list="$disk_list $(ls /dev/vd*)"
+# fi
 #检测smartctl是否安装
 if ! command -v smartctl &> /dev/null
 then
@@ -96,5 +99,3 @@ do
     check_smart_info "Total_LBAs_Read" "已读取LBA总数(太高了不好)"
     next
 done
-
-
