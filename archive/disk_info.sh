@@ -86,7 +86,8 @@ do
     check_smart_info "Reallocated_Sector_Ct" "重定位扇区数(越低越好)"
     check_smart_info "Seek_Error_Rate" "检索错误率(越低越好)"
     check_smart_info "End-to-End_Error" "端到端错误(越少越好)"
-    check_smart_info "Reported_Uncorrect" "已报告但未纠正的错误数(越少越好)"
+    check_smart_info "Program_Fail_Count_Chip" "编程失败数(越低越好)"
+    check_smart_info "Erase_Fail_Count_Chip" "擦除失败数(越低越好)"
     check_smart_info "High_Fly_Writes" "飞行高度错误数(越少越好)"
     check_smart_info "Temperature_Celsius" "盘面温度(不高就行)"
     check_smart_info "Airflow_Temperature_Cel" "空气温度(不高就行)"
@@ -96,6 +97,8 @@ do
     check_smart_info "Power-Off_Retract_Count" "盘头电源关闭时的回缩数(越低越好)"
     check_smart_info "Uncorrectable_Error_Cnt" "在线模式下不能纠正的错误数(越低越好)"
     check_smart_info "Offline_Uncorrectable" "离线模式下不能纠正的错误数(越低越好)"
+    check_smart_info "Reported_Uncorrect" "已报告但未纠正的错误数(越少越好)"
+    check_smart_info "Used_Rsvd_Blk_Cnt_Chip" "已使用的预留块数(越低越好)"
     check_smart_info "Total_LBAs_Written" "已写入LBA总数(太高了不好)"
     check_smart_info "Total_LBAs_Read" "已读取LBA总数(太高了不好)"
     if echo "$smart_info" | grep -q "No Errors Logged"; then
