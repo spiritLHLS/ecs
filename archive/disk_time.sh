@@ -10,8 +10,10 @@ if ! command -v smartctl &> /dev/null
 then
     echo "smartctl not found, installing smartctl..."
     if [ -f /etc/redhat-release ] || [ -f /etc/centos-release ]; then
+        yum update
         yum install smartmontools -y
     elif [ -f /etc/debian_version ]; then
+        apt-get update
         apt-get install smartmontools -y
     elif [ -f /etc/fedora-release ]; then
         dnf install smartmontools -y
