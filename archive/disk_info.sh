@@ -97,5 +97,10 @@ do
     check_smart_info "Offline_Uncorrectable" "离线模式下不能纠正的错误数(越低越好)"
     check_smart_info "Total_LBAs_Written" "已写入LBA总数(太高了不好)"
     check_smart_info "Total_LBAs_Read" "已读取LBA总数(太高了不好)"
+    if echo "$smart_info" | grep -q "No Errors Logged"; then
+        echo "本次检查本盘正常"
+    else
+        echo "本次检查本盘存在问题，请使用\nsmartctl -a 盘路径\n查看日志"
+    fi
     next
 done
