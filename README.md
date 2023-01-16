@@ -18,7 +18,6 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 
 使用**CDN**加速理论上已支持**国内**和**国外**服务器测试，但国内受CDN口子或国内机器口子的限制会加载慢很多
 
-
 <details>
     <summary>融合怪测试说明以及部分测试结果的内容解释(小白特供)---点此展开</summary>
  
@@ -82,7 +81,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 更新
 
-2023.01.15 更新tiktok的检测，替换失效的函数
+2023.01.16 隐藏部分错误显示，优化了输出。
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
