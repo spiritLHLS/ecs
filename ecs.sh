@@ -81,7 +81,6 @@ PharseJSON() {
 }
 
 Global_StartupInit_Action() {
-    Function_CheckTracemode
     # 清理残留, 为新一次的运行做好准备
     echo -e "${Msg_Info}Initializing Running Enviorment, Please wait ..."
     rm -rf "$WorkDir"
@@ -120,18 +119,6 @@ get_opsy() {
 
 next() {
     printf "%-70s\n" "-" | sed 's/\s/-/g'
-}
-
-Function_CheckTracemode() {
-    if [ "$Flag_TracerouteModeisSet" = "1" ]; then
-        if [ "$GlobalVar_TracerouteMode" = "icmp" ]; then
-            printf "%sTraceroute/BestTrace Tracemode is set to: %sICMP Mode%s\n" "$Msg_Info" "$Font_SkyBlue" "$Font_Suffix"
-        elif [ "$GlobalVar_TracerouteMode" = "tcp" ]; then
-            printf "%sTraceroute/BestTrace Tracemode is set to: %sTCP Mode%s\n" "$Msg_Info" "$Font_SkyBlue" "$Font_Suffix"
-        fi
-    else
-        GlobalVar_TracerouteMode="tcp"
-    fi
 }
 
 # =============== 检查 Virt-what 组件 ===============
