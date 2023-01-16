@@ -106,7 +106,7 @@ do
     else
         echo "本次检查本盘存在问题，请使用以下命令"
         echo "smartctl -a 盘路径"
-        echo "查看日志"
+        echo "查看日志，如果供应商是QEMU请忽略本盘的检测结果"
     fi
     next
 done
