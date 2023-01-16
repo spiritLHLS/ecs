@@ -1,7 +1,7 @@
 #!/bin/bash
 # by https://github.com/spiritLHLS/ecs
 
-# 检测所有盘
+# 检测所有硬盘
 disk_list=""
 if ls -d /dev/sd* > /dev/null 2>&1; then
     disk_list="$disk_list $(ls /dev/sd*)"
@@ -45,15 +45,15 @@ do
     smart_info=$(smartctl -a $disk_dev)
     if echo "$smart_info" | grep -q "Power_On_Hours" ; then
         power_on_hours=$(echo "$smart_info" | grep "Power_On_Hours" | awk '{print $10}')
-        echo "通电时长(越高越好): $power_on_hours"
+        echo "通电时长(越低越好): $power_on_hours"
     # else
-    #     echo "通电时长(越高越好)不可检测"
+    #     echo "通电时长(越低越好)不可检测"
     fi
     if echo "$smart_info" | grep -q "Power_Cycle_Count" ; then
         power_cycle_count=$(echo "$smart_info" | grep "Power_Cycle_Count" | awk '{print $10}')
-        echo "电源循环次数(越少越好): $power_cycle_count"
+        echo "电源开关次数(越少越好): $power_cycle_count"
     # else
-    #     echo "电源循环次数(越少越好)不可检测"
+    #     echo "电源开关次数(越少越好)不可检测"
     fi
     if echo "$smart_info" | grep -q "Raw_Read_Error_Rate" ; then
         raw_read_error_rate=$(echo "$smart_info" | grep "Raw_Read_Error_Rate" | awk '{print $10}')
@@ -105,5 +105,3 @@ do
     fi
     echo "-------------------"
 done
-
-
