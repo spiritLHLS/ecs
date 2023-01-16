@@ -1,8 +1,14 @@
 #!/bin/bash
 # by https://github.com/spiritLHLS/ecs
 
-# 检测所有硬盘通电时长
-disk_list=$(ls /dev/sd* /dev/vd* /dev/hd* | grep -v [0-9])
+# 检测所有硬盘
+disk_list=$(ls /dev/sd*)
+if [ -d "/dev/vd*" ]; then
+   disk_list="$disk_list $(ls /dev/vd*)"
+fi
+if [ -d "/dev/hd*" ]; then
+   disk_list="$disk_list $(ls /dev/hd*)"
+fi
 
 #检测smartctl是否安装
 if ! command -v smartctl &> /dev/null
@@ -31,6 +37,7 @@ do
     echo "Disk: $disk_dev"
     echo "Vendor: $vendor"
     smart_info=$(smartctl -a $disk_dev)
+    vendor=""
     if [ $vendor == "ATA" ]; then
         #ATA硬盘
         if echo "$smart_info" | grep -q "Power_On_Hours" ; then
