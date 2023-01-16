@@ -1,6 +1,27 @@
 #!/bin/bash
 # by https://github.com/spiritLHLS/ecs
 
+next() {
+    echo "-------------------"
+}
+# 翻译
+translate_type(){
+  if [[ $1 == "Pre-fail" ]]; then
+      echo "正常"
+  elif [[ $1 == "Old_age" ]]; then
+      echo "老化"
+  else
+      echo "其他"
+  fi
+}
+check_smart_info(){
+    if echo "$smart_info" | grep -q "$1" ; then
+        value=$(echo "$smart_info" | grep "$1" | awk '{print $10}')
+        type=$(echo "$smart_info" | grep "$1" | awk '{print $7}')
+        type=$(translate_type $type)
+        echo "[$type] $2: $value"
+    fi
+}
 # 检测所有硬盘
 disk_list=""
 if ls -d /dev/sd* > /dev/null 2>&1; then
@@ -32,6 +53,8 @@ then
     fi
 fi
 clear
+echo "标注老化的属性的数值过大或过小很可能是硬盘出问题了"
+next
 # echo $disk_list
 for disk_dev in $disk_list
 do
@@ -43,65 +66,30 @@ do
     echo "盘路径: $disk_dev"
     echo "供应商: $vendor"
     smart_info=$(smartctl -a $disk_dev)
-    if echo "$smart_info" | grep -q "Power_On_Hours" ; then
-        power_on_hours=$(echo "$smart_info" | grep "Power_On_Hours" | awk '{print $10}')
-        echo "通电时长(越低越好): $power_on_hours"
-    # else
-    #     echo "通电时长(越低越好)不可检测"
-    fi
-    if echo "$smart_info" | grep -q "Power_Cycle_Count" ; then
-        power_cycle_count=$(echo "$smart_info" | grep "Power_Cycle_Count" | awk '{print $10}')
-        echo "电源开关次数(越少越好): $power_cycle_count"
-    # else
-    #     echo "电源开关次数(越少越好)不可检测"
-    fi
-    if echo "$smart_info" | grep -q "Raw_Read_Error_Rate" ; then
-        raw_read_error_rate=$(echo "$smart_info" | grep "Raw_Read_Error_Rate" | awk '{print $10}')
-        echo "读取错误率(越低越好): $raw_read_error_rate"
-    # else
-    #     echo "读取错误率(越低越好)不可检测"
-    fi
-    if echo "$smart_info" | grep -q "Reallocated_Event_Count" ; then
-        reallocated_event=$(echo "$smart_info" | grep "Reallocated_Event_Count" | awk '{print $10}')
-        echo "错误率(越低越好): $reallocated_event"
-    # else
-    #     echo "错误率(越低越好)不可检测"
-    fi
-    if echo "$smart_info" | grep -q "Uncorrectable_Error_Cnt" ; then
-        uncorrectable_error=$(echo "$smart_info" | grep "Uncorrectable_Error_Cnt" | awk '{print $10}')
-        echo "不能纠正的错误数(越低越好): $uncorrectable_error"
-    # else
-    #     echo "不能纠正的错误数(越低越好)不可检测"
-    fi
-    if echo "$smart_info" | grep -q "Spin_Up_Time" ; then
-        spin_up_time=$(echo "$smart_info" | grep "Spin_Up_Time" | awk '{print $10}')
-        echo "磁盘启动时间(越短越好): $spin_up_time"
-    # else
-    #     echo "磁盘启动时间(越短越好)不可检测"
-    fi
-    if echo "$smart_info" | grep -q "Start_Stop_Count" ; then
-        start_stop_count=$(echo "$smart_info" | grep "Start_Stop_Count" | awk '{print $10}')
-        echo "磁盘启动停止次数(越少越好): $start_stop_count"
-    # else
-    #     echo "磁盘启动停止次数(越少越好)不可检测"
-    fi
-    if echo "$smart_info" | grep -q "Reallocated_Sector_Ct" ; then
-        reallocated_sector=$(echo "$smart_info" | grep "Reallocated_Sector_Ct" | awk '{print $10}')
-        echo "重定位扇区数(越低越好): $reallocated_sector"
-    # else
-    #     echo "重定位扇区数(越低越好)不可检测"
-    fi
-    if echo "$smart_info" | grep -q "Current_Pending_Sector" ; then
-        pending_sector=$(echo "$smart_info" | grep "Current_Pending_Sector" | awk '{print $10}')
-        echo "当前待处理扇区数(越低越好): $pending_sector"
-    # else
-    #     echo "当前待处理扇区数(越低越好)不可检测"
-    fi
-    if echo "$smart_info" | grep -q "Temperature_Celsius" ; then
-        temperature=$(echo "$smart_info" | grep "Temperature_Celsius" | awk '{print $10}')
-        echo "温度: $temperature"
-    # else
-    #     echo "温度不可检测"
-    fi
-    echo "-------------------"
+    check_smart_info "Power_On_Hours" "通电时长(越低越好)"
+    check_smart_info "Power_Cycle_Count" "电源开关次数(越少越好)"
+    check_smart_info "Spin_Up_Time" "启动时间(越短越好)"
+    check_smart_info "Start_Stop_Count" "启动停止次数(越少越好)"
+    check_smart_info "Spin_Retry_Count" "磁盘启动时重试次数(越低越好)"
+    check_smart_info "Current_Pending_Sector" "当前待处理扇区数(越低越好)"
+    check_smart_info "Runtime_Bad_Block" "运行坏块数量(越少越好)"
+    check_smart_info "Raw_Read_Error_Rate" "读取错误率(越低越好)"
+    check_smart_info "Command_Timeout" "命令执行超时数(越少越好)"
+    check_smart_info "Reallocated_Event_Count" "重定位事件数(越低越好)"
+    check_smart_info "Reallocated_Sector_Ct" "重定位扇区数(越低越好)"
+    check_smart_info "Seek_Error_Rate" "检索错误率(越低越好)"
+    check_smart_info "End-to-End_Error" "端到端错误(越少越好)"
+    check_smart_info "Reported_Uncorrect" "已报告但未纠正的错误数(越少越好)"
+    check_smart_info "High_Fly_Writes" "飞行高度错误数(越少越好)"
+    check_smart_info "Temperature_Celsius" "盘面温度(不高就行)"
+    check_smart_info "Airflow_Temperature_Cel" "空气温度(不高就行)"
+    check_smart_info "Hardware_ECC_Recovered" "硬件纠正错误数(越少越好)"
+    check_smart_info "G-Sense_Error_Rate" "加速度错误率(越低越好)"
+    check_smart_info "Head_Flying_Hours" "盘头飞行时长(太高了不好)"
+    check_smart_info "Power-Off_Retract_Count" "盘头电源关闭时的回缩数(越低越好)"
+    check_smart_info "Uncorrectable_Error_Cnt" "在线模式下不能纠正的错误数(越低越好)"
+    check_smart_info "Offline_Uncorrectable" "离线模式下不能纠正的错误数(越低越好)"
+    check_smart_info "Total_LBAs_Written" "已写入LBA总数(太高了不好)"
+    check_smart_info "Total_LBAs_Read" "已读取LBA总数(太高了不好)"
+    next
 done
