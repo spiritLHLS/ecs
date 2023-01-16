@@ -623,8 +623,6 @@ Function_SysBench_CPU_Fast() {
     elif [ "${LBench_Result_CPUProcessorNumber}" -ge "2" ]; then
         Run_SysBench_CPU "${LBench_Result_CPUProcessorNumber}" "5" "1" "${LBench_Result_CPUProcessorNumber} 线程测试(多核)得分"
     fi
-    # 完成FLAG
-    LBench_Flag_FinishSysBenchCPUFast="1"
 }
 
 # =============== SystemInfo模块 部分 ===============
