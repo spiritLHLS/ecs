@@ -13,7 +13,7 @@ then
     elif [ -f /etc/debian_version ]; then
         apt-get install smartmontools -y
     elif [ -f /etc/fedora-release ]; then
-        dnf install smartmontools -y
+        dnf install smart -y
     elif [ -f /etc/arch-release ]; then
         pacman -S smartmontools -y
     elif [ -f /etc/alpine-release ]; then
@@ -26,15 +26,56 @@ fi
 
 for disk_dev in $disk_list
 do
+    smart_info=$(smartctl -i $disk_dev)
+    vendor=$(echo "$smart_info" | grep "Vendor" | awk '{print $2}')
+    echo "Disk: $disk_dev"
+    echo "Vendor: $vendor"
     smart_info=$(smartctl -a $disk_dev)
-    # 检测是否支持power on hours
-    if echo "$smart_info" | grep -q "Power_On_Hours" ; then
-        power_on_hours=$(echo "$smart_info" | grep "Power_On_Hours" | awk '{print $10}')
-        echo "$disk_dev Power on hours: $power_on_hours"
+    if [ $vendor == "ATA" ]; then
+        #ATA硬盘
+        if echo "$smart_info" | grep -q "Power_On_Hours" ; then
+            power_on_hours=$(echo "$smart_info" | grep "Power_On_Hours" | awk '{print $10}')
+            echo "Power_On_Hours: $power_on_hours"
+        else
+            echo "Power_On_Hours not supported"
+        fi
+        if echo "$smart_info" | grep -q "Reallocated_Sector_Ct" ; then
+            reallocated_sector=$(echo "$smart_info" | grep "Reallocated_Sector_Ct" | awk '{print $10}')
+            echo "Reallocated_Sector_Ct: $reallocated_sector"
+        else
+            echo "Reallocated_Sector_Ct not supported"
+        fi
+        if echo "$smart_info" | grep -q "Temperature_Celsius" ; then
+            temperature=$(echo "$smart_info" | grep "Temperature_Celsius" | awk '{print $10}')
+            echo "Temperature_Celsius: $temperature"
+        else
+            echo "Temperature_Celsius not supported"
+        fi
+    elif [ $vendor == "SATA" ]; then
+        #SATA硬盘
+        if echo "$smart_info" | grep -q "Power_On_Hours" ; then
+            power_on_hours=$(echo "$smart_info" | grep "Power_On_Hours" | awk '{print $10}')
+            echo "Power_On_Hours: $power_on_hours"
+        else
+            echo "Power_On_Hours not supported"
+        fi
+        if echo "$smart_info" | grep -q "Reallocated_Sector_Ct" ; then
+            reallocated_sector=$(echo "$smart_info" | grep "Reallocated_Sector_Ct" | awk '{print $10}')
+            echo "Reallocated_Sector_Ct: $reallocated_sector"
+        else
+            echo "Reallocated_Sector_Ct not supported"
+        fi
+        if echo "$smart_info" | grep -q "Temperature_Celsius" ; then
+            temperature=$(echo "$smart_info" | grep "Temperature_Celsius" | awk '{print $10}')
+            echo "Temperature_Celsius: $temperature"
+        else
+            echo "Temperature_Celsius not supported"
+        fi
     else
-        echo "$disk_dev does not support Power on hours"
+        #其他硬盘
+        echo "Other vendor SMART attributes"
     fi
+    echo ""
 done
-
 
 
