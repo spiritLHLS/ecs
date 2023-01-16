@@ -2,7 +2,10 @@
 # by https://github.com/spiritLHLS/ecs
 
 # 检测所有硬盘
-disk_list=$(ls /dev/sd*)
+disk_list=""
+if [ -d "/dev/sd*" ]; then
+   disk_list="$disk_list $(ls /dev/sd*)"
+fi
 if [ -d "/dev/vd*" ]; then
    disk_list="$disk_list $(ls /dev/vd*)"
 fi
