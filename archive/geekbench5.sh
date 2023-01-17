@@ -151,7 +151,7 @@ else
 	"$MY_DIR/geekbench5" --upload >> "$MY_OUTPUT" 2>&1
 fi
 # cat "$MY_OUTPUT"
-GEEKBENCH_URL=$(cat "$MY_OUTPUT" | grep -o 'https://browser.geekbench.com/v5/cpu/[0-9]\+')
+GEEKBENCH_URL=$(cat "$MY_OUTPUT" | grep -o 'https://browser.geekbench.com/v5/cpu/[0-9]\+' | head -n1)
 [[ ! -z $LOCAL_CURL ]] && DL_CMD="curl -s" || DL_CMD="wget -qO-"
 GEEKBENCH_SCORES=$($DL_CMD $GEEKBENCH_URL | grep "div class='score'") ||
 GEEKBENCH_SCORES=$($DL_CMD $GEEKBENCH_URL | grep "span class='score'")
