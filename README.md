@@ -73,9 +73,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # bug待修复
 
-脚本使用CDN加速以支持国内服务器测试，但速度不理想，待修复，修复时间未知
-
-部分OVZ和KVM服务器测试三网回程和硬盘读写仍然有BUG，估算是配置过于拉跨导致的(IO或者CPU)，待修复，修复时间未知
+端口检测(检测是否被墙) - 待修复
 
 # 更新
 
