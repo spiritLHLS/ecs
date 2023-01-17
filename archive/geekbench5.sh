@@ -10,7 +10,7 @@ MY_GITHUB_API_LOG="$MY_DIR/github-gist.log"
 MY_OUTPUT="$MY_DIR/output.html"
 MY_GEEKBENCH_EMAIL=""
 MY_GEEKBENCH_KEY=""
-rm -rf "$MY_OUTPUT" Geekbench-5.4.5-Linux.tar.gz* gb5* geekbench.tar.gz*
+rm -rf "$MY_OUTPUT" Geekbench* gb5* geekbench.tar.gz*
 #####################################################################
 #### END Configuration Section
 #####################################################################
@@ -164,5 +164,5 @@ printf "%-15s | %-30s\n"
 printf "%-15s | %-30s\n" "Single Core" "$GEEKBENCH_SCORES_SINGLE"
 printf "%-15s | %-30s\n" "Multi Core" "$GEEKBENCH_SCORES_MULTI"
 printf "%-15s | %-30s\n" "Full Test" "$GEEKBENCH_URL"
-rm -rf "$MY_OUTPUT" Geekbench-5.4.5-Linux.tar.gz* gb5* geekbench.tar.gz*
+rm -rf "$MY_OUTPUT" Geekbench* gb5* geekbench.tar.gz*
 echo_line
