@@ -1835,9 +1835,9 @@ Hardware_test_script(){
     echo ""
     read -rp "请输入选项:" StartInputh
 	case $StartInputh in
-        1) curl https://github.com/spiritLHLS/ecs/raw/main/archive/disk_info.sh -sSf | sh ;;
-        2) curl https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench4.sh -sSf | sh ;;
-        3) curl https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench5.sh -sSf | sh ;;
+        1) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/disk_info.sh) ;;
+        2) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench4.sh) ;;
+        3) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench5.sh) ;;
         0) Yuanshi_script ;;
     esac
 }
@@ -1933,9 +1933,9 @@ Yuanchuang_script(){
         5) network_c_script ;;
         6) bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) ;;
         7) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/customizeqzcheck.sh) ;;
-        8) curl https://github.com/spiritLHLS/ecs/raw/main/archive/disk_info.sh -sSf | sh ;;
-        9) curl https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench4.sh -sSf | sh ;;
-        10) curl https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench5.sh -sSf | sh ;;
+        8) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/disk_info.sh) ;;
+        9) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench4.sh) ;;
+        10) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench5.sh) ;;
         0) Start_script ;;
     esac
 }
