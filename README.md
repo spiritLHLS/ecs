@@ -73,15 +73,13 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # bug待修复
 
-硬件测试合集未添加更多脚本，待添加，添加时间未知
-
 脚本使用CDN加速以支持国内服务器测试，但速度不理想，待修复，修复时间未知
 
 部分OVZ和KVM服务器测试三网回程和硬盘读写仍然有BUG，估算是配置过于拉跨导致的(IO或者CPU)，待修复，修复时间未知
 
 # 更新
 
-2023.01.16 隐藏部分错误显示，优化了输出。
+2023.01.17 硬件测试合集添加对应硬件测试脚本，修改部分链接使用原始链接。
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
