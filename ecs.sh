@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.01.16"
+ver="2023.01.17"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1756,7 +1756,7 @@ Comprehensive_test_script(){
     echo ""
     read -rp "请输入选项:" StartInputc
 	case $StartInputc in
-        1) wget -qO- --no-check-certificate https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/oooldking/script/master/superbench.sh | bash ;;
+        1) wget -qO- --no-check-certificate https://raw.githubusercontent.com/oooldking/script/master/superbench.sh | bash ;;
         2) curl -fsL https://ilemonra.in/LemonBenchIntl | bash -s fast ;;
         3) bash <(curl -L -Lso- https://cdn.jsdelivr.net/gh/misaka-gh/misakabench@master/misakabench.sh) ;;
         4) curl -sL yabs.sh | bash ;;
@@ -1811,27 +1811,33 @@ Network_test_script(){
     echo ""
     read -rp "请输入选项:" StartInputn
 	case $StartInputn in
-        1) curl https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh ;;
-        2) curl https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh|bash ;;
+        1) curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh ;;
+        2) curl https://raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh|bash ;;
         3) wget -qO- git.io/besttrace | bash ;;
         4) wget -O jcnf.sh https://raw.githubusercontent.com/Netflixxp/jcnfbesttrace/main/jcnf.sh && bash jcnf.sh ;;
         5) bash <(curl -L -Lso- https://git.io/superspeed.sh) ;;
         6) bash <(curl -Lso- https://git.io/superspeed_uxh) ;;
         7) bash <(curl -Lso- https://git.io/J1SEh) ;;
         8) bash <(curl -L -Lso- https://bench.im/hyperspeed) ;;
-        9) curl https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/hyperspeedx.sh -sSf | sh ;;
+        9) curl https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/hyperspeedx.sh -sSf | sh ;;
         0) Yuanshi_script ;;
     esac
 }
 
 Hardware_test_script(){
     head_script
-    _yellow "硬件测试合集如下(暂时未添加，后续添加)"
+    _yellow "硬件测试合集如下"
     echo " -------------"
+    echo -e "${GREEN}1.${PLAIN} 检测本机硬盘(含通电时长)-一般是独服才有用"
+    echo -e "${GREEN}2.${PLAIN} Geekbench4测试"
+    echo -e "${GREEN}3.${PLAIN} Geekbench5测试"
     echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
     echo ""
     read -rp "请输入选项:" StartInputh
 	case $StartInputh in
+        1) curl https://github.com/spiritLHLS/ecs/raw/main/archive/disk_info.sh -sSf | sh ;;
+        2) curl https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench4.sh -sSf | sh ;;
+        3) curl https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench5.sh -sSf | sh ;;
         0) Yuanshi_script ;;
     esac
 }
@@ -1842,7 +1848,7 @@ Yuanshi_script(){
     echo -e "${GREEN}1.${PLAIN} 综合性测试脚本合集(比如yabs，superbench等)"
     echo -e "${GREEN}2.${PLAIN} 流媒体测试脚本合集(各种流媒体解锁相关)"
     echo -e "${GREEN}3.${PLAIN} 网络测试脚本合集(如三网回程和三网测速等)"
-    echo -e "${GREEN}4.${PLAIN} 硬件测试脚本合集(如gb5，硬盘通电时长等)(未添加，未来会添加)"
+    echo -e "${GREEN}4.${PLAIN} 硬件测试脚本合集(如gb5，硬盘通电时长等)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
@@ -1912,6 +1918,9 @@ Yuanchuang_script(){
     echo -e "${GREEN}5.${PLAIN} 三网回程路由测试(预设成都)(平均运行1分钟)"
     echo -e "${GREEN}6.${PLAIN} 自定义IP的回程路由测试(自定义IP，需自行输入IP)"
     echo -e "${GREEN}7.${PLAIN} 自定义IP的质量检测(自定义IP，需自行输入IP)"
+    echo -e "${GREEN}8.${PLAIN} 检测本机硬盘(含通电时长)-一般是独服才有用"
+    echo -e "${GREEN}9.${PLAIN} Geekbench4测试"
+    echo -e "${GREEN}10.${PLAIN} Geekbench5测试"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
@@ -1922,8 +1931,11 @@ Yuanchuang_script(){
         3) network_s_script ;;
         4) network_b_script ;;
         5) network_c_script ;;
-        6) bash <(curl -sSL https://cdn.spiritlhl.workers.dev/https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) ;;
-        7) bash <(curl -sSL https://cdn.spiritlhl.workers.dev/https://github.com/spiritLHLS/ecs/raw/main/customizeqzcheck.sh) ;;
+        6) bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) ;;
+        7) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/customizeqzcheck.sh) ;;
+        8) curl https://github.com/spiritLHLS/ecs/raw/main/archive/disk_info.sh -sSf | sh ;;
+        9) curl https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench4.sh -sSf | sh ;;
+        10) curl https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench5.sh -sSf | sh ;;
         0) Start_script ;;
     esac
 }
