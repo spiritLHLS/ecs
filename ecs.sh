@@ -1805,7 +1805,7 @@ Network_test_script(){
     echo -e "${GREEN}6.${PLAIN} 未知作者修复的superspeed的三网测速脚本"
     echo -e "${GREEN}7.${PLAIN} 由sunpma维护的superspeed的三网测速脚本"
     echo -e "${GREEN}8.${PLAIN} 原始版hyperspeed的三网测速脚本"
-    echo -e "${GREEN}9.${PLAIN} 特殊版hyperspeedx的三网测速脚本"
+    # echo -e "${GREEN}9.${PLAIN} 特殊版hyperspeedx的三网测速脚本"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
     echo ""
@@ -1819,7 +1819,7 @@ Network_test_script(){
         6) bash <(curl -Lso- https://git.io/superspeed_uxh) ;;
         7) bash <(curl -Lso- https://git.io/J1SEh) ;;
         8) bash <(curl -L -Lso- https://bench.im/hyperspeed) ;;
-        9) curl https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/hyperspeedx.sh -sSf | sh ;;
+        # 9) curl https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/hyperspeedx.sh -sSf | sh ;;
         0) Yuanshi_script ;;
     esac
 }
