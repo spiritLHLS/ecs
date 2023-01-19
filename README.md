@@ -77,7 +77,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 更新
 
-2023.01.17 硬件测试合集添加对应硬件测试脚本，修改部分链接使用原始链接。
+2023.01.19 修复自定义三网路由测试的一些bug。
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
