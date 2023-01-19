@@ -77,7 +77,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 更新
 
-2023.01.19 修复自定义三网路由测试的一些bug。
+2023.01.19 修复自定义IP路由测试的一些显示bug。
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
