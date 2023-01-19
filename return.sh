@@ -3,7 +3,7 @@ _red() { echo -e "\033[31m\033[01m$@\033[0m"; }
 _green() { echo -e "\033[32m\033[01m$@\033[0m"; }
 _yellow() { echo -e "\033[33m\033[01m$@\033[0m"; }
 _blue() { echo -e "\033[36m\033[01m$@\033[0m"; }
-reading(){ read -rp "$(green "$1")" "$2"; }
+reading(){ read -rp "$(_green "$1")" "$2"; }
 TEMP_FILE='ip.test'
 fscarmen_route_script(){
     rm -f $TEMP_FILE
