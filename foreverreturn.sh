@@ -19,7 +19,7 @@ fscarmen_route_script(){
         x86_64 )  local FILE=besttrace;;
         aarch64 ) local FILE=besttracearm;;
         i386 )    local FILE=besttracemac;;
-        * ) _red " 只支持 AMD64、ARM64、Mac 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && return;;
+        * ) red " 只支持 AMD64、ARM64、Mac 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && return;;
         esac
     curl -s -L -k "https://github.com/fscarmen/tools/raw/main/besttrace/${FILE}" -o $FILE && chmod +x $FILE &>/dev/null
     green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
