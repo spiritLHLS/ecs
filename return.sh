@@ -36,7 +36,7 @@ if [ -n "$WAN_4" ]; then
   COUNTRY_4E=$(expr "$IP_4" : '.*country\":[ ]*\"\([^"]*\).*')
   COUNTRY_4=$(translate "$COUNTRY_4E")
   ASNORG_4=$(expr "$IP_4" : '.*'${API_ASN[p]}'\":[ ]*\"\([^"]*\).*')
-  TYPE_4=$(curl -4m5 -sSL https://www.abuseipdb.com/check/$WAN_4 2>/dev/null | grep -A2 '<th>Usage Type</th>' | tail -n 1 | sed "s#Data Center/Web Hosting/Transit#数据中心#;s#Fixed Line ISP#家庭宽带#;s#Commercial#商业宽带#;s#Mobile ISP#移动流量#;s#Content Delivery Network#内容分发网络(CDN)#;s#Search Engine Spider#搜索引擎蜘蛛#;s#University/College/School#教育网;s#Unknown#未知#")
+  TYPE_4=$(curl -4m5 -sSL https://www.abuseipdb.com/check/$WAN_4 2>/dev/null | grep -A2 '<th>Usage Type</th>' | tail -n 1 | sed "s@Data Center/Web Hosting/Transit@数据中心@;s@Fixed Line ISP@家庭宽带@;s@Commercial@商业宽带@;s@Mobile ISP@移动流量@;s@Content Delivery Network@内容分发网络(CDN)@;s@Search Engine Spider@搜索引擎蜘蛛@;s@University/College/School@教育网@;s@Unknown@未知@")
   _green " IPv4: $WAN_4\t\t 地区: $COUNTRY_4\t 类型: $TYPE_4\t ASN: $ASNORG_4\n"
 fi
 
@@ -46,7 +46,7 @@ if [ -n "$WAN_6" ]; then
   COUNTRY_6E=$(expr "$IP_6" : '.*country\":[ ]*\"\([^"]*\).*')
   COUNTRY_6=$(translate "$COUNTRY_6E")
   ASNORG_6=$(expr "$IP_6" : '.*'${API_ASN[p]}'\":[ ]*\"\([^"]*\).*')
-  TYPE_6=$(curl -6m5 -sSL https://www.abuseipdb.com/check/$WAN_6 2>/dev/null | grep -A2 '<th>Usage Type</th>' | tail -n 1 | sed "s#Data Center/Web Hosting/Transit#数据中心#;s#Fixed Line ISP#家庭宽带#;s#Commercial#商业宽带#;s#Mobile ISP#移动流量#;s#Content Delivery Network#内容分发网络(CDN)#;s#Search Engine Spider#搜索引擎蜘蛛#;s#University/College/School#教育网;s#Unknown#未知#")
+  TYPE_6=$(curl -6m5 -sSL https://www.abuseipdb.com/check/$WAN_6 2>/dev/null | grep -A2 '<th>Usage Type</th>' | tail -n 1 | sed "s@Data Center/Web Hosting/Transit@数据中心@;s@Fixed Line ISP@家庭宽带@;s@Commercial@商业宽带@;s@Mobile ISP@移动流量@;s@Content Delivery Network@内容分发网络(CDN)@;s@Search Engine Spider@搜索引擎蜘蛛@;s@University/College/School@教育网@;s@Unknown@未知@")
   _green " IPv6: $WAN_6\t 地区: $COUNTRY_6\t 类型: $TYPE_6\t ASN: $ASNORG_6\n"
 fi
 
