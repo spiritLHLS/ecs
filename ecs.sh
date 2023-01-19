@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.01.17"
+ver="2023.01.18"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1819,7 +1819,7 @@ Network_test_script(){
         6) bash <(curl -Lso- https://git.io/superspeed_uxh) ;;
         7) bash <(curl -Lso- https://git.io/J1SEh) ;;
         8) bash <(curl -L -Lso- https://bench.im/hyperspeed) ;;
-        # 9) curl https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/hyperspeedx.sh -sSf | sh ;;
+        # 9) bash <(curl -L -Lso- https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/hyperspeedx.sh) ;;
         0) Yuanshi_script ;;
     esac
 }
@@ -1931,7 +1931,7 @@ Yuanchuang_script(){
         3) network_s_script ;;
         4) network_b_script ;;
         5) network_c_script ;;
-        6) bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/tools/main/return.sh) ;;
+        6) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/return.sh) ;;
         7) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/customizeqzcheck.sh) ;;
         8) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/disk_info.sh) ;;
         9) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench4.sh) ;;
