@@ -30,5 +30,5 @@ fscarmen_route_script(){
 }
 
 [[ -z "$ip" || $ip = '[DESTINATION_IP]' ]] && reading "\n 请输入目的地 IP: " ip
-yellow "\n 检测中，请稍等片刻。\n"
+_yellow "\n 检测中，请稍等片刻。\n"
 fscarmen_route_script
