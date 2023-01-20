@@ -66,9 +66,9 @@ done
 
 reading "\n需要顺便输出路径可视化的图片链接吗？([y]/n) " confirm
 if [ "$confirm" == "n" ]; then
-  _green "\nICMP Trace & MAP:"
-	nexttrace --map "$ip" 
+  _green "\nICMP Trace:"
+  nexttrace "$ip"
 else
-	_green "\nICMP Trace:"
-	nexttrace "$ip"
+  _green "\nICMP Trace & MAP:"
+  nexttrace --map "$ip"
 fi
