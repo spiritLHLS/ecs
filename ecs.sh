@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.01.18"
+ver="2023.01.20"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1799,13 +1799,15 @@ Network_test_script(){
     _yellow "网络测试相关的脚本如下"
     echo -e "${GREEN}1.${PLAIN} zhanghanyun的backtrace三网回程线路检测脚本"
     echo -e "${GREEN}2.${PLAIN} zhucaidan的mtr_trace三网回程线路测脚本"
-    echo -e "${GREEN}3.${PLAIN} 带详情信息的besttrace回程线路测脚本"
-    echo -e "${GREEN}4.${PLAIN} 由Netflixxp维护的四网路由测试脚本"
-    echo -e "${GREEN}5.${PLAIN} 原始作者维护的superspeed的三网测速脚本"
-    echo -e "${GREEN}6.${PLAIN} 未知作者修复的superspeed的三网测速脚本"
-    echo -e "${GREEN}7.${PLAIN} 由sunpma维护的superspeed的三网测速脚本"
-    echo -e "${GREEN}8.${PLAIN} 原始版hyperspeed的三网测速脚本"
-    # echo -e "${GREEN}9.${PLAIN} 特殊版hyperspeedx的三网测速脚本"
+    echo -e "${GREEN}3.${PLAIN} 基于besttrace回程路由测试脚本(带详情信息)"
+    echo -e "${GREEN}4.${PLAIN} 基于besttrace回程路由测试脚本(二开整合输出)"
+    echo -e "${GREEN}5.${PLAIN} 基于nexttrace回程路由测试脚本(第三方IP库)"
+    echo -e "${GREEN}6.${PLAIN} 由Netflixxp维护的四网路由测试脚本"
+    echo -e "${GREEN}7.${PLAIN} 原始作者维护的superspeed的三网测速脚本"
+    echo -e "${GREEN}8.${PLAIN} 未知作者修复的superspeed的三网测速脚本"
+    echo -e "${GREEN}9.${PLAIN} 由sunpma维护的superspeed的三网测速脚本"
+    echo -e "${GREEN}10.${PLAIN} 原始版hyperspeed的三网测速脚本"
+    # echo -e "${GREEN}11.${PLAIN} 特殊版hyperspeedx的三网测速脚本"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
     echo ""
@@ -1814,12 +1816,14 @@ Network_test_script(){
         1) curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh ;;
         2) curl https://raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh|bash ;;
         3) wget -qO- git.io/besttrace | bash ;;
-        4) wget -O jcnf.sh https://raw.githubusercontent.com/Netflixxp/jcnfbesttrace/main/jcnf.sh && bash jcnf.sh ;;
-        5) bash <(curl -L -Lso- https://git.io/superspeed.sh) ;;
-        6) bash <(curl -Lso- https://git.io/superspeed_uxh) ;;
-        7) bash <(curl -Lso- https://git.io/J1SEh) ;;
-        8) bash <(curl -L -Lso- https://bench.im/hyperspeed) ;;
-        # 9) bash <(curl -L -Lso- https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/hyperspeedx.sh) ;;
+        4) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/return.sh) ;;
+        5) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/nexttrace.sh) ;;
+        6) wget -O jcnf.sh https://raw.githubusercontent.com/Netflixxp/jcnfbesttrace/main/jcnf.sh && bash jcnf.sh ;;
+        7) bash <(curl -L -Lso- https://git.io/superspeed.sh) ;;
+        8) bash <(curl -Lso- https://git.io/superspeed_uxh) ;;
+        9) bash <(curl -Lso- https://git.io/J1SEh) ;;
+        10) bash <(curl -L -Lso- https://bench.im/hyperspeed) ;;
+        # 11) bash <(curl -L -Lso- https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/hyperspeedx.sh) ;;
         0) Yuanshi_script ;;
     esac
 }
@@ -1911,16 +1915,17 @@ Danxiang_script(){
 Yuanchuang_script(){
     head_script
     _yellow "本作者有原创成分的脚本如下"
-    echo -e "${GREEN}1.${PLAIN} 完整的本机IP的质量检测(平均运行10~20秒)"
+    echo -e "${GREEN}1.${PLAIN} 完整的本机IP的IP质量检测(平均运行10~20秒)"
     echo -e "${GREEN}2.${PLAIN} 三网回程路由测试(预设广州)(平均运行1分钟)"
     echo -e "${GREEN}3.${PLAIN} 三网回程路由测试(预设上海)(平均运行1分钟)"
     echo -e "${GREEN}4.${PLAIN} 三网回程路由测试(预设北京)(平均运行1分钟)"
     echo -e "${GREEN}5.${PLAIN} 三网回程路由测试(预设成都)(平均运行1分钟)"
-    echo -e "${GREEN}6.${PLAIN} 自定义IP的回程路由测试(自定义IP，需自行输入IP)"
-    echo -e "${GREEN}7.${PLAIN} 自定义IP的质量检测(自定义IP，需自行输入IP)"
-    echo -e "${GREEN}8.${PLAIN} 检测本机硬盘(含通电时长)-一般是独服才有用"
-    echo -e "${GREEN}9.${PLAIN} Geekbench4测试"
-    echo -e "${GREEN}10.${PLAIN} Geekbench5测试"
+    echo -e "${GREEN}6.${PLAIN} 自定义IP的回程路由测试(基于besttrace)(准确率高)"
+    echo -e "${GREEN}7.${PLAIN} 自定义IP的回程路由测试(基于nexttrace)(第三方IP库)"
+    echo -e "${GREEN}8.${PLAIN} 自定义IP的IP质量检测(平均运行10~20秒)"
+    echo -e "${GREEN}9.${PLAIN} 检测本机硬盘(含通电时长)(一般是独服才有用)"
+    echo -e "${GREEN}10.${PLAIN} Geekbench4测试(最常见的CPU基准测试)"
+    echo -e "${GREEN}11.${PLAIN} Geekbench5测试(测不动gb5可以试试这个)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
@@ -1932,10 +1937,11 @@ Yuanchuang_script(){
         4) network_b_script ;;
         5) network_c_script ;;
         6) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/return.sh) ;;
-        7) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/customizeqzcheck.sh) ;;
-        8) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/disk_info.sh) ;;
-        9) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench4.sh) ;;
-        10) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench5.sh) ;;
+        7) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/nexttrace.sh) ;;
+        8) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/customizeqzcheck.sh) ;;
+        9) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/disk_info.sh) ;;
+        10) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench4.sh) ;;
+        11) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench5.sh) ;;
         0) Start_script ;;
     esac
 }
