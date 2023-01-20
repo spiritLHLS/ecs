@@ -1370,7 +1370,7 @@ sjlleo_script(){
 }
 
 basic_script(){
-    echo "-----------------感谢teddysun和misakabench和yabs开源------------------"
+    echo "-----------------感谢teddysun和superbench和yabs开源-------------------"
     print_system_info
     ipv4_info
     cd /root >/dev/null 2>&1
