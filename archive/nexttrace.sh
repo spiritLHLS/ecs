@@ -52,7 +52,7 @@ check_dependencies curl sudo
 bash <(curl -Ls https://raw.githubusercontent.com/sjlleo/nexttrace/main/nt_install.sh)
 
 # 头部信息
-_green "\n使用前 nexttrace 请务必放低预期，如果追求的是数据的精确，请选择 besttrace"
+_green "\n使用 nexttrace 前请务必放低预期，如果追求的是数据的精确，请选择 besttrace"
 _green "原始仓库说明：https://github.com/sjlleo/nexttrace/blob/main/README_zh_CN.md"
 _green "本人仅制作了shell脚本，具体核心程序来源于上面的原始仓库"
 # 读取IP
