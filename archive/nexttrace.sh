@@ -47,10 +47,9 @@ fi
 [[ -z $SYSTEM ]] && _red " 本脚本只支持 Debian、Ubuntu、CentOS、Alpine 或者 macOS 系统,问题反馈:[https://github.com/fscarmen/warp_unlock/issues] " && exit 1
 
 check_dependencies curl sudo
-
+clear
 # 安装配件
 bash <(curl -Ls https://raw.githubusercontent.com/sjlleo/nexttrace/main/nt_install.sh)
-
 # 头部信息
 _green "\n使用 nexttrace 前请务必放低预期，如果追求的是数据的精确，请选择 besttrace"
 _green "原始仓库说明：https://github.com/sjlleo/nexttrace/blob/main/README_zh_CN.md"
