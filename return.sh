@@ -28,13 +28,6 @@ fscarmen_route_script(){
 }
 
 ARCHITECTURE="$(arch)"
-case $ARCHITECTURE in
-x86_64 )  FILE=besttrace;;
-aarch64 ) FILE=besttracearm;;
-i386 )    FILE=besttracemac;;
-* ) _red " 只支持 AMD64、ARM64、Mac 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && exit 1;;
-esac
-
 # 多方式判断操作系统，试到有值为止。只支持 Debian 10/11、Ubuntu 18.04/20.04 或 CentOS 7/8 ,如非上述操作系统，退出脚本
 if [[ $ARCHITECTURE = i386 ]]; then
   sw_vesrs 2>/dev/null | grep -qvi macos && _red " 本脚本只支持 Debian、Ubuntu、CentOS、Alpine 或者 macOS 系统,问题反馈:[https://github.com/fscarmen/warp_unlock/issues] " && exit 1
