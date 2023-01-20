@@ -77,7 +77,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 更新
 
-2023.01.19 修复自定义IP路由测试的一些显示bug。
+2023.01.20 三网路由测试收纳 nexttrace 作为第三方脚本选项和原创区脚本选项
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
