@@ -1,5 +1,6 @@
 #!/bin/bash
 # by https://github.com/spiritLHLS/ecs
+# by spiritlhls
 # 2023.01.17
 MY_GEEKBENCH_DOWNLOAD_URL="https://cdn.geekbench.com/Geekbench-4.4.4-Linux.tar.gz"
 MY_DIR="$HOME/gb4"
