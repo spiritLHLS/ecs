@@ -1,5 +1,6 @@
 #!/bin/bash
 # by https://github.com/spiritLHLS/ecs
+# by spiritlhls
 # 2023.01.17
 next() {
     echo "-------------------"
