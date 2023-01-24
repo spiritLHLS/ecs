@@ -1,5 +1,6 @@
 #!/bin/bash
 # by https://github.com/spiritLHLS/ecs
+# by spiritlhls
 # 2023.01.20
 
 _red() { echo -e "\033[31m\033[01m$@\033[0m"; }
