@@ -39,7 +39,7 @@ echo 1 | bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/e
 <details>
 除了已标注的原创内容，其余所有分区均为借鉴并进行优化修改后的版本，与原版本可能有部分不同
 
-系统基础信息测试融合了三家还有我自己修补的部分检测，应该是目前最全面的了
+系统基础信息测试融合了三家还有我自己修补的部分检测(systl和virt)，应该是目前最全面的了
 
 CPU测试使用sysbench测试得分，不是yabs的gb4或gb5，前者只是简单的计算质数测试速度快，后者geekbench是综合测试算加权得分，不是同一种东西，别互相比较了，没有任何用处
 
