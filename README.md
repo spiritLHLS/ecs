@@ -32,6 +32,8 @@ echo 1 | bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/e
 
 融合怪的执行结果保存在```/root```下的test_result.txt中，运行完毕可用```cat test_result.txt```查看记录
 
+有时候想要测一些配置极其拉跨的机器时，推荐使用screen挂起执行融合怪，然后你可以关闭SSH连接，等待一段时间后使用```cat test_result.txt```查看运行的实时状况，这样可以避免IO或者CPU过于垃圾导致的测试过程中的SSH连接中断
+
 使用**CDN**加速理论上已支持**国内**和**国外**服务器测试，但国内受CDN口子或国内机器口子的限制会加载慢很多
 
 融合怪测试说明以及部分测试结果的内容解释(初次使用推荐查看)：
