@@ -38,6 +38,8 @@ echo 1 | bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/e
 
 **这样可以避免IO或者CPU过于垃圾导致的测试过程中的SSH连接中断，就不会测一半啥都没了**
 
+最烂机器测试的例子(跑了47分钟一样测完)：[跳转](https://github.com/spiritLHLS/ecs/blob/main/lowpage/README.md)
+
 使用**CDN**加速理论上已支持**国内**和**国外**服务器测试，但国内受CDN口子或国内机器口子的限制会加载慢很多
 
 融合怪测试说明以及部分测试结果的内容解释(初次使用推荐查看)：
