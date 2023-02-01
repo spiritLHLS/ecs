@@ -140,3 +140,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 本作者原创区选项
 
 ![](https://github.com/spiritLHLS/ecs/raw/main/page/yuanchuang.png)
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/spiritLHLS/ecs.svg)](https://starchart.cc/spiritLHLS/ecs)
