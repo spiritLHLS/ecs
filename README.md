@@ -73,6 +73,8 @@ IP质量检测纯个人原创，使用python编写，如有bug或者更多数据
 
 原创脚本区是个人原创的部分，有事没事也可以看看，可能会更新某些偏门或者独到的脚本
 
+VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流媒体测试等所有测试融合的脚本，仅此一家。
+
 </details>
 
 ### 纯测IP质量(IP黑还是白)(含IPV4和IPV6)
@@ -95,9 +97,11 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 如若还有bug请到上面仓库的issues反映
 
-# bug待修复
+# 待解决事项
 
 端口检测(检测是否被墙) - 待修复
+
+运行完毕自动上传结果到pastebin - 待添加
 
 # 更新
 
