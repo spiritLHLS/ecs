@@ -105,7 +105,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 更新
 
-2023.01.25 IP质量检测重构输出，增加两个数据库来源
+2023.02.06 解决almalinux不自带unzip的问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
