@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.01.20"
+ver="2023.02.06"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -238,6 +238,8 @@ checksystem() {
 	    release="ubuntu"
 	elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
 	    release="centos"
+    elif cat /etc/os-release | grep -Eqi "almalinux"; then
+        release="centos"
     elif cat /proc/version | grep -Eqi "arch"; then
         release="arch"
 	fi
@@ -302,6 +304,13 @@ checkwget() {
 	if  [ ! -e '/usr/bin/wget' ]; then
             _yellow "Installing wget"
 	        ${PACKAGE_INSTALL[int]} wget
+	fi
+}
+
+checkunzip() {
+	if ! command -v unzip > /dev/null 2>&1; then
+            _yellow "Installing unzip"
+	        ${PACKAGE_INSTALL[int]} unzip
 	fi
 }
 
@@ -1343,6 +1352,7 @@ pre_check(){
     checkupdate
     checkroot
     checkwget
+    checkunzip
     checksystem
     checkcurl
     check_cdn_file
