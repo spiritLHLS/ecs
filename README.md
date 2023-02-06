@@ -103,6 +103,8 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 运行完毕自动上传结果到pastebin - 待添加
 
+almalinux部分版本安装不上sysbench部件 - 待修复
+
 # 更新
 
 2023.02.06 解决almalinux不自带unzip的问题
