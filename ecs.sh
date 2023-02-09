@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.02.06"
+ver="2023.02.09"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -179,10 +179,17 @@ Check_JSONQuery() {
         if [[ "${Var_OSRelease}" =~ ^(centos|rhel|almalinux)$ ]]; then
             yum install -y epel-release
             if [ $? -ne 0 ]; then
-                cd /etc/yum.repos.d/
-                sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
-                sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
-                yum makecache
+                if [ "$(grep -Ei 'centos|almalinux' /etc/os-release | awk -F'=' '{print $2}')" == "AlmaLinux" ]; then
+                    cd /etc/yum.repos.d/
+                    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/AlmaLinux-*
+                    sed -i 's|#baseurl=https://repo.almalinux.org/|baseurl=https://vault.almalinux.org/|g' /etc/yum.repos.d/AlmaLinux-*
+                    yum makecache
+                else
+                    cd /etc/yum.repos.d/
+                    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+                    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+                    yum makecache
+                fi
                 if [ $? -ne 0 ]; then
                     yum -y update && yum install -y epel-release
                 fi
