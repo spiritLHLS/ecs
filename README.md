@@ -1,6 +1,6 @@
 # ecs
 
-支持系统：Ubuntu 18+，Debian 8+，centos 7+，Fedora，~~Almalinux 8.5+~~, Arch
+支持系统：Ubuntu 18+，Debian 8+，centos 7+，Fedora，Almalinux 8.5+, Arch
 
 ### 融合怪测评脚本
 
@@ -103,11 +103,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 运行完毕自动上传结果到pastebin - 待添加
 
-almalinux部分版本安装不上sysbench部件 - 待修复
-
 # 更新
 
-2023.02.06 解决almalinux不自带unzip的问题
+2023.02.08 解决almalinux部分版本安装不上sysbench部件的问题(epel-release的编译安装新增almalinux的判断)
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
