@@ -105,7 +105,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 更新
 
-2023.02.11 新增OpenAI检测，已加如融合怪套餐，修复删除部分流媒体检测空行的显示节省空间
+2023.02.11 新增OpenAI检测，已加入融合怪套餐，修复删除部分流媒体检测空行的显示节省空间
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
