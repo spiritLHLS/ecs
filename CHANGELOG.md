@@ -2,6 +2,8 @@
 
 # 主要变化
 
+2023.02.08 解决almalinux部分版本安装不上sysbench部件的问题(epel-release的编译安装新增almalinux的判断)
+
 2023.02.06 解决almalinux不自带unzip的问题
 
 2023.01.25 IP质量检测重构输出，增加两个数据库来源
