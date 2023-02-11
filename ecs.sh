@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.02.09"
+ver="2023.02.11"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1374,14 +1374,14 @@ sjlleo_script(){
     cd /root >/dev/null 2>&1
     echo "--------------------流媒体解锁--感谢sjlleo开源------------------------"
     _yellow "以下测试的解锁地区是准确的，但是不是完整解锁的判断可能有误，这方面仅作参考使用"
-    _yellow "Youtube"
-    ./tubecheck | sed "/@sjlleo/d"
+    _yellow "----------------Youtube----------------"
+    ./tubecheck | sed "/@sjlleo/d;/^$/d"
     sleep 0.5
-    _yellow "Netflix"
+    _yellow "----------------Netflix----------------"
     ./nf | sed "/@sjlleo/d;/^$/d"
     sleep 0.5
-    _yellow "DisneyPlus"
-    ./dp | sed "/@sjlleo/d"
+    _yellow "---------------DisneyPlus---------------"
+    ./dp | sed "/@sjlleo/d;/^$/d"
     sleep 0.5
     _yellow "解锁Youtube，Netflix，DisneyPlus上面和下面进行比较，不同之处自行判断"
 }
@@ -1423,9 +1423,21 @@ RegionRestrictionCheck_script(){
     echo 0 | bash media_lmc_check.sh -M 6 2>/dev/null | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
 }
 
+openai_script(){
+    cd /root >/dev/null 2>&1
+    echo -e "--------------OpenAi解锁--感谢missuo的OpenAI-Checker项目--------------"
+    output=$(bash <(curl -Ls https://cdn.jsdelivr.net/gh/missuo/OpenAI-Checker/openai.sh))
+    output=$(echo "$output" | sed '1,2d')
+    output=$(echo "$output" | grep -v '^Your IPv[46]: [0-9a-fA-F:.]* -')
+    output=$(echo "$output" | grep -v '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\|[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*')
+    output=$(echo "$output" | grep -v '::')
+    output=$(echo "$output" | grep -v '^-------------------------------------')
+    echo "$output"
+}
+
 lmc999_script(){
     cd /root >/dev/null 2>&1
-    echo -e "-------------TikTok解锁--感谢lmc999加密脚本及fscarmen PR--------------"
+    echo -e "-------------TikTok解锁--感谢lmc999的源脚本及fscarmen PR--------------"
     local Ftmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -s --max-time 10 "https://www.tiktok.com/")
 
     if [[ "$Ftmpresult" = "curl"* ]]; then
@@ -1539,6 +1551,7 @@ all_script(){
     sjlleo_script
     RegionRestrictionCheck_script
     lmc999_script
+    openai_script
     spiritlhl_script
     backtrace_script
     fscarmen_route_script test_area_g[@] test_ip_g[@]
@@ -1580,6 +1593,7 @@ minal_plus(){
     sjlleo_script
     RegionRestrictionCheck_script
     lmc999_script
+    openai_script
     backtrace_script
     fscarmen_route_script test_area_g[@] test_ip_g[@]
     superspeed_minal_script
@@ -1621,6 +1635,7 @@ minal_plus_media(){
     sjlleo_script
     RegionRestrictionCheck_script
     lmc999_script
+    openai_script
     superspeed_minal_script
     end_script
 }
@@ -1652,6 +1667,7 @@ media_script(){
     sjlleo_script
     RegionRestrictionCheck_script
     lmc999_script
+    openai_script
     end_script
 }
 
@@ -1795,6 +1811,7 @@ Media_test_script(){
     echo -e "${GREEN}5.${PLAIN} lmc999的TikTok解锁区域检测脚本"
     echo -e "${GREEN}6.${PLAIN} lmc999的流媒体检测脚本-综合性地域流媒体全测的"
     echo -e "${GREEN}7.${PLAIN} nkeonkeo的流媒体检测脚本-基于上者的GO重构版本"
+    echo -e "${GREEN}8.${PLAIN} missuo的OpenAI-Checker检测脚本"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
     echo ""
@@ -1807,6 +1824,7 @@ Media_test_script(){
         5) bash <(curl -s https://raw.githubusercontent.com/lmc999/TikTokCheck/main/tiktok.sh) ;;
         6) bash <(curl -L -s check.unlock.media) ;;
         7) bash <(curl -Ls unlock.moe) ;;
+        8) bash <(curl -Ls https://cpp.li/openai) ;;
         0) Yuanshi_script ;;
     esac
 }
@@ -1886,10 +1904,10 @@ Yuanshi_script(){
 Jinjian_script(){
     head_script
     _yellow "融合怪的精简脚本如下"
-    echo -e "${GREEN}1.${PLAIN} 极简版(基础系统信息+CPU+内存+磁盘IO+测速节点4个)(平均运行3分钟不到)"
-    echo -e "${GREEN}2.${PLAIN} 精简版(基础系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体解锁+TikTok解锁+回程+路由+测速节点4个)(平均运行4分钟左右)"
-    echo -e "${GREEN}3.${PLAIN} 精简网络版(基础系统信息+CPU+内存+磁盘IO+回程+路由+测速节点4个)(平均运行不到4分钟)"
-    echo -e "${GREEN}4.${PLAIN} 精简解锁版(基础系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体解锁+TikTok解锁+测速节点4个)(平均运行4分钟左右)"
+    echo -e "${GREEN}1.${PLAIN} 极简版(系统信息+CPU+内存+磁盘IO+测速节点4个)(平均运行3分钟不到)"
+    echo -e "${GREEN}2.${PLAIN} 精简版(系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体+TikTok+OpenAI+回程+路由+测速节点4个)(平均运行4分钟左右)"
+    echo -e "${GREEN}3.${PLAIN} 精简网络版(系统信息+CPU+内存+磁盘IO+回程+路由+测速节点4个)(平均运行不到4分钟)"
+    echo -e "${GREEN}4.${PLAIN} 精简解锁版(系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体+TikTok+OpenAI+测速节点4个)(平均运行4分钟左右)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
@@ -1907,7 +1925,7 @@ Danxiang_script(){
     head_script
     _yellow "融合怪拆分的单项测试脚本如下"
     echo -e "${GREEN}1.${PLAIN} 网络方面(简化的IP质量检测+三网回程+三网路由与延迟+测速节点11个)(平均运行7分钟左右)"
-    echo -e "${GREEN}2.${PLAIN} 解锁方面(御三家解锁+常用流媒体解锁+TikTok解锁)(平均运行30~60秒)"
+    echo -e "${GREEN}2.${PLAIN} 解锁方面(御三家解锁+常用流媒体解锁+TikTok解锁+OpenAI解锁)(平均运行30~60秒)"
     echo -e "${GREEN}3.${PLAIN} 硬件方面(基础系统信息+CPU+内存+双重磁盘IO测试)(平均运行1分半钟)"
     echo -e "${GREEN}4.${PLAIN} 完整的IP质量检测(平均运行10~20秒)"
     echo -e "${GREEN}5.${PLAIN} 常用端口开通情况(是否有阻断)(平均运行1分钟左右)(暂时有bug未修复)"
