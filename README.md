@@ -105,7 +105,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 更新
 
-2023.02.08 解决almalinux部分版本安装不上sysbench部件的问题(epel-release的编译安装新增almalinux的判断)
+2023.02.11 新增OpenAI检测，已假如融合怪套餐，修复部分空行的bug
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -119,7 +119,8 @@ https://github.com/spiritLHLS/one-click-installation-script
 - [x] 硬盘IO读写测试--感谢yabs开源，本人修改整理优化
 - [x] 御三家流媒体解锁--感谢sjlleo的二进制文件，本人修改整理优化
 - [x] 常用流媒体解锁--感谢RegionRestrictionCheck开源，本人修改整理优化
-- [x] Tiktok解锁--感谢lmc999的开源，本人修改整理优化
+- [x] Tiktok解锁--感谢lmc999的，本人修改整理优化
+- [x] OpenAI检测--感谢missuo提供的[项目](https://github.com/missuo/OpenAI-Checker),本人修改整理
 - [x] 三网回程以及路由延迟--感谢zhanghanyun/backtrace开源
 - [x] 回程路由以及带宽类型检测(商宽/家宽/数据中心)--由fscarmen的PR以及本人的技术思路提供，本人修改整理优化
 - [ ] 端口检测(检测是否被墙)--由fscarmen的PR以及本人的技术思路提供 - 待修复
