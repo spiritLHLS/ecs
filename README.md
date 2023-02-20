@@ -105,7 +105,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 更新
 
-2023.02.20 修复Fedora 23系统检测被redhat检测覆盖的问题
+2023.02.20 修复Fedora 23系统检测被redhat检测覆盖的问题，修复debian/ubuntu低版本需要验证才能下载virt-what, jq等工具包的问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
