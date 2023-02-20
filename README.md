@@ -1,6 +1,6 @@
 # ecs
 
-支持系统：Ubuntu 18+，Debian 8+，centos 7+，Fedora，Almalinux 8.5+, Arch
+支持系统：Ubuntu 18+，Debian 8+，centos 7+，Fedora 22+，Almalinux 8.5+, Arch
 
 ### 融合怪测评脚本
 
@@ -105,7 +105,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 更新
 
-2023.02.20 修复fedora系统检测被redhat检测覆盖的问题
+2023.02.20 修复Fedora 23系统检测被redhat检测覆盖的问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
