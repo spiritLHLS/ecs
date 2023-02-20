@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.02.11"
+ver="2023.02.20"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -129,6 +129,9 @@ Check_Virtwhat() {
         if [[ "${Var_OSRelease}" =~ ^(centos|rhel|almalinux|arch)$ ]]; then
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             yum -y install virt-what
+            if [ $? -ne 0 ]; then
+                dnf -y install virt-what
+            fi
         elif [[ "${Var_OSRelease}" =~ ^(ubuntu|debian)$ ]]; then
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             ! apt-get update && apt-get --fix-broken install -y && apt-get update
@@ -398,6 +401,12 @@ SystemInfo_GetOSRelease() {
         fi
         local Var_OSReleaseArch="$(arch)"
         LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
+    elif [ -f "/etc/fedora-release" ]; then # Fedora
+        Var_OSRelease="fedora"
+        local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3}')"
+        local Var_OSReleaseVersion="$(cat /etc/fedora-release | awk '{print $3,$4,$5,$6,$7}')"
+        local Var_OSReleaseArch="$(arch)"
+        LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
     elif [ -f "/etc/redhat-release" ]; then # RedHat
         Var_OSRelease="rhel"
         local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3,$4}')"
@@ -414,12 +423,6 @@ SystemInfo_GetOSRelease() {
             local Var_RedHatELRepoVersion="unknown"
             local Var_OSReleaseVersion="<Unknown Release>"
         fi
-        local Var_OSReleaseArch="$(arch)"
-        LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
-    elif [ -f "/etc/fedora-release" ]; then # Fedora
-        Var_OSRelease="fedora"
-        local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3}')"
-        local Var_OSReleaseVersion="$(cat /etc/fedora-release | awk '{print $3,$4,$5,$6,$7}')"
         local Var_OSReleaseArch="$(arch)"
         LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
     elif [ -f "/etc/lsb-release" ]; then # Ubuntu
