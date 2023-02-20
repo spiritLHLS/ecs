@@ -132,11 +132,31 @@ Check_Virtwhat() {
             if [ $? -ne 0 ]; then
                 dnf -y install virt-what
             fi
-        elif [[ "${Var_OSRelease}" =~ ^(ubuntu|debian)$ ]]; then
+        elif [[ "${Var_OSRelease}" =~ ^debian$ ]]; then
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             ! apt-get update && apt-get --fix-broken install -y && apt-get update
-            ! apt-get install -y dmidecode && apt-get --fix-broken install -y && apt-get install -y dmidecode
-            ! apt-get install -y virt-what && apt-get --fix-broken install -y && apt-get install -y virt-what
+            ! apt-get install -y dmidecode && apt-get --fix-broken install -y && apt-get install dmidecode -y
+            ! apt-get install -y virt-what && apt-get --fix-broken install -y && apt-get install virt-what -y
+            if [ $? -ne 0 ]; then
+                ! apt-get update && apt-get --fix-broken install -y && apt-get update
+                ! apt-get install -y dmidecode && apt-get --fix-broken install -y && apt-get install dmidecode -y --force-yes
+                ! apt-get install -y virt-what && apt-get --fix-broken install -y && apt-get install virt-what -y --force-yes
+            fi
+            if [ $? -ne 0 ]; then
+                ! apt-get update && apt-get --fix-broken install -y && apt-get update
+                ! apt-get install -y dmidecode && apt-get --fix-broken install -y && apt-get install dmidecode -y --allow
+                ! apt-get install -y virt-what && apt-get --fix-broken install -y && apt-get install virt-what -y --allow
+            fi
+        elif [[ "${Var_OSRelease}" =~ ^ubuntu$ ]]; then
+            echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
+            ! apt-get update && apt-get --fix-broken install -y && apt-get update
+            ! apt-get install -y dmidecode && apt-get --fix-broken install -y && apt-get install dmidecode -y
+            ! apt-get install -y virt-what && apt-get --fix-broken install -y && apt-get install virt-what -y 
+            if [ $? -ne 0 ]; then
+                ! apt-get update && apt-get --fix-broken install -y && apt-get update
+                ! apt-get install -y dmidecode && apt-get --fix-broken install -y && apt-get install dmidecode -y --allow-unauthenticated
+                ! apt-get install -y virt-what && apt-get --fix-broken install -y && apt-get install virt-what -y --allow-unauthenticated
+            fi
         elif [ "${Var_OSRelease}" = "fedora" ]; then
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             dnf -y install virt-what
@@ -200,9 +220,21 @@ Check_JSONQuery() {
             fi
             yum install -y tar
             yum install -y jq
-        elif [[ "${Var_OSRelease}" =~ ^(ubuntu|debian)$ ]]; then
+        elif [[ "${Var_OSRelease}" =~ ^debian$ ]]; then
             ! apt-get update && apt-get --fix-broken install -y && apt-get update
-            ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install -y jq
+            ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install jq -y
+            if [ $? -ne 0 ]; then
+                ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install jq -y --force-yes
+            fi
+            if [ $? -ne 0 ]; then
+                ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install jq -y --allow
+            fi
+        elif [[ "${Var_OSRelease}" =~ ^ubuntu$ ]]; then
+            ! apt-get update && apt-get --fix-broken install -y && apt-get update
+            ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install jq -y
+            if [ $? -ne 0 ]; then
+                ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install jq -y --allow-unauthenticated
+            fi
         elif [ "${Var_OSRelease}" = "fedora" ]; then
             dnf install -y jq
         elif [ "${Var_OSRelease}" = "alpinelinux" ]; then
@@ -260,6 +292,7 @@ checkupdate(){
 	    _yellow "Updating package management sources"
 		${PACKAGE_UPDATE[int]} > /dev/null 2>&1
         ${PACKAGE_INSTALL[int]} dmidecode > /dev/null 2>&1
+        apt-key update > /dev/null 2>&1
 }
 
 checkpython() {
@@ -309,6 +342,10 @@ checkcurl() {
             _yellow "Installing curl"
 	        ${PACKAGE_INSTALL[int]} curl
 	fi
+    if [ $? -ne 0 ]; then
+        apt-get -f install > /dev/null 2>&1
+        ${PACKAGE_INSTALL[int]} curl
+    fi
 }
 
 checkwget() {
@@ -1489,7 +1526,13 @@ spiritlhl_script(){
 
 backtrace_script(){
     echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
-    curl -k "${cdn_success_url}https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh" -sSf | sh 2>&1 | grep -v 'github.com/zhanghanyun/backtrace' | grep -v 正在测试
+    curl_output=$(curl --connect-timeout 10 --max-time 60 -k "${cdn_success_url}https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh" -sSf | sh 2>&1)
+    if [ $? -eq 0 ]; then
+        echo "${curl_output}" | grep -v 'github.com/zhanghanyun/backtrace' | grep -v '正在测试'
+    else
+        curl_output=$(curl --connect-timeout 10 --max-time 60 -k https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh 2>&1)
+        echo "${curl_output}" | grep -v 'github.com/zhanghanyun/backtrace' | grep -v '正在测试'
+    fi
 }
 
 fscarmen_route_script(){
