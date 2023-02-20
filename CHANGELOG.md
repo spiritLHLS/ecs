@@ -2,6 +2,8 @@
 
 # 主要变化
 
+2023.02.11 新增OpenAI检测，已加入融合怪套餐，修复删除部分流媒体检测空行的显示节省空间
+
 2023.02.08 解决almalinux部分版本安装不上sysbench部件的问题(epel-release的编译安装新增almalinux的判断)
 
 2023.02.06 解决almalinux不自带unzip的问题
