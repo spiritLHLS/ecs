@@ -103,6 +103,8 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 运行完毕自动上传结果到pastebin - 待添加
 
+纯V6网络测试容易触发某些错误 - 待修复
+
 # 更新
 
 2023.02.20 修复Fedora 23系统检测被redhat检测覆盖的问题，修复debian/ubuntu低版本需要验证才能下载virt-what, jq等工具包的问题
