@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.02.20"
+ver="2023.02.28"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1143,7 +1143,10 @@ ipv4_info() {
         echo " 地区              : $(_yellow "$region")"
     fi
     if [[ -z "$org" ]]; then
-        echo " 地区              : $(_red "无法获取ISP信息")"
+        IP_6=$(curl -ks6m8 -A Mozilla https://api.ip.sb/geoip) &&
+        WAN_6=$(expr "$IP_6" : '.*ip\":[ ]*\"\([^"]*\).*') &&
+        ASNORG_6=$(expr "$IP_6" : '.*isp\":[ ]*\"\([^"]*\).*')
+        echo " IPV6网络          : $(_blue "$ASNORG_6")"
     fi
 }
 
@@ -1527,24 +1530,34 @@ spiritlhl_script(){
 backtrace_script(){
     echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
     curl_output=$(curl --connect-timeout 10 --max-time 60 -k "${cdn_success_url}https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh" -sSf | sh 2>&1)
-    if [ $? -eq 0 ]; then
+    if echo "$curl_output" | grep -q "正在测试" >/dev/null; then
+        if [ $? -eq 0 ]; then
         echo "${curl_output}" | grep -v 'github.com/zhanghanyun/backtrace' | grep -v '正在测试'
+        else
+            curl_output=$(curl --connect-timeout 10 --max-time 60 -k https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh 2>&1)
+            echo "${curl_output}" | grep -v 'github.com/zhanghanyun/backtrace' | grep -v '正在测试'
+        fi
     else
-        curl_output=$(curl --connect-timeout 10 --max-time 60 -k https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh 2>&1)
-        echo "${curl_output}" | grep -v 'github.com/zhanghanyun/backtrace' | grep -v '正在测试'
+        _yellow "纯IPV6网络无法查询"
     fi
 }
 
 fscarmen_route_script(){
     echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
     rm -f $TEMP_FILE
-    IP_4=$(curl -ks4m8 -A Mozilla https://api.ip.sb/geoip) &&
-    WAN_4=$(expr "$IP_4" : '.*ip\":[ ]*\"\([^"]*\).*') &&
-    ASNORG_4=$(expr "$IP_4" : '.*isp\":[ ]*\"\([^"]*\).*') &&
-    _blue "IPv4 ASN: $ASNORG_4" >> $TEMP_FILE
-    IP_6=$(curl -ks6m8 -A Mozilla https://api.ip.sb/geoip) &&
-    WAN_6=$(expr "$IP_6" : '.*ip\":[ ]*\"\([^"]*\).*') &&
-    ASNORG_6=$(expr "$IP_6" : '.*isp\":[ ]*\"\([^"]*\).*') &&
+    if ping -c 1 1.1.1.1 &> /dev/null
+    then
+        IP_4=$(curl -ks4m8 -A Mozilla https://api.ip.sb/geoip) &&
+        WAN_4=$(expr "$IP_4" : '.*ip\":[ ]*\"\([^"]*\).*') &&
+        ASNORG_4=$(expr "$IP_4" : '.*isp\":[ ]*\"\([^"]*\).*') &&
+        _blue "IPv4 ASN: $ASNORG_4" >> $TEMP_FILE
+    else
+        _yellow "无IPV4网络无法查询"
+        return 0
+    fi
+    IP_6=$(curl -ks6m8 -A Mozilla https://api.ip.sb/geoip) &> /dev/null &&
+    WAN_6=$(expr "$IP_6" : '.*ip\":[ ]*\"\([^"]*\).*') &> /dev/null &&
+    ASNORG_6=$(expr "$IP_6" : '.*isp\":[ ]*\"\([^"]*\).*') &> /dev/null &&
     _blue "IPv6 ASN: $ASNORG_6" >> $TEMP_FILE
     local ARCHITECTURE="$(uname -m)"
         case $ARCHITECTURE in
