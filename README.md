@@ -99,11 +99,13 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
+使用tmp文件优化缩减脚本执行时长 - 待修改
+
+sjlleo的nf查询不支持ARM架构机器查询 - 待修复
+
 端口检测(检测是否被墙) - 待修复
 
 运行完毕自动上传结果到pastebin - 待添加
-
-sjlleo的nf查询不支持ARM架构机器查询 - 待修复
 
 # 更新
 
