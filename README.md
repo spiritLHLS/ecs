@@ -99,8 +99,6 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
-使用tmp文件优化缩减脚本执行时长 - 待修改
-
 sjlleo的nf查询不支持ARM架构机器查询 - 待修复
 
 端口检测(检测是否被墙) - 待修复
@@ -109,7 +107,7 @@ sjlleo的nf查询不支持ARM架构机器查询 - 待修复
 
 # 更新
 
-2023.02.28 修复纯V6网络测试容易触发的某些错误
+2023.03.04 使用tmp文件优化缩减脚本执行时长，缩减了大概30秒执行时长
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
