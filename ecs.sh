@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.02.28"
+ver="2023.03.04"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -13,6 +13,7 @@ test_area_b=("北京电信" "北京联通" "北京移动")
 test_ip_b=("219.141.136.12" "202.106.50.1" "221.179.155.161")
 test_area_c=("成都电信" "成都联通" "成都移动")
 test_ip_c=("61.139.2.69" "119.6.6.6" "211.137.96.205")
+TEMP_DIR='/tmp/ecs'
 TEMP_FILE='ip.test'
 BrowserUA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36"
 WorkDir="/tmp/.LemonBench"
@@ -20,6 +21,7 @@ RED="\033[31m"
 GREEN="\033[32m"
 YELLOW="\033[33m"
 PLAIN="\033[0m"
+
 _red() { echo -e "\033[31m\033[01m$@\033[0m"; }
 _green() { echo -e "\033[32m\033[01m$@\033[0m"; }
 _yellow() { echo -e "\033[33m\033[01m$@\033[0m"; }
@@ -45,7 +47,7 @@ apt-get --fix-broken install -y > /dev/null 2>&1
 check_cdn() {
   local o_url=$1
   for cdn_url in "${cdn_urls[@]}"; do
-    if curl -L -k "$cdn_url$o_url" --max-time 6 | grep -q "success" > /dev/null 2>&1; then
+    if curl -sL -k "$cdn_url$o_url" --max-time 6 | grep -q "success" > /dev/null 2>&1; then
       export cdn_success_url="$cdn_url"
       return
     fi
@@ -61,6 +63,23 @@ check_cdn_file() {
     else
         _yellow "No CDN available, no use CDN"
     fi
+}
+
+# 后台静默预下载文件并解压
+pre_downlaod() {
+    mkdir -p $TEMP_DIR
+    wget -O $TEMP_DIR/sysbench.zip "${cdn_success_url}https://github.com/akopytov/sysbench/archive/1.0.17.zip"
+    unzip $TEMP_DIR/sysbench.zip -d ${TEMP_DIR}
+    curl -sL -k "${cdn_success_url}https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_${LBench_Result_SystemBit_Full}" -o $TEMP_DIR/dp && chmod +x $TEMP_DIR/dp
+    curl -sL -k "${cdn_success_url}https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_${LBench_Result_SystemBit_Full}" -o $TEMP_DIR/nf && chmod +x $TEMP_DIR/nf
+    curl -sL -k "${cdn_success_url}https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_${LBench_Result_SystemBit_Full}" -o $TEMP_DIR/tubecheck && chmod +x $TEMP_DIR/tubecheck
+    curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py" -o $TEMP_DIR/qzcheck_ecs.py 
+    curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py" -o $TEMP_DIR/googlesearchcheck.py
+    # curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py" -o $TEMP_DIR/tk.py
+    curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh" -o $TEMP_DIR/media_lmc_check.sh && chmod 777 $TEMP_DIR/media_lmc_check.sh
+    curl -sL -k "${cdn_success_url}https://github.com/fscarmen/tools/raw/main/besttrace/${BESTTRACE_FILE}" -o $TEMP_DIR/$BESTTRACE_FILE && chmod +x $TEMP_DIR/$BESTTRACE_FILE
+    wget -q -O $TEMP_DIR/backtrace.tar.gz  https://github.com/zhanghanyun/backtrace/releases/latest/download/$BACKTRACE_FILE
+    tar -xf $TEMP_DIR/backtrace.tar.gz -C $TEMP_DIR
 }
 
 # Trap终止信号捕获
@@ -95,6 +114,7 @@ Global_StartupInit_Action() {
 }
 
 Global_Exit_Action() {
+    rm -rf ${TEMP_DIR}
     rm -rf ${WorkDir}/
     rm -rf /.tmp_LBench/
 }
@@ -597,10 +617,9 @@ Check_Sysbench_InstantBuild() {
         prepare_compile_env "${Var_OSRelease}"
         echo -e "${Msg_Info}Downloading Source code (Version 1.0.17)..."
         mkdir -p /tmp/_LBench/src/
-        wget -U "${UA_LemonBench}" -O /tmp/_LBench/src/sysbench.zip "${cdn_success_url}https://github.com/akopytov/sysbench/archive/1.0.17.zip"
+        mv ${TEMP_DIR}/sysbench-1.0.17 /tmp/_LBench/src/
         echo -e "${Msg_Info}Compiling Sysbench Module ..."
-        cd /tmp/_LBench/src/
-        unzip sysbench.zip && cd sysbench-1.0.17
+        cd /tmp/_LBench/src/sysbench-1.0.17
         ./autogen.sh && ./configure --without-mysql && make -j8 && make install
         echo -e "${Msg_Info}Cleaning up ..."
         cd /tmp && rm -rf /tmp/_LBench/src/sysbench*
@@ -742,41 +761,29 @@ Function_ReadCPUStat() {
     fi
 }
 
-DownloadFiles() {
-    curl -L -k "${cdn_success_url}https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_${LBench_Result_SystemBit_Full}" -o dp && chmod +x dp
-    sleep 0.5
-    curl -L -k "${cdn_success_url}https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_${LBench_Result_SystemBit_Full}" -o nf && chmod +x nf
-    sleep 0.5
-    curl -L -k "${cdn_success_url}https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_${LBench_Result_SystemBit_Full}" -o tubecheck && chmod +x tubecheck
-    sleep 0.5
-}
-
 SystemInfo_GetSystemBit() {
     local sysarch="$(uname -m)"
     if [ "${sysarch}" = "unknown" ] || [ "${sysarch}" = "" ]; then
-        local sysarch="$(arch)"
+        local sysarch=SystemInfo_GetSystemBit"$(arch)"
     fi
-    # 根据架构信息设置系统位数并下载文件
+    # 根据架构信息设置系统位数并下载文件,其余 * 包括了 x86_64
     case "${sysarch}" in
-        "x86_64")
-            LBench_Result_SystemBit_Short="64"
-            LBench_Result_SystemBit_Full="amd64"
-            DownloadFiles
-            ;;
         "i386" | "i686")
             LBench_Result_SystemBit_Short="32"
             LBench_Result_SystemBit_Full="i386"
-            DownloadFiles
+            BESTTRACE_FILE=besttracemac
             ;;
         "armv7l" | "armv8" | "armv8l" | "aarch64")
             LBench_Result_SystemBit_Short="arm"
             LBench_Result_SystemBit_Full="arm"
-            DownloadFiles
+            BESTTRACE_FILE=besttracearm
+            BACKTRACE_FILE=backtrace-linux-arm64.tar.gz
             ;;
         *)
             LBench_Result_SystemBit_Short="64"
             LBench_Result_SystemBit_Full="amd64"
-            DownloadFiles
+            BESTTRACE_FILE=besttrace
+            BACKTRACE_FILE=backtrace-linux-amd64.tar.gz
             ;;
     esac
 }
@@ -1381,29 +1388,21 @@ python_all_script(){
     checkpython
     checkmagic
     export PYTHONIOENCODING=utf-8
-    curl -L -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py" -o qzcheck_ecs.py 
-    curl -L -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py" -o googlesearchcheck.py
-    # curl -L -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py" -o tk.py
-    sleep 0.5
+    mv $TEMP_DIR/{qzcheck_ecs,googlesearchcheck}.py ./
     python3 googlesearchcheck.py
 }
 
 check_lmc_script(){
     checkpython
     export PYTHONIOENCODING=utf-8
-    # curl -L -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py" -o tk.py
-    curl -L -k "${cdn_success_url}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh" -o media_lmc_check.sh
-    chmod 777 media_lmc_check.sh
-    sleep 0.5
+    mv $TEMP_DIR/media_lmc_check.sh ./
 }
 
 python_gd_script(){
     checkpython
     checkmagic
     export PYTHONIOENCODING=utf-8
-    curl -L -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py" -o qzcheck_ecs.py 
-    curl -L -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py" -o googlesearchcheck.py
-    sleep 0.5
+    mv $TEMP_DIR/{qzcheck_ecs,googlesearchcheck}.py ./
     python3 googlesearchcheck.py
 }
 
@@ -1419,13 +1418,14 @@ pre_check(){
     check_cdn_file
     Global_StartupInit_Action
     cd /root >/dev/null 2>&1
-    curl -L -k https://gitlab.com/spiritysdx/za/-/raw/main/yabsiotest.sh -o yabsiotest.sh && chmod +x yabsiotest.sh  >/dev/null 2>&1
+    curl -sL -k https://gitlab.com/spiritysdx/za/-/raw/main/yabsiotest.sh -o yabsiotest.sh && chmod +x yabsiotest.sh  >/dev/null 2>&1
     ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
     ! _exists "free" && _red "Error: free command not found.\n" && exit 1
 }
 
 sjlleo_script(){
     cd /root >/dev/null 2>&1
+    mv $TEMP_DIR/{dp,nf,tubecheck} ./
     echo "--------------------流媒体解锁--感谢sjlleo开源------------------------"
     _yellow "以下测试的解锁地区是准确的，但是不是完整解锁的判断可能有误，这方面仅作参考使用"
     _yellow "----------------Youtube----------------"
@@ -1459,7 +1459,6 @@ io1_script(){
     sleep 1
     echo "----------------磁盘IO读写测试--感谢lemonbench开源--------------------"
     Function_DiskTest_Fast
-    Global_Exit_Action >/dev/null 2>&1
 }
 
 io2_script(){
@@ -1529,17 +1528,8 @@ spiritlhl_script(){
 
 backtrace_script(){
     echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
-    curl_output=$(curl --connect-timeout 10 --max-time 60 -k "${cdn_success_url}https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh" -sSf | sh 2>&1)
-    if echo "$curl_output" | grep -q "正在测试" >/dev/null; then
-        if [ $? -eq 0 ]; then
-        echo "${curl_output}" | grep -v 'github.com/zhanghanyun/backtrace' | grep -v '正在测试'
-        else
-            curl_output=$(curl --connect-timeout 10 --max-time 60 -k https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh 2>&1)
-            echo "${curl_output}" | grep -v 'github.com/zhanghanyun/backtrace' | grep -v '正在测试'
-        fi
-    else
-        _yellow "纯IPV6网络无法查询"
-    fi
+    curl_output=$($TEMP_DIR/backtrace 2>&1)
+    grep -sq 'sendto: network is unreachable' <<< $curl_output && _yellow "纯IPV6网络无法查询" || echo "${curl_output}" | grep -v 'github.com/zhanghanyun/backtrace' | grep -v '正在测试'
 }
 
 fscarmen_route_script(){
@@ -1559,20 +1549,12 @@ fscarmen_route_script(){
     WAN_6=$(expr "$IP_6" : '.*ip\":[ ]*\"\([^"]*\).*') &> /dev/null &&
     ASNORG_6=$(expr "$IP_6" : '.*isp\":[ ]*\"\([^"]*\).*') &> /dev/null &&
     _blue "IPv6 ASN: $ASNORG_6" >> $TEMP_FILE
-    local ARCHITECTURE="$(uname -m)"
-        case $ARCHITECTURE in
-        x86_64 )  local FILE=besttrace;;
-        aarch64 ) local FILE=besttracearm;;
-        i386 )    local FILE=besttracemac;;
-        * ) _red " 只支持 AMD64、ARM64、Mac 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && return;;
-        esac
-    curl -s -L -k "${cdn_success_url}https://github.com/fscarmen/tools/raw/main/besttrace/${FILE}" -o $FILE && chmod +x $FILE &>/dev/null
     _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
     local test_area=("${!1}")
     local test_ip=("${!2}")
     for ((a=0;a<${#test_area[@]};a++)); do
     _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
-    ./"$FILE" "${test_ip[a]}" -g cn | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
+    "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
     done
     cat $TEMP_FILE
     rm -f $TEMP_FILE
@@ -1601,8 +1583,6 @@ end_script(){
 }
 
 all_script(){
-    pre_check
-    SystemInfo_GetSystemBit
     get_system_info >/dev/null 2>&1
     check_virt
     # checkssh
@@ -1631,8 +1611,6 @@ all_script(){
 }
 
 minal_script(){
-    pre_check
-    SystemInfo_GetSystemBit
     get_system_info >/dev/null 2>&1
     check_virt
     checkspeedtest
@@ -1647,8 +1625,6 @@ minal_script(){
 }
 
 minal_plus(){
-    pre_check
-    SystemInfo_GetSystemBit
     get_system_info >/dev/null 2>&1
     check_virt
     check_lmc_script
@@ -1671,8 +1647,6 @@ minal_plus(){
 }
 
 minal_plus_network(){
-    pre_check
-    SystemInfo_GetSystemBit
     get_system_info >/dev/null 2>&1
     check_virt
     checkspeedtest
@@ -1689,8 +1663,6 @@ minal_plus_network(){
 }
 
 minal_plus_media(){
-    pre_check
-    SystemInfo_GetSystemBit
     get_system_info >/dev/null 2>&1
     check_virt
     checkdnsutils
@@ -1711,8 +1683,6 @@ minal_plus_media(){
 }
 
 network_script(){
-    pre_check
-    python_gd_script
     checkspeedtest
     install_speedtest
     start_time=$(date +%s)
@@ -1727,8 +1697,6 @@ network_script(){
 }
 
 media_script(){
-    pre_check
-    SystemInfo_GetSystemBit
     checkdnsutils
     check_lmc_script
     start_time=$(date +%s)
@@ -1742,8 +1710,6 @@ media_script(){
 }
 
 hardware_script(){
-    pre_check
-    SystemInfo_GetSystemBit
     get_system_info >/dev/null 2>&1
     check_virt
     start_time=$(date +%s)
@@ -1756,8 +1722,6 @@ hardware_script(){
 }
 
 port_script(){
-    pre_check
-    SystemInfo_GetSystemBit
     get_system_info >/dev/null 2>&1
     check_virt
     # checkssh
@@ -1769,7 +1733,6 @@ port_script(){
 }
 
 ping_script(){
-    pre_check
     start_time=$(date +%s)
     clear
     print_intro
@@ -1778,7 +1741,6 @@ ping_script(){
 }
 
 sw_script(){
-    pre_check
     start_time=$(date +%s)
     clear
     print_intro
@@ -1788,7 +1750,6 @@ sw_script(){
 }
 
 network_g_script(){
-    pre_check
     start_time=$(date +%s)
     clear
     print_intro
@@ -1797,7 +1758,6 @@ network_g_script(){
 }
 
 network_s_script(){
-    pre_check
     start_time=$(date +%s)
     clear
     print_intro
@@ -1806,7 +1766,6 @@ network_s_script(){
 }
 
 network_b_script(){
-    pre_check
     start_time=$(date +%s)
     clear
     print_intro
@@ -1815,7 +1774,6 @@ network_b_script(){
 }
 
 network_c_script() {
-    pre_check
     start_time=$(date +%s)
     clear
     print_intro
@@ -2088,5 +2046,9 @@ Start_script(){
     esac
 }
 
+pre_check
+SystemInfo_GetSystemBit
+{ pre_downlaod >/dev/null 2>&1; }&
 Start_script
 rm_script
+Global_Exit_Action >/dev/null 2>&1
