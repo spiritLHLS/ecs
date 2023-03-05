@@ -764,7 +764,7 @@ Function_ReadCPUStat() {
 SystemInfo_GetSystemBit() {
     local sysarch="$(uname -m)"
     if [ "${sysarch}" = "unknown" ] || [ "${sysarch}" = "" ]; then
-        local sysarch=SystemInfo_GetSystemBit"$(arch)"
+        local sysarch="$(arch)"
     fi
     # 根据架构信息设置系统位数并下载文件,其余 * 包括了 x86_64
     case "${sysarch}" in
