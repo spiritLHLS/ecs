@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.03.04"
+ver="2023.03.12"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -974,7 +974,7 @@ Function_DiskTest_Fast() {
     SystemInfo_GetVirtType
     SystemInfo_GetOSRelease
     if [ "${Var_VirtType}" = "docker" ] || [ "${Var_VirtType}" = "wsl" ]; then
-        echo -e " ${Msg_Warning}Due to virt architecture limit, the result may affect by the cache !\n"
+        echo -e " ${Msg_Warning}Due to virt architecture limit, the result may affect by the cache !"
     fi
     echo -e " ${Font_Yellow}测试操作\t\t写速度\t\t\t\t\t读速度${Font_Suffix}"
     echo -e " Test Name\t\tWrite Speed\t\t\t\tRead Speed" >>${WorkDir}/DiskTest/result.txt
@@ -1084,6 +1084,7 @@ calc_disk() {
         [ "`echo ${size:(-1)}`" == "M" ] && size=$( awk 'BEGIN{printf "%.1f", '$size_t' / 1024}' )
         [ "`echo ${size:(-1)}`" == "T" ] && size=$( awk 'BEGIN{printf "%.1f", '$size_t' * 1024}' )
         [ "`echo ${size:(-1)}`" == "G" ] && size=${size_t}
+        [ "`echo ${size:(-1)}`" == "E" ] && size=$( awk 'BEGIN{printf "%.1f", '$size_t' * 1024 * 1024}' )
         total_size=$( awk 'BEGIN{printf "%.1f", '$total_size' + '$size'}' )
     done
     echo ${total_size}
@@ -1169,10 +1170,17 @@ get_system_info() {
     cores=$( awk -F: '/processor/ {core++} END {print core}' /proc/cpuinfo )
     freq=$( awk -F'[ :]' '/cpu MHz/ {print $4;exit}' /proc/cpuinfo )
     ccache=$( awk -F: '/cache size/ {cache=$2} END {print cache}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
-    tram=$( LANG=C; free -m | awk '/Mem/ {print $2}' )
-    uram=$( LANG=C; free -m | awk '/Mem/ {print $3}' )
-    swap=$( LANG=C; free -m | awk '/Swap/ {print $2}' )
-    uswap=$( LANG=C; free -m | awk '/Swap/ {print $3}' )
+    if free -m | grep -q '内存'; then  # 如果输出中包含 "内存" 关键词
+        tram=$(free -m | awk '/内存/{print $2}')
+        uram=$(free -m | awk '/内存/{print $3}')
+        swap=$(free -m | awk '/交换/{print $2}')
+        uswap=$(free -m | awk '/交换/{print $3}')
+    else  # 否则，假定输出是英文的
+        tram=$(LANG=C; free -m | awk '/Mem/ {print $2}')
+        uram=$(LANG=C; free -m | awk '/Mem/ {print $3}')
+        swap=$(LANG=C; free -m | awk '/Swap/ {print $2}')
+        uswap=$(LANG=C; free -m | awk '/Swap/ {print $3}')
+    fi
     up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60} {printf("%d days, %d hour %d min\n",a,b,c)}' /proc/uptime )
     if _exists "w"; then
         load=$( LANG=C; w | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
@@ -1187,8 +1195,8 @@ get_system_info() {
         echo ${arch} | grep -q "64" && lbit="64" || lbit="32"
     fi
     kern=$( uname -r )
-    disk_size1=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|snapd' | awk '{print $2}' ))
-    disk_size2=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|snapd' | awk '{print $3}' ))
+    disk_size1=($( LC_ALL=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|snapd' | awk '{print $2}' ))
+    disk_size2=($( LC_ALL=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|snapd' | awk '{print $3}' ))
     disk_total_size=$( calc_disk "${disk_size1[@]}" )
     disk_used_size=$( calc_disk "${disk_size2[@]}" )
     sysctl_path=$(which sysctl)
