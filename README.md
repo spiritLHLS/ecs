@@ -107,7 +107,7 @@ sjlleo的nf查询不支持ARM架构机器查询 - 待修复
 
 # 更新
 
-2023.03.04 使用tmp文件优化缩减脚本执行时长，缩减了大概30秒执行时长
+2023.03.12 更新修复适配中文系统支持，解决部分命令查询结果为中文不适配
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
