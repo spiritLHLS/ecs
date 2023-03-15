@@ -99,6 +99,8 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
+CDN下载文件不稳定导致部分链接下载文件失效 - 待修复增加重复检测
+
 sjlleo的nf查询不支持ARM架构机器查询 - 待修复
 
 端口检测(检测是否被墙) - 待修复
