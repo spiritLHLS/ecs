@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.03.12"
+ver="2023.03.23"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -896,7 +896,7 @@ speed() {
 #    speed_test '25637' '移动上海5G' '移动'
 #    speed_test '16398' '移动贵州贵阳' '移动'
 #    speed_test '6715' '移动浙江宁波' '移动'
-    speed_test '3356' '移动广西南宁' '移动'
+    speed_test '15863' '移动广西南宁' '移动'
     speed_test '26940' '移动宁夏银川' '移动'
 }
 
