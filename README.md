@@ -99,7 +99,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
-移动的测速节点该更新了，老节点失效了 - 明晚修复
+移动的测速节点该更新了，老节点失效了 - 近期修复，琢磨自动爬取ID的法子中
 
 CDN下载文件不稳定导致部分链接下载文件失效 - 待修复增加重复检测
 
