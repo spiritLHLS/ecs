@@ -166,7 +166,7 @@ def google():
         print("Google搜索可行性：未知")
 
 ip4 = excuteCommand("curl -s4m8 -k ip.sb").replace("\n", "").replace(" ", "")
-ip6 = excuteCommand("curl -s6m8 -k api.ipify.org").replace("\n", "").replace(" ", "")
+ip6 = excuteCommand("curl -s6m8 -k ip.sb").replace("\n", "").replace(" ", "")
 scamalytics(ip4)
 ip234(ip4)
 ipapi(ip4)
