@@ -67,20 +67,44 @@ check_cdn_file() {
 
 # 后台静默预下载文件并解压
 pre_downlaod() {
-    mkdir -p $TEMP_DIR
-    wget -O $TEMP_DIR/sysbench.zip "${cdn_success_url}https://github.com/akopytov/sysbench/archive/1.0.17.zip"
-    unzip $TEMP_DIR/sysbench.zip -d ${TEMP_DIR}
-    curl -sL -k "${cdn_success_url}https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_${LBench_Result_SystemBit_Full}" -o $TEMP_DIR/dp && chmod +x $TEMP_DIR/dp
-    curl -sL -k "${cdn_success_url}https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_${LBench_Result_SystemBit_Full}" -o $TEMP_DIR/nf && chmod +x $TEMP_DIR/nf
-    curl -sL -k "${cdn_success_url}https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_${LBench_Result_SystemBit_Full}" -o $TEMP_DIR/tubecheck && chmod +x $TEMP_DIR/tubecheck
-    curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py" -o $TEMP_DIR/qzcheck_ecs.py 
-    curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py" -o $TEMP_DIR/googlesearchcheck.py
-    # curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/tkcheck.py" -o $TEMP_DIR/tk.py
-    curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh" -o $TEMP_DIR/media_lmc_check.sh && chmod 777 $TEMP_DIR/media_lmc_check.sh
-    curl -sL -k "${cdn_success_url}https://github.com/fscarmen/tools/raw/main/besttrace/${BESTTRACE_FILE}" -o $TEMP_DIR/$BESTTRACE_FILE && chmod +x $TEMP_DIR/$BESTTRACE_FILE
-    wget -q -O $TEMP_DIR/backtrace.tar.gz  https://github.com/zhanghanyun/backtrace/releases/latest/download/$BACKTRACE_FILE
-    tar -xf $TEMP_DIR/backtrace.tar.gz -C $TEMP_DIR
+    for file in "$@"; do
+        case $file in
+            sysbench)
+                wget -O $TEMP_DIR/sysbench.zip "${cdn_success_url}https://github.com/akopytov/sysbench/archive/1.0.17.zip"
+                unzip $TEMP_DIR/sysbench.zip -d ${TEMP_DIR}
+                ;;
+            dp)
+                curl -sL -k "${cdn_success_url}https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_${LBench_Result_SystemBit_Full}" -o $TEMP_DIR/dp && chmod +x $TEMP_DIR/dp
+                ;;
+            nf)
+                curl -sL -k "${cdn_success_url}https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_${LBench_Result_SystemBit_Full}" -o $TEMP_DIR/nf && chmod +x $TEMP_DIR/nf
+                ;;
+            tubecheck)
+                curl -sL -k "${cdn_success_url}https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_${LBench_Result_SystemBit_Full}" -o $TEMP_DIR/tubecheck && chmod +x $TEMP_DIR/tubecheck
+                ;;
+            qzcheck_ecs)
+                curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py" -o $TEMP_DIR/qzcheck_ecs.py 
+                ;;
+            googlesearchcheck)
+                curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py" -o $TEMP_DIR/googlesearchcheck.py
+                ;;
+            media_lmc_check)
+                curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh" -o $TEMP_DIR/media_lmc_check.sh && chmod 777 $TEMP_DIR/media_lmc_check.sh
+                ;;
+            besttrace)
+                curl -sL -k "${cdn_success_url}https://github.com/fscarmen/tools/raw/main/besttrace/${BESTTRACE_FILE}" -o $TEMP_DIR/$BESTTRACE_FILE && chmod +x $TEMP_DIR/$BESTTRACE_FILE
+                ;;
+            backtrace)
+                wget -q -O $TEMP_DIR/backtrace.tar.gz  https://github.com/zhanghanyun/backtrace/releases/latest/download/$BACKTRACE_FILE
+                tar -xf $TEMP_DIR/backtrace.tar.gz -C $TEMP_DIR
+                ;;
+            *)
+                echo "Invalid file: $file"
+                ;;
+        esac
+    done
 }
+
 
 # Trap终止信号捕获
 _exit() {
@@ -328,10 +352,8 @@ checkpython() {
         _yellow "Installing python3-pip"
 	        if [ "${release}" == "arch" ]; then
 	            pacman -S --noconfirm --needed python-pip > /dev/null 2>&1
-                pip3 install requests > /dev/null 2>&1
             else
 	            ${PACKAGE_INSTALL[int]} python3-pip > /dev/null 2>&1
-                pip3 install requests > /dev/null 2>&1
 	        fi
     fi
     sleep 0.5
@@ -597,6 +619,7 @@ Check_SysBench() {
     fi
   fi
   # 垂死挣扎 (尝试编译安装)
+  pre_downlaod sysbench
   if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
     echo -e "${Msg_Warning}Sysbench Module install Failure, trying compile modules ..."
     Check_Sysbench_InstantBuild
@@ -1592,6 +1615,7 @@ end_script(){
 
 all_script(){
     pre_check
+    pre_downlaod dp nf tubecheck qzcheck_ecs googlesearchcheck media_lmc_check besttrace backtrace
     get_system_info >/dev/null 2>&1
     check_virt
     # checkssh
@@ -1636,6 +1660,7 @@ minal_script(){
 
 minal_plus(){
     pre_check
+    pre_downlaod dp nf tubecheck qzcheck_ecs googlesearchcheck media_lmc_check besttrace backtrace
     get_system_info >/dev/null 2>&1
     check_virt
     check_lmc_script
@@ -1659,6 +1684,7 @@ minal_plus(){
 
 minal_plus_network(){
     pre_check
+    pre_downlaod besttrace backtrace
     get_system_info >/dev/null 2>&1
     check_virt
     checkspeedtest
@@ -1676,6 +1702,7 @@ minal_plus_network(){
 
 minal_plus_media(){
     pre_check
+    pre_downlaod dp nf tubecheck qzcheck_ecs googlesearchcheck media_lmc_check
     get_system_info >/dev/null 2>&1
     check_virt
     checkdnsutils
@@ -1697,6 +1724,7 @@ minal_plus_media(){
 
 network_script(){
     pre_check
+    pre_downlaod qzcheck_ecs googlesearchcheck besttrace backtrace
     checkspeedtest
     install_speedtest
     start_time=$(date +%s)
@@ -1712,6 +1740,7 @@ network_script(){
 
 media_script(){
     pre_check
+    pre_downlaod dp nf tubecheck media_lmc_check
     checkdnsutils
     check_lmc_script
     start_time=$(date +%s)
@@ -1739,6 +1768,7 @@ hardware_script(){
 
 port_script(){
     pre_check
+    pre_downlaod XXXX
     get_system_info >/dev/null 2>&1
     check_virt
     # checkssh
@@ -1760,6 +1790,7 @@ ping_script(){
 
 sw_script(){
     pre_check
+    pre_downlaod besttrace backtrace
     start_time=$(date +%s)
     clear
     print_intro
@@ -1770,6 +1801,7 @@ sw_script(){
 
 network_g_script(){
     pre_check
+    pre_downlaod besttrace
     start_time=$(date +%s)
     clear
     print_intro
@@ -1779,6 +1811,7 @@ network_g_script(){
 
 network_s_script(){
     pre_check
+    pre_downlaod besttrace
     start_time=$(date +%s)
     clear
     print_intro
@@ -1788,6 +1821,7 @@ network_s_script(){
 
 network_b_script(){
     pre_check
+    pre_downlaod besttrace
     start_time=$(date +%s)
     clear
     print_intro
@@ -1797,6 +1831,7 @@ network_b_script(){
 
 network_c_script() {
     pre_check
+    pre_downlaod besttrace
     start_time=$(date +%s)
     clear
     print_intro
@@ -2069,8 +2104,9 @@ Start_script(){
     esac
 }
 
+rm -rf $TEMP_DIR
+mkdir -p $TEMP_DIR
 SystemInfo_GetSystemBit
-{ pre_downlaod >/dev/null 2>&1; }&
 Start_script
 rm_script
 Global_Exit_Action >/dev/null 2>&1
