@@ -5,18 +5,30 @@ import re, sys
 import json
 import random
 
+
 ip4 = str(sys.argv[1])
 
-def excuteCommand(com):
-  ex = subprocess.Popen(com, stdout=subprocess.PIPE, shell=True)
-  out, err = ex.communicate()
-  statusofssh = ex.wait()
-  # print("cmd in:", com)
-  # print("cmd out: ", out.decode())
-  return out.decode()
+keys_list = [
+    "e0ea0d2980ae971b27af40040769cc6db60a34e02f1c517d67db7e05efe3183a26a3bc959f1656cf"
+]
 
-def get_page_text(url, return_type='txt'):
-    response = urllib.request.urlopen(url, timeout=10)
+head = {
+    "Accept":
+    "application/json",
+    "key": "e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c"
+}
+
+def excuteCommand(com):
+    ex = subprocess.Popen(com, stdout=subprocess.PIPE, shell=True)
+    out, err = ex.communicate()
+    statusofssh = ex.wait()
+    # print("cmd in:", com)
+    # print("cmd out: ", out.decode())
+    return out.decode()
+
+def get_page_text(url, return_type='txt', headers=head):
+    req = urllib.request.Request(url, headers=headers)
+    response = urllib.request.urlopen(req, timeout=10)
     if return_type == 'txt':
         text = response.read().decode('utf-8')
         return text
@@ -24,7 +36,7 @@ def get_page_text(url, return_type='txt'):
         json_data = response.read().decode('utf-8')
         data = json.loads(json_data)
         return data
-
+        
 def translate_status(status):
     if status == False:
         return "No"
@@ -113,17 +125,6 @@ def ip234(ip):
     print(f"  欺诈分数(越低越好)：{risk}")
   except:
     pass
-
-
-keys_list = [
-  "e0ea0d2980ae971b27af40040769cc6db60a34e02f1c517d67db7e05efe3183a26a3bc959f1656cf"
-]
-head = {
-  "Accept":
-  "application/json",
-  "key":
-  "e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c"
-}
 
 scamalytics(ip4)
 ip234(ip4)
