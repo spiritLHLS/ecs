@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-import requests
+import urllib.request
 import subprocess
 import re, sys
+import json
 import random
 
 ip4 = str(sys.argv[1])
@@ -14,6 +15,15 @@ def excuteCommand(com):
   # print("cmd out: ", out.decode())
   return out.decode()
 
+def get_page_text(url, return_type='txt'):
+    response = urllib.request.urlopen(url, timeout=10)
+    if return_type == 'txt':
+        text = response.read().decode('utf-8')
+        return text
+    elif return_type == 'json':
+        json_data = response.read().decode('utf-8')
+        data = json.loads(json_data)
+        return data
 
 def translate_status(status):
     if status == False:
@@ -24,8 +34,7 @@ def translate_status(status):
 def scamalytics(ip):
     print("scamalytics数据库:")
     try:
-        context = requests.get(f"https://scamalytics.com/ip/{ip}",
-                               timeout=10).text
+        context = get_page_text(f"https://scamalytics.com/ip/{ip}")
         temp1 = re.findall(f">Fraud Score: (.*?)</div", context)[0]
         print(f"  欺诈分数(越低越好)：{temp1}")
         temp2 = re.findall(f"<div(.*?)div>", context)[-6:]
@@ -39,76 +48,33 @@ def scamalytics(ip):
 def abuse(ip):
     try:
         try:
-            context2 = requests.get(
-                f"https://api.abuseipdb.com/api/v2/check?ipAddress={ip}",
-                headers=head,
-                timeout=10)
+            context2 = get_page_text(f"https://api.abuseipdb.com/api/v2/check?ipAddress={ip}", "json")
         except:
             for i in keys_list:
                 head["key"] = keys_list[random.randint(0, len(keys_list))]
                 try:
-                    context2 = requests.get(
-                        f"https://api.abuseipdb.com/api/v2/check?ipAddress={ip}",
-                        headers=head,
-                        timeout=10)
+                    context2 = get_page_text(f"https://api.abuseipdb.com/api/v2/check?ipAddress={ip}", "json")
                     break
                 except:
                     pass
         print("abuseipdb数据库-abuse得分：",
-              str(context2.json()["data"]["abuseConfidenceScore"]))
+              str(context2["data"]["abuseConfidenceScore"]))
         print("IP类型:")
-        print("  IP2Location数据库: ", str(context2.json()["data"]["usageType"]))
+        print("  IP2Location数据库: ", str(context2["data"]["usageType"]))
     except Exception as e:
         pass
         # print(f"abuseipdb数据库IP类型：未知，爆错{e}")
         #print(e)
 
-
-def ping0(ip):
-    try:
-        try:
-            context3 = requests.get(f"https://ip.ping0.cc/ip/{ip}", timeout=10)
-        except:
-            pass
-        try:
-            if "IP 类型:              " in str(context3.text):
-                temp = str(context3.text).split('span')
-                for k in temp:
-                    #print(k)
-                    if "IP 类型:              " in k:
-                        res = re.findall(f'IP 类型:              (.*?)"',
-                                         k)[0].replace("\\", "")
-                        res = res.replace("rn", "")
-                        print(f"  ping0数据库: {res}")
-        except:
-            type_list = []
-            if '家庭宽带IP' in str(context3.text) and str(
-                    context3.text).count('家庭宽带IP') == 3:
-                type_list.append("家庭宽带IP")
-            if 'IDC机房IP' in str(context3.text) and str(
-                    context3.text).count('IDC机房IP') == 3:
-                type_list.append("IDC机房IP")
-            ct = ""
-            for kk in type_list:
-                ct = ct + kk
-            print(f"  ping0数据库: {ct}")
-    except Exception as e:
-        pass
-        # print(f"ping0数据库IP类型：未知，爆错{e}")
-        # print(e)
-
-
 def liveipmap(ip):
     try:
         try:
-            context4 = excuteCommand(
-                f"curl -sm8 https://www.liveipmap.com/?ip={ip}")
+            context3 = get_page_text(f"https://www.liveipmap.com/?ip={ip}")
         except:
             pass
         try:
-            # print(context4)
-            if "Usage Type" in context4:
-                temp = context4.split('tr')
+            if "Usage Type" in context3:
+                temp = context3.split('tr')
                 for k in temp:
                     if "Usage Type" in k:
                         res = k.split("<td>")[1].split('>')[2].split('<')[0]
@@ -120,24 +86,33 @@ def liveipmap(ip):
         # print(f"liveipmap数据库IP类型：未知，爆错{e}")
         # print(e)
 
-
 def ipapi(ip):
     try:
-        context = requests.get(
-            f"http://ip-api.com/json/{ip}?fields=mobile,proxy,hosting",
-            timeout=10).json()
+        context4 = get_page_text(f"http://ip-api.com/json/{ip}?fields=mobile,proxy,hosting", "json")
         try:
-            context['mobile']
+            context4['mobile']
             print("ip-api数据库:")
-            print(f"  手机流量: {translate_status(context['mobile'])}")
-            context['proxy']
-            print(f"  代理服务: {translate_status(context['proxy'])}")
-            context['hosting']
-            print(f"  数据中心: {translate_status(context['hosting'])}")
+            print(f"  手机流量: {translate_status(context4['mobile'])}")
+            context4['proxy']
+            print(f"  代理服务: {translate_status(context4['proxy'])}")
+            context4['hosting']
+            print(f"  数据中心: {translate_status(context4['hosting'])}")
         except:
             pass
     except:
         pass
+
+def ip234(ip):
+  try:
+    try:
+      context5 = get_page_text(f"http://ip234.in/fraud_check?ip={ip}", "json")
+    except:
+      pass
+    risk = context5["data"]["score"]
+    print(f"ip234数据库：")
+    print(f"  欺诈分数(越低越好)：{risk}")
+  except:
+    pass
 
 
 keys_list = [
@@ -151,7 +126,7 @@ head = {
 }
 
 scamalytics(ip4)
+ip234(ip4)
 ipapi(ip4)
 abuse(ip4)
 liveipmap(ip4)
-ping0(ip4)
