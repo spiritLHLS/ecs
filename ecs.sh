@@ -70,7 +70,7 @@ pre_downlaod() {
     for file in "$@"; do
         case $file in
             sysbench)
-                wget -O $TEMP_DIR/sysbench.zip "${cdn_success_url}https://github.com/akopytov/sysbench/archive/1.0.17.zip"
+                wget -O $TEMP_DIR/sysbench.zip "${cdn_success_url}https://github.com/akopytov/sysbench/archive/1.0.20.zip"
                 unzip $TEMP_DIR/sysbench.zip -d ${TEMP_DIR}
                 ;;
             dp)
@@ -619,7 +619,6 @@ Check_SysBench() {
     fi
   fi
   # 垂死挣扎 (尝试编译安装)
-  pre_downlaod sysbench
   if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
     echo -e "${Msg_Warning}Sysbench Module install Failure, trying compile modules ..."
     Check_Sysbench_InstantBuild
@@ -638,11 +637,12 @@ Check_Sysbench_InstantBuild() {
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
         prepare_compile_env "${Var_OSRelease}"
-        echo -e "${Msg_Info}Downloading Source code (Version 1.0.17)..."
+        echo -e "${Msg_Info}Downloading Source code (Version 1.0.20)..."
         mkdir -p /tmp/_LBench/src/
-        mv ${TEMP_DIR}/sysbench-1.0.17 /tmp/_LBench/src/
+        pre_downlaod sysbench
+        mv ${TEMP_DIR}/sysbench-1.0.20 /tmp/_LBench/src/
         echo -e "${Msg_Info}Compiling Sysbench Module ..."
-        cd /tmp/_LBench/src/sysbench-1.0.17
+        cd /tmp/_LBench/src/sysbench-1.0.20
         ./autogen.sh && ./configure --without-mysql && make -j8 && make install
         echo -e "${Msg_Info}Cleaning up ..."
         cd /tmp && rm -rf /tmp/_LBench/src/sysbench*
