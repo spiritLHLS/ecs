@@ -155,3 +155,7 @@ sjlleo的nf查询不支持ARM架构机器查询 - 待修复
 ## Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/spiritLHLS/ecs.svg)](https://starchart.cc/spiritLHLS/ecs)
+
+## 感谢
+
+![PyCharm logo](https://resources.jetbrains.com/storage/products/company/brand/logos/PyCharm.png)
