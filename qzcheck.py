@@ -5,6 +5,15 @@ import re
 import json
 import random
 
+keys_list = [
+    "e0ea0d2980ae971b27af40040769cc6db60a34e02f1c517d67db7e05efe3183a26a3bc959f1656cf"
+]
+
+head = {
+    "Accept":
+    "application/json",
+    "key": "e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c"
+}
 
 def excuteCommand(com):
     ex = subprocess.Popen(com, stdout=subprocess.PIPE, shell=True)
@@ -14,8 +23,9 @@ def excuteCommand(com):
     # print("cmd out: ", out.decode())
     return out.decode()
 
-def get_page_text(url, return_type='txt'):
-    response = urllib.request.urlopen(url, timeout=10)
+def get_page_text(url, return_type='txt', headers=head):
+    req = urllib.request.Request(url, headers=headers)
+    response = urllib.request.urlopen(req, timeout=10)
     if return_type == 'txt':
         text = response.read().decode('utf-8')
         return text
@@ -74,7 +84,7 @@ def cloudflare():
 def abuse(ip):
     try:
         try:
-            context2 = get_page_text(f"https://api.abuseipdb.com/api/v2/check?ipAddress={ip}", "json",)
+            context2 = get_page_text(f"https://api.abuseipdb.com/api/v2/check?ipAddress={ip}", "json")
         except:
             for i in keys_list:
                 head["key"] = keys_list[random.randint(0, len(keys_list))]
@@ -155,16 +165,6 @@ def google():
     except:
         print("Google搜索可行性：未知")
 
-
-keys_list = [
-    "e0ea0d2980ae971b27af40040769cc6db60a34e02f1c517d67db7e05efe3183a26a3bc959f1656cf"
-]
-head = {
-    "Accept":
-    "application/json",
-    "key":
-    "e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c"
-}
 ip4 = excuteCommand("curl -s4m8 -k ip.sb").replace("\n", "").replace(" ", "")
 ip6 = excuteCommand("curl -s6m8 -k api.ipify.org").replace("\n", "").replace(" ", "")
 scamalytics(ip4)
@@ -172,7 +172,7 @@ ip234(ip4)
 ipapi(ip4)
 abuse(ip4)
 liveipmap(ip4)
-cloudflare()
+# cloudflare()
 google()
 if ip6 != "":
     print("------以下为IPV6检测------")
