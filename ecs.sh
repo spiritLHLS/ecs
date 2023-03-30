@@ -883,8 +883,8 @@ SystemInfo_GetVirtType() {
 }
 
 Entrance_SysBench_CPU_Fast() {
-    Check_SysBench > /dev/null 2>&1
-    SystemInfo_GetCPUInfo > /dev/null 2>&1
+    Check_SysBench 
+    SystemInfo_GetCPUInfo 
     Function_SysBench_CPU_Fast
     sleep 1
 }
