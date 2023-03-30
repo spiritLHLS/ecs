@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.03.23"
+ver="2023.03.30"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1591,6 +1591,7 @@ end_script(){
 }
 
 all_script(){
+    pre_check
     get_system_info >/dev/null 2>&1
     check_virt
     # checkssh
@@ -1619,6 +1620,7 @@ all_script(){
 }
 
 minal_script(){
+    pre_check
     get_system_info >/dev/null 2>&1
     check_virt
     checkspeedtest
@@ -1633,6 +1635,7 @@ minal_script(){
 }
 
 minal_plus(){
+    pre_check
     get_system_info >/dev/null 2>&1
     check_virt
     check_lmc_script
@@ -1655,6 +1658,7 @@ minal_plus(){
 }
 
 minal_plus_network(){
+    pre_check
     get_system_info >/dev/null 2>&1
     check_virt
     checkspeedtest
@@ -1671,6 +1675,7 @@ minal_plus_network(){
 }
 
 minal_plus_media(){
+    pre_check
     get_system_info >/dev/null 2>&1
     check_virt
     checkdnsutils
@@ -1691,6 +1696,7 @@ minal_plus_media(){
 }
 
 network_script(){
+    pre_check
     checkspeedtest
     install_speedtest
     start_time=$(date +%s)
@@ -1705,6 +1711,7 @@ network_script(){
 }
 
 media_script(){
+    pre_check
     checkdnsutils
     check_lmc_script
     start_time=$(date +%s)
@@ -1718,6 +1725,7 @@ media_script(){
 }
 
 hardware_script(){
+    pre_check
     get_system_info >/dev/null 2>&1
     check_virt
     start_time=$(date +%s)
@@ -1730,6 +1738,7 @@ hardware_script(){
 }
 
 port_script(){
+    pre_check
     get_system_info >/dev/null 2>&1
     check_virt
     # checkssh
@@ -1741,6 +1750,7 @@ port_script(){
 }
 
 ping_script(){
+    pre_check
     start_time=$(date +%s)
     clear
     print_intro
@@ -1749,6 +1759,7 @@ ping_script(){
 }
 
 sw_script(){
+    pre_check
     start_time=$(date +%s)
     clear
     print_intro
@@ -1758,6 +1769,7 @@ sw_script(){
 }
 
 network_g_script(){
+    pre_check
     start_time=$(date +%s)
     clear
     print_intro
@@ -1766,6 +1778,7 @@ network_g_script(){
 }
 
 network_s_script(){
+    pre_check
     start_time=$(date +%s)
     clear
     print_intro
@@ -1774,6 +1787,7 @@ network_s_script(){
 }
 
 network_b_script(){
+    pre_check
     start_time=$(date +%s)
     clear
     print_intro
@@ -1782,6 +1796,7 @@ network_b_script(){
 }
 
 network_c_script() {
+    pre_check
     start_time=$(date +%s)
     clear
     print_intro
@@ -2054,7 +2069,6 @@ Start_script(){
     esac
 }
 
-pre_check
 SystemInfo_GetSystemBit
 { pre_downlaod >/dev/null 2>&1; }&
 Start_script
