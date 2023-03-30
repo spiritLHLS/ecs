@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
-import urllib.request
-import subprocess
-import re
-import json
-import random
+keys_list = [
+    "e0ea0d2980ae971b27af40040769cc6db60a34e02f1c517d67db7e05efe3183a26a3bc959f1656cf"
+]
+
+head = {
+    "Accept":
+    "application/json",
+    "key": "e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c"
+}
 
 def excuteCommand(com):
     ex = subprocess.Popen(com, stdout=subprocess.PIPE, shell=True)
@@ -13,8 +17,9 @@ def excuteCommand(com):
     # print("cmd out: ", out.decode())
     return out.decode()
 
-def get_page_text(url, return_type='txt'):
-    response = urllib.request.urlopen(url, timeout=10)
+def get_page_text(url, return_type='txt', headers=head):
+    req = urllib.request.Request(url, headers=headers)
+    response = urllib.request.urlopen(req, timeout=10)
     if return_type == 'txt':
         text = response.read().decode('utf-8')
         return text
@@ -22,7 +27,7 @@ def get_page_text(url, return_type='txt'):
         json_data = response.read().decode('utf-8')
         data = json.loads(json_data)
         return data
-
+        
 def translate_status(status):
     if status == False:
         return "No"
@@ -151,16 +156,6 @@ def google():
             print("Google搜索可行性：NO")
     except:
         print("Google搜索可行性：未知")
-
-keys_list = [
-  "e0ea0d2980ae971b27af40040769cc6db60a34e02f1c517d67db7e05efe3183a26a3bc959f1656cf"
-]
-head = {
-  "Accept":
-  "application/json",
-  "key":
-  "e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c"
-}
 
 ip4 = excuteCommand("curl -s4m8 -k ip.sb").replace("\n", "").replace(" ", "")
 ip6 = excuteCommand("curl -s6m8 -k api.ipify.org").replace("\n", "").replace(" ", "")
