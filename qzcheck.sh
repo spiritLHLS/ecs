@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ver="2022.12.12"
+ver="2023.03.30"
 changeLog="IP质量测试(含欺诈得分)，由频道 https://t.me/vps_reviews 原创"
 
 red(){
@@ -30,10 +30,6 @@ for ((int = 0; int < ${#REGEX[@]}; int++)); do
         SYSTEM="${RELEASE[int]}" && [[ -n $SYSTEM ]] && break
     fi
 done
-
-
-
-
 
 trap _exit INT QUIT TERM
 
@@ -179,8 +175,7 @@ print_end_time() {
 
 checkpython() {
     ! type -p python3 >/dev/null 2>&1 && yellow "\n Install python3\n" && ${PACKAGE_INSTALL[int]} python3
-    ! type -p pip3 install requests >/dev/null 2>&1 && yellow "\n Install pip3\n" && ${PACKAGE_INSTALL[int]} python3-pip
-    pip3 install requests
+    ! type -p pip3 install magic_google >/dev/null 2>&1 && yellow "\n Install pip3\n" && ${PACKAGE_INSTALL[int]} python3-pip
     pip3 install magic_google
     sleep 0.5
 }
