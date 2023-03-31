@@ -16,6 +16,12 @@ bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/m
 bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/main/ecs.sh)
 ```
 
+或
+
+```
+bash <(wget -qO- http://bash.spiritlhl.net/ecs)
+```
+
 #### 无交互形式
 
 ```bash
@@ -26,6 +32,12 @@ echo 1 | bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/z
 
 ```bash
 echo 1 | bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/main/ecs.sh)
+```
+
+或
+
+```
+echo 1 | bash <(wget -qO- http://bash.spiritlhl.net/ecs)
 ```
 
 #### 说明
