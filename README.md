@@ -19,7 +19,7 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 或
 
 ```
-bash <(wget -qO- http://bash.spiritlhl.net/ecs)
+bash <(wget -qO- bash.spiritlhl.net/ecs)
 ```
 
 #### 无交互形式
@@ -37,7 +37,7 @@ echo 1 | bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/e
 或
 
 ```
-echo 1 | bash <(wget -qO- http://bash.spiritlhl.net/ecs)
+echo 1 | bash <(wget -qO- bash.spiritlhl.net/ecs)
 ```
 
 #### 说明
