@@ -123,7 +123,7 @@ sjlleo的nf查询不支持ARM架构机器查询 - 待修复
 
 # 更新
 
-2023.03.30 脚本运行还没选择就进行了部分组件的安装的逻辑问题已解决，组件只在选择完毕后进行安装，删除无效的ping0数据库，增加ip234数据库，优化了IP质量查询的函数减少了模块依赖，替换IP质量检测的V6检测平台，支持V6的地址进行检测，升级sysbench由1.0.17到1.0.20版本
+2023.04.02 修复脚本openai脚本测试超时的问题，使用自维护的脚本
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -138,7 +138,7 @@ sjlleo的nf查询不支持ARM架构机器查询 - 待修复
 - [x] 御三家流媒体解锁--感谢sjlleo的[二进制文件](https://github.com/sjlleo?tab=repositories)，本人修改整理优化
 - [x] 常用流媒体解锁--感谢RegionRestrictionCheck的[项目](https://github.com/lmc999/RegionRestrictionCheck)，本人修改整理优化
 - [x] Tiktok解锁--感谢lmc999的[项目](https://github.com/lmc999/TikTokCheck)，本人修改整理优化
-- [x] OpenAI检测--感谢missuo提供的[项目](https://github.com/missuo/OpenAI-Checker),本人修改整理
+- [x] OpenAI检测--感谢missuo提供的[项目](https://github.com/missuo/OpenAI-Checker)，本人修改整理[优化项目](https://github.com/spiritLHLS/OpenAI-Checker)
 - [x] 三网回程以及路由延迟--感谢zhanghanyun/backtrace开源[项目](https://github.com/zhanghanyun/backtrace),本人修改整理
 - [x] 回程路由以及带宽类型检测(商宽/家宽/数据中心)--由fscarmen的PR以及本人的技术思路提供，本人修改整理优化
 - [ ] 端口检测(检测是否被墙)--由fscarmen的PR以及本人的技术思路提供 - 待修复
