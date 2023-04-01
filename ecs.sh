@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.03.30"
+ver="2023.04.02"
 changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1509,9 +1509,9 @@ RegionRestrictionCheck_script(){
 
 openai_script(){
     cd /root >/dev/null 2>&1
-    echo -e "--------------OpenAi解锁--感谢missuo的OpenAI-Checker项目--------------"
-    output=$(bash <(curl -Ls https://cdn.jsdelivr.net/gh/missuo/OpenAI-Checker/openai.sh))
-    output=$(echo "$output" | sed '1,2d')
+    echo -e "--------OpenAi解锁--感谢missuo的OpenAI-Checker项目本人修改优化--------"
+    output=$(bash <(curl -Ls -m 10 https://cdn.jsdelivr.net/gh/spiritLHLS/OpenAI-Checker/openai.sh))
+    output=$(echo "$output" | sed '1,2,3,4d')
     output=$(echo "$output" | grep -v '^Your IPv[46]: [0-9a-fA-F:.]* -')
     output=$(echo "$output" | grep -v '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\|[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*')
     output=$(echo "$output" | grep -v '::')
