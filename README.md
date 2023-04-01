@@ -111,7 +111,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
-移动测速节点已更新，琢磨新东西中一劳永逸解决老是要手动更新的问题 - 待添加
+移动测速节点已更新，琢磨新东西中一劳永逸解决老是要手动更新的问题 - 已搓好[独立脚本](https://github.com/spiritLHLS/ecsspeed)，待测试半个月无问题后整合替换
 
 CDN下载文件不稳定导致部分链接下载文件失效 - 待修复增加重复检测
 
