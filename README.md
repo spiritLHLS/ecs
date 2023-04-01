@@ -150,6 +150,10 @@ sjlleo的nf查询不支持ARM架构机器查询 - 待修复
 
 ## https://t.me/vps_reviews
 
+# 自动更新测速服务器节点列表的网络基准测试脚本
+
+## https://github.com/spiritLHLS/ecsspeed
+
 # 脚本概况
 
 ![](https://github.com/spiritLHLS/ecs/raw/main/page/1.png)
