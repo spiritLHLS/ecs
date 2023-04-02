@@ -44,6 +44,8 @@ echo 1 | bash <(wget -qO- bash.spiritlhl.net/ecs)
 
 融合怪的执行结果保存在```/root```下的test_result.txt中，运行完毕可用```cat test_result.txt```查看记录
 
+融合怪的完整版和精简版运行完毕自动上传结果到pastebin并回传分享链接
+
 **有时候想要测一些配置极其拉跨的机器时，推荐使用screen挂起执行融合怪**
 
 **然后你可以关闭SSH连接，等待一段时间后使用```cat test_result.txt```查看运行的实时状况**
