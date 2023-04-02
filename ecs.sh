@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 ver="2023.04.02"
-changeLog="融合怪九代目(集合百家之长)(专为测评频道小鸡而生)"
+changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
 test_area_s=("上海电信" "上海联通" "上海移动")
@@ -138,6 +138,7 @@ Global_StartupInit_Action() {
 }
 
 Global_Exit_Action() {
+    build_text
     rm -rf ${TEMP_DIR}
     rm -rf ${WorkDir}/
     rm -rf /.tmp_LBench/
@@ -1860,6 +1861,24 @@ rm_script(){
     rm -rf $TEMP_FILE
 }
 
+build_text(){
+    if { [ -n "${StartInput}" ] && [ "${StartInput}" -eq 1 ]; } || { [ -n "${StartInput1}" ] && [ "${StartInput1}" -ge 1 ] && [ "${StartInput1}" -le 4 ]; }; then
+        sed -i -e '1,/-------------------- A Bench Script By spiritlhl ---------------------/d; s/\x1B\[[0-9;]\+[a-zA-Z]//g; /^$/d' test_result.txt
+        sed -i -e '/Preparing system for disk tests.../d; /Generating fio test file.../d; /Running fio random mixed R+W disk test with 4k block size.../d; /Running fio random mixed R+W disk test with 64k block size.../d; /Running fio random mixed R+W disk test with 512k block size.../d; /Running fio random mixed R+W disk test with 1m block size.../d' test_result.txt
+        tr '\r' '\n' < test_result.txt > test_result1.txt && mv test_result1.txt test_result.txt
+        sed -i -e '/^$/d' -e '/1\/1/d' test_result.txt
+        shorturl=$(curl -s -X POST -H "Authorization: dvWYwv20KSWm8AXSceRw8toa.MTY4MDQzMzUxNDczNw" \
+        -H "Format: RANDOM" \
+        -H "Max-Views: 0" \
+        -H "Content-Type: multipart/form-data" \
+        -H "No-JSON: true" \
+        -F "file=@/root/test_result.txt" \
+        "https://paste.spiritlhl.net/api/upload")
+        _green "  结果短链:"
+        _blue "    $shorturl"
+    fi
+}
+
 Comprehensive_test_script(){
     head_script
     _yellow "具备综合性测试的脚本如下"
@@ -2003,10 +2022,10 @@ Jinjian_script(){
     echo ""
     read -rp "请输入选项:" StartInput1
 	case $StartInput1 in
-        1) minal_script ;;
-        2) minal_plus ;;
-        3) minal_plus_network ;;
-        4) minal_plus_media ;;
+        1) minal_script | tee -i test_result.txt;;
+        2) minal_plus | tee -i test_result.txt;;
+        3) minal_plus_network | tee -i test_result.txt;;
+        4) minal_plus_media | tee -i test_result.txt;;
         0) Start_script ;;
     esac
 }
@@ -2113,4 +2132,4 @@ mkdir -p $TEMP_DIR
 SystemInfo_GetSystemBit
 Start_script
 rm_script
-Global_Exit_Action >/dev/null 2>&1
+Global_Exit_Action
