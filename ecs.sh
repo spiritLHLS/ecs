@@ -1897,7 +1897,8 @@ Media_test_script(){
     echo -e "${GREEN}5.${PLAIN} lmc999的TikTok解锁区域检测脚本"
     echo -e "${GREEN}6.${PLAIN} lmc999的流媒体检测脚本-综合性地域流媒体全测的"
     echo -e "${GREEN}7.${PLAIN} nkeonkeo的流媒体检测脚本-基于上者的GO重构版本"
-    echo -e "${GREEN}8.${PLAIN} missuo的OpenAI-Checker检测脚本"
+    echo -e "${GREEN}8.${PLAIN} missuo的OpenAI-Checker检测脚本(可能卡住)"
+    echo -e "${GREEN}9.${PLAIN} 本人修改优化的OpenAI-Checker检测脚本(重构优化)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
     echo ""
@@ -1911,9 +1912,11 @@ Media_test_script(){
         6) bash <(curl -L -s check.unlock.media) ;;
         7) bash <(curl -Ls unlock.moe) ;;
         8) bash <(curl -Ls https://cpp.li/openai) ;;
+        9) bash <(curl -Ls https://bash.spiritlhl.net/openai-checker) ;;
         0) Yuanshi_script ;;
     esac
 }
+
 
 Network_test_script(){
     head_script
