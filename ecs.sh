@@ -43,6 +43,7 @@ for ((int = 0; int < ${#REGEX[@]}; int++)); do
     fi
 done
 apt-get --fix-broken install -y > /dev/null 2>&1
+rm -rf test_result.txt > /dev/null 2>&1
 
 check_cdn() {
   local o_url=$1
