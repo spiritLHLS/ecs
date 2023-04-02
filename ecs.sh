@@ -21,7 +21,7 @@ RED="\033[31m"
 GREEN="\033[32m"
 YELLOW="\033[33m"
 PLAIN="\033[0m"
-
+shorturl=""
 _red() { echo -e "\033[31m\033[01m$@\033[0m"; }
 _green() { echo -e "\033[32m\033[01m$@\033[0m"; }
 _yellow() { echo -e "\033[33m\033[01m$@\033[0m"; }
@@ -139,6 +139,11 @@ Global_StartupInit_Action() {
 
 Global_Exit_Action() {
     build_text
+    if [ -n "$shorturl" ]
+    then
+        _green "  短链:"
+        _blue "    $shorturl"
+    fi
     rm -rf ${TEMP_DIR}
     rm -rf ${WorkDir}/
     rm -rf /.tmp_LBench/
@@ -1439,6 +1444,7 @@ python_gd_script(){
 }
 
 cdn_urls=("https://cdn.spiritlhl.workers.dev/" "https://shrill-pond-3e81.hunsh.workers.dev/" "https://ghproxy.com/" "http://104.168.128.181:7823/" "https://gh.api.99988866.xyz/")
+ST="dvWYwv20KSWm8AXSceRw8toa.MTY4MDQzMzUxNDczNw"
 
 pre_check(){
     checkupdate
@@ -1867,15 +1873,13 @@ build_text(){
         sed -i -e '/Preparing system for disk tests.../d; /Generating fio test file.../d; /Running fio random mixed R+W disk test with 4k block size.../d; /Running fio random mixed R+W disk test with 64k block size.../d; /Running fio random mixed R+W disk test with 512k block size.../d; /Running fio random mixed R+W disk test with 1m block size.../d' test_result.txt
         tr '\r' '\n' < test_result.txt > test_result1.txt && mv test_result1.txt test_result.txt
         sed -i -e '/^$/d' -e '/1\/1/d' test_result.txt
-        shorturl=$(curl -s -X POST -H "Authorization: dvWYwv20KSWm8AXSceRw8toa.MTY4MDQzMzUxNDczNw" \
+        shorturl=$(curl -s -X POST -H "Authorization: $ST" \
         -H "Format: RANDOM" \
         -H "Max-Views: 0" \
         -H "Content-Type: multipart/form-data" \
         -H "No-JSON: true" \
         -F "file=@/root/test_result.txt" \
         "https://paste.spiritlhl.net/api/upload")
-        _green "  结果短链:"
-        _blue "    $shorturl"
     fi
 }
 
