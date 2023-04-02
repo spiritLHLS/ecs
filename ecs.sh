@@ -1511,11 +1511,12 @@ openai_script(){
     cd /root >/dev/null 2>&1
     echo -e "--------OpenAi解锁--感谢missuo的OpenAI-Checker项目本人修改优化--------"
     output=$(bash <(curl -Ls https://cdn.jsdelivr.net/gh/spiritLHLS/OpenAI-Checker/openai.sh))
-    output=$(echo "$output" | sed '1,5d')
     output=$(echo "$output" | grep -v '^Your IPv[46]: [0-9a-fA-F:.]* -')
     output=$(echo "$output" | grep -v '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\|[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*')
     output=$(echo "$output" | grep -v '::')
     output=$(echo "$output" | grep -v '^-------------------------------------')
+    output=$(echo "$output" | sed '1,/\[IPv4\]/d')
+    echo "[IPv4]"
     echo "$output"
 }
 
