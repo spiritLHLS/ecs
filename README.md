@@ -123,7 +123,7 @@ sjlleo的nf查询不支持ARM架构机器查询 - 待修复
 
 # 更新
 
-2023.04.02 修复脚本openai脚本测试超时的问题，使用自维护的脚本
+2023.04.02 修复脚本openai脚本测试超时的问题，使用自维护的脚本，第三方流媒体检测方面脚本加入本人优化版本的选项
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
