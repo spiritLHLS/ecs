@@ -1877,6 +1877,7 @@ build_text(){
         shorturl=$(curl -s -X POST -H "Authorization: $ST" \
         -H "Format: RANDOM" \
         -H "Max-Views: 0" \
+        -H "UploadText: true" \
         -H "Content-Type: multipart/form-data" \
         -H "No-JSON: true" \
         -F "file=@/root/test_result.txt" \
