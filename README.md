@@ -117,13 +117,11 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 CDN下载文件不稳定导致部分链接下载文件失效 - 待修复增加重复检测
 
-sjlleo的nf查询不支持ARM架构机器查询 - 待修复
-
 端口检测(检测是否被墙) - 待修复
 
 # 更新
 
-2023.04.02 修复脚本openai脚本测试超时的问题，使用自维护的脚本，第三方流媒体检测方面脚本加入本人优化版本的选项，运行完毕自动上传结果到pastebin并给出分享链接
+2023.04.03 修复sjlleo的nf查询不支持ARM架构机器查询的问题，但考虑到sjlleo不再维护流媒体检测的脚本，考虑替换别的作者的脚本检测
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
