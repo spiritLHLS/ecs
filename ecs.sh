@@ -68,10 +68,12 @@ check_cdn_file() {
 
 # 后台静默预下载文件并解压
 pre_downlaod() {
-    if [ "$LBench_Result_SystemBit_Full" = "arm" ]; then
-        tp_sys="arm64"
-    else
-        tp_sys="$LBench_Result_SystemBit_Full"
+    if [ -n "$LBench_Result_SystemBit_Full" ]; then
+        if [ "$LBench_Result_SystemBit_Full" = "arm" ]; then
+            tp_sys="arm64"
+        else
+            tp_sys="$LBench_Result_SystemBit_Full"
+        fi
     fi
     for file in "$@"; do
         case $file in
