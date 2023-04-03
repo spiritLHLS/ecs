@@ -68,6 +68,11 @@ check_cdn_file() {
 
 # 后台静默预下载文件并解压
 pre_downlaod() {
+    if [ "$LBench_Result_SystemBit_Full" = "arm" ]; then
+        tp_sys="arm64"
+    else
+        tp_sys="$LBench_Result_SystemBit_Full"
+    fi
     for file in "$@"; do
         case $file in
             sysbench)
@@ -75,13 +80,13 @@ pre_downlaod() {
                 unzip $TEMP_DIR/sysbench.zip -d ${TEMP_DIR}
                 ;;
             dp)
-                curl -sL -k "${cdn_success_url}https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_${LBench_Result_SystemBit_Full}" -o $TEMP_DIR/dp && chmod +x $TEMP_DIR/dp
+                curl -sL -k "${cdn_success_url}https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_${tp_sys}" -o $TEMP_DIR/dp && chmod +x $TEMP_DIR/dp
                 ;;
             nf)
-                curl -sL -k "${cdn_success_url}https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_${LBench_Result_SystemBit_Full}" -o $TEMP_DIR/nf && chmod +x $TEMP_DIR/nf
+                curl -sL -k "${cdn_success_url}https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_${tp_sys}" -o $TEMP_DIR/nf && chmod +x $TEMP_DIR/nf
                 ;;
             tubecheck)
-                curl -sL -k "${cdn_success_url}https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_${LBench_Result_SystemBit_Full}" -o $TEMP_DIR/tubecheck && chmod +x $TEMP_DIR/tubecheck
+                curl -sL -k "${cdn_success_url}https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_${tp_sys}" -o $TEMP_DIR/tubecheck && chmod +x $TEMP_DIR/tubecheck
                 ;;
             qzcheck_ecs)
                 curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py" -o $TEMP_DIR/qzcheck_ecs.py 
