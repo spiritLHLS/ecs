@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.04.02"
+ver="2023.04.06"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1964,7 +1964,7 @@ Network_test_script(){
     echo -e "${GREEN}8.${PLAIN} 未知作者修复的superspeed的三网测速脚本"
     echo -e "${GREEN}9.${PLAIN} 由sunpma维护的superspeed的三网测速脚本"
     echo -e "${GREEN}10.${PLAIN} 原始版hyperspeed的三网测速脚本"
-    # echo -e "${GREEN}11.${PLAIN} 特殊版hyperspeedx的三网测速脚本"
+    echo -e "${GREEN}11.${PLAIN} 本人的ecs-net三网测速脚本(自动更新测速节点)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
     echo ""
@@ -1980,7 +1980,7 @@ Network_test_script(){
         8) bash <(curl -Lso- https://git.io/superspeed_uxh) ;;
         9) bash <(curl -Lso- https://git.io/J1SEh) ;;
         10) bash <(curl -L -Lso- https://bench.im/hyperspeed) ;;
-        # 11) bash <(curl -L -Lso- https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/hyperspeedx.sh) ;;
+        11) bash <(wget -qO- bash.spiritlhl.net/ecs-net) ;;
         0) Yuanshi_script ;;
     esac
 }
