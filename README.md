@@ -115,7 +115,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 移动测速节点已更新，琢磨新东西中一劳永逸解决老是要手动更新的问题 - 已搓好[独立脚本](https://github.com/spiritLHLS/ecsspeed)，待测试半个月无问题后整合替换
 
-CDN下载文件不稳定导致部分链接下载文件失效 - 待修复增加重复检测
+CDN下载文件不稳定导致部分链接下载文件失效 - 待修复增加重复检测，似乎这个问题无法复现，无法找出问题修复
 
 端口检测(检测是否被墙) - 待修复
 
@@ -133,16 +133,16 @@ CDN下载文件不稳定导致部分链接下载文件失效 - 待修复增加�
 - [x] 内存测试--感谢lemonbench开源
 - [x] 磁盘IO读写测试--感谢lemonbench开源，本人修改整理优化
 - [x] 硬盘IO读写测试--感谢yabs开源[项目](https://github.com/masonr/yet-another-bench-script)，本人修改整理优化
-- [x] 御三家流媒体解锁--感谢sjlleo的[二进制文件](https://github.com/sjlleo?tab=repositories)，本人修改整理优化
-- [x] 常用流媒体解锁--感谢RegionRestrictionCheck的[项目](https://github.com/lmc999/RegionRestrictionCheck)，本人修改整理优化
+- [x] 御三家流媒体解锁测试--感谢sjlleo的[二进制文件](https://github.com/sjlleo?tab=repositories)，本人修改整理优化
+- [x] 常用流媒体解锁测试--感谢RegionRestrictionCheck的[项目](https://github.com/lmc999/RegionRestrictionCheck)，本人修改整理优化
 - [x] Tiktok解锁--感谢lmc999的[项目](https://github.com/lmc999/TikTokCheck)，本人修改整理优化
-- [x] OpenAI检测--感谢missuo提供的[项目](https://github.com/missuo/OpenAI-Checker)，本人修改整理[优化项目](https://github.com/spiritLHLS/OpenAI-Checker)
-- [x] 三网回程以及路由延迟--感谢zhanghanyun/backtrace开源[项目](https://github.com/zhanghanyun/backtrace),本人修改整理
+- [x] OpenAI检测--感谢missuo提供的[项目](https://github.com/missuo/OpenAI-Checker)，本人修改整理[优化项目](https://github.com/spiritLHLS/OpenAI-Checker)，去除很多BUG
+- [x] 三网回程以及路由延迟--感谢zhanghanyun/backtrace开源[项目](https://github.com/zhanghanyun/backtrace)，本人修改整理
 - [x] 回程路由以及带宽类型检测(商宽/家宽/数据中心)--由fscarmen的PR以及本人的技术思路提供，本人修改整理优化
-- [ ] 端口检测(检测是否被墙)--由fscarmen的PR以及本人的技术思路提供 - 待修复
 - [x] IP质量检测(检测IP白不白)(含IPV4和IPV6)--本人独创，感谢互联网提供的查询资源
-- [x] speedtest测速--由teddysun和superspeed的开源以及个人整理
+- [x] speedtest测速--由teddysun和superspeed的开源以及个人整理，已搓好[独立脚本](https://github.com/spiritLHLS/ecsspeed)，待测试半个月无问题后整合替换，自动更新测速服务器ID
 - [x] 全国网络延迟测试--感谢IPASN开源，本人修改整理优化
+- [ ] 端口检测(检测是否被墙)--由fscarmen的PR以及本人的技术思路提供 - 待修复
 
 # 测评频道
 
