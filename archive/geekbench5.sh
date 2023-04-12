@@ -1,9 +1,9 @@
 #!/bin/bash
 # by https://github.com/spiritLHLS/ecs
 # by spiritlhls
-# 2023.01.17
+# 2023.04.12
 #MY_GEEKBENCH_DOWNLOAD_URL="https://github.com/spiritLHLS/ecs/releases/download/Geekbench/Geekbench-5.4.5-Linux.tar.gz"
-MY_GEEKBENCH_DOWNLOAD_URL="https://cdn.geekbench.com/Geekbench-5.4.6-Linux.tar.gz"
+MY_GEEKBENCH_DOWNLOAD_URL="https://cdn.geekbench.com/Geekbench-5.5.1-Linux.tar.gz"
 MY_DIR="$HOME/gb5"
 MY_GITHUB_API_TOKEN=""
 MY_GITHUB_API_JSON="$MY_DIR/github-gist.json"
