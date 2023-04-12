@@ -121,7 +121,7 @@ CDN下载文件不稳定导致部分链接下载文件失效 - 待修复增加�
 
 # 更新
 
-2023.04.03 修复sjlleo的nf查询不支持ARM架构机器查询的问题，但考虑到sjlleo不再维护流媒体检测的脚本，考虑替换别的作者的脚本检测
+2023.04.12 修复如果测试有问题出现空测评的情况时会传空文件到pastebin的问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
