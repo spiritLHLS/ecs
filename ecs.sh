@@ -1994,6 +1994,7 @@ Hardware_test_script(){
     echo -e "${GREEN}1.${PLAIN} 检测本机硬盘(含通电时长)-一般是独服才有用"
     echo -e "${GREEN}2.${PLAIN} Geekbench4测试"
     echo -e "${GREEN}3.${PLAIN} Geekbench5测试"
+    echo -e "${GREEN}4.${PLAIN} Geekbench6测试"
     echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
     echo ""
     read -rp "请输入选项:" StartInputh
@@ -2001,6 +2002,7 @@ Hardware_test_script(){
         1) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/disk_info.sh) ;;
         2) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench4.sh) ;;
         3) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench5.sh) ;;
+        6) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench6.sh) ;;
         0) Yuanshi_script ;;
     esac
 }
@@ -2085,6 +2087,7 @@ Yuanchuang_script(){
     echo -e "${GREEN}9.${PLAIN} 检测本机硬盘(含通电时长)(一般是独服才有用)"
     echo -e "${GREEN}10.${PLAIN} Geekbench4测试(最常见的CPU基准测试)"
     echo -e "${GREEN}11.${PLAIN} Geekbench5测试(测不动gb5可以试试这个)"
+    echo -e "${GREEN}12.${PLAIN} Geekbench6测试(测的极其缓慢)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
@@ -2101,6 +2104,7 @@ Yuanchuang_script(){
         9) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/disk_info.sh) ;;
         10) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench4.sh) ;;
         11) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench5.sh) ;;
+        12) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench6.sh) ;;
         0) Start_script ;;
     esac
 }
