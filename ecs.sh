@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.04.06"
+ver="2023.04.12"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1881,14 +1881,16 @@ build_text(){
         sed -i -e '/Preparing system for disk tests.../d; /Generating fio test file.../d; /Running fio random mixed R+W disk test with 4k block size.../d; /Running fio random mixed R+W disk test with 64k block size.../d; /Running fio random mixed R+W disk test with 512k block size.../d; /Running fio random mixed R+W disk test with 1m block size.../d' test_result.txt
         tr '\r' '\n' < test_result.txt > test_result1.txt && mv test_result1.txt test_result.txt
         sed -i -e '/^$/d' -e '/1\/1/d' test_result.txt
-        shorturl=$(curl -s -X POST -H "Authorization: $ST" \
-        -H "Format: RANDOM" \
-        -H "Max-Views: 0" \
-        -H "UploadText: true" \
-        -H "Content-Type: multipart/form-data" \
-        -H "No-JSON: true" \
-        -F "file=@/root/test_result.txt" \
-        "https://paste.spiritlhl.net/api/upload")
+        if [ -s test_result.txt ]; then
+            shorturl=$(curl -s -X POST -H "Authorization: $ST" \
+            -H "Format: RANDOM" \
+            -H "Max-Views: 0" \
+            -H "UploadText: true" \
+            -H "Content-Type: multipart/form-data" \
+            -H "No-JSON: true" \
+            -F "file=@/root/test_result.txt" \
+            "https://paste.spiritlhl.net/api/upload")
+        fi
     fi
 }
 
