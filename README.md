@@ -123,7 +123,7 @@ CDN下载文件不稳定导致部分链接下载文件失效 - 待修复增加�
 
 # 更新
 
-2023.04.12 修复如果测试有问题出现空测评的情况时会传空文件到pastebin的问题，增加Geekbench6测试选项在对应分区
+2023.04.13 修复检测ARM时CPU识别不出来的BUG
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
