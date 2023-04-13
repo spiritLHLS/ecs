@@ -2090,7 +2090,7 @@ Yuanchuang_script(){
     echo -e "${GREEN}8.${PLAIN} 自定义IP的IP质量检测(平均运行10~20秒)"
     echo -e "${GREEN}9.${PLAIN} 检测本机硬盘(含通电时长)(一般是独服才有用)"
     echo -e "${GREEN}10.${PLAIN} Geekbench4测试(最常见的CPU基准测试)"
-    echo -e "${GREEN}11.${PLAIN} Geekbench5测试(测不动gb5可以试试这个)"
+    echo -e "${GREEN}11.${PLAIN} Geekbench5测试(测不动gb6可以试试这个)"
     echo -e "${GREEN}12.${PLAIN} Geekbench6测试(测的极其缓慢)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
