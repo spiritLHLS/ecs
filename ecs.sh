@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.04.12"
+ver="2023.04.13"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1203,7 +1203,12 @@ print_intro() {
 }
 
 get_system_info() {
-    cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
+	arch=$( uname -m )
+	if [[ $arch = *aarch64* || $arch = *arm* ]]; then
+		cname=$(lscpu | grep "Model name" | sed 's/Model name: *//g')
+	else
+		cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
+	fi
     cores=$( awk -F: '/processor/ {core++} END {print core}' /proc/cpuinfo )
     freq=$( awk -F'[ :]' '/cpu MHz/ {print $4;exit}' /proc/cpuinfo )
     ccache=$( awk -F: '/cache size/ {cache=$2} END {print cache}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
@@ -1225,7 +1230,6 @@ get_system_info() {
         load=$( LANG=C; uptime | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
     fi
     opsy=$( get_opsy )
-    arch=$( uname -m )
     if _exists "getconf"; then
         lbit=$( getconf LONG_BIT )
     else
