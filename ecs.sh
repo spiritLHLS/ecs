@@ -2,7 +2,7 @@
 # by spiritlhl
 # from https://github.com/spiritLHLS/ecs
 
-cd /root >/dev/null 2>&1
+myvar=$(pwd)
 ver="2023.04.14"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
@@ -599,7 +599,7 @@ Run_SysBench_CPU() {
 }
 
 Function_SysBench_CPU_Fast() {
-    cd /root >/dev/null 2>&1
+    cd $myvar >/dev/null 2>&1
     mkdir -p ${WorkDir}/SysBench/CPU/ >/dev/null 2>&1
     echo -e " ${Font_Yellow}-> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}"
     echo -e " -> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/CPU/result.txt
@@ -1457,14 +1457,14 @@ pre_check(){
     check_ipv4
     check_cdn_file
     Global_StartupInit_Action
-    cd /root >/dev/null 2>&1
+    cd $myvar >/dev/null 2>&1
     curl -sL -k https://gitlab.com/spiritysdx/za/-/raw/main/yabsiotest.sh -o yabsiotest.sh && chmod +x yabsiotest.sh  >/dev/null 2>&1
     ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
     ! _exists "free" && _red "Error: free command not found.\n" && exit 1
 }
 
 sjlleo_script(){
-    cd /root >/dev/null 2>&1
+    cd $myvar >/dev/null 2>&1
     mv $TEMP_DIR/{dp,nf,tubecheck} ./
     echo "--------------------流媒体解锁--感谢sjlleo开源------------------------"
     _yellow "以下测试的解锁地区是准确的，但是不是完整解锁的判断可能有误，这方面仅作参考使用"
@@ -1484,25 +1484,25 @@ basic_script(){
     echo "-----------------感谢teddysun和superbench和yabs开源-------------------"
     print_system_info
     ipv4_info
-    cd /root >/dev/null 2>&1
+    cd $myvar >/dev/null 2>&1
     sleep 1
     echo "-------------------CPU测试--感谢lemonbench开源------------------------"
     Entrance_SysBench_CPU_Fast
-    cd /root >/dev/null 2>&1
+    cd $myvar >/dev/null 2>&1
     sleep 1
     echo "-------------------内存测试--感谢lemonbench开源-----------------------"
     Function_SysBench_Memory_Fast
 }
 
 io1_script(){
-    cd /root >/dev/null 2>&1
+    cd $myvar >/dev/null 2>&1
     sleep 1
     echo "----------------磁盘IO读写测试--感谢lemonbench开源--------------------"
     Function_DiskTest_Fast
 }
 
 io2_script(){
-    cd /root >/dev/null 2>&1
+    cd $myvar >/dev/null 2>&1
     echo "-------------------磁盘IO读写测试--感谢yabs开源-----------------------"
     bash ./yabsiotest.sh 2>/dev/null
     rm -rf yabsiotest.sh
@@ -1517,7 +1517,7 @@ RegionRestrictionCheck_script(){
 }
 
 openai_script(){
-    cd /root >/dev/null 2>&1
+    cd $myvar >/dev/null 2>&1
     echo -e "--------OpenAi解锁--感谢missuo的OpenAI-Checker项目本人修改优化--------"
     output=$(bash <(curl -Ls https://cdn.jsdelivr.net/gh/spiritLHLS/OpenAI-Checker/openai.sh))
     output=$(echo "$output" | grep -v '^Your IPv[46]: [0-9a-fA-F:.]* -')
@@ -1530,7 +1530,7 @@ openai_script(){
 }
 
 lmc999_script(){
-    cd /root >/dev/null 2>&1
+    cd $myvar >/dev/null 2>&1
     echo -e "-------------TikTok解锁--感谢lmc999的源脚本及fscarmen PR--------------"
     local Ftmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -s --max-time 10 "https://www.tiktok.com/")
 
@@ -1557,7 +1557,7 @@ lmc999_script(){
 }
 
 spiritlhl_script(){
-    cd /root >/dev/null 2>&1
+    cd $myvar >/dev/null 2>&1
     echo -e "-----------------欺诈分数以及IP质量检测--本频道原创-------------------"
     _yellow "以下仅作参考，不代表100%准确，如果和实际情况不一致请手动查询多个数据库比对"
     ipcheck
@@ -1598,7 +1598,7 @@ fscarmen_route_script(){
 }
 
 superspeed_all_script(){
-    cd /root >/dev/null 2>&1
+    cd $myvar >/dev/null 2>&1
     echo "--------网络测速--由teddysun和superspeed开源及spiritlhls整理----------"
     sleep 0.5
     echo -e "测速点位置\t 上传速度\t 下载速度\t 延迟"
@@ -1606,7 +1606,7 @@ superspeed_all_script(){
 }
 
 superspeed_minal_script(){
-    cd /root >/dev/null 2>&1
+    cd $myvar >/dev/null 2>&1
     echo "--------网络测速--由teddysun和superspeed开源及spiritlhls整理----------"
     sleep 0.5
     echo -e "测速点位置\t 上传速度\t 下载速度\t 延迟"
@@ -1844,7 +1844,7 @@ network_c_script() {
 }
 
 rm_script(){
-    rm -rf return.sh
+    cd $myvar >/dev/null 2>&1
     rm -rf speedtest.tgz*
     rm -rf wget-log*
     rm -rf media_lmc_check.sh*
