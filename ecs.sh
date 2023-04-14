@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 cd /root >/dev/null 2>&1
-ver="2023.04.13"
+ver="2023.04.14"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -89,12 +89,6 @@ pre_downlaod() {
                 ;;
             tubecheck)
                 curl -sL -k "${cdn_success_url}https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_${tp_sys}" -o $TEMP_DIR/tubecheck && chmod +x $TEMP_DIR/tubecheck
-                ;;
-            qzcheck_ecs)
-                curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck_ecs.py" -o $TEMP_DIR/qzcheck_ecs.py 
-                ;;
-            googlesearchcheck)
-                curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/googlesearchcheck.py" -o $TEMP_DIR/googlesearchcheck.py
                 ;;
             media_lmc_check)
                 curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh" -o $TEMP_DIR/media_lmc_check.sh && chmod 777 $TEMP_DIR/media_lmc_check.sh
@@ -351,31 +345,6 @@ checkupdate(){
 		${PACKAGE_UPDATE[int]} > /dev/null 2>&1
         ${PACKAGE_INSTALL[int]} dmidecode > /dev/null 2>&1
         apt-key update > /dev/null 2>&1
-}
-
-checkpython() {
-	if  [ ! -e '/usr/bin/python3' ]; then
-        _yellow "Installing python3"
-        if [ "${release}" == "arch" ]; then
-            pacman -S --noconfirm --needed python > /dev/null 2>&1 
-        else
-            ${PACKAGE_INSTALL[int]} python3 > /dev/null 2>&1
-        fi
-    fi
-    if  [ ! -e '/usr/bin/python3-pip' ]; then
-        _yellow "Installing python3-pip"
-	        if [ "${release}" == "arch" ]; then
-	            pacman -S --noconfirm --needed python-pip > /dev/null 2>&1
-            else
-	            ${PACKAGE_INSTALL[int]} python3-pip > /dev/null 2>&1
-	        fi
-    fi
-    sleep 0.5
-}
-
-checkmagic(){
-    pip3 install magic_google 2>/dev/null
-    sleep 0.4
 }
 
 checkdnsutils() {
@@ -1433,30 +1402,120 @@ print_end_time() {
     echo " 时间          : $date_time"
 }
 
-python_all_script(){
-    checkpython
-    checkmagic
-    export PYTHONIOENCODING=utf-8
-    mv $TEMP_DIR/{qzcheck_ecs,googlesearchcheck}.py ./
-    python3 googlesearchcheck.py
-}
-
 check_lmc_script(){
-    checkpython
-    export PYTHONIOENCODING=utf-8
     mv $TEMP_DIR/media_lmc_check.sh ./
 }
 
-python_gd_script(){
-    checkpython
-    checkmagic
-    export PYTHONIOENCODING=utf-8
-    mv $TEMP_DIR/{qzcheck_ecs,googlesearchcheck}.py ./
-    python3 googlesearchcheck.py
+translate_status() {
+    if [[ "$1" == "false" ]]; then
+        echo "No"
+    elif [[ "$1" == "true" ]]; then
+        echo "Yes"
+    else
+        echo "未知"
+    fi
+}
+
+scamalytics() {
+    ip="$1"
+    echo "scamalytics数据库:"
+    context=$(curl -s -H "$head" "https://scamalytics.com/ip/$ip")
+    temp1=$(echo "$context" | grep -oP '(?<=>Fraud Score: )[^<]+')
+    echo "  欺诈分数(越低越好)：$temp1"
+    temp2=$(echo "$context" | grep -oP '(?<=<div).*?(?=</div>)' | tail -n 6)
+    nlist=("匿名代理" "Tor出口节点" "服务器IP" "公共代理" "网络代理" "搜索引擎机器人")
+    i=0
+    while read -r temp3; do
+        echo "  ${nlist[$i]}: ${temp3#*>}"
+        i=$((i+1))
+    done <<< "$(echo "$temp2" | sed 's/<[^>]*>//g' | sed 's/^[[:blank:]]*//g')"
+}
+
+
+cloudflare() {
+    status=0
+    for ((i=1; i<=100; i++)); do
+        context1=$(curl -s "https://cf-threat.sukkaw.com/hello.json?threat=$i")
+        if [[ "$context1" != *"pong!"* ]]; then
+            echo "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60"
+            echo "Cloudflare威胁得分：$i"
+            status=1
+            break
+        fi
+    done
+    if [[ $i == 100 && $status == 0 ]]; then
+        echo "Cloudflare威胁得分(0为低风险): 0"
+    fi
+}
+
+abuse() {
+    ip="$1"
+    context2=$(curl -s -H "$head" "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
+    if [[ "$context2" == *"abuseConfidenceScore"* ]]; then
+        score=$(echo "$context2" | jq -r '.data.abuseConfidenceScore')
+        echo "abuseipdb数据库-abuse得分：$score"
+        echo "IP类型:"
+        echo "  IP2Location数据库: $(echo "$context2" | jq -r '.data.usageType')"
+    fi
+}
+
+ipapi() {
+    ip=$1
+    context4=$(curl -s "http://ip-api.com/json/$ip?fields=mobile,proxy,hosting")
+    if [[ "$context4" == *"mobile"* ]]; then
+        echo "ip-api数据库:"
+        mobile=$(echo "$context4" | jq -r '.mobile')
+        tp1=$(translate_status ${mobile})
+        echo "  手机流量: $tp1"
+        proxy=$(echo "$context4" | jq -r '.proxy')
+        tp2=$(translate_status ${proxy})
+        echo "  代理服务: $tp2"
+        hosting=$(echo "$context4" | jq -r '.hosting')
+        tp3=$(translate_status ${hosting})
+        echo "  数据中心: $tp3"
+    fi
+}
+
+ip234() {
+  local ip="$1"
+  context5=$(curl -s "http://ip234.in/fraud_check?ip=$ip")
+  if [[ "$?" -ne 0 ]]; then
+    return
+  fi
+  risk=$(echo "$context5" | jq -r '.data.score')
+  echo "ip234数据库："
+  echo "  欺诈分数(越低越好)：$risk"
+}
+
+google() {
+  curl_result=$(curl -sL "https://www.google.com/search?q=www.spiritysdx.top" -H "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0")
+  if echo "$curl_result" | grep -q "二叉树的博客"; then
+    echo "Google搜索可行性：YES"
+  else
+    echo "Google搜索可行性：NO"
+  fi
+}
+
+ipcheck(){
+    ip4=$(curl -s4m8 -k ip.sb | tr -d '[:space:]')
+    ip6=$(curl -s6m8 -k ip.sb | tr -d '[:space:]')
+    ip4=$(echo "$ip4" | tr -d '\n')
+    ip6=$(echo "$ip6" | tr -d '\n')
+    scamalytics "$ip4"
+    ip234 "$ip4"
+    ipapi "$ip4"
+    abuse "$ip4"
+    google
+    if [[ -n "$ip6" ]]; then
+    echo "------以下为IPV6检测------"
+    scamalytics "$ip6"
+    abuse "$ip6"
+    fi
 }
 
 cdn_urls=("https://cdn.spiritlhl.workers.dev/" "https://shrill-pond-3e81.hunsh.workers.dev/" "https://ghproxy.com/" "http://104.168.128.181:7823/" "https://gh.api.99988866.xyz/")
 ST="dvWYwv20KSWm8AXSceRw8toa.MTY4MDQzMzUxNDczNw"
+head='key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c'
 
 pre_check(){
     checkupdate
@@ -1570,11 +1629,7 @@ spiritlhl_script(){
     cd /root >/dev/null 2>&1
     echo -e "-----------------欺诈分数以及IP质量检测--本频道原创-------------------"
     _yellow "以下仅作参考，不代表100%准确，如果和实际情况不一致请手动查询多个数据库比对"
-    if ! python3 qzcheck_ecs.py 2> /dev/null ; then
-        if ! python3 qzcheck_ecs.py 2> /dev/null ; then
-            echo "执行失败，可能是Python版本过低，也可能是安装失败"
-        fi
-    fi
+    ipcheck
 }
 
 backtrace_script(){
@@ -1635,12 +1690,10 @@ end_script(){
 
 all_script(){
     pre_check
-    pre_downlaod dp nf tubecheck qzcheck_ecs googlesearchcheck media_lmc_check besttrace backtrace
+    pre_downlaod dp nf tubecheck googlesearchcheck media_lmc_check besttrace backtrace
     get_system_info >/dev/null 2>&1
     check_virt
-    # checkssh
     checkdnsutils
-    python_all_script
     checkspeedtest
     install_speedtest
     check_lmc_script
@@ -1680,7 +1733,7 @@ minal_script(){
 
 minal_plus(){
     pre_check
-    pre_downlaod dp nf tubecheck qzcheck_ecs googlesearchcheck media_lmc_check besttrace backtrace
+    pre_downlaod dp nf tubecheck media_lmc_check besttrace backtrace
     get_system_info >/dev/null 2>&1
     check_virt
     check_lmc_script
@@ -1722,7 +1775,7 @@ minal_plus_network(){
 
 minal_plus_media(){
     pre_check
-    pre_downlaod dp nf tubecheck qzcheck_ecs googlesearchcheck media_lmc_check
+    pre_downlaod dp nf tubecheck media_lmc_check
     get_system_info >/dev/null 2>&1
     check_virt
     checkdnsutils
@@ -1744,7 +1797,7 @@ minal_plus_media(){
 
 network_script(){
     pre_check
-    pre_downlaod qzcheck_ecs googlesearchcheck besttrace backtrace
+    pre_downlaod besttrace backtrace
     checkspeedtest
     install_speedtest
     start_time=$(date +%s)
@@ -1864,8 +1917,6 @@ rm_script(){
     rm -rf speedtest.tgz*
     rm -rf wget-log*
     rm -rf media_lmc_check.sh*
-    rm -rf check.py*
-    rm -rf qzcheck_ecs.py*
     rm -rf dp
     rm -rf nf
     rm -rf tubecheck
@@ -1873,8 +1924,6 @@ rm_script(){
     rm -rf LemonBench.Result.txt*
     rm -rf speedtest.log*
     rm -rf ecs.sh*
-    rm -rf googlesearchcheck.py*
-    rm -rf gdlog*
     rm -rf test
     rm -rf $TEMP_FILE
 }
