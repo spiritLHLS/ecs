@@ -119,13 +119,6 @@ _exit() {
 
 trap _exit INT QUIT TERM
 
-# 新版JSON解析
-PharseJSON() {
-    # 使用方法: PharseJSON "要解析的原JSON文本" "要解析的键值"
-    # Example: PharseJSON ""Value":"123456"" "Value" [返回结果: 123456]
-    echo -n $1 | jq -r .$2
-}
-
 Global_StartupInit_Action() {
     # 清理残留, 为新一次的运行做好准备
     echo -e "${Msg_Info}Initializing Running Enviorment, Please wait ..."
@@ -1142,6 +1135,27 @@ check_virt(){
     fi
 }
 
+check_ipv4(){
+  # 遍历本机可以使用的 IP API 服务商
+  # 定义可能的 IP API 服务商
+  API_NET=("ip.sb" "ipget.net" "ip.ping0.cc" "https://ip4.seeip.org" "https://api.my-ip.io/ip" "https://ipv4.icanhazip.com" "api.ipify.org")
+
+  # 遍历每个 API 服务商，并检查它是否可用
+  for p in "${API_NET[@]}"; do
+    # 使用 curl 请求每个 API 服务商
+    response=$(curl -s4m8 "$p")
+    sleep 1
+    # 检查请求是否失败，或者回传内容中是否包含 error
+    if [ $? -eq 0 ] && ! echo "$response" | grep -q "error"; then
+      # 如果请求成功且不包含 error，则设置 IP_API 并退出循环
+      IP_API="$p"
+      IPV4=$(curl -s4m8 "$IP_API")
+      break
+    fi
+  done
+  export IPV4
+}
+
 ipv4_info() {
     local org="$(wget -q -T10 -O- ipinfo.io/org)"
     local city="$(wget -q -T10 -O- ipinfo.io/city)"
@@ -1497,7 +1511,7 @@ google() {
 }
 
 ipcheck(){
-    ip4=$(curl -s4m8 -k ip.sb | tr -d '[:space:]')
+    ip4=$IPV4
     ip6=$(curl -s6m8 -k ip.sb | tr -d '[:space:]')
     ip4=$(echo "$ip4" | tr -d '\n')
     ip6=$(echo "$ip6" | tr -d '\n')
@@ -1524,6 +1538,7 @@ pre_check(){
     checkunzip
     checksystem
     checkcurl
+    check_ipv4
     check_cdn_file
     Global_StartupInit_Action
     cd /root >/dev/null 2>&1
