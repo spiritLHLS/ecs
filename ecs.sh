@@ -127,7 +127,6 @@ Global_StartupInit_Action() {
     mkdir "$WorkDir"/
     echo -e "${Msg_Info}Checking Dependency ..."
     Check_Virtwhat
-    Check_JSONQuery
     Check_SysBench
     echo -e "${Msg_Info}Starting Test ..."
 }
@@ -219,90 +218,6 @@ Check_Virtwhat() {
     # 二次检测
     if [ ! -f "/usr/sbin/virt-what" ]; then
         echo -e "Virt-What Moudle install Failure! Try Restart Bench or Manually install it! (/usr/sbin/virt-what)"
-        exit 1
-    fi
-}
-
-# =============== 检查 JSON Query 组件 ===============
-Check_JSONQuery() {
-    # 判断 jq 命令是否存在
-    if ! command -v jq > /dev/null; then
-        # 获取系统位数
-        SystemInfo_GetSystemBit
-        # 获取操作系统版本
-        SystemInfo_GetOSRelease
-        # 根据系统位数设置下载地址
-        local DownloadSrc
-        if [ -z "${LBench_Result_SystemBit_Short}" ] || [ "${LBench_Result_SystemBit_Short}" != "amd64" ] || [ "${LBench_Result_SystemBit_Short}" != "i386" ]; then
-            DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/JSONQuery/jq-i386.tar.gz"
-        else
-            DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/JSONQuery/jq-${LBench_Result_SystemBit_Short}.tar.gz"
-            # local DownloadSrc="https://raw.githubusercontent.com/LemonBench/LemonBench/master/Resources/JSONQuery/jq-amd64.tar.gz"
-            # local DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/jq/1.6/amd64/jq.tar.gz"
-            # local DownloadSrc="https://raw.githubusercontent.com/LemonBench/LemonBench/master/Resources/JSONQuery/jq-i386.tar.gz"
-            # local DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/jq/1.6/i386/jq.tar.gz"
-        fi
-        mkdir -p ${WorkDir}/
-        echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
-        echo -e "${Msg_Info}Installing Dependency ..."
-        if [[ "${Var_OSRelease}" =~ ^(centos|rhel|almalinux)$ ]]; then
-            yum install -y epel-release
-            if [ $? -ne 0 ]; then
-                if [ "$(grep -Ei 'centos|almalinux' /etc/os-release | awk -F'=' '{print $2}')" == "AlmaLinux" ]; then
-                    cd /etc/yum.repos.d/
-                    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/AlmaLinux-*
-                    sed -i 's|#baseurl=https://repo.almalinux.org/|baseurl=https://vault.almalinux.org/|g' /etc/yum.repos.d/AlmaLinux-*
-                    yum makecache
-                else
-                    cd /etc/yum.repos.d/
-                    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
-                    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
-                    yum makecache
-                fi
-                if [ $? -ne 0 ]; then
-                    yum -y update && yum install -y epel-release
-                fi
-            fi
-            yum install -y tar
-            yum install -y jq
-        elif [[ "${Var_OSRelease}" =~ ^debian$ ]]; then
-            ! apt-get update && apt-get --fix-broken install -y && apt-get update
-            ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install jq -y
-            if [ $? -ne 0 ]; then
-                ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install jq -y --force-yes
-            fi
-            if [ $? -ne 0 ]; then
-                ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install jq -y --allow
-            fi
-        elif [[ "${Var_OSRelease}" =~ ^ubuntu$ ]]; then
-            ! apt-get update && apt-get --fix-broken install -y && apt-get update
-            ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install jq -y
-            if [ $? -ne 0 ]; then
-                ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install jq -y --allow-unauthenticated
-            fi
-        elif [ "${Var_OSRelease}" = "fedora" ]; then
-            dnf install -y jq
-        elif [ "${Var_OSRelease}" = "alpinelinux" ]; then
-            apk update
-            apk add jq
-        elif [ "${Var_OSRelease}" = "arch" ]; then
-            pacman -Sy --needed --noconfirm jq
-        else
-            apk update
-            apk add wget unzip curl
-            echo -e "${Msg_Info}Downloading Json Query Module ..."
-            curl --user-agent "${UA_LemonBench}" ${DownloadSrc} -o ${WorkDir}/jq.tar.gz
-            echo -e "${Msg_Info}Installing JSON Query Module ..."
-            tar xvf ${WorkDir}/jq.tar.gz
-            mv ${WorkDir}/jq /usr/bin/jq
-            chmod +x /usr/bin/jq
-            echo -e "${Msg_Info}Cleaning up ..."
-            rm -rf ${WorkDir}/jq.tar.gz
-        fi
-    fi
-    # 二次检测
-    if [ ! -f "/usr/bin/jq" ]; then
-        echo -e "JSON Query Moudle install Failure! Try Restart Bench or Manually install it! (/usr/bin/jq)"
         exit 1
     fi
 }
@@ -1466,10 +1381,11 @@ abuse() {
     ip="$1"
     context2=$(curl -s -H "$head" -m 10 "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
     if [[ "$context2" == *"abuseConfidenceScore"* ]]; then
-        score=$(echo "$context2" | jq -r '.data.abuseConfidenceScore')
+        score=$(echo "$context2" | grep -o '"abuseConfidenceScore":[^,}]*' | sed 's/.*://')
         echo "abuseipdb数据库-abuse得分：$score"
         echo "IP类型:"
-        echo "  IP2Location数据库: $(echo "$context2" | jq -r '.data.usageType')"
+        usageType=$(grep -oP '"usageType":\s*"\K[^"]+' <<< "$context2" | sed 's/\\\//\//g')
+        echo "  IP2Location数据库: $usageType"
     fi
 }
 
@@ -1478,13 +1394,13 @@ ipapi() {
     context4=$(curl -s -m 10 "http://ip-api.com/json/$ip?fields=mobile,proxy,hosting")
     if [[ "$context4" == *"mobile"* ]]; then
         echo "ip-api数据库:"
-        mobile=$(echo "$context4" | jq -r '.mobile')
+        mobile=$(echo "$context4" | grep -o '"mobile":[^,}]*' | sed 's/.*://;s/"//g')
         tp1=$(translate_status ${mobile})
         echo "  手机流量: $tp1"
-        proxy=$(echo "$context4" | jq -r '.proxy')
+        proxy=$(echo "$context4" | grep -o '"proxy":[^,}]*' | sed 's/.*://;s/"//g')
         tp2=$(translate_status ${proxy})
         echo "  代理服务: $tp2"
-        hosting=$(echo "$context4" | jq -r '.hosting')
+        hosting=$(echo "$context4" | grep -o '"hosting":[^,}]*' | sed 's/.*://;s/"//g')
         tp3=$(translate_status ${hosting})
         echo "  数据中心: $tp3"
     fi
@@ -1496,7 +1412,7 @@ ip234() {
   if [[ "$?" -ne 0 ]]; then
     return
   fi
-  risk=$(echo "$context5" | jq -r '.data.score')
+  risk=$(grep -oP '(?<="score":)[^,}]+' <<< "$context5")
   echo "ip234数据库："
   echo "  欺诈分数(越低越好)：$risk"
 }
@@ -2118,7 +2034,7 @@ Jinjian_script(){
 Danxiang_script(){
     head_script
     _yellow "融合怪拆分的单项测试脚本如下"
-    echo -e "${GREEN}1.${PLAIN} 网络方面(简化的IP质量检测+三网回程+三网路由与延迟+测速节点11个)(平均运行7分钟左右)"
+    echo -e "${GREEN}1.${PLAIN} 网络方面(简化的IP质量检测+三网回程+三网路由与延迟+测速节点11个)(平均运行6分钟左右)"
     echo -e "${GREEN}2.${PLAIN} 解锁方面(御三家解锁+常用流媒体解锁+TikTok解锁+OpenAI解锁)(平均运行30~60秒)"
     echo -e "${GREEN}3.${PLAIN} 硬件方面(基础系统信息+CPU+内存+双重磁盘IO测试)(平均运行1分半钟)"
     echo -e "${GREEN}4.${PLAIN} 完整的IP质量检测(平均运行10~20秒)"
@@ -2195,7 +2111,7 @@ head_script(){
 
 Start_script(){
     head_script
-    echo -e "${GREEN}1.${PLAIN} 融合怪完全体(所有项目都测试)(平均运行7分30秒)"
+    echo -e "${GREEN}1.${PLAIN} 融合怪完全体(所有项目都测试)(平均运行7分钟)"
     echo -e "${GREEN}2.${PLAIN} 融合怪精简区(融合怪的各种精简版并含单项测试精简版)"
     echo -e "${GREEN}3.${PLAIN} 融合怪单项区(融合怪的单项测试完整版)"
     echo -e "${GREEN}4.${PLAIN} 第三方脚本区(其他作者的各种测试脚本)"
