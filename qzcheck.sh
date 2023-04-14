@@ -380,7 +380,7 @@ Check_JSONQuery() {
 }
 
 print_intro() {
-    echo "--------------------- A Bench Script By spiritlhl --------------------"
+    echo "-------------------- A Bench Script By spiritlhl -------------------"
     echo "                   测评频道: https://t.me/vps_reviews                    "
     echo "版本：$ver"
     echo "更新日志：$changeLog"
