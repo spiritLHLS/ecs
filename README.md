@@ -123,7 +123,7 @@ CDN下载文件不稳定导致部分链接下载文件失效 - 待修复增加�
 
 # 更新
 
-2023.04.13 修复检测ARM时CPU识别不出来的BUG
+2023.04.14 去除Python3的依赖，全套脚本只使用Shell语言，减少了前期组件的安装与下载
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
