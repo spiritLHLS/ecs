@@ -479,6 +479,22 @@ ipapi() {
     fi
 }
 
+cloudflare() {
+    status=0
+    for ((i=1; i<=100; i++)); do
+        context1=$(curl -s "https://cf-threat.sukkaw.com/hello.json?threat=$i" | jq -r '.ping')
+        if [[ "$context1" != "pong!" ]]; then
+            echo "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60"
+            echo "Cloudflare威胁得分：$i"
+            status=1
+            break
+        fi
+    done
+    if [[ $i == 100 && $status == 0 ]]; then
+        echo "Cloudflare威胁得分(0为低风险): 0"
+    fi
+}
+
 ip234() {
   local ip="$1"
   context5=$(curl -s "http://ip234.in/fraud_check?ip=$ip")
@@ -524,6 +540,7 @@ scamalytics "$ip4"
 ip234 "$ip4"
 ipapi "$ip4"
 abuse "$ip4"
+cloudflare
 google
 if [[ -n "$ip6" ]]; then
   echo "------以下为IPV6检测------"
