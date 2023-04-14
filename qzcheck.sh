@@ -451,23 +451,6 @@ scamalytics() {
     done <<< "$(echo "$temp2" | sed 's/<[^>]*>//g' | sed 's/^[[:blank:]]*//g')"
 }
 
-
-cloudflare() {
-    status=0
-    for ((i=1; i<=100; i++)); do
-        context1=$(curl -s "https://cf-threat.sukkaw.com/hello.json?threat=$i")
-        if [[ "$context1" != *"pong!"* ]]; then
-            echo "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60"
-            echo "Cloudflare威胁得分：$i"
-            status=1
-            break
-        fi
-    done
-    if [[ $i == 100 && $status == 0 ]]; then
-        echo "Cloudflare威胁得分(0为低风险): 0"
-    fi
-}
-
 abuse() {
     ip="$1"
     context2=$(curl -s -H "$head" "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
