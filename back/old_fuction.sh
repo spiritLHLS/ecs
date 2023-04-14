@@ -292,3 +292,87 @@
 #     # 执行完成, 标记FLAG
 #     LBench_Flag_FinishSystemInfo="1"
 # }
+
+# =============== 检查 JSON Query 组件 ===============
+# Check_JSONQuery() {
+#     # 判断 jq 命令是否存在
+#     if ! command -v jq > /dev/null; then
+#         # 获取系统位数
+#         SystemInfo_GetSystemBit
+#         # 获取操作系统版本
+#         SystemInfo_GetOSRelease
+#         # 根据系统位数设置下载地址
+#         local DownloadSrc
+#         if [ -z "${LBench_Result_SystemBit_Short}" ] || [ "${LBench_Result_SystemBit_Short}" != "amd64" ] || [ "${LBench_Result_SystemBit_Short}" != "i386" ]; then
+#             DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/JSONQuery/jq-i386.tar.gz"
+#         else
+#             DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/JSONQuery/jq-${LBench_Result_SystemBit_Short}.tar.gz"
+#             # local DownloadSrc="https://raw.githubusercontent.com/LemonBench/LemonBench/master/Resources/JSONQuery/jq-amd64.tar.gz"
+#             # local DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/jq/1.6/amd64/jq.tar.gz"
+#             # local DownloadSrc="https://raw.githubusercontent.com/LemonBench/LemonBench/master/Resources/JSONQuery/jq-i386.tar.gz"
+#             # local DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/jq/1.6/i386/jq.tar.gz"
+#         fi
+#         mkdir -p ${WorkDir}/
+#         echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
+#         echo -e "${Msg_Info}Installing Dependency ..."
+#         if [[ "${Var_OSRelease}" =~ ^(centos|rhel|almalinux)$ ]]; then
+#             yum install -y epel-release
+#             if [ $? -ne 0 ]; then
+#                 if [ "$(grep -Ei 'centos|almalinux' /etc/os-release | awk -F'=' '{print $2}')" == "AlmaLinux" ]; then
+#                     cd /etc/yum.repos.d/
+#                     sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/AlmaLinux-*
+#                     sed -i 's|#baseurl=https://repo.almalinux.org/|baseurl=https://vault.almalinux.org/|g' /etc/yum.repos.d/AlmaLinux-*
+#                     yum makecache
+#                 else
+#                     cd /etc/yum.repos.d/
+#                     sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+#                     sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+#                     yum makecache
+#                 fi
+#                 if [ $? -ne 0 ]; then
+#                     yum -y update && yum install -y epel-release
+#                 fi
+#             fi
+#             yum install -y tar
+#             yum install -y jq
+#         elif [[ "${Var_OSRelease}" =~ ^debian$ ]]; then
+#             ! apt-get update && apt-get --fix-broken install -y && apt-get update
+#             ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install jq -y
+#             if [ $? -ne 0 ]; then
+#                 ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install jq -y --force-yes
+#             fi
+#             if [ $? -ne 0 ]; then
+#                 ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install jq -y --allow
+#             fi
+#         elif [[ "${Var_OSRelease}" =~ ^ubuntu$ ]]; then
+#             ! apt-get update && apt-get --fix-broken install -y && apt-get update
+#             ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install jq -y
+#             if [ $? -ne 0 ]; then
+#                 ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install jq -y --allow-unauthenticated
+#             fi
+#         elif [ "${Var_OSRelease}" = "fedora" ]; then
+#             dnf install -y jq
+#         elif [ "${Var_OSRelease}" = "alpinelinux" ]; then
+#             apk update
+#             apk add jq
+#         elif [ "${Var_OSRelease}" = "arch" ]; then
+#             pacman -Sy --needed --noconfirm jq
+#         else
+#             apk update
+#             apk add wget unzip curl
+#             echo -e "${Msg_Info}Downloading Json Query Module ..."
+#             curl --user-agent "${UA_LemonBench}" ${DownloadSrc} -o ${WorkDir}/jq.tar.gz
+#             echo -e "${Msg_Info}Installing JSON Query Module ..."
+#             tar xvf ${WorkDir}/jq.tar.gz
+#             mv ${WorkDir}/jq /usr/bin/jq
+#             chmod +x /usr/bin/jq
+#             echo -e "${Msg_Info}Cleaning up ..."
+#             rm -rf ${WorkDir}/jq.tar.gz
+#         fi
+#     fi
+#     # 二次检测
+#     if [ ! -f "/usr/bin/jq" ]; then
+#         echo -e "JSON Query Moudle install Failure! Try Restart Bench or Manually install it! (/usr/bin/jq)"
+#         exit 1
+#     fi
+# }
