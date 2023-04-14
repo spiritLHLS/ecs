@@ -380,7 +380,7 @@ Check_JSONQuery() {
 }
 
 print_intro() {
-    echo "-------------------- A Bench Script By spiritlhl -------------------"
+    echo "--------------------- A Bench Script By spiritlhl --------------------"
     echo "                   测评频道: https://t.me/vps_reviews                    "
     echo "版本：$ver"
     echo "更新日志：$changeLog"
@@ -439,7 +439,7 @@ translate_status() {
 scamalytics() {
     ip="$1"
     echo "scamalytics数据库:"
-    context=$(curl -s -H "$head" "https://scamalytics.com/ip/$ip")
+    context=$(curl -s -m 10 -H "$head" "https://scamalytics.com/ip/$ip")
     temp1=$(echo "$context" | grep -oP '(?<=>Fraud Score: )[^<]+')
     echo "  欺诈分数(越低越好)：$temp1"
     temp2=$(echo "$context" | grep -oP '(?<=<div).*?(?=</div>)' | tail -n 6)
@@ -453,7 +453,7 @@ scamalytics() {
 
 abuse() {
     ip="$1"
-    context2=$(curl -s -H "$head" "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
+    context2=$(curl -s -m 10 -H "$head" "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
     if [[ "$context2" == *"abuseConfidenceScore"* ]]; then
         score=$(echo "$context2" | jq -r '.data.abuseConfidenceScore')
         echo "abuseipdb数据库-abuse得分：$score"
@@ -464,7 +464,7 @@ abuse() {
 
 ipapi() {
     ip=$1
-    context4=$(curl -s "http://ip-api.com/json/$ip?fields=mobile,proxy,hosting")
+    context4=$(curl -s -m 10 "http://ip-api.com/json/$ip?fields=mobile,proxy,hosting")
     if [[ "$context4" == *"mobile"* ]]; then
         echo "ip-api数据库:"
         mobile=$(echo "$context4" | jq -r '.mobile')
@@ -482,7 +482,7 @@ ipapi() {
 cloudflare() {
     status=0
     for ((i=1; i<=100; i++)); do
-        context1=$(curl -s "https://cf-threat.sukkaw.com/hello.json?threat=$i" | jq -r '.ping')
+        context1=$(curl -s -m 10 "https://cf-threat.sukkaw.com/hello.json?threat=$i" | jq -r '.ping')
         if [[ "$context1" != "pong!" ]]; then
             echo "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60"
             echo "Cloudflare威胁得分：$i"
@@ -497,7 +497,7 @@ cloudflare() {
 
 ip234() {
   local ip="$1"
-  context5=$(curl -s "http://ip234.in/fraud_check?ip=$ip")
+  context5=$(curl -s -m 10 "http://ip234.in/fraud_check?ip=$ip")
   if [[ "$?" -ne 0 ]]; then
     return
   fi
@@ -507,7 +507,7 @@ ip234() {
 }
 
 google() {
-  curl_result=$(curl -sL "https://www.google.com/search?q=www.spiritysdx.top" -H "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0")
+  curl_result=$(curl -sL -m 10 "https://www.google.com/search?q=www.spiritysdx.top" -H "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0")
   if echo "$curl_result" | grep -q "二叉树的博客"; then
     echo "Google搜索可行性：YES"
   else
@@ -534,7 +534,7 @@ ip6=$(echo "$ip6" | tr -d '\n')
 # clear
 start_time=$(date +%s)
 print_intro
-echo -e "------------------欺诈分数以及IP质量检测--本频道独创--------------------"
+echo -e "-----------------欺诈分数以及IP质量检测--本频道独创-------------------"
 yellow "得分仅作参考，不代表100%准确，IP类型如果不一致请手动查询多个数据库比对"
 scamalytics "$ip4"
 ip234 "$ip4"
