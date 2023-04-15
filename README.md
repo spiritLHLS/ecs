@@ -115,15 +115,16 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
-移动测速节点已更新，琢磨新东西中一劳永逸解决老是要手动更新的问题 - 已搓好[独立脚本](https://github.com/spiritLHLS/ecsspeed)，待测试半个月无问题后整合替换
-
 CDN下载文件不稳定导致部分链接下载文件失效 - 待修复增加重复检测，似乎这个问题无法复现，无法找出问题修复
 
 端口检测(检测是否被墙) - 待修复
 
 # 更新
 
-2023.04.14 去除Python3的依赖，全套脚本只使用Shell语言，IPV4的检测使用多个数据来源，保证IP质量检测能正常运行，不仅限于ip.sb来源，删除一个无效的IP数据库来源，去除jq组件和python组件的依赖，大幅度减少前期组件安装所需的时间
+2023.04.15 使用[ecs-net](https://github.com/spiritLHLS/ecsspeed)自写测速脚本替代原有的脚本，优化点：
+- 三网测速每个运营商选择本机ping值最低的两个节点测速，节点列表大概每7天自动更新一次
+- 支持国内服务器测试(有判断是否为国内机器)，在国内使用时使用CDN加速
+- 当官方CLI安装失败(如罕见的架构或者官方网站访问失败时)自动使用 speedtest-go 作为替代品测速
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -142,17 +143,19 @@ CDN下载文件不稳定导致部分链接下载文件失效 - 待修复增加�
 - [x] 三网回程以及路由延迟--感谢zhanghanyun/backtrace开源[项目](https://github.com/zhanghanyun/backtrace)，本人修改整理
 - [x] 回程路由以及带宽类型检测(商宽/家宽/数据中心)--由fscarmen的PR以及本人的技术思路提供，本人修改整理优化
 - [x] IP质量检测(检测IP白不白)(含IPV4和IPV6)--本人独创，感谢互联网提供的查询资源
-- [x] speedtest测速--由teddysun和superspeed的开源以及个人整理，已搓好[独立脚本](https://github.com/spiritLHLS/ecsspeed)，待测试半个月无问题后整合替换，自动更新测速服务器ID
+- [x] speedtest测速--使用自写[ecs-net](https://github.com/spiritLHLS/ecsspeed)脚本，自动更新测速服务器ID，一劳永逸解决老是要手动更新测速ID的问题
 - [x] 全国网络延迟测试--感谢IPASN开源，本人修改整理优化
 - [ ] 端口检测(检测是否被墙)--由fscarmen的PR以及本人的技术思路提供 - 待修复
 
-# 测评频道
+# 友链
 
-## https://t.me/vps_reviews
+## 测评频道
 
-# 自动更新测速服务器节点列表的网络基准测试脚本
+### https://t.me/vps_reviews
 
-## https://github.com/spiritLHLS/ecsspeed
+## 自动更新测速服务器节点列表的网络基准测试脚本
+
+### https://github.com/spiritLHLS/ecsspeed
 
 # 脚本概况
 
