@@ -510,7 +510,7 @@ test_list() {
 }
 
 temp_head(){
-    echo "---------------------- ecs-net--本频道独创 -----------------------------"
+    echo "------------------------ ecs-net--本频道独创 -------------------------"
     if [[ $selection =~ ^[1-5]$ ]]; then
         if [ -f "./speedtest-cli/speedtest" ]; then
 	        echo -e "位置\t         上传速度\t 下载速度\t 延迟\t  丢包率"
@@ -1879,30 +1879,69 @@ end_script(){
 
 all_script(){
     pre_check
-    pre_downlaod dp nf tubecheck media_lmc_check besttrace backtrace
-    get_system_info >/dev/null 2>&1
-    check_virt
-    checkdnsutils
-    checkping
-    CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
-    CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
-    CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
-    _yellow "checking speedtest" && install_speedtest
-    check_lmc_script
-    start_time=$(date +%s)
-    clear
-    print_intro
-    basic_script
-    io1_script
-    sleep 1
-    io2_script
-    sjlleo_script
-    RegionRestrictionCheck_script
-    lmc999_script
-    openai_script
-    spiritlhl_script
-    backtrace_script
-    fscarmen_route_script test_area_g[@] test_ip_g[@]
+    if [ "$1" = "B" ]; then
+        dfiles=(dp nf tubecheck media_lmc_check besttrace backtrace)
+        for dfile in "${dfiles[@]}"
+        do
+            pre_downlaod ${dfile} &
+        done
+        get_system_info >/dev/null 2>&1
+        check_virt
+        checkdnsutils
+        checkping
+        CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
+        CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
+        CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
+        _yellow "checking speedtest" && install_speedtest &
+        check_lmc_script &
+        start_time=$(date +%s)
+        clear
+        print_intro
+        basic_script
+        io1_script
+        sleep 0.5
+        io2_script
+        sjlleo_script > ${TEMP_DIR}/sjlleo_output.txt &
+        RegionRestrictionCheck_script > ${TEMP_DIR}/RegionRestrictionCheck_output.txt &
+        lmc999_script > ${TEMP_DIR}/lmc999_output.txt &
+        openai_script > ${TEMP_DIR}/openai_output.txt &
+        spiritlhl_script > ${TEMP_DIR}/spiritlhl_output.txt &
+        backtrace_script > ${TEMP_DIR}/backtrace_output.txt &
+        fscarmen_route_script test_area_g[@] test_ip_g[@] > ${TEMP_DIR}/fscarmen_route_output.txt &
+        wait
+        cat ${TEMP_DIR}/sjlleo_output.txt
+        cat ${TEMP_DIR}/RegionRestrictionCheck_output.txt
+        cat ${TEMP_DIR}/lmc999_output.txt
+        cat ${TEMP_DIR}/openai_output.txt
+        cat ${TEMP_DIR}/spiritlhl_output.txt
+        cat ${TEMP_DIR}/backtrace_output.txt
+        cat ${TEMP_DIR}/fscarmen_route_output.txt
+    else
+        pre_downlaod dp nf tubecheck media_lmc_check besttrace backtrace
+        get_system_info >/dev/null 2>&1
+        check_virt
+        checkdnsutils
+        checkping
+        CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
+        CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
+        CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
+        _yellow "checking speedtest" && install_speedtest
+        check_lmc_script
+        start_time=$(date +%s)
+        clear
+        print_intro
+        basic_script
+        io1_script
+        sleep 0.5
+        io2_script
+        sjlleo_script
+        RegionRestrictionCheck_script
+        lmc999_script
+        openai_script
+        spiritlhl_script
+        backtrace_script
+        fscarmen_route_script test_area_g[@] test_ip_g[@]
+    fi
     # fscarmen_port_script
     ecs_net_all_script
     end_script
@@ -2387,21 +2426,23 @@ head_script(){
 
 Start_script(){
     head_script
-    echo -e "${GREEN}1.${PLAIN} 融合怪完全体(所有项目都测试)(平均运行7分钟)"
-    echo -e "${GREEN}2.${PLAIN} 融合怪精简区(融合怪的各种精简版并含单项测试精简版)"
-    echo -e "${GREEN}3.${PLAIN} 融合怪单项区(融合怪的单项测试完整版)"
-    echo -e "${GREEN}4.${PLAIN} 第三方脚本区(其他作者的各种测试脚本)"
-    echo -e "${GREEN}5.${PLAIN} 原创区(本作者独有的一些测试脚本)"
+    echo -e "${GREEN}1.${PLAIN} 融合怪完全体并行测试版(所有项目都测试)(平均运行6分半)(机器强劲推荐使用)"
+    echo -e "${GREEN}2.${PLAIN} 融合怪完全体顺序测试版(所有项目都测试)(平均运行7分)(机器普通推荐使用)"
+    echo -e "${GREEN}3.${PLAIN} 融合怪精简区(融合怪的各种精简版并含单项测试精简版)"
+    echo -e "${GREEN}4.${PLAIN} 融合怪单项区(融合怪的单项测试完整版)"
+    echo -e "${GREEN}5.${PLAIN} 第三方脚本区(其他作者的各种测试脚本)"
+    echo -e "${GREEN}6.${PLAIN} 原创区(本作者独有的一些测试脚本)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 退出"
     echo ""
     read -rp "请输入选项:" StartInput
 	case $StartInput in
-        1) all_script | tee -i test_result.txt ;;
-        2) Jinjian_script ;;
-        3) Danxiang_script ;;
-        4) Yuanshi_script ;;
-        5) Yuanchuang_script ;;
+        1) all_script "B" | tee -i test_result.txt ;;
+        2) all_script "S" | tee -i test_result.txt ;;
+        3) Jinjian_script ;;
+        4) Danxiang_script ;;
+        5) Yuanshi_script ;;
+        6) Yuanchuang_script ;;
         0) exit 1 ;;
     esac
 }
