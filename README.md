@@ -121,11 +121,11 @@ CDN下载文件不稳定导致部分链接下载文件失效 - 待修复增加�
 
 # 更新
 
-2023.04.15 使用[ecs-net](https://github.com/spiritLHLS/ecsspeed)自写测速脚本替代原有的脚本，优化点：
+2023.04.15 使用[ecs-net](https://github.com/spiritLHLS/ecsspeed)自写测速脚本替代原有的脚本，修改：
 - 三网测速每个运营商选择本机ping值最低的两个节点测速，节点列表大概每7天自动更新一次
 - 支持国内服务器测试(有判断是否为国内机器)，在国内使用时使用CDN加速
 - 当官方CLI安装失败(如罕见的架构或者官方网站访问失败时)自动使用 speedtest-go 作为替代品测速
-同时修改了一个并发测试的版本，追求更短的测试时长
+- 同时修改了一个融合怪并发测试的版本，追求更短的测试时长，但前提要求是机器足够强劲
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
