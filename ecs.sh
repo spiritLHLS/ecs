@@ -1883,7 +1883,7 @@ all_script(){
         dfiles=(dp nf tubecheck media_lmc_check besttrace backtrace)
         for dfile in "${dfiles[@]}"
         do
-            pre_downlaod ${dfile} &
+            { pre_downlaod ${dfile};} &
         done
         get_system_info >/dev/null 2>&1
         check_virt
