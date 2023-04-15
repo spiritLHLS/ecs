@@ -2426,8 +2426,8 @@ head_script(){
 
 Start_script(){
     head_script
-    echo -e "${GREEN}1.${PLAIN} 融合怪完全体并行测试版(所有项目都测试)(平均运行6分钟)(机器强劲推荐使用)"
-    echo -e "${GREEN}2.${PLAIN} 融合怪完全体顺序测试版(所有项目都测试)(平均运行7分钟)(机器普通推荐使用)"
+    echo -e "${GREEN}1.${PLAIN} 融合怪完全体顺序测试版(所有项目都测试)(平均运行7分钟)(机器普通推荐使用)"
+    echo -e "${GREEN}2.${PLAIN} 融合怪完全体并行测试版(所有项目都测试)(平均运行6分钟)(机器强劲推荐使用)"
     echo -e "${GREEN}3.${PLAIN} 融合怪精简区(融合怪的各种精简版并含单项测试精简版)"
     echo -e "${GREEN}4.${PLAIN} 融合怪单项区(融合怪的单项测试完整版)"
     echo -e "${GREEN}5.${PLAIN} 第三方脚本区(其他作者的各种测试脚本)"
@@ -2437,8 +2437,8 @@ Start_script(){
     echo ""
     read -rp "请输入选项:" StartInput
 	case $StartInput in
-        1) all_script "B" | tee -i test_result.txt ;;
-        2) all_script "S" | tee -i test_result.txt ;;
+        1) all_script "S" | tee -i test_result.txt ;;
+        2) all_script "B" | tee -i test_result.txt ;;
         3) Jinjian_script ;;
         4) Danxiang_script ;;
         5) Yuanshi_script ;;
