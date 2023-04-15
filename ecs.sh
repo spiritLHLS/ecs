@@ -1898,6 +1898,8 @@ all_script(){
         clear
         print_intro
         basic_script
+        wait
+        ecs_net_all_script > ${TEMP_DIR}/ecs_net_output.txt &
         io1_script
         sleep 0.5
         io2_script
@@ -1916,6 +1918,7 @@ all_script(){
         cat ${TEMP_DIR}/spiritlhl_output.txt
         cat ${TEMP_DIR}/backtrace_output.txt
         cat ${TEMP_DIR}/fscarmen_route_output.txt
+        cat ${TEMP_DIR}/ecs_net_output.txt
     else
         pre_downlaod dp nf tubecheck media_lmc_check besttrace backtrace
         get_system_info >/dev/null 2>&1
@@ -1941,9 +1944,9 @@ all_script(){
         spiritlhl_script
         backtrace_script
         fscarmen_route_script test_area_g[@] test_ip_g[@]
+        ecs_net_all_script
     fi
     # fscarmen_port_script
-    ecs_net_all_script
     end_script
 }
 
@@ -2427,7 +2430,7 @@ head_script(){
 Start_script(){
     head_script
     echo -e "${GREEN}1.${PLAIN} 融合怪完全体顺序测试版(所有项目都测试)(平均运行7分钟)(机器普通推荐使用)"
-    echo -e "${GREEN}2.${PLAIN} 融合怪完全体并行测试版(所有项目都测试)(平均运行6分钟)(机器强劲推荐使用)"
+    echo -e "${GREEN}2.${PLAIN} 融合怪完全体并行测试版(所有项目都测试)(平均运行5分钟)(仅机器强劲可使用，否则误差偏大)"
     echo -e "${GREEN}3.${PLAIN} 融合怪精简区(融合怪的各种精简版并含单项测试精简版)"
     echo -e "${GREEN}4.${PLAIN} 融合怪单项区(融合怪的单项测试完整版)"
     echo -e "${GREEN}5.${PLAIN} 第三方脚本区(其他作者的各种测试脚本)"
