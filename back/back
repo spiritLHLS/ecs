@@ -4,11 +4,11 @@
 测路由
 
 ```bash
-bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/foreverreturn.sh)
+bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/foreverreturn.sh)
 ```
 
 测IP质量 - 自定义IP
 
 ```bash
-bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/foreverqzcheck.sh)
+bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/foreverqzcheck.sh)
 ```
