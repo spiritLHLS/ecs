@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.04.14"
+ver="2023.04.15"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -64,6 +64,15 @@ check_cdn_file() {
     else
         _yellow "No CDN available, no use CDN"
     fi
+}
+
+checkping() {
+    _yellow "checking ping"
+	if  [ ! -e '/usr/bin/ping' ]; then
+        _yellow "Installing ping"
+	    ${PACKAGE_INSTALL[int]} iputils-ping > /dev/null 2>&1
+	    ${PACKAGE_INSTALL[int]} ping > /dev/null 2>&1
+	fi
 }
 
 # 后台静默预下载文件并解压
@@ -295,6 +304,28 @@ checkunzip() {
 	fi
 }
 
+check_china(){
+    if [[ -z "${CN}" ]]; then
+        if [[ $(curl -m 10 -s https://ipapi.co/json | grep 'China') != "" ]]; then
+            _yellow "根据ipapi.co提供的信息，当前IP可能在中国"
+            read -e -r -p "是否选用中国镜像完成测速工具安装? [Y/n] " input
+            case $input in
+                [yY][eE][sS] | [yY])
+                    echo "使用中国镜像"
+                    CN=true
+                ;;
+                [nN][oO] | [nN])
+                    echo "不使用中国镜像"
+                ;;
+                *)
+                    echo "使用中国镜像"
+                    CN=true
+                ;;
+            esac
+        fi
+    fi
+}
+
 checkssh() {
 	for i in "${CMD[@]}"; do
 		SYS="$i" && [[ -n $SYS ]] && break
@@ -314,43 +345,272 @@ checkssh() {
 	echo "开启22端口完毕"
 }
 
-checkspeedtest() {
-	if  [ ! -e './speedtest-cli/speedtest' ]; then
-        _yellow "Installing Speedtest-cli"
-                arch=$(uname -m)
-                if [ "${arch}" == "i686" ]; then
-                    arch="i386"
-                fi
-		wget --no-check-certificate -qO speedtest.tgz https://cdn.jsdelivr.net/gh/oooldking/script@1.1.7/speedtest_cli/ookla-speedtest-1.0.0-${arch}-linux.tgz > /dev/null 2>&1
-		# wget --no-check-certificate -qO speedtest.tgz https://bintray.com/ookla/download/download_file?file_path=ookla-speedtest-1.0.0-${arch}-linux.tgz > /dev/null 2>&1
-	fi
-	mkdir -p speedtest-cli && tar zxvf speedtest.tgz -C ./speedtest-cli/ > /dev/null 2>&1 && chmod a+rx ./speedtest-cli/speedtest
-}
-
 download_speedtest_file() {
+    file="./speedtest-cli/speedtest"
+    if [[ -e "$file" ]]; then
+        # _green "speedtest found"
+        return
+    fi
+    file="./speedtest-cli/speedtest-go"
+    if [[ -e "$file" ]]; then
+        # _green "speedtest-go found"
+        return
+    fi
     local sys_bit="$1"
-    local url1="https://install.speedtest.net/app/cli/ookla-speedtest-1.1.1-linux-${sys_bit}.tgz"
-    local url2="https://dl.lamp.sh/files/ookla-speedtest-1.1.1-linux-${sys_bit}.tgz"
-    curl --fail -s -m 10 -o speedtest.tgz "${url1}" || curl --fail -s -m 10 -o speedtest.tgz "${url2}"
+    if [[ -z "${CN}" || "${CN}" != true ]]; then
+        if [ "$speedtest_ver" = "1.2.0" ]; then
+            local url1="https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-${sys_bit}.tgz"
+            local url2="https://dl.lamp.sh/files/ookla-speedtest-1.2.0-linux-${sys_bit}.tgz"
+        else
+            local url1="https://filedown.me/Linux/Tool/speedtest_cli/ookla-speedtest-1.0.0-${sys_bit}-linux.tgz"
+            local url2="https://bintray.com/ookla/download/download_file?file_path=ookla-speedtest-1.0.0-${sys_bit}-linux.tgz"
+        fi
+        curl --fail -s -m 10 -o speedtest.tgz "${url1}" || curl --fail -s -m 10 -o speedtest.tgz "${url2}"
+        if [[ $? -ne 0 ]]; then
+            # _red "Error: Failed to download official speedtest-cli."
+            rm -rf speedtest.tgz*
+            # _yellow "Try using the unofficial speedtest-go"
+        fi
+        if [ "$sys_bit" = "aarch64" ]; then
+            sys_bit="arm64"
+        fi
+        local url3="https://github.com/showwin/speedtest-go/releases/download/v1.6.0/speedtest-go_1.6.0_Linux_${sys_bit}.tar.gz"
+        curl --fail -s -m 10 -o speedtest.tar.gz "${url3}" || curl --fail -s -m 15 -o speedtest.tar.gz "${cdn_success_url}${url3}"
+    else
+        if [ "$sys_bit" = "aarch64" ]; then
+            sys_bit="arm64"
+        fi
+        local url3="https://github.com/showwin/speedtest-go/releases/download/v1.6.0/speedtest-go_1.6.0_Linux_${sys_bit}.tar.gz"
+        curl -o speedtest.tar.gz "${cdn_success_url}${url3}"
+        # if [ $? -eq 0 ]; then
+        #     _green "Used unofficial speedtest-go"
+        # fi
+    fi
+    if [ ! -d "./speedtest-cli" ]; then
+        mkdir -p "./speedtest-cli"
+    fi
+    if [ -f "./speedtest.tgz" ]; then
+        tar -zxf speedtest.tgz -C ./speedtest-cli
+        chmod 777 ./speedtest-cli/speedtest
+        rm -f speedtest.tgz
+    elif [ -f "./speedtest.tar.gz" ]; then
+        tar -zxf speedtest.tar.gz -C ./speedtest-cli
+        chmod 777 ./speedtest-cli/speedtest-go
+        rm -f speedtest.tar.gz
+    else
+        # _red "Error: Failed to download speedtest tool."
+        exit 1
+    fi
 }
 
 install_speedtest() {
-    if [ ! -e "./speedtest-cli/speedtest" ]; then
-        sys_bit=""
-        local sysarch="$(uname -p)"
-        case "${sysarch}" in
-            "x86_64") sys_bit="x86_64";;
-            "i686") sys_bit="i386";;
-            *) _red "Error: Unsupported system architecture (${sysarch}).\n" && return 1;;
-        esac
-        if ! download_speedtest_file "${sys_bit}"; then
-            _red "Error: Failed to download speedtest-cli.\n"
-            return 1
+    sys_bit=""
+    local sysarch="$(uname -m)"
+    case "${sysarch}" in
+        "x86_64"|"x86"|"amd64"|"x64") sys_bit="x86_64";;
+        "i386"|"i686") sys_bit="i386";;
+        "aarch64"|"armv7l"|"armv8"|"armv8l") sys_bit="aarch64";;
+        "s390x") sys_bit="s390x";;
+        "riscv64") sys_bit="riscv64";;
+        "ppc64le") sys_bit="ppc64le";;
+        "ppc64") sys_bit="ppc64";;
+        *) sys_bit="x86_64";;
+    esac
+    download_speedtest_file "${sys_bit}"
+}
+
+get_string_length() {
+  local nodeName="$1"
+  local length
+  local converted
+  converted=$(echo -n "$nodeName" | iconv -f utf8 -t gb2312 2>/dev/null)
+  if [[ $? -eq 0 && -n "$converted" ]]; then
+    length=$(echo -n "$converted" | wc -c)
+    echo $length
+    return
+  fi
+  converted=$(echo -n "$nodeName" | iconv -f utf8 -t big5 2>/dev/null)
+  if [[ $? -eq 0 && -n "$converted" ]]; then
+    length=$(echo -n "$converted" | wc -c)
+    echo $length
+    return
+  fi
+  length=$(echo -n "$nodeName" | awk '{len=0; for(i=1;i<=length($0);i++){c=substr($0,i,1);if(c~/[^\x00-\x7F]/){len+=2}else{len++}}; print len}')
+  echo $length
+}
+
+speed_test() {
+    local nodeName="$2"
+    if [ ! -f "./speedtest-cli/speedtest" ]; then
+        if [ -z "$1" ]; then
+            ./speedtest-cli/speedtest-go > ./speedtest-cli/speedtest.log 2>&1
+        else
+            ./speedtest-cli/speedtest-go --server=$1 > ./speedtest-cli/speedtest.log 2>&1
         fi
-        tar -zxf speedtest.tgz -C ./speedtest-cli
-        rm -f speedtest.tgz
+        if [ $? -eq 0 ]; then
+            local dl_speed=$(grep -oP 'Download: \K[\d\.]+' ./speedtest-cli/speedtest.log)
+            local up_speed=$(grep -oP 'Upload: \K[\d\.]+' ./speedtest-cli/speedtest.log)
+            local latency=$(grep -oP 'Latency: \K[\d\.]+' ./speedtest-cli/speedtest.log)
+            if [[ -n "${dl_speed}" || -n "${up_speed}" || -n "${latency}" ]]; then
+                if [[ $selection =~ ^[1-5]$ ]]; then
+                    echo -e "${nodeName}\t ${up_speed}Mbps\t ${dl_speed}Mbps\t ${latency}ms\t"
+                else
+                    length=$(get_string_length "$nodeName")
+                    if [ $length -ge 8 ]; then
+		    	echo -e "${nodeName}\t ${up_speed}Mbps\t ${dl_speed}Mbps\t ${latency}ms\t"
+                    else
+		    	echo -e "${nodeName}\t\t ${up_speed}Mbps\t ${dl_speed}Mbps\t ${latency}ms\t"
+                    fi
+                fi
+            fi
+        fi
+    else
+        if [ -z "$1" ]; then
+            ./speedtest-cli/speedtest --progress=no --accept-license --accept-gdpr > ./speedtest-cli/speedtest.log 2>&1
+        else
+            ./speedtest-cli/speedtest --progress=no --server-id=$1 --accept-license --accept-gdpr > ./speedtest-cli/speedtest.log 2>&1
+        fi
+        if [ $? -eq 0 ]; then
+            local dl_speed=$(awk '/Download/{print $3" "$4}' ./speedtest-cli/speedtest.log)
+            local up_speed=$(awk '/Upload/{print $3" "$4}' ./speedtest-cli/speedtest.log)
+            if [ "$speedtest_ver" = "1.2.0" ]; then
+                local latency=$(grep -oP 'Idle Latency:\s+\K[\d\.]+' ./speedtest-cli/speedtest.log)
+            else
+                local latency=$(grep -oP 'Latency:\s+\K[\d\.]+' ./speedtest-cli/speedtest.log)
+            fi
+            local packet_loss=$(awk -F': +' '/Packet Loss/{if($2=="Not available."){print "NULL"}else{print $2}}' ./speedtest-cli/speedtest.log)
+            if [[ -n "${dl_speed}" || -n "${up_speed}" || -n "${latency}" ]]; then
+                if [[ $selection =~ ^[1-5]$ ]]; then
+                    echo -e "${nodeName}\t ${up_speed}\t ${dl_speed}\t ${latency}\t  $packet_loss"
+                else
+                    length=$(get_string_length "$nodeName")
+                    if [ $length -ge 8 ]; then
+                        echo -e "${nodeName}\t ${up_speed}\t ${dl_speed}\t ${latency}\t  $packet_loss"
+                    else
+			echo -e "${nodeName}\t\t ${up_speed}\t ${dl_speed}\t ${latency}\t  $packet_loss"
+                    fi
+                fi
+            fi
+        fi
     fi
 }
+
+test_list() {
+    local list=("$@")
+    if [ ${#list[@]} -eq 0 ]; then
+        echo "列表为空，程序退出"
+        return
+    fi
+    for ((i=0; i<${#list[@]}; i+=1))
+    do
+        id=$(echo "${list[i]}" | cut -d',' -f1)
+        name=$(echo "${list[i]}" | cut -d',' -f2)
+        speed_test "$id" "$name"
+    done
+}
+
+temp_head(){
+    echo "---------------------- ecs-net--本频道独创 -----------------------------"
+    if [[ $selection =~ ^[1-5]$ ]]; then
+        if [ -f "./speedtest-cli/speedtest" ]; then
+	        echo -e "位置\t         上传速度\t 下载速度\t 延迟\t  丢包率"
+        else
+	        echo -e "位置\t         上传速度\t 下载速度\t 延迟"
+        fi
+    else
+        if [ -f "./speedtest-cli/speedtest" ]; then
+	        echo -e "位置\t\t 上传速度\t 下载速度\t 延迟\t  丢包率"
+        else
+	        echo -e "位置\t\t 上传速度\t 下载速度\t 延迟"
+        fi
+    fi
+}
+
+ping_test() {
+    local ip="$1"
+    local result="$(ping -c1 -W3 "$ip" 2>/dev/null | awk -F '/' 'END {print $5}')"
+    echo "$ip,$result"
+}
+
+
+get_nearest_data() {
+    local url="$1"
+    local data=()
+    local response
+    if [[ -z "${CN}" || "${CN}" != true ]]; then
+        local retries=0
+        while [[ $retries -lt 2 ]]; do
+            response=$(curl -s --max-time 2 "$url")
+            if [[ $? -eq 0 ]]; then
+                break
+            else
+                retries=$((retries+1))
+                sleep 1
+            fi
+        done
+        if [[ $retries -eq 2 ]]; then
+            url="${cdn_success_url}${url}"
+            response=$(curl -s --max-time 6 "$url")
+        fi
+    else
+        url="${cdn_success_url}${url}"
+        response=$(curl -s --max-time 10 "$url")
+    fi
+    while read line; do
+        if [[ -n "$line" ]]; then
+            local id=$(echo "$line" | awk -F ',' '{print $1}')
+            local city=$(echo "$line" | sed 's/ //g' | awk -F ',' '{print $4}')
+            local ip=$(echo "$line" | awk -F ',' '{print $5}')
+            if [[ "$id,$city,$ip" == "id,city,ip" ]]; then
+                continue
+            fi
+            if [[ $url == *"Mobile"* ]]; then
+                city="移动${city}"
+            elif [[ $url == *"Telecom"* ]]; then
+                city="电信${city}"
+            elif [[ $url == *"Unicom"* ]]; then
+                city="联通${city}" 
+            fi
+            data+=("$id,$city,$ip")
+        fi
+    done <<< "$response"
+    
+    rm -f /tmp/pingtest
+    # 并行ping测试所有IP
+    for (( i=0; i<${#data[@]}; i++ )); do
+        { ip=$(echo "${data[$i]}" | awk -F ',' '{print $3}')
+        ping_test "$ip" >> /tmp/pingtest; }&
+    done
+    wait
+    
+    # 取IP顺序列表results
+    output=$(cat /tmp/pingtest)
+    rm -f /tmp/pingtest
+    IFS=$'\n' read -rd '' -a lines <<<"$output"
+    results=()
+    for line in "${lines[@]}"; do
+        field=$(echo "$line" | cut -d',' -f1)
+        results+=("$field")
+    done
+
+    # 比对data取IP对应的数组
+    sorted_data=()
+    for result in "${results[@]}"; do
+        for item in "${data[@]}"; do
+            if [[ "$item" == *"$result"* ]]; then
+                id=$(echo "$item" | cut -d',' -f1)
+                name=$(echo "$item" | cut -d',' -f2)
+                sorted_data+=("$id,$name")
+            fi
+        done
+    done
+    sorted_data=("${sorted_data[@]:0:2}")
+
+    # 返回结果
+    echo "${sorted_data[@]}"
+}
+
+
 
 SystemInfo_GetOSRelease() {
     if [ -f "/etc/centos-release" ]; then # CentOS
@@ -780,49 +1040,24 @@ Entrance_SysBench_CPU_Fast() {
     sleep 1
 }
 
-speed_test() {
-    local nodeName="$2"
-    [ -z "$1" ] && ./speedtest-cli/speedtest --progress=no --accept-license --accept-gdpr > ./speedtest-cli/speedtest.log 2>&1 || \
-    ./speedtest-cli/speedtest --progress=no --server-id=$1 --accept-license --accept-gdpr > ./speedtest-cli/speedtest.log 2>&1
-    if [ $? -eq 0 ]; then
-        local dl_speed=$(awk '/Download/{print $3" "$4}' ./speedtest-cli/speedtest.log)
-        local up_speed=$(awk '/Upload/{print $3" "$4}' ./speedtest-cli/speedtest.log)
-        local latency=$(awk '/Latency/{print $2" "$3}' ./speedtest-cli/speedtest.log)
-        if [[ -n "${dl_speed}" && -n "${up_speed}" && -n "${latency}" ]]; then
-            echo -e "${nodeName}\t ${up_speed}\t ${dl_speed}\t ${latency}"
-        fi
-    fi
-}
-
 speed() {
-    # https://raw.githubusercontent.com/zq/superspeed/master/superspeed.sh
+    temp_head
     speed_test '' 'Speedtest.net'
-    speed_test '21541' '洛杉矶\t'
-    speed_test '13623' '新加坡\t'
+    speed_test '21541' '洛杉矶'
+    speed_test '13623' '新加坡'
     speed_test '44988' '日本东京'
     speed_test '16176' '中国香港'
-    speed_test '3633' '电信上海' '电信'
-    speed_test '27594' '电信广东广州5G' '电信'
-#    speed_test '5396' '电信江苏苏州5G' '电信'
-    speed_test '24447' '联通上海' '联通'
-    speed_test '4870' '联通湖南长沙' '联通'
-#    speed_test '4870' '联通湖南长沙' '联通'
-#    speed_test '25637' '移动上海5G' '移动'
-#    speed_test '16398' '移动贵州贵阳' '移动'
-#    speed_test '6715' '移动浙江宁波' '移动'
-    speed_test '29105' '移动陕西西安' '移动'
-    speed_test '25858' '移动北京' '移动'
+    test_list "${CN_Unicom[@]}"
+    test_list "${CN_Telecom[@]}"
+    test_list "${CN_Mobile[@]}"
 }
 
 speed2() {
-    # https://raw.githubusercontent.com/zq/superspeed/master/superspeed.sh
+    temp_head
     speed_test '' 'Speedtest.net'
-    speed_test '3633' '电信上海' '电信'
-    speed_test '24447' '联通上海' '联通'
-    # speed_test '25637' '移动上海5G' '移动'
-    # speed_test '595' '电信上海' '电信'
-    # speed_test '5135' '联通上海5G' '联通'
-    speed_test '25858' '移动北京' '移动'
+    test_list "${CN_Unicom[0]}"
+    test_list "${CN_Telecom[0]}"
+    test_list "${CN_Mobile[0]}"
 }
 
 # =============== 磁盘测试 部分 ===============
@@ -1446,6 +1681,8 @@ ipcheck(){
 cdn_urls=("https://cdn.spiritlhl.workers.dev/" "https://shrill-pond-3e81.hunsh.workers.dev/" "https://ghproxy.com/" "http://104.168.128.181:7823/" "https://gh.api.99988866.xyz/")
 ST="dvWYwv20KSWm8AXSceRw8toa.MTY4MDQzMzUxNDczNw"
 head='key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c'
+speedtest_ver="1.2.0"
+SERVER_BASE_URL="https://raw.githubusercontent.com/spiritLHLS/speedtest.net-CN-ID/main"
 
 pre_check(){
     checkupdate
@@ -1461,6 +1698,7 @@ pre_check(){
     curl -sL -k https://gitlab.com/spiritysdx/za/-/raw/main/yabsiotest.sh -o yabsiotest.sh && chmod +x yabsiotest.sh  >/dev/null 2>&1
     ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
     ! _exists "free" && _red "Error: free command not found.\n" && exit 1
+    check_china
 }
 
 sjlleo_script(){
@@ -1597,20 +1835,40 @@ fscarmen_route_script(){
     rm -f $TEMP_FILE
 }
 
-superspeed_all_script(){
+ecs_net_all_script(){
     cd $myvar >/dev/null 2>&1
-    echo "--------网络测速--由teddysun和superspeed开源及spiritlhls整理----------"
-    sleep 0.5
-    echo -e "测速点位置\t 上传速度\t 下载速度\t 延迟"
-    speed && rm -fr speedtest-cli
+    s_time=$(date +%s)
+    rm -rf ./speedtest-cli/speedlog.txt
+    speed | tee ./speedtest-cli/speedlog.txt
+    e_time=$(date +%s)
+    time=$(( ${e_time} - ${s_time} ))
+    if ! grep -q "Speedtest.net" ./speedtest-cli/speedlog.txt;
+    then
+        export speedtest_ver="1.0.0"
+        rm -rf ./speedtest-cli/speedlog.txt
+        rm -rf ./speedtest-cli*
+        ( install_speedtest > /dev/null 2>&1 )
+        speed
+    fi
+    rm -fr speedtest-cli
 }
 
-superspeed_minal_script(){
+ecs_net_minal_script(){
     cd $myvar >/dev/null 2>&1
-    echo "--------网络测速--由teddysun和superspeed开源及spiritlhls整理----------"
-    sleep 0.5
-    echo -e "测速点位置\t 上传速度\t 下载速度\t 延迟"
-    speed2 && rm -fr speedtest-cli
+    s_time=$(date +%s)
+    rm -rf ./speedtest-cli/speedlog.txt
+    speed2 | tee ./speedtest-cli/speedlog.txt
+    e_time=$(date +%s)
+    time=$(( ${e_time} - ${s_time} ))
+    if ! grep -q "Speedtest.net" ./speedtest-cli/speedlog.txt;
+    then
+        export speedtest_ver="1.0.0"
+        rm -rf ./speedtest-cli/speedlog.txt
+        rm -rf ./speedtest-cli*
+        ( install_speedtest > /dev/null 2>&1 )
+        speed2
+    fi
+    rm -fr speedtest-cli
 }
 
 end_script(){
@@ -1625,8 +1883,11 @@ all_script(){
     get_system_info >/dev/null 2>&1
     check_virt
     checkdnsutils
-    checkspeedtest
-    install_speedtest
+    checkping
+    CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
+    CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
+    CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
+    _yellow "checking speedtest" && install_speedtest
     check_lmc_script
     start_time=$(date +%s)
     clear
@@ -1643,7 +1904,7 @@ all_script(){
     backtrace_script
     fscarmen_route_script test_area_g[@] test_ip_g[@]
     # fscarmen_port_script
-    superspeed_all_script
+    ecs_net_all_script
     end_script
 }
 
@@ -1651,14 +1912,17 @@ minal_script(){
     pre_check
     get_system_info >/dev/null 2>&1
     check_virt
-    checkspeedtest
-    install_speedtest
+    checkping
+    CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
+    CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
+    CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
+    _yellow "checking speedtest" && install_speedtest
     start_time=$(date +%s)
     clear
     print_intro
     basic_script
     io2_script
-    superspeed_minal_script
+    ecs_net_minal_script
     end_script
 }
 
@@ -1669,8 +1933,11 @@ minal_plus(){
     check_virt
     check_lmc_script
     checkdnsutils
-    checkspeedtest
-    install_speedtest
+    checkping
+    CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
+    CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
+    CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
+    _yellow "checking speedtest" && install_speedtest
     start_time=$(date +%s)
     clear
     print_intro
@@ -1682,7 +1949,7 @@ minal_plus(){
     openai_script
     backtrace_script
     fscarmen_route_script test_area_g[@] test_ip_g[@]
-    superspeed_minal_script
+    ecs_net_minal_script
     end_script
 }
 
@@ -1691,8 +1958,11 @@ minal_plus_network(){
     pre_downlaod besttrace backtrace
     get_system_info >/dev/null 2>&1
     check_virt
-    checkspeedtest
-    install_speedtest
+    checkping
+    CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
+    CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
+    CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
+    _yellow "checking speedtest" && install_speedtest
     start_time=$(date +%s)
     clear
     print_intro
@@ -1700,7 +1970,7 @@ minal_plus_network(){
     io2_script
     backtrace_script
     fscarmen_route_script test_area_g[@] test_ip_g[@]
-    superspeed_minal_script
+    ecs_net_minal_script
     end_script
 }
 
@@ -1711,8 +1981,11 @@ minal_plus_media(){
     check_virt
     checkdnsutils
     check_lmc_script
-    checkspeedtest
-    install_speedtest
+    checkping
+    CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
+    CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
+    CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
+    _yellow "checking speedtest" && install_speedtest
     start_time=$(date +%s)
     clear
     print_intro
@@ -1722,15 +1995,18 @@ minal_plus_media(){
     RegionRestrictionCheck_script
     lmc999_script
     openai_script
-    superspeed_minal_script
+    ecs_net_minal_script
     end_script
 }
 
 network_script(){
     pre_check
     pre_downlaod besttrace backtrace
-    checkspeedtest
-    install_speedtest
+    checkping
+    CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
+    CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
+    CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
+    _yellow "checking speedtest" && install_speedtest
     start_time=$(date +%s)
     clear
     print_intro
@@ -1738,7 +2014,7 @@ network_script(){
     backtrace_script
     fscarmen_route_script test_area_g[@] test_ip_g[@]
     # fscarmen_port_script
-    superspeed_all_script
+    ecs_net_all_script
     end_script
 }
 
@@ -1872,7 +2148,7 @@ build_text(){
             -H "UploadText: true" \
             -H "Content-Type: multipart/form-data" \
             -H "No-JSON: true" \
-            -F "file=@/root/test_result.txt" \
+            -F "file=@${myvar}/test_result.txt" \
             "https://paste.spiritlhl.net/api/upload")
         fi
     fi
