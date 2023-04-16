@@ -1802,24 +1802,20 @@ spiritlhl_script(){
 }
 
 backtrace_script(){
+    cd $myvar >/dev/null 2>&1
     echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
     curl_output=$($TEMP_DIR/backtrace 2>&1)
     grep -sq 'sendto: network is unreachable' <<< $curl_output && _yellow "纯IPV6网络无法查询" || echo "${curl_output}" | grep -v 'github.com/zhanghanyun/backtrace' | grep -v '正在测试'
 }
 
 fscarmen_route_script(){
+    cd $myvar >/dev/null 2>&1
     echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
     rm -f $TEMP_FILE
-    if ping -c 1 1.1.1.1 &> /dev/null
-    then
-        IP_4=$(curl -ks4m8 -A Mozilla https://api.ip.sb/geoip) &&
-        WAN_4=$(expr "$IP_4" : '.*ip\":[ ]*\"\([^"]*\).*') &&
-        ASNORG_4=$(expr "$IP_4" : '.*isp\":[ ]*\"\([^"]*\).*') &&
-        _blue "IPv4 ASN: $ASNORG_4" >> $TEMP_FILE
-    else
-        _yellow "无IPV4网络无法查询"
-        return 0
-    fi
+    IP_4=$(curl -ks4m8 -A Mozilla https://api.ip.sb/geoip) &&
+    WAN_4=$(expr "$IP_4" : '.*ip\":[ ]*\"\([^"]*\).*') &&
+    ASNORG_4=$(expr "$IP_4" : '.*isp\":[ ]*\"\([^"]*\).*') &&
+    _blue "IPv4 ASN: $ASNORG_4" >> $TEMP_FILE
     IP_6=$(curl -ks6m8 -A Mozilla https://api.ip.sb/geoip) &> /dev/null &&
     WAN_6=$(expr "$IP_6" : '.*ip\":[ ]*\"\([^"]*\).*') &> /dev/null &&
     ASNORG_6=$(expr "$IP_6" : '.*isp\":[ ]*\"\([^"]*\).*') &> /dev/null &&
@@ -1828,8 +1824,8 @@ fscarmen_route_script(){
     local test_area=("${!1}")
     local test_ip=("${!2}")
     for ((a=0;a<${#test_area[@]};a++)); do
-    _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
-    "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
+        _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
+        "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
     done
     cat $TEMP_FILE
     rm -f $TEMP_FILE
