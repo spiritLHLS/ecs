@@ -259,8 +259,8 @@ checksystem() {
 
 checkupdate(){
 	    _yellow "Updating package management sources"
-		${PACKAGE_UPDATE[int]} > /dev/null 2>&1
-        ${PACKAGE_INSTALL[int]} dmidecode > /dev/null 2>&1
+		${PACKAGE_UPDATE[int]}
+        ${PACKAGE_INSTALL[int]} dmidecode
         apt-key update > /dev/null 2>&1
 }
 
