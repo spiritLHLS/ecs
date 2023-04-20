@@ -115,7 +115,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
-CDN下载文件不稳定导致部分链接下载文件失效 - 待修复增加重复检测，似乎这个问题无法复现，无法找出问题修复
+部分ARM机器识别CPU成功，但在甲骨文的新加坡的ARM上，即便使用yabs的CPU检测依然无法检测CPU类型 - 待修复
+
+CDN下载文件不稳定导致部分链接下载文件失效 - 待修复增加重复检测
 
 端口检测(检测是否被墙) - 待修复
 
