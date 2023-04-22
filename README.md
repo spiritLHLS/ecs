@@ -2,7 +2,37 @@
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FspiritLHLS%2Fecs&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
+### 前言
+
+如果脚本有任何问题或者任何修复系统的需求，可在issues中提出，有空会解决或者回答
+
 支持系统：Ubuntu 18+，Debian 8+，centos 7+，Fedora 22+，Almalinux 8.5+, Arch
+
+# 目录
+* [融合怪测评脚本](融合怪测评脚本)
+
+    * [交互形式](交互形式)
+    * [无交互形式](无交互形式)
+    * [说明](说明)
+
+* [纯测IP质量](纯测IP质量)
+
+* [部分服务器运行测试有各类bug一键修复后再测试](部分服务器运行测试有各类bug一键修复后再测试)
+
+* [待解决事项](待解决事项)
+
+* [更新](更新)
+
+* [功能](功能)
+
+* [友链](友链)
+
+    * [测评频道](测评频道)
+    * [自动更新测速服务器节点列表的网络基准测试脚本](自动更新测速服务器节点列表的网络基准测试脚本)
+    * [脚本概况](脚本概况)
+
+* [功能](功能)
+
 
 ### 融合怪测评脚本
 
@@ -93,7 +123,10 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 </details>
 
-### 纯测IP质量(IP黑还是白)(含IPV4和IPV6)
+### 纯测IP质量
+
+- IP黑 ```OR``` 白
+- 含IPV4 ```AND``` IPV6
 
 ```bash
 bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh)
