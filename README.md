@@ -21,8 +21,8 @@
  * [友链](#友链)
     * [测评频道](#测评频道)
     * [自动更新测速服务器节点列表的网络基准测试脚本](#自动更新测速服务器节点列表的网络基准测试脚本)
-    * [脚本概况](#脚本概况)
- * [功能](#功能)
+ * [脚本概况](#脚本概况)
+ * [感谢](#感谢)
 
 
 ### 融合怪测评脚本
@@ -198,10 +198,10 @@ CDN下载文件不稳定导致部分链接下载文件失效 - 待修复增加�
 
 ![](https://github.com/spiritLHLS/ecs/raw/main/page/yuanchuang.png)
 
-## Stargazers over time
+# Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/spiritLHLS/ecs.svg)](https://starchart.cc/spiritLHLS/ecs)
 
-## 感谢
+# 感谢
 
 ![PyCharm logo](https://resources.jetbrains.com/storage/products/company/brand/logos/PyCharm.png)
