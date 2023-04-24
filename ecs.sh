@@ -365,7 +365,7 @@ download_speedtest_file() {
             local url1="https://filedown.me/Linux/Tool/speedtest_cli/ookla-speedtest-1.0.0-${sys_bit}-linux.tgz"
             local url2="https://bintray.com/ookla/download/download_file?file_path=ookla-speedtest-1.0.0-${sys_bit}-linux.tgz"
         fi
-        curl --fail -s -m 10 -o speedtest.tgz "${url1}" || curl --fail -s -m 10 -o speedtest.tgz "${url2}"
+        curl --fail -sL -m 10 -o speedtest.tgz "${url1}" || curl --fail -sL -m 10 -o speedtest.tgz "${url2}"
         if [[ $? -ne 0 ]]; then
             # _red "Error: Failed to download official speedtest-cli."
             rm -rf speedtest.tgz*
@@ -375,7 +375,7 @@ download_speedtest_file() {
             sys_bit="arm64"
         fi
         local url3="https://github.com/showwin/speedtest-go/releases/download/v1.6.0/speedtest-go_1.6.0_Linux_${sys_bit}.tar.gz"
-        curl --fail -s -m 10 -o speedtest.tar.gz "${url3}" || curl --fail -s -m 15 -o speedtest.tar.gz "${cdn_success_url}${url3}"
+        curl --fail -sL -m 10 -o speedtest.tar.gz "${url3}" || curl --fail -sL -m 15 -o speedtest.tar.gz "${cdn_success_url}${url3}"
     else
         if [ "$sys_bit" = "aarch64" ]; then
             sys_bit="arm64"
@@ -540,7 +540,7 @@ get_nearest_data() {
     if [[ -z "${CN}" || "${CN}" != true ]]; then
         local retries=0
         while [[ $retries -lt 2 ]]; do
-            response=$(curl -s --max-time 2 "$url")
+            response=$(curl -sL --max-time 2 "$url")
             if [[ $? -eq 0 ]]; then
                 break
             else
@@ -550,11 +550,11 @@ get_nearest_data() {
         done
         if [[ $retries -eq 2 ]]; then
             url="${cdn_success_url}${url}"
-            response=$(curl -s --max-time 6 "$url")
+            response=$(curl -sL --max-time 6 "$url")
         fi
     else
         url="${cdn_success_url}${url}"
-        response=$(curl -s --max-time 10 "$url")
+        response=$(curl -sL --max-time 10 "$url")
     fi
     while read line; do
         if [[ -n "$line" ]]; then
@@ -1583,7 +1583,7 @@ translate_status() {
 scamalytics() {
     ip="$1"
     echo "scamalytics数据库:"
-    context=$(curl -s -H "$head" -m 10 "https://scamalytics.com/ip/$ip")
+    context=$(curl -sL -H "$head" -m 10 "https://scamalytics.com/ip/$ip")
     temp1=$(echo "$context" | grep -oP '(?<=>Fraud Score: )[^<]+')
     echo "  欺诈分数(越低越好)：$temp1"
     temp2=$(echo "$context" | grep -oP '(?<=<div).*?(?=</div>)' | tail -n 6)
@@ -1599,7 +1599,7 @@ scamalytics() {
 cloudflare() {
     status=0
     for ((i=1; i<=100; i++)); do
-        context1=$(curl -s -m 10 "https://cf-threat.sukkaw.com/hello.json?threat=$i")
+        context1=$(curl -sL -m 10 "https://cf-threat.sukkaw.com/hello.json?threat=$i")
         if [[ "$context1" != *"pong!"* ]]; then
             echo "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60"
             echo "Cloudflare威胁得分：$i"
@@ -1614,7 +1614,7 @@ cloudflare() {
 
 abuse() {
     ip="$1"
-    context2=$(curl -s -H "$head" -m 10 "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
+    context2=$(curl -sL -H "$head" -m 10 "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
     if [[ "$context2" == *"abuseConfidenceScore"* ]]; then
         score=$(echo "$context2" | grep -o '"abuseConfidenceScore":[^,}]*' | sed 's/.*://')
         echo "abuseipdb数据库-abuse得分：$score"
@@ -1626,7 +1626,7 @@ abuse() {
 
 ipapi() {
     ip=$1
-    context4=$(curl -s -m 10 "http://ip-api.com/json/$ip?fields=mobile,proxy,hosting")
+    context4=$(curl -sL -m 10 "http://ip-api.com/json/$ip?fields=mobile,proxy,hosting")
     if [[ "$context4" == *"mobile"* ]]; then
         echo "ip-api数据库:"
         mobile=$(echo "$context4" | grep -o '"mobile":[^,}]*' | sed 's/.*://;s/"//g')
@@ -1643,7 +1643,7 @@ ipapi() {
 
 ip234() {
   local ip="$1"
-  context5=$(curl -s -m 10 "http://ip234.in/fraud_check?ip=$ip")
+  context5=$(curl -sL -m 10 "http://ip234.in/fraud_check?ip=$ip")
   if [[ "$?" -ne 0 ]]; then
     return
   fi
@@ -1770,7 +1770,7 @@ openai_script(){
 lmc999_script(){
     cd $myvar >/dev/null 2>&1
     echo -e "-------------TikTok解锁--感谢lmc999的源脚本及fscarmen PR--------------"
-    local Ftmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -s --max-time 10 "https://www.tiktok.com/")
+    local Ftmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -sL --max-time 10 "https://www.tiktok.com/")
 
     if [[ "$Ftmpresult" = "curl"* ]]; then
         _red "\r Tiktok Region:\t\t${Font_Red}Failed (Network Connection)${Font_Suffix}"
@@ -2238,7 +2238,7 @@ build_text(){
         tr '\r' '\n' < test_result.txt > test_result1.txt && mv test_result1.txt test_result.txt
         sed -i -e '/^$/d' -e '/1\/1/d' test_result.txt
         if [ -s test_result.txt ]; then
-            shorturl=$(curl -s -m 10 -X POST -H "Authorization: $ST" \
+            shorturl=$(curl -sL -m 10 -X POST -H "Authorization: $ST" \
             -H "Format: RANDOM" \
             -H "Max-Views: 0" \
             -H "UploadText: true" \
