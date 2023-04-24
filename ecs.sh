@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.04.15"
+ver="2023.04.24"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1876,71 +1876,129 @@ end_script(){
 all_script(){
     pre_check
     if [ "$1" = "B" ]; then
-        dfiles=(dp nf tubecheck media_lmc_check besttrace backtrace)
-        for dfile in "${dfiles[@]}"
-        do
-            { pre_downlaod ${dfile};} &
-        done
-        get_system_info >/dev/null 2>&1
-        check_virt
-        checkdnsutils
-        checkping
-        CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
-        CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
-        CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
-        _yellow "checking speedtest" && install_speedtest &
-        check_lmc_script &
-        start_time=$(date +%s)
-        clear
-        print_intro
-        basic_script
-        wait
-        ecs_net_all_script > ${TEMP_DIR}/ecs_net_output.txt &
-        io1_script
-        sleep 0.5
-        io2_script
-        sjlleo_script > ${TEMP_DIR}/sjlleo_output.txt &
-        RegionRestrictionCheck_script > ${TEMP_DIR}/RegionRestrictionCheck_output.txt &
-        lmc999_script > ${TEMP_DIR}/lmc999_output.txt &
-        openai_script > ${TEMP_DIR}/openai_output.txt &
-        spiritlhl_script > ${TEMP_DIR}/spiritlhl_output.txt &
-        backtrace_script > ${TEMP_DIR}/backtrace_output.txt &
-        fscarmen_route_script test_area_g[@] test_ip_g[@] > ${TEMP_DIR}/fscarmen_route_output.txt &
-        wait
-        cat ${TEMP_DIR}/sjlleo_output.txt
-        cat ${TEMP_DIR}/RegionRestrictionCheck_output.txt
-        cat ${TEMP_DIR}/lmc999_output.txt
-        cat ${TEMP_DIR}/openai_output.txt
-        cat ${TEMP_DIR}/spiritlhl_output.txt
-        cat ${TEMP_DIR}/backtrace_output.txt
-        cat ${TEMP_DIR}/fscarmen_route_output.txt
-        cat ${TEMP_DIR}/ecs_net_output.txt
+        if [[ -z "${CN}" || "${CN}" != true ]]; then
+            dfiles=(dp nf tubecheck media_lmc_check besttrace backtrace)
+            for dfile in "${dfiles[@]}"
+            do
+                { pre_downlaod ${dfile};} &
+            done
+            get_system_info >/dev/null 2>&1
+            check_virt
+            checkdnsutils
+            checkping
+            CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
+            CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
+            CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
+            _yellow "checking speedtest" && install_speedtest &
+            check_lmc_script &
+            start_time=$(date +%s)
+            clear
+            print_intro
+            basic_script
+            wait
+            ecs_net_all_script > ${TEMP_DIR}/ecs_net_output.txt &
+            io1_script
+            sleep 0.5
+            io2_script
+            sjlleo_script > ${TEMP_DIR}/sjlleo_output.txt &
+            RegionRestrictionCheck_script > ${TEMP_DIR}/RegionRestrictionCheck_output.txt &
+            lmc999_script > ${TEMP_DIR}/lmc999_output.txt &
+            openai_script > ${TEMP_DIR}/openai_output.txt &
+            spiritlhl_script > ${TEMP_DIR}/spiritlhl_output.txt &
+            backtrace_script > ${TEMP_DIR}/backtrace_output.txt &
+            fscarmen_route_script test_area_g[@] test_ip_g[@] > ${TEMP_DIR}/fscarmen_route_output.txt &
+            wait
+            cat ${TEMP_DIR}/sjlleo_output.txt
+            cat ${TEMP_DIR}/RegionRestrictionCheck_output.txt
+            cat ${TEMP_DIR}/lmc999_output.txt
+            cat ${TEMP_DIR}/openai_output.txt
+            cat ${TEMP_DIR}/spiritlhl_output.txt
+            cat ${TEMP_DIR}/backtrace_output.txt
+            cat ${TEMP_DIR}/fscarmen_route_output.txt
+            cat ${TEMP_DIR}/ecs_net_output.txt
+        else
+            dfiles=(besttrace backtrace)
+            for dfile in "${dfiles[@]}"
+            do
+                { pre_downlaod ${dfile};} &
+            done
+            get_system_info >/dev/null 2>&1
+            check_virt
+            checkdnsutils
+            checkping
+            CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
+            CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
+            CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
+            _yellow "checking speedtest" && install_speedtest &
+            check_lmc_script &
+            start_time=$(date +%s)
+            clear
+            print_intro
+            basic_script
+            wait
+            ecs_net_all_script > ${TEMP_DIR}/ecs_net_output.txt &
+            io1_script
+            sleep 0.5
+            spiritlhl_script > ${TEMP_DIR}/spiritlhl_output.txt &
+            backtrace_script > ${TEMP_DIR}/backtrace_output.txt &
+            fscarmen_route_script test_area_g[@] test_ip_g[@] > ${TEMP_DIR}/fscarmen_route_output.txt &
+            wait
+            cat ${TEMP_DIR}/spiritlhl_output.txt
+            cat ${TEMP_DIR}/backtrace_output.txt
+            cat ${TEMP_DIR}/fscarmen_route_output.txt
+            cat ${TEMP_DIR}/ecs_net_output.txt
+        fi
     else
-        pre_downlaod dp nf tubecheck media_lmc_check besttrace backtrace
-        get_system_info >/dev/null 2>&1
-        check_virt
-        checkdnsutils
-        checkping
-        CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
-        CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
-        CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
-        _yellow "checking speedtest" && install_speedtest
-        check_lmc_script
-        start_time=$(date +%s)
-        clear
-        print_intro
-        basic_script
-        io1_script
-        sleep 0.5
-        io2_script
-        sjlleo_script
-        RegionRestrictionCheck_script
-        lmc999_script
-        openai_script
-        spiritlhl_script
-        backtrace_script
-        fscarmen_route_script test_area_g[@] test_ip_g[@]
-        ecs_net_all_script
+        if [[ -z "${CN}" || "${CN}" != true ]]; then
+            pre_downlaod dp nf tubecheck media_lmc_check besttrace backtrace
+            get_system_info >/dev/null 2>&1
+            check_virt
+            checkdnsutils
+            checkping
+            CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
+            CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
+            CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
+            _yellow "checking speedtest" && install_speedtest
+            check_lmc_script
+            start_time=$(date +%s)
+            clear
+            print_intro
+            basic_script
+            io1_script
+            sleep 0.5
+            io2_script
+            sjlleo_script
+            RegionRestrictionCheck_script
+            lmc999_script
+            openai_script
+            spiritlhl_script
+            backtrace_script
+            fscarmen_route_script test_area_g[@] test_ip_g[@]
+            wait
+            ecs_net_all_script
+        else
+            pre_downlaod besttrace backtrace
+            get_system_info >/dev/null 2>&1
+            check_virt
+            checkdnsutils
+            checkping
+            CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
+            CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
+            CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
+            _yellow "checking speedtest" && install_speedtest
+            check_lmc_script
+            start_time=$(date +%s)
+            clear
+            print_intro
+            basic_script
+            io1_script
+            sleep 0.5
+            spiritlhl_script
+            backtrace_script
+            fscarmen_route_script test_area_g[@] test_ip_g[@]
+            wait
+            ecs_net_all_script
+        fi
     fi
     # fscarmen_port_script
     end_script
