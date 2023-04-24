@@ -141,13 +141,11 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 部分ARM机器识别CPU成功，但在甲骨文的新加坡的ARM上，即便使用yabs的CPU检测依然无法检测CPU类型 - 待修复
 
-CDN下载文件不稳定导致部分链接下载文件失效 - 待修复增加重复检测
-
 端口检测(检测是否被墙) - 待修复
 
 # 更新
 
-2023.04.24 检测国内外IP增加两个判断，避免在国内还继续测流媒体等无用信息
+2023.04.24 检测国内外IP增加两个判断，避免在国内还继续测流媒体等无用信息，修补使用CDN下载可能造成的重定向跟踪问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
