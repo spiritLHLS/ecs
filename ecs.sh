@@ -2228,6 +2228,7 @@ rm_script(){
     rm -rf speedtest.log*
     rm -rf ecs.sh*
     rm -rf test
+    rm -rf yabsiotest.sh*
     rm -rf $TEMP_FILE
 }
 
