@@ -392,11 +392,11 @@ download_speedtest_file() {
     if [ -f "./speedtest.tgz" ]; then
         tar -zxf speedtest.tgz -C ./speedtest-cli
         chmod 777 ./speedtest-cli/speedtest
-        rm -f speedtest.tgz
+        rm -rf speedtest.tgz*
     elif [ -f "./speedtest.tar.gz" ]; then
         tar -zxf speedtest.tar.gz -C ./speedtest-cli
         chmod 777 ./speedtest-cli/speedtest-go
-        rm -f speedtest.tar.gz
+        rm -rf speedtest.tar.gz*
     else
         # _red "Error: Failed to download speedtest tool."
         exit 1
@@ -2228,6 +2228,8 @@ rm_script(){
     rm -rf speedtest.log*
     rm -rf test
     rm -rf yabsiotest.sh*
+    rm -rf speedtest.tgz*
+    rm -rf speedtest.tar.gz*
     rm -rf $TEMP_FILE
 }
 
