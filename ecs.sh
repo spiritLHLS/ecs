@@ -2275,7 +2275,7 @@ Comprehensive_test_script(){
         5) wget -qO- bench.sh | bash ;;
         6) bash <(wget -qO- git.io/ceshi) ;;
         7) wget -N --no-check-certificate https://raw.githubusercontent.com/FunctionClub/ZBench/master/ZBench-CN.sh && bash ZBench-CN.sh ;;
-        8) wget --no-check-certificate https://github.com/teddysun/across/raw/master/unixbench.sh && chmod +x unixbench.sh && ./unixbench.sh ;;
+        8) wget --no-check-certificate https://raw.githubusercontent.com/teddysun/across/master/unixbench.sh && chmod +x unixbench.sh && ./unixbench.sh ;;
         0) Yuanshi_script ;;
     esac
 }
@@ -2333,8 +2333,8 @@ Network_test_script(){
         1) curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh ;;
         2) curl https://raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh|bash ;;
         3) wget -qO- git.io/besttrace | bash ;;
-        4) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/return.sh) ;;
-        5) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/nexttrace.sh) ;;
+        4) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/return.sh) ;;
+        5) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/nexttrace.sh) ;;
         6) wget -O jcnf.sh https://raw.githubusercontent.com/Netflixxp/jcnfbesttrace/main/jcnf.sh && bash jcnf.sh ;;
         7) bash <(curl -L -Lso- https://git.io/superspeed.sh) ;;
         8) bash <(curl -Lso- https://git.io/superspeed_uxh) ;;
@@ -2357,10 +2357,10 @@ Hardware_test_script(){
     echo ""
     read -rp "请输入选项:" StartInputh
 	case $StartInputh in
-        1) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/disk_info.sh) ;;
-        2) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench4.sh) ;;
-        3) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench5.sh) ;;
-        6) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench6.sh) ;;
+        1) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/disk_info.sh) ;;
+        2) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench4.sh) ;;
+        3) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench5.sh) ;;
+        6) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench6.sh) ;;
         0) Yuanshi_script ;;
     esac
 }
