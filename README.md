@@ -150,7 +150,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 更新
 
-2023.04.24 检测国内外IP增加两个判断，避免在国内还继续测流媒体等无用信息，修补使用CDN下载可能造成的重定向跟踪问题
+2023.04.25 更新修复国内服务器测三网路由时下载出错的问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
