@@ -150,6 +150,8 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修复
 
+部分机器的语言模块未安装utf-8部分，显示乱码 - 待修复
+
 端口检测(检测是否被墙) - 待修复
 
 # 更新
