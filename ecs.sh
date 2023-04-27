@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.04.25"
+ver="2023.04.27"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -109,6 +109,9 @@ pre_downlaod() {
                 wget -q -O $TEMP_DIR/backtrace.tar.gz  https://github.com/zhanghanyun/backtrace/releases/latest/download/$BACKTRACE_FILE
                 tar -xf $TEMP_DIR/backtrace.tar.gz -C $TEMP_DIR
                 ;;
+            yabsiotest)
+                curl -sL -k https://gitlab.com/spiritysdx/za/-/raw/main/yabsiotest.sh -o yabsiotest.sh && chmod +x yabsiotest.sh
+            ;;
             *)
                 echo "Invalid file: $file"
                 ;;
@@ -1695,7 +1698,6 @@ pre_check(){
     check_cdn_file
     Global_StartupInit_Action
     cd $myvar >/dev/null 2>&1
-    curl -sL -k https://gitlab.com/spiritysdx/za/-/raw/main/yabsiotest.sh -o yabsiotest.sh && chmod +x yabsiotest.sh  >/dev/null 2>&1
     ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
     ! _exists "free" && _red "Error: free command not found.\n" && exit 1
     check_china
@@ -1877,7 +1879,7 @@ all_script(){
     pre_check
     if [ "$1" = "B" ]; then
         if [[ -z "${CN}" || "${CN}" != true ]]; then
-            dfiles=(dp nf tubecheck media_lmc_check besttrace backtrace)
+            dfiles=(yabsiotest dp nf tubecheck media_lmc_check besttrace backtrace)
             for dfile in "${dfiles[@]}"
             do
                 { pre_downlaod ${dfile};} &
@@ -1950,7 +1952,7 @@ all_script(){
         fi
     else
         if [[ -z "${CN}" || "${CN}" != true ]]; then
-            pre_downlaod dp nf tubecheck media_lmc_check besttrace backtrace
+            pre_downlaod yabsiotest dp nf tubecheck media_lmc_check besttrace backtrace
             get_system_info >/dev/null 2>&1
             check_virt
             checkdnsutils
@@ -2024,7 +2026,7 @@ minal_script(){
 
 minal_plus(){
     pre_check
-    pre_downlaod dp nf tubecheck media_lmc_check besttrace backtrace
+    pre_downlaod yabsiotest dp nf tubecheck media_lmc_check besttrace backtrace
     get_system_info >/dev/null 2>&1
     check_virt
     check_lmc_script
@@ -2051,7 +2053,7 @@ minal_plus(){
 
 minal_plus_network(){
     pre_check
-    pre_downlaod besttrace backtrace
+    pre_downlaod yabsiotest besttrace backtrace
     get_system_info >/dev/null 2>&1
     check_virt
     checkping
@@ -2072,7 +2074,7 @@ minal_plus_network(){
 
 minal_plus_media(){
     pre_check
-    pre_downlaod dp nf tubecheck media_lmc_check
+    pre_downlaod yabsiotest dp nf tubecheck media_lmc_check
     get_system_info >/dev/null 2>&1
     check_virt
     checkdnsutils
@@ -2131,6 +2133,7 @@ media_script(){
 
 hardware_script(){
     pre_check
+    pre_downlaod yabsiotest
     get_system_info >/dev/null 2>&1
     check_virt
     start_time=$(date +%s)
