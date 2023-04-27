@@ -2009,6 +2009,7 @@ all_script(){
 minal_script(){
     pre_check
     get_system_info >/dev/null 2>&1
+    pre_downlaod yabsiotest
     check_virt
     checkping
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
