@@ -6,14 +6,14 @@ _blue() { echo -e "\033[36m\033[01m$@\033[0m"; }
 reading(){ read -rp "$(_green "$1")" "$2"; }
 translate(){ [[ -n "$1" ]] && curl -ksm8 "http://fanyi.youdao.com/translate?&doctype=json&type=AUTO&i=${1//[[:space:]]/}" | cut -d \" -f18 2>/dev/null; }
 TEMP_FILE='ip.test'
-if [[ -d "/usr/share/locale/en_US.UTF-8" ]]; then
-  export LANG=en_US.UTF-8
-  export LC_ALL=en_US.UTF-8
-  export LANGUAGE=en_US.UTF-8
+utf8_locale=$(locale -a 2>/dev/null | grep -i -m 1 -E "UTF-8|utf8")
+if [[ -z "$utf8_locale" ]]; then
+  echo "No UTF-8 locale found"
 else
-  export LANG=C.UTF-8
-  export LC_ALL=C.UTF-8
-  export LANGUAGE=C.UTF-8
+  export LC_ALL="$utf8_locale"
+  export LANG="$utf8_locale"
+  export LANGUAGE="$utf8_locale"
+  echo "Locale set to $utf8_locale"
 fi
 
 check_dependencies(){ for c in $@; do
