@@ -150,13 +150,11 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修复
 
-部分机器在screen挂起时语言模块缺少en_utf8语言包，显示乱码 - 待修复
-
 端口检测(检测是否被墙) - 待修复
 
 # 更新
 
-2023.04.27 修复单项测试多下载了io测试文件的问题，修复可能的非英文语言系统造成的部分信息识别失效的问题
+2023.04.27 修复单项测试多下载了io测试文件的问题，修复可能的非英文语言系统造成的部分信息识别失效的问题，修复screen挂起时语言模块缺少en_utf8语言包显示乱码的问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
