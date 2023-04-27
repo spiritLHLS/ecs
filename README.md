@@ -156,7 +156,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 # 更新
 
-2023.04.25 更新修复国内服务器测三网路由时下载出错的问题
+2023.04.27 修复单项测试多下载了io测试文件的问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
