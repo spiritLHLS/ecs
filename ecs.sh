@@ -2464,6 +2464,8 @@ Yuanchuang_script(){
     echo -e "${GREEN}10.${PLAIN} Geekbench4测试(最常见的CPU基准测试)"
     echo -e "${GREEN}11.${PLAIN} Geekbench5测试(测不动gb6可以试试这个)"
     echo -e "${GREEN}12.${PLAIN} Geekbench6测试(测的极其缓慢)"
+    echo -e "${GREEN}13.${PLAIN} ecs-net三网测速脚本(自动更新测速节点，对应 speedtest.net)"
+    echo -e "${GREEN}14.${PLAIN} ecs-cn三网测速脚本(自动更新测速节点，对应 speedtest.cn)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
@@ -2481,6 +2483,8 @@ Yuanchuang_script(){
         10) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench4.sh) ;;
         11) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench5.sh) ;;
         12) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench6.sh) ;;
+        13) bash <(wget -qO- bash.spiritlhl.net/ecs-net) ;;
+        14) bash <(wget -qO- bash.spiritlhl.net/ecs-cn) ;;
         0) Start_script ;;
     esac
 }
