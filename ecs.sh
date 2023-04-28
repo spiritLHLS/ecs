@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.04.27"
+ver="2023.04.28"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -22,6 +22,7 @@ GREEN="\033[32m"
 YELLOW="\033[33m"
 PLAIN="\033[0m"
 shorturl=""
+export DEBIAN_FRONTEND=noninteractive
 _red() { echo -e "\033[31m\033[01m$@\033[0m"; }
 _green() { echo -e "\033[32m\033[01m$@\033[0m"; }
 _yellow() { echo -e "\033[33m\033[01m$@\033[0m"; }
@@ -2337,7 +2338,9 @@ Network_test_script(){
     echo -e "${GREEN}8.${PLAIN} 未知作者修复的superspeed的三网测速脚本"
     echo -e "${GREEN}9.${PLAIN} 由sunpma维护的superspeed的三网测速脚本"
     echo -e "${GREEN}10.${PLAIN} 原始版hyperspeed的三网测速脚本"
-    echo -e "${GREEN}11.${PLAIN} 本人的ecs-net三网测速脚本(自动更新测速节点)"
+    echo -e "${GREEN}11.${PLAIN} 综合速度测试脚本(全球的测速节点)"
+    echo -e "${GREEN}12.${PLAIN} 本人的ecs-net三网测速脚本(自动更新测速节点，对应 speedtest.net)"
+    echo -e "${GREEN}13.${PLAIN} 本人的ecs-cn三网测速脚本(自动更新测速节点，对应 speedtest.cn)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
     echo ""
@@ -2353,7 +2356,9 @@ Network_test_script(){
         8) bash <(curl -Lso- https://git.io/superspeed_uxh) ;;
         9) bash <(curl -Lso- https://git.io/J1SEh) ;;
         10) bash <(curl -L -Lso- https://bench.im/hyperspeed) ;;
-        11) bash <(wget -qO- bash.spiritlhl.net/ecs-net) ;;
+        11) curl -sL network-speed.xyz | bash ;;
+        12) bash <(wget -qO- bash.spiritlhl.net/ecs-net) ;;
+        13) bash <(wget -qO- bash.spiritlhl.net/ecs-cn) ;;
         0) Yuanshi_script ;;
     esac
 }
