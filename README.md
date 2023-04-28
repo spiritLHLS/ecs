@@ -154,7 +154,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 # 更新
 
-2023.04.28 第三方脚本区新增全球测速脚本，对应speedtest.cn的三网测速脚本
+2023.04.28 第三方脚本区新增全球测速脚本，对应speedtest.cn的三网测速脚本，修复部分服务器组件安装需要交互的问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
