@@ -144,8 +144,6 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
-docker虚拟化的服务器在查询内存与IO信息时，部分权限不允许，查询失败 - 待修复
-
 纯IPV6机器的IPV6的ASN有时候识别失效 - 待修复
 
 部分ARM机器识别CPU成功，但在甲骨文的新加坡的ARM上，即便使用yabs的CPU检测依然无法检测CPU类型 - 待修复
