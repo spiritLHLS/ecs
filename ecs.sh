@@ -172,6 +172,7 @@ Global_Exit_Action() {
     rm -rf ${TEMP_DIR}
     rm -rf ${WorkDir}/
     rm -rf /.tmp_LBench/
+    rm -rf *00_00
 }
 
 _exists() {
