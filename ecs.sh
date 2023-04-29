@@ -85,6 +85,15 @@ checkping() {
 	fi
 }
 
+checksudo() {
+    _yellow "checking sudo"
+    if ! command -v sudo > /dev/null 2>&1; then
+        _yellow "Installing sudo"
+        ${PACKAGE_INSTALL[int]} sudo > /dev/null 2>&1
+    fi
+}
+
+
 # 后台静默预下载文件并解压
 pre_downlaod() {
     if [ -n "$LBench_Result_SystemBit_Full" ]; then
@@ -1707,6 +1716,7 @@ SERVER_BASE_URL="https://raw.githubusercontent.com/spiritLHLS/speedtest.net-CN-I
 pre_check(){
     checkupdate
     checkroot
+    checksudo
     checkwget
     checkfree
     checkunzip
