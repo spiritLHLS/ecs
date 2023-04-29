@@ -1282,6 +1282,8 @@ check_virt(){
     fi
     if grep -qa docker /proc/1/cgroup || grep -qa lxc /proc/1/cgroup || grep -qa container=lxc /proc/1/environ; then
         virt="LXC"
+    elif [ -f "/.dockerenv" ] || grep -q -E '(docker|rkt)' /proc/1/cgroup; then
+        virt="Docker"
     elif [[ -f /proc/user_beancounters ]]; then
         virt="OpenVZ"
     elif [[ "${virtualx}" == *kvm-clock* ]]; then
