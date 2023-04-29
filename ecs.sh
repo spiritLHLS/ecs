@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.04.28"
+ver="2023.04.29"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -307,6 +307,13 @@ checkwget() {
 	if  [ ! -e '/usr/bin/wget' ]; then
             _yellow "Installing wget"
 	        ${PACKAGE_INSTALL[int]} wget
+	fi
+}
+
+checkfree() {
+	if ! command -v free > /dev/null 2>&1; then
+            _yellow "Installing procps"
+	        ${PACKAGE_INSTALL[int]} procps
 	fi
 }
 
@@ -1701,6 +1708,7 @@ pre_check(){
     checkupdate
     checkroot
     checkwget
+    checkfree
     checkunzip
     checksystem
     checkcurl
@@ -2244,6 +2252,7 @@ rm_script(){
     rm -rf yabsiotest.sh*
     rm -rf speedtest.tgz*
     rm -rf speedtest.tar.gz*
+    rm -rf speedtest-cli*
     rm -rf $TEMP_FILE
 }
 
