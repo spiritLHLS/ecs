@@ -1345,6 +1345,12 @@ ipv4_info() {
     local region="$(wget -q -T10 -O- ipinfo.io/region)"
     if [[ -n "$org" ]]; then
         echo " ASN组织           : $(_blue "$org")"
+    else
+        IP_4=$(curl -ks4m8 -A Mozilla https://api.ip.sb/geoip) &&
+        org=$(expr "$IP_4" : '.*isp\":[ ]*\"\([^"]*\).*') &&
+        if [[ -n "$org" ]]; then
+            echo " ASN组织           : $(_blue "$org")"
+        fi
     fi
     if [[ -n "$city" && -n "$country" ]]; then
         echo " 位置              : $(_blue "$city / $country")"
