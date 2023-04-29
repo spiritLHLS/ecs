@@ -144,6 +144,8 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
+docker虚拟化的服务器在查询内存与IO信息时，部分权限不允许，查询失败 - 待修复
+
 纯IPV6机器的IPV6的ASN有时候识别失效 - 待修复
 
 部分ARM机器识别CPU成功，但在甲骨文的新加坡的ARM上，即便使用yabs的CPU检测依然无法检测CPU类型 - 待修复
@@ -154,7 +156,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 # 更新
 
-2023.04.28 第三方脚本区新增全球测速脚本，对应speedtest.cn的三网测速脚本，修复部分服务器组件安装需要交互的问题
+2023.04.29 修复部分机器查询内容的free命令不存在的问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
