@@ -154,7 +154,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 # 更新
 
-2023.04.29 修复部分机器查询内容的free命令不存在的问题，修复部分机器/proc/sys/vm/drop_caches是只读权限时，清除内存缓存会报无法写入的错误，增加sudo组件的检测和安装，修补有时候docker容器内的虚拟化架构检测误判为宿主机虚拟化架构的问题
+2023.04.29 修复纯IPV6机器的IPV6测试中可能存在的一些BUG
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
