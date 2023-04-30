@@ -3,7 +3,7 @@
 #from https://github.com/spiritLHLS/ecs
 
 
-ver="2023.04.14"
+ver="2023.04.30"
 changeLog="IP质量测试(含欺诈得分)，由频道 https://t.me/vps_reviews 原创"
 
 red(){
