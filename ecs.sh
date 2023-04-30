@@ -1362,7 +1362,9 @@ ipv4_info() {
         IP_6=$(curl -ks6m8 -A Mozilla https://api.ip.sb/geoip) &&
         WAN_6=$(expr "$IP_6" : '.*ip\":[ ]*\"\([^"]*\).*') &&
         ASNORG_6=$(expr "$IP_6" : '.*isp\":[ ]*\"\([^"]*\).*')
-        echo " IPV6网络          : $(_blue "$ASNORG_6")"
+        if [ -n "$ASNORG_6" ]; then
+            echo " IPV6网络          : $(_blue "$ASNORG_6")"
+        fi
     fi
 }
 
