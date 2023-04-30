@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.04.29"
+ver="2023.04.30"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1620,17 +1620,28 @@ translate_status() {
 
 scamalytics() {
     ip="$1"
-    echo "scamalytics数据库:"
     context=$(curl -sL -H "$head" -m 10 "https://scamalytics.com/ip/$ip")
+    if [[ "$?" -ne 0 ]]; then
+        return
+    fi
     temp1=$(echo "$context" | grep -oP '(?<=>Fraud Score: )[^<]+')
-    echo "  欺诈分数(越低越好)：$temp1"
+    if [ -n "$temp1" ]; then
+        echo "scamalytics数据库:"
+        echo "  欺诈分数(越低越好)：$temp1"
+        return
+    fi
     temp2=$(echo "$context" | grep -oP '(?<=<div).*?(?=</div>)' | tail -n 6)
     nlist=("匿名代理" "Tor出口节点" "服务器IP" "公共代理" "网络代理" "搜索引擎机器人")
     i=0
-    while read -r temp3; do
-        echo "  ${nlist[$i]}: ${temp3#*>}"
-        i=$((i+1))
-    done <<< "$(echo "$temp2" | sed 's/<[^>]*>//g' | sed 's/^[[:blank:]]*//g')"
+    # echo "$temp2"
+    if [[ $(echo "$temp2" | sort -u | wc -l) -ne 1 ]]; then
+        while read -r temp3; do
+            if [[ -n "$temp3" ]]; then
+                echo "  ${nlist[$i]}: ${temp3#*>}"
+                i=$((i+1))
+            fi
+        done <<< "$(echo "$temp2" | sed 's/<[^>]*>//g' | sed 's/^[[:blank:]]*//g')"
+    fi
 }
 
 
@@ -1680,14 +1691,18 @@ ipapi() {
 }
 
 ip234() {
-  local ip="$1"
-  context5=$(curl -sL -m 10 "http://ip234.in/fraud_check?ip=$ip")
-  if [[ "$?" -ne 0 ]]; then
-    return
-  fi
-  risk=$(grep -oP '(?<="score":)[^,}]+' <<< "$context5")
-  echo "ip234数据库："
-  echo "  欺诈分数(越低越好)：$risk"
+    local ip="$1"
+    context5=$(curl -sL -m 10 "http://ip234.in/fraud_check?ip=$ip")
+    if [[ "$?" -ne 0 ]]; then
+        return
+    fi
+    risk=$(grep -oP '(?<="score":)[^,}]+' <<< "$context5")
+    if [[ -n "$risk" ]]; then
+        echo "ip234数据库："
+        echo "  欺诈分数(越低越好)：$risk"
+    else
+        return
+    fi
 }
 
 google() {
@@ -1864,7 +1879,7 @@ fscarmen_route_script(){
     local test_ip=("${!2}")
     for ((a=0;a<${#test_area[@]};a++)); do
         _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
-        "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
+        "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
     done
     cat $TEMP_FILE
     rm -f $TEMP_FILE
