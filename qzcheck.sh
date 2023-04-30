@@ -446,17 +446,28 @@ translate_status() {
 
 scamalytics() {
     ip="$1"
-    echo "scamalytics数据库:"
-    context=$(curl -s -m 10 -H "$head" "https://scamalytics.com/ip/$ip")
+    context=$(curl -sL -H "$head" -m 10 "https://scamalytics.com/ip/$ip")
+    if [[ "$?" -ne 0 ]]; then
+        return
+    fi
     temp1=$(echo "$context" | grep -oP '(?<=>Fraud Score: )[^<]+')
-    echo "  欺诈分数(越低越好)：$temp1"
+    if [ -n "$temp1" ]; then
+        echo "scamalytics数据库:"
+        echo "  欺诈分数(越低越好)：$temp1"
+        return
+    fi
     temp2=$(echo "$context" | grep -oP '(?<=<div).*?(?=</div>)' | tail -n 6)
     nlist=("匿名代理" "Tor出口节点" "服务器IP" "公共代理" "网络代理" "搜索引擎机器人")
     i=0
-    while read -r temp3; do
-        echo "  ${nlist[$i]}: ${temp3#*>}"
-        i=$((i+1))
-    done <<< "$(echo "$temp2" | sed 's/<[^>]*>//g' | sed 's/^[[:blank:]]*//g')"
+    # echo "$temp2"
+    if [[ $(echo "$temp2" | sort -u | wc -l) -ne 1 ]]; then
+        while read -r temp3; do
+            if [[ -n "$temp3" ]]; then
+                echo "  ${nlist[$i]}: ${temp3#*>}"
+                i=$((i+1))
+            fi
+        done <<< "$(echo "$temp2" | sed 's/<[^>]*>//g' | sed 's/^[[:blank:]]*//g')"
+    fi
 }
 
 abuse() {
@@ -504,14 +515,18 @@ cloudflare() {
 }
 
 ip234() {
-  local ip="$1"
-  context5=$(curl -s -m 10 "http://ip234.in/fraud_check?ip=$ip")
-  if [[ "$?" -ne 0 ]]; then
-    return
-  fi
-  risk=$(echo "$context5" | jq -r '.data.score')
-  echo "ip234数据库："
-  echo "  欺诈分数(越低越好)：$risk"
+    local ip="$1"
+    context5=$(curl -sL -m 10 "http://ip234.in/fraud_check?ip=$ip")
+    if [[ "$?" -ne 0 ]]; then
+        return
+    fi
+    risk=$(grep -oP '(?<="score":)[^,}]+' <<< "$context5")
+    if [[ -n "$risk" ]]; then
+        echo "ip234数据库："
+        echo "  欺诈分数(越低越好)：$risk"
+    else
+        return
+    fi
 }
 
 google() {
