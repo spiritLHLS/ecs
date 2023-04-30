@@ -1630,13 +1630,23 @@ scamalytics() {
     if [ -n "$temp1" ]; then
         echo "scamalytics数据库:"
         echo "  欺诈分数(越低越好)：$temp1"
+    else
         return
     fi
     temp2=$(echo "$context" | grep -oP '(?<=<div).*?(?=</div>)' | tail -n 6)
     nlist=("匿名代理" "Tor出口节点" "服务器IP" "公共代理" "网络代理" "搜索引擎机器人")
+    for element in $temp2
+    do
+        if echo "$element" | grep -q "score" >/dev/null 2>&1; then
+            status_t2=1
+            break
+        else
+            status_t2=2
+            break
+        fi
+    done
     i=0
-    # echo "$temp2"
-    if [[ $(echo "$temp2" | sort -u | wc -l) -ne 1 ]]; then
+    if ! [ "$status_t2" -eq 1 ]; then
         while read -r temp3; do
             if [[ -n "$temp3" ]]; then
                 echo "  ${nlist[$i]}: ${temp3#*>}"
