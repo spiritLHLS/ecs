@@ -1347,9 +1347,10 @@ ipv4_info() {
         echo " ASN组织           : $(_blue "$org")"
     else
         IP_4=$(curl -ks4m8 -A Mozilla https://api.ip.sb/geoip) &&
+        asn=$(expr "$IP_4" : '.*asn\":[ ]*\([0-9]*\).*') &&
         org=$(expr "$IP_4" : '.*isp\":[ ]*\"\([^"]*\).*') &&
         if [[ -n "$org" ]]; then
-            echo " ASN组织           : $(_blue "$org")"
+            echo " ASN组织           : $(_blue "AS ${asn} ${org}")"
         fi
     fi
     if [[ -n "$city" && -n "$country" ]]; then
