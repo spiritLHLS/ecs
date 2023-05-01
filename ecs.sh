@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.04.30"
+ver="2023.05.01"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1377,11 +1377,14 @@ print_intro() {
 
 get_system_info() {
 	arch=$( uname -m )
-	if [[ $arch = *aarch64* || $arch = *arm* ]]; then
-		cname=$(lscpu | grep "Model name" | sed 's/Model name: *//g')
-	else
-		cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
-	fi
+    cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
+    if [ -z "$cname" ] || [ ! -e /proc/cpuinfo ]; then
+        cname=$(lscpu | grep "Model name" | sed 's/Model name: *//g')
+        if [ $? -ne 0 ]; then
+            ${PACKAGE_INSTALL[int]} util-linux
+            cname=$(lscpu | grep "Model name" | sed 's/Model name: *//g')
+        fi
+    fi
     cores=$( awk -F: '/processor/ {core++} END {print core}' /proc/cpuinfo )
     freq=$( awk -F'[ :]' '/cpu MHz/ {print $4;exit}' /proc/cpuinfo )
     ccache=$( awk -F: '/cache size/ {cache=$2} END {print cache}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
