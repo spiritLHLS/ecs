@@ -2311,7 +2311,7 @@ build_text(){
         sed -i -e '1,/-------------------- A Bench Script By spiritlhl ---------------------/d; s/\x1B\[[0-9;]\+[a-zA-Z]//g; /^$/d' test_result.txt
         sed -i -e '/Preparing system for disk tests.../d; /Generating fio test file.../d; /Running fio random mixed R+W disk test with 4k block size.../d; /Running fio random mixed R+W disk test with 64k block size.../d; /Running fio random mixed R+W disk test with 512k block size.../d; /Running fio random mixed R+W disk test with 1m block size.../d' test_result.txt
         tr '\r' '\n' < test_result.txt > test_result1.txt && mv test_result1.txt test_result.txt
-        sed -i -e '/^$/d' -e '/1\/1/d' test_result.txt
+        sed -i -e '/^$/d' -e '/1\/1/d' -e '/Block\s*->/d' -e '/s)\s*->/d' test_result.txt
         if [ -s test_result.txt ]; then
             shorturl=$(curl -sL -m 10 -X POST -H "Authorization: $ST" \
             -H "Format: RANDOM" \
