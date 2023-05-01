@@ -95,7 +95,7 @@ checksudo() {
 
 
 # 后台静默预下载文件并解压
-pre_downlaod() {
+pre_download() {
     if [ -n "$LBench_Result_SystemBit_Full" ]; then
         if [ "$LBench_Result_SystemBit_Full" = "arm" ]; then
             tp_sys="arm64"
@@ -820,7 +820,7 @@ Check_Sysbench_InstantBuild() {
         prepare_compile_env "${Var_OSRelease}"
         echo -e "${Msg_Info}Downloading Source code (Version 1.0.20)..."
         mkdir -p /tmp/_LBench/src/
-        pre_downlaod sysbench
+        pre_download sysbench
         mv ${TEMP_DIR}/sysbench-1.0.20 /tmp/_LBench/src/
         echo -e "${Msg_Info}Compiling Sysbench Module ..."
         cd /tmp/_LBench/src/sysbench-1.0.20
@@ -1950,7 +1950,7 @@ all_script(){
             dfiles=(yabsiotest dp nf tubecheck media_lmc_check besttrace backtrace)
             for dfile in "${dfiles[@]}"
             do
-                { pre_downlaod ${dfile};} &
+                { pre_download ${dfile};} &
             done
             get_system_info >/dev/null 2>&1
             check_virt
@@ -1990,7 +1990,7 @@ all_script(){
             dfiles=(besttrace backtrace)
             for dfile in "${dfiles[@]}"
             do
-                { pre_downlaod ${dfile};} &
+                { pre_download ${dfile};} &
             done
             get_system_info >/dev/null 2>&1
             check_virt
@@ -2020,7 +2020,7 @@ all_script(){
         fi
     else
         if [[ -z "${CN}" || "${CN}" != true ]]; then
-            pre_downlaod yabsiotest dp nf tubecheck media_lmc_check besttrace backtrace
+            pre_download yabsiotest dp nf tubecheck media_lmc_check besttrace backtrace
             get_system_info >/dev/null 2>&1
             check_virt
             checkdnsutils
@@ -2047,7 +2047,7 @@ all_script(){
             wait
             ecs_net_all_script
         else
-            pre_downlaod besttrace backtrace
+            pre_download besttrace backtrace
             get_system_info >/dev/null 2>&1
             check_virt
             checkdnsutils
@@ -2077,7 +2077,7 @@ all_script(){
 minal_script(){
     pre_check
     get_system_info >/dev/null 2>&1
-    pre_downlaod yabsiotest
+    pre_download yabsiotest
     check_virt
     checkping
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
@@ -2095,7 +2095,7 @@ minal_script(){
 
 minal_plus(){
     pre_check
-    pre_downlaod yabsiotest dp nf tubecheck media_lmc_check besttrace backtrace
+    pre_download yabsiotest dp nf tubecheck media_lmc_check besttrace backtrace
     get_system_info >/dev/null 2>&1
     check_virt
     check_lmc_script
@@ -2122,7 +2122,7 @@ minal_plus(){
 
 minal_plus_network(){
     pre_check
-    pre_downlaod yabsiotest besttrace backtrace
+    pre_download yabsiotest besttrace backtrace
     get_system_info >/dev/null 2>&1
     check_virt
     checkping
@@ -2143,7 +2143,7 @@ minal_plus_network(){
 
 minal_plus_media(){
     pre_check
-    pre_downlaod yabsiotest dp nf tubecheck media_lmc_check
+    pre_download yabsiotest dp nf tubecheck media_lmc_check
     get_system_info >/dev/null 2>&1
     check_virt
     checkdnsutils
@@ -2168,7 +2168,7 @@ minal_plus_media(){
 
 network_script(){
     pre_check
-    pre_downlaod besttrace backtrace
+    pre_download besttrace backtrace
     checkping
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
     CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
@@ -2187,7 +2187,7 @@ network_script(){
 
 media_script(){
     pre_check
-    pre_downlaod dp nf tubecheck media_lmc_check
+    pre_download dp nf tubecheck media_lmc_check
     checkdnsutils
     check_lmc_script
     start_time=$(date +%s)
@@ -2202,7 +2202,7 @@ media_script(){
 
 hardware_script(){
     pre_check
-    pre_downlaod yabsiotest
+    pre_download yabsiotest
     get_system_info >/dev/null 2>&1
     check_virt
     start_time=$(date +%s)
@@ -2216,7 +2216,7 @@ hardware_script(){
 
 port_script(){
     pre_check
-    pre_downlaod XXXX
+    pre_download XXXX
     get_system_info >/dev/null 2>&1
     check_virt
     # checkssh
@@ -2238,7 +2238,7 @@ ping_script(){
 
 sw_script(){
     pre_check
-    pre_downlaod besttrace backtrace
+    pre_download besttrace backtrace
     start_time=$(date +%s)
     clear
     print_intro
@@ -2247,43 +2247,24 @@ sw_script(){
     end_script
 }
 
-network_g_script(){
+network_script_select() {
     pre_check
-    pre_downlaod besttrace
+    pre_download besttrace
     start_time=$(date +%s)
     clear
     print_intro
-    fscarmen_route_script test_area_g[@] test_ip_g[@]
-    end_script
-}
-
-network_s_script(){
-    pre_check
-    pre_downlaod besttrace
-    start_time=$(date +%s)
-    clear
-    print_intro
-    fscarmen_route_script test_area_s[@] test_ip_s[@]
-    end_script
-}
-
-network_b_script(){
-    pre_check
-    pre_downlaod besttrace
-    start_time=$(date +%s)
-    clear
-    print_intro
-    fscarmen_route_script test_area_b[@] test_ip_b[@]
-    end_script
-}
-
-network_c_script() {
-    pre_check
-    pre_downlaod besttrace
-    start_time=$(date +%s)
-    clear
-    print_intro
-    fscarmen_route_script test_area_c[@] test_ip_c[@]
+    if [[ "$1" == "g" ]]; then
+        fscarmen_route_script test_area_g[@] test_ip_g[@]
+    elif [[ "$1" == "s" ]]; then
+        fscarmen_route_script test_area_s[@] test_ip_s[@]
+    elif [[ "$1" == "b" ]]; then
+        fscarmen_route_script test_area_b[@] test_ip_b[@]
+    elif [[ "$1" == "c" ]]; then
+        fscarmen_route_script test_area_c[@] test_ip_c[@]
+    else
+        echo "Invalid argument, please use 'g', 's', 'b', or 'c'."
+        return 1
+    fi
     end_script
 }
 
@@ -2339,18 +2320,22 @@ Comprehensive_test_script(){
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
     echo ""
-    read -rp "请输入选项:" StartInputc
-	case $StartInputc in
-        1) wget -qO- --no-check-certificate https://raw.githubusercontent.com/oooldking/script/master/superbench.sh | bash ;;
-        2) curl -fsL https://ilemonra.in/LemonBenchIntl | bash -s fast ;;
-        3) bash <(curl -L -Lso- https://cdn.jsdelivr.net/gh/misaka-gh/misakabench@master/misakabench.sh) ;;
-        4) curl -sL yabs.sh | bash ;;
-        5) wget -qO- bench.sh | bash ;;
-        6) bash <(wget -qO- git.io/ceshi) ;;
-        7) wget -N --no-check-certificate https://raw.githubusercontent.com/FunctionClub/ZBench/master/ZBench-CN.sh && bash ZBench-CN.sh ;;
-        8) wget --no-check-certificate https://raw.githubusercontent.com/teddysun/across/master/unixbench.sh && chmod +x unixbench.sh && ./unixbench.sh ;;
-        0) Yuanshi_script ;;
-    esac
+    while true
+    do
+        read -rp "请输入选项:" StartInputc
+        case $StartInputc in
+            1) wget -qO- --no-check-certificate https://raw.githubusercontent.com/oooldking/script/master/superbench.sh | bash ; break ;;
+            2) curl -fsL https://ilemonra.in/LemonBenchIntl | bash -s fast ; break ;;
+            3) bash <(curl -L -Lso- https://cdn.jsdelivr.net/gh/misaka-gh/misakabench@master/misakabench.sh) ; break ;;
+            4) curl -sL yabs.sh | bash ; break ;;
+            5) wget -qO- bench.sh | bash ; break ;;
+            6) bash <(wget -qO- git.io/ceshi) ; break ;;
+            7) wget -N --no-check-certificate https://raw.githubusercontent.com/FunctionClub/ZBench/master/ZBench-CN.sh && bash ZBench-CN.sh ; break ;;
+            8) wget --no-check-certificate https://raw.githubusercontent.com/teddysun/across/master/unixbench.sh && chmod +x unixbench.sh && ./unixbench.sh ; break ;;
+            0) Yuanshi_script ; break ;;
+            *) echo "输入错误，请重新输入" ;;
+        esac
+    done
 }
 
 Media_test_script(){
@@ -2368,19 +2353,23 @@ Media_test_script(){
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
     echo ""
-    read -rp "请输入选项:" StartInputm
-	case $StartInputm in
-        1) wget -O nf https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 && chmod +x nf && ./nf ;;
-        2) wget -O tubecheck https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck/CDN/tubecheck_1.0beta_linux_amd64 && chmod +x tubecheck && clear && ./tubecheck ;;
-        3) wget -O dp https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 && chmod +x dp && clear && ./dp ;;
-        4) lmc999_script ;; 
-        5) bash <(curl -s https://raw.githubusercontent.com/lmc999/TikTokCheck/main/tiktok.sh) ;;
-        6) bash <(curl -L -s check.unlock.media) ;;
-        7) bash <(curl -Ls unlock.moe) ;;
-        8) bash <(curl -Ls https://cpp.li/openai) ;;
-        9) bash <(curl -Ls https://bash.spiritlhl.net/openai-checker) ;;
-        0) Yuanshi_script ;;
-    esac
+    while true
+    do
+        read -rp "请输入选项:" StartInputm
+        case $StartInputm in
+            1) wget -O nf https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 && chmod +x nf && ./nf ; break ;;
+            2) wget -O tubecheck https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck/CDN/tubecheck_1.0beta_linux_amd64 && chmod +x tubecheck && clear && ./tubecheck ; break ;;
+            3) wget -O dp https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 && chmod +x dp && clear && ./dp ; break ;;
+            4) lmc999_script ; break ;;
+            5) bash <(curl -s https://raw.githubusercontent.com/lmc999/TikTokCheck/main/tiktok.sh) ; break ;;
+            6) bash <(curl -L -s check.unlock.media) ; break ;;
+            7) bash <(curl -Ls unlock.moe) ; break ;;
+            8) bash <(curl -Ls https://cpp.li/openai) ; break ;;
+            9) bash <(curl -Ls https://bash.spiritlhl.net/openai-checker) ; break ;;
+            0) Yuanshi_script ; break ;;
+            *) echo "输入错误，请重新输入" ;;
+        esac
+    done
 }
 
 
@@ -2403,23 +2392,27 @@ Network_test_script(){
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
     echo ""
-    read -rp "请输入选项:" StartInputn
-	case $StartInputn in
-        1) curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh ;;
-        2) curl https://raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh|bash ;;
-        3) wget -qO- git.io/besttrace | bash ;;
-        4) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/return.sh) ;;
-        5) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/nexttrace.sh) ;;
-        6) wget -O jcnf.sh https://raw.githubusercontent.com/Netflixxp/jcnfbesttrace/main/jcnf.sh && bash jcnf.sh ;;
-        7) bash <(curl -L -Lso- https://git.io/superspeed.sh) ;;
-        8) bash <(curl -Lso- https://git.io/superspeed_uxh) ;;
-        9) bash <(curl -Lso- https://git.io/J1SEh) ;;
-        10) bash <(curl -L -Lso- https://bench.im/hyperspeed) ;;
-        11) curl -sL network-speed.xyz | bash ;;
-        12) bash <(wget -qO- bash.spiritlhl.net/ecs-net) ;;
-        13) bash <(wget -qO- bash.spiritlhl.net/ecs-cn) ;;
-        0) Yuanshi_script ;;
-    esac
+    while true
+    do
+        read -rp "请输入选项:" StartInputn
+        case $StartInputn in
+            1) curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh ; break ;;
+            2) curl https://raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh|bash ; break ;;
+            3) wget -qO- git.io/besttrace | bash ; break ;;
+            4) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/return.sh) ; break ;;
+            5) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/nexttrace.sh) ; break ;;
+            6) wget -O jcnf.sh https://raw.githubusercontent.com/Netflixxp/jcnfbesttrace/main/jcnf.sh && bash jcnf.sh ; break ;;
+            7) bash <(curl -L -Lso- https://git.io/superspeed.sh) ; break ;;
+            8) bash <(curl -Lso- https://git.io/superspeed_uxh) ; break ;;
+            9) bash <(curl -Lso- https://git.io/J1SEh) ; break ;;
+            10) bash <(curl -L -Lso- https://bench.im/hyperspeed) ; break ;;
+            11) curl -sL network-speed.xyz | bash ; break ;;
+            12) bash <(wget -qO- bash.spiritlhl.net/ecs-net) ; break ;;
+            13) bash <(wget -qO- bash.spiritlhl.net/ecs-cn) ; break ;;
+            0) Yuanshi_script ; break ;;
+            *) echo "输入错误，请重新输入" ;;
+        esac
+    done
 }
 
 Hardware_test_script(){
@@ -2432,14 +2425,18 @@ Hardware_test_script(){
     echo -e "${GREEN}4.${PLAIN} Geekbench6测试"
     echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
     echo ""
-    read -rp "请输入选项:" StartInputh
-	case $StartInputh in
-        1) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/disk_info.sh) ;;
-        2) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench4.sh) ;;
-        3) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench5.sh) ;;
-        6) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench6.sh) ;;
-        0) Yuanshi_script ;;
-    esac
+    while true
+    do
+        read -rp "请输入选项:" StartInputh
+        case $StartInputh in
+            1) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/disk_info.sh) ; break ;;
+            2) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench4.sh) ; break ;;
+            3) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench5.sh) ; break ;;
+            6) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench6.sh) ; break ;;
+            0) Yuanshi_script ; break ;;
+            *) echo "输入错误，请重新输入" ;;
+        esac
+    done
 }
 
 Yuanshi_script(){
@@ -2452,14 +2449,18 @@ Yuanshi_script(){
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
-    read -rp "请输入选项:" StartInput3
-	case $StartInput3 in
-        1) Comprehensive_test_script ;;
-        2) Media_test_script ;;
-        3) Network_test_script ;;
-        4) Hardware_test_script ;;
-        0) Start_script ;;
-    esac
+    while true
+    do
+        read -rp "请输入选项:" StartInput3
+        case $StartInput3 in
+            1) Comprehensive_test_script ; break ;;
+            2) Media_test_script ; break ;;
+            3) Network_test_script ; break ;;
+            4) Hardware_test_script ; break ;;
+            0) Start_script ; break ;;
+            *) echo "输入错误，请重新输入" ;;
+        esac
+    done
 }
 
 Jinjian_script(){
@@ -2472,14 +2473,18 @@ Jinjian_script(){
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
-    read -rp "请输入选项:" StartInput1
-	case $StartInput1 in
-        1) minal_script | tee -i test_result.txt;;
-        2) minal_plus | tee -i test_result.txt;;
-        3) minal_plus_network | tee -i test_result.txt;;
-        4) minal_plus_media | tee -i test_result.txt;;
-        0) Start_script ;;
-    esac
+    while true
+    do
+        read -rp "请输入选项:" StartInput1
+        case $StartInput1 in
+            1) minal_script | tee -i test_result.txt; break ;;
+            2) minal_plus | tee -i test_result.txt; break ;;
+            3) minal_plus_network | tee -i test_result.txt; break ;;
+            4) minal_plus_media | tee -i test_result.txt; break ;;
+            0) Start_script ; break ;;
+            *) echo "输入错误，请重新输入" ;;
+        esac
+    done
 }
 
 Danxiang_script(){
@@ -2495,17 +2500,21 @@ Danxiang_script(){
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
-    read -rp "请输入选项:" StartInput2
-	case $StartInput2 in
-        1) network_script;;
-        2) media_script;;
-        3) hardware_script;;
-        4) bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh);;
-        5) port_script ;;
-        6) sw_script ;;
-        7) ping_script ;;
-        0) Start_script ;;
-    esac
+    while true
+    do
+        read -rp "请输入选项:" StartInput2
+        case $StartInput2 in
+            1) network_script; break ;;
+            2) media_script; break ;;
+            3) hardware_script; break ;;
+            4) bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh); break ;;
+            5) port_script ; break ;;
+            6) sw_script ; break ;;
+            7) ping_script ; break ;;
+            0) Start_script ; break ;;
+            *) echo "输入错误，请重新输入" ;;
+        esac
+    done
 }
 
 Yuanchuang_script(){
@@ -2528,24 +2537,28 @@ Yuanchuang_script(){
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
-    read -rp "请输入选项:" StartInput4
-	case $StartInput4 in
-        1) bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh);;
-        2) network_g_script ;;
-        3) network_s_script ;;
-        4) network_b_script ;;
-        5) network_c_script ;;
-        6) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/return.sh) ;;
-        7) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/nexttrace.sh) ;;
-        8) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/customizeqzcheck.sh) ;;
-        9) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/disk_info.sh) ;;
-        10) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench4.sh) ;;
-        11) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench5.sh) ;;
-        12) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench6.sh) ;;
-        13) bash <(wget -qO- bash.spiritlhl.net/ecs-net) ;;
-        14) bash <(wget -qO- bash.spiritlhl.net/ecs-cn) ;;
-        0) Start_script ;;
-    esac
+    while true
+    do
+        read -rp "请输入选项:" StartInput4
+        case $StartInput4 in
+            1) bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh); break ;;
+            2) network_script_select 'g' ; break ;;
+            3) network_script_select 's' ; break ;;
+            4) network_script_select 'b' ; break ;;
+            5) network_script_select 'c' ; break ;;
+            6) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/return.sh) ; break ;;
+            7) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/nexttrace.sh) ; break ;;
+            8) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/customizeqzcheck.sh) ; break ;;
+            9) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/disk_info.sh) ; break ;;
+            10) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench4.sh) ; break ;;
+            11) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench5.sh) ; break ;;
+            12) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench6.sh) ; break ;;
+            13) bash <(wget -qO- bash.spiritlhl.net/ecs-net) ; break ;;
+            14) bash <(wget -qO- bash.spiritlhl.net/ecs-cn) ; break ;;
+            0) Start_script ; break ;;
+            *) echo "输入错误，请重新输入" ;;
+        esac
+    done
 }
 
 head_script(){
@@ -2575,16 +2588,20 @@ Start_script(){
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 退出"
     echo ""
-    read -rp "请输入选项:" StartInput
-	case $StartInput in
-        1) all_script "S" | tee -i test_result.txt ;;
-        2) all_script "B" | tee -i test_result.txt ;;
-        3) Jinjian_script ;;
-        4) Danxiang_script ;;
-        5) Yuanshi_script ;;
-        6) Yuanchuang_script ;;
-        0) exit 1 ;;
-    esac
+    while true
+    do
+        read -rp "请输入选项:" StartInput
+        case $StartInput in
+            1) all_script "S" | tee -i test_result.txt ; break ;;
+            2) all_script "B" | tee -i test_result.txt ; break ;;
+            3) Jinjian_script ; break ;;
+            4) Danxiang_script ; break ;;
+            5) Yuanshi_script ; break ;;
+            6) Yuanchuang_script ; break ;;
+            0) exit 1 ; break ;;
+            *) echo "输入错误，请重新输入" ;;
+        esac
+    done
 }
 
 rm -rf $TEMP_DIR
