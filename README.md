@@ -144,15 +144,13 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
-部分ARM机器识别CPU成功，但在甲骨文的新加坡的ARM上，即便使用yabs的CPU检测依然无法检测CPU类型 - 待修复
-
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修复
 
 端口检测(检测是否被墙) - 待修复
 
 # 更新
 
-2023.04.29 修复纯IPV6机器的IPV6测试中可能存在的一些BUG，修复纯IPV6机器的IPV6的ASN有时候识别失效的问题
+2023.05.01 修复部分ARM机器识别CPU成功，但在甲骨文的新加坡的ARM上，即便使用yabs的CPU检测依然无法检测CPU类型的问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
