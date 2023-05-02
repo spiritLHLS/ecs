@@ -1347,6 +1347,8 @@ ipv4_info() {
         local city=$(echo "$sky4k_v4" | grep -oP '(?<="city":")[^"]+')
         local region=$(echo "$sky4k_v4" | grep -oP '(?<="name":")[^"]+(?="})' | tr -d '\n')
         local org="AS${asn} ${organization}"
+    elif [ "$?" -ne 0 ]; then
+        local org=""
     else
         local city="$(wget -q -T10 -O- ipinfo.io/city)"
         local country="$(wget -q -T10 -O- ipinfo.io/country)"
