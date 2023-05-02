@@ -150,7 +150,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 # 更新
 
-2023.05.02 修复纯IPV6无法测试四网线路显示文件不存在的问题，修复纯IPV6网络查询到的ASN只显示了名字没显示AS号码的问题
+2023.05.02 修复纯IPV6无法测试四网线路显示文件不存在的问题，修复纯IPV6网络查询到的ASN只显示了名字没显示AS号码的问题，修复IPV4的ASN查询可能出现的bug，增加两个数据来源网站
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
