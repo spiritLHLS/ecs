@@ -150,7 +150,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 # 更新
 
-2023.05.01 修复部分ARM机器识别CPU成功，但在甲骨文的新加坡的ARM上，即便使用yabs的CPU检测依然无法检测CPU类型的问题，修复显示ASN组织时使用ip.sb源时不显示AS号码的问题，删除上传的结果中yabs的IO测试部分出现的一些无效行，修复分区选择时可能错按选项导致菜单退出的问题，合并三网路由检测的函数简化代码
+2023.05.02 修复纯IPV6无法测试四网线路显示文件不存在的问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
