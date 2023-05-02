@@ -1339,9 +1339,9 @@ check_ipv4(){
 }
 
 ipv4_info() {
-    org="$(curl -ks4m6 -A Mozilla ipinfo.io/org)"
+    org="$(curl -ksL4m6 -A Mozilla ipinfo.io/org)"
     if [ "$?" -ne 0 ] || echo "$org" | grep -q "Comodo Secure DNS">/dev/null 2>&1; then
-        ipsb_v4=$(curl -ks4m6 -A Mozilla https://api.ip.sb/geoip)
+        ipsb_v4=$(curl -ksL4m6 -A Mozilla https://api.ip.sb/geoip)
         if [ "$?" -ne 0 ]; then
             sky4k_v4=$(curl -ks4m6 -A Mozilla ipdata.cheervision.co) &&
             local asn=$(echo "$sky4k_v4" | grep -oP '(?<="asn":)[^,]+')
@@ -1356,9 +1356,9 @@ ipv4_info() {
             org="AS${asn} ${organization}"
         fi
     else
-        local city="$(wget -q -T10 -O- ipinfo.io/city)"
-        local country="$(wget -q -T10 -O- ipinfo.io/country)"
-        local region="$(wget -q -T10 -O- ipinfo.io/region)"
+        local city="$(curl -ksL4m6 -A Mozilla ipinfo.io/city)"
+        local country="$(curl -ksL4m6 -A Mozilla ipinfo.io/country)"
+        local region="$(curl -ksL4m6 -A Mozilla ipinfo.io/region)"
     fi
     if [[ -n "$org" ]]; then
         echo " ASN组织           : $(_blue "$org")"
@@ -1372,7 +1372,7 @@ ipv4_info() {
         echo " 地区              : $(_yellow "$region")"
     fi
     if [[ -z "$org" ]]; then
-        IP_6=$(curl -ks6m8 -A Mozilla https://api.ip.sb/geoip) &&
+        IP_6=$(curl -ksL6m8 -A Mozilla https://api.ip.sb/geoip) &&
         WAN_6=$(expr "$IP_6" : '.*ip\":[ ]*\"\([^"]*\).*') &&
         ASN_6=$(expr "$IP_6" : '.*asn\":[ ]*\([0-9]*\).*') &&
         ASNORG_6=$(expr "$IP_6" : '.*asn_organization\":[ ]*\"\([^"]*\).*') &&
