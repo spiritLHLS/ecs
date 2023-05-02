@@ -1341,14 +1341,21 @@ check_ipv4(){
 ipv4_info() {
     local org="$(wget -q -T10 -O- ipinfo.io/org)"
     if [ "$?" -ne 0 ] || echo "$org" | grep -q "Comodo Secure DNS">/dev/null 2>&1; then
+        ipsb_v4=$(curl -ks4m6 -A Mozilla https://api.ip.sb/geoip) &&
+        local asn=$(expr "$ipsb_v4" : '.*asn\":[ ]*\([0-9]*\).*')
+        local organization=$(expr "$ipsb_v4" : '.*isp\":[ ]*\"\([^"]*\).*')
+        local region=$(expr "$ipsb_v4" : '.*country\":\"\(.*\)\".*')
+        if [[ -n "$org" ]]; then
+            echo " ASN组织           : $(_blue "AS${asn} ${organization}")"
+        fi
+    fi
+    if [ "$?" -ne 0 ]; then
         sky4k_v4=$(curl -ks4m6 -A Mozilla ipdata.cheervision.co) &&
         local asn=$(echo "$sky4k_v4" | grep -oP '(?<="asn":)[^,]+')
         local organization=$(echo "$sky4k_v4" | grep -oP '(?<="organization":")[^"]+')
         local city=$(echo "$sky4k_v4" | grep -oP '(?<="city":")[^"]+')
         local region=$(echo "$sky4k_v4" | grep -oP '(?<="name":")[^"]+(?="})' | tr -d '\n')
         local org="AS${asn} ${organization}"
-    elif [ "$?" -ne 0 ]; then
-        local org=""
     else
         local city="$(wget -q -T10 -O- ipinfo.io/city)"
         local country="$(wget -q -T10 -O- ipinfo.io/country)"
