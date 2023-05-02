@@ -1348,12 +1348,20 @@ ipv4_info() {
             local organization=$(echo "$sky4k_v4" | grep -oP '(?<="organization":")[^"]+')
             local city=$(echo "$sky4k_v4" | grep -oP '(?<="city":")[^"]+')
             local region=$(echo "$sky4k_v4" | grep -oP '(?<="name":")[^"]+(?="})' | tr -d '\n')
-            org="AS${asn} ${organization}"
+            if [[ -n "$asn" && -n "$organization" ]]; then
+                org="AS${asn} ${organization}"
+            else
+                org=""
+            fi
         else
             local asn=$(expr "$ipsb_v4" : '.*asn\":[ ]*\([0-9]*\).*')
             local organization=$(expr "$ipsb_v4" : '.*isp\":[ ]*\"\([^"]*\).*')
             local region=$(echo "$ipsb_v4" | grep -oP '(?<="country":")[^"]*')
-            org="AS${asn} ${organization}"
+            if [[ -n "$asn" && -n "$organization" ]]; then
+                org="AS${asn} ${organization}"
+            else
+                org=""
+            fi
         fi
     else
         local city="$(curl -ksL4m6 -A Mozilla ipinfo.io/city)"
