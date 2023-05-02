@@ -1366,7 +1366,7 @@ ipv4_info() {
     if [[ -n "$city" && -n "$country" ]]; then
         echo " 位置              : $(_blue "$city / $country")"
     elif [[ -n "$city" ]]; then
-        echo " 位置              : $(_blue "$city / $country")"
+        echo " 位置              : $(_blue "$city")"
     fi
     if [[ -n "$region" ]]; then
         echo " 地区              : $(_yellow "$region")"
