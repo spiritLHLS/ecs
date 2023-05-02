@@ -376,3 +376,89 @@
 #         exit 1
 #     fi
 # }
+
+# # https://github.com/xsidc/zbench/blob/master/ZPing-CN.py
+# # https://ipasn.com/bench.sh
+# chinaping() {
+#     # start=$(date +%s)
+#     # echostyle "++ China Latency Test"
+#     echo "-------------------延迟测试--感谢ipasn开源本人整理---------------------" | tee -a $LOG
+#     declare -a LIST
+#     LIST[${#LIST[@]}]="ec2.cn-north-1.amazonaws.com.cn•北京, Amazon Cloud"
+#     LIST[${#LIST[@]}]="ec2.cn-northwest-1.amazonaws.com.cn•宁夏, Amazon Cloud"
+#     LIST[${#LIST[@]}]="bss.bd.baidubce.com•河北保定, Baidu Cloud"
+#     LIST[${#LIST[@]}]="bss.bj.baidubce.com•北京, Baidu Cloud"
+#     LIST[${#LIST[@]}]="feitsui-bjs-1251417183.cos-website.ap-beijing.myqcloud.com•北京, Tencent Cloud"
+#     LIST[${#LIST[@]}]="feitsui-bjs-1251417183.cos-website.ap-chengdu.myqcloud.com•四川成都, Tencent Cloud"
+#     LIST[${#LIST[@]}]="feitsui-bjs-1251417183.cos-website.ap-chongqing.myqcloud.com•重庆, Tencent Cloud"
+#     LIST[${#LIST[@]}]="feitsui-bjs-1251417183.cos-website.ap-guangzhou.myqcloud.com•广东广州, Tencent Cloud"
+#     LIST[${#LIST[@]}]="feitsui-bjs-1251417183.cos-website.ap-nanjing.myqcloud.com•江苏南京, Tencent Cloud"
+#     LIST[${#LIST[@]}]="feitsui-bjs-1251417183.cos-website.ap-shanghai.myqcloud.com•上海, Tencent Cloud"
+#     LIST[${#LIST[@]}]="feitsui-bjs-fsi-1251417183.cos-website.ap-beijing-fsi.myqcloud.com•北京金融, Tencent Cloud"
+#     LIST[${#LIST[@]}]="feitsui-bjs.cn-bj.ufileos.com•北京, UCloud"
+#     LIST[${#LIST[@]}]="feitsui-can.cn-gd.ufileos.com•广东广州, UCloud"
+#     LIST[${#LIST[@]}]="feitsui-can.obs-website.cn-south-1.myhuaweicloud.com•广东广州, Huawei Cloud"
+#     LIST[${#LIST[@]}]="bss.gz.baidubce.com•广东广州, Baidu Cloud"
+#     LIST[${#LIST[@]}]="feitsui-kwe1.obs-website.cn-southwest-2.myhuaweicloud.com•贵州贵阳, Huawei Cloud"
+#     LIST[${#LIST[@]}]="feitsui-pek1.obs-website.cn-north-1.myhuaweicloud.com•北京1, Huawei Cloud"
+#     LIST[${#LIST[@]}]="feitsui-pek4.obs-website.cn-north-4.myhuaweicloud.com•北京2, Huawei Cloud"
+#     LIST[${#LIST[@]}]="feitsui-sha-fsi-1251417183.cos-website.ap-shanghai-fsi.myqcloud.com•上海金融, Tencent Cloud"
+#     LIST[${#LIST[@]}]="feitsui-sha1.obs-website.cn-east-3.myhuaweicloud.com•上海1, Huawei Cloud"
+#     LIST[${#LIST[@]}]="feitsui-sha2.cn-sh2.ufileos.com•上海2, UCloud"
+#     LIST[${#LIST[@]}]="feitsui-sha2.obs-website.cn-east-2.myhuaweicloud.com•上海2, Huawei Cloud"
+#     LIST[${#LIST[@]}]="bss.fsh.baidubce.com•上海, Baidu Cloud"
+#     LIST[${#LIST[@]}]="bss.su.baidubce.com•江苏苏州, Baidu Cloud"
+#     LIST[${#LIST[@]}]="feitsui-szx-fsi-1251417183.cos-website.ap-shenzhen-fsi.myqcloud.com•广东深圳金融, Tencent Cloud"
+#     LIST[${#LIST[@]}]="feitsui-ucb.obs-website.cn-north-9.myhuaweicloud.com•内蒙古乌兰察布, Huawei Cloud"
+#     LIST[${#LIST[@]}]="bss.fwh.baidubce.com•湖北武汉, Baidu Cloud"
+#     LIST[${#LIST[@]}]="ks3-cn-beijing.ksyuncs.com•北京, Kingsoft Cloud"
+#     LIST[${#LIST[@]}]="ks3-cn-guangzhou.ksyuncs.com•广东广州, Kingsoft Cloud"
+#     LIST[${#LIST[@]}]="ks3-cn-shanghai.ksyuncs.com•上海, Kingsoft Cloud"
+#     LIST[${#LIST[@]}]="ks3-gov-beijing.ksyuncs.com•北京政府, Kingsoft Cloud"
+#     LIST[${#LIST[@]}]="ks3-jr-beijing.ksyuncs.com•北京金融, Kingsoft Cloud"
+#     LIST[${#LIST[@]}]="ks3-jr-shanghai.ksyuncs.com•上海金融, Kingsoft Cloud"
+#     LIST[${#LIST[@]}]="oss-cn-beijing.aliyuncs.com•北京, Alibaba Cloud"
+#     LIST[${#LIST[@]}]="oss-cn-chengdu.aliyuncs.com•四川成都, Alibaba Cloud"
+#     LIST[${#LIST[@]}]="oss-cn-guangzhou.aliyuncs.com•广东广州, Alibaba Cloud"
+#     LIST[${#LIST[@]}]="oss-cn-hangzhou.aliyuncs.com•浙江杭州, Alibaba Cloud"
+#     LIST[${#LIST[@]}]="oss-cn-heyuan.aliyuncs.com•广东河源, Alibaba Cloud"
+#     LIST[${#LIST[@]}]="oss-cn-huhehaote.aliyuncs.com•内蒙古呼和浩特, Alibaba Cloud"
+#     LIST[${#LIST[@]}]="oss-cn-nanjing.aliyuncs.com•江苏南京, Alibaba Cloud"
+#     LIST[${#LIST[@]}]="oss-cn-qingdao.aliyuncs.com•山东青岛, Alibaba Cloud"
+#     LIST[${#LIST[@]}]="oss-cn-shanghai.aliyuncs.com•上海, Alibaba Cloud"
+#     LIST[${#LIST[@]}]="oss-cn-shenzhen.aliyuncs.com•广东深圳, Alibaba Cloud"
+#     LIST[${#LIST[@]}]="oss-cn-wulanchabu.aliyuncs.com•内蒙古乌兰察布, Alibaba Cloud"
+#     LIST[${#LIST[@]}]="oss-cn-zhangjiakou.aliyuncs.com•河北张家口, Alibaba Cloud"
+#     IFS=$'\n' LIST=($(shuf <<<"${LIST[*]}"))
+#     unset IFS
+#     INDEX=0
+#     TOTAL=${#LIST[@]}
+#     for arr in "${LIST[@]}"
+#     do
+#         INDEX=$(( $INDEX + 1 ))
+# 		param1=$( awk '{split($0, val, "•"); print val[1]}' <<< $arr )
+# 		param2=$( awk '{split($0, val, "•"); print val[2]}' <<< $arr )
+#         cnlatency "$param1" "$param2" "${INDEX}" "${TOTAL}"
+#     done
+#     IFS=$'\n' SORTED=($(sort <<<"${CHINALIST[*]}"))
+#     unset IFS
+#     echo -e "\r\033[0K"
+#     for arr in "${SORTED[@]}"
+#     do
+#         echo " $arr" | tee -a $LOG
+#     done
+# }
+
+# ping_script(){
+#     pre_check
+#     start_time=$(date +%s)
+#     clear
+#     print_intro
+#     chinaping
+#     end_script
+# }
+
+#     echo -e "${GREEN}7.${PLAIN} 全国网络延迟测试(平均运行1分钟)"
+    
+    
+#     7) ping_script ; break ;;
