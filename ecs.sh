@@ -1353,7 +1353,7 @@ ipv4_info() {
             local asn=$(expr "$ipsb_v4" : '.*asn\":[ ]*\([0-9]*\).*')
             local organization=$(expr "$ipsb_v4" : '.*isp\":[ ]*\"\([^"]*\).*')
             local region=$(expr "$ipsb_v4" : '.*country\":\"\(.*\)\".*')
-            local org=""
+            local org="AS${asn} ${organization}"
         fi
     else
         local city="$(wget -q -T10 -O- ipinfo.io/city)"
