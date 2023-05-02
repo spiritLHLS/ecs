@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.05.02"
+ver="2023.05.03"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1910,11 +1910,13 @@ fscarmen_route_script(){
     IP_4=$(curl -ksL4m8 -A Mozilla https://api.ip.sb/geoip) &&
     WAN_4=$(expr "$IP_4" : '.*ip\":[ ]*\"\([^"]*\).*') &&
     ASNORG_4=$(expr "$IP_4" : '.*isp\":[ ]*\"\([^"]*\).*') &&
-    _blue "IPv4 ASN: $ASNORG_4" >> $TEMP_FILE
+    ASNNUM_4=$(expr "$IP_4" : '.*asn\":[ ]*\([0-9]*\).*') &&
+    _blue "IPv4 ASN: AS${ASNNUM_4} ${ASNORG_4}" >> $TEMP_FILE
     IP_6=$(curl -ksL6m8 -A Mozilla https://api.ip.sb/geoip) &> /dev/null &&
     WAN_6=$(expr "$IP_6" : '.*ip\":[ ]*\"\([^"]*\).*') &> /dev/null &&
     ASNORG_6=$(expr "$IP_6" : '.*isp\":[ ]*\"\([^"]*\).*') &> /dev/null &&
-    _blue "IPv6 ASN: $ASNORG_6" >> $TEMP_FILE
+    ASNNUM_6=$(expr "$IP_6" : '.*asn\":[ ]*\([0-9]*\).*') &> /dev/null &&
+    _blue "IPv6 ASN: AS${ASNNUM_6} ${ASNORG_6}" >> $TEMP_FILE
     _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
     local test_area=("${!1}")
     local test_ip=("${!2}")
