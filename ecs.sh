@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.05.01"
+ver="2023.05.02"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1874,7 +1874,11 @@ spiritlhl_script(){
 backtrace_script(){
     cd $myvar >/dev/null 2>&1
     echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
-    curl_output=$($TEMP_DIR/backtrace 2>&1)
+    if [ -f "${TEMP_DIR}/backtrace" ]; then
+        curl_output=$(${TEMP_DIR}/backtrace 2>&1)
+    else
+        return
+    fi
     grep -sq 'sendto: network is unreachable' <<< $curl_output && _yellow "纯IPV6网络无法查询" || echo "${curl_output}" | grep -v 'github.com/zhanghanyun/backtrace' | grep -v '正在测试'
 }
 
