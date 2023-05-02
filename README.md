@@ -148,9 +148,11 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 端口检测(检测是否被墙) - 待修复
 
+全国/全球网络延迟测试 - 待修复
+
 # 更新
 
-2023.05.03 修复三网路由测试显示ASN时不显示AS号码的问题
+2023.05.03 修复三网路由测试显示ASN时不显示AS号码的问题，删除无效的全国网络延迟测试
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -172,7 +174,6 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 - [x] 回程路由以及带宽类型检测(商宽/家宽/数据中心)--由fscarmen的PR以及本人的技术思路提供，本人修改整理优化
 - [x] IP质量检测(检测IP白不白)(含IPV4和IPV6)--本人独创，感谢互联网提供的查询资源
 - [x] speedtest测速--使用自写[ecs-net](https://github.com/spiritLHLS/ecsspeed)脚本，自动更新测速服务器ID，一劳永逸解决老是要手动更新测速ID的问题
-- [x] 全国网络延迟测试--感谢IPASN开源，本人修改整理优化
 - [ ] 端口检测(检测是否被墙)--由fscarmen的PR以及本人的技术思路提供 - 待修复
 
 # 友链
