@@ -1339,7 +1339,7 @@ check_ipv4(){
 }
 
 ipv4_info() {
-    local org="$(wget -q -T10 -O- ipinfo.io/org)"
+    local org="$(curl -ks4m6 -A Mozilla ipinfo.io/org)"
     if [ "$?" -ne 0 ] || echo "$org" | grep -q "Comodo Secure DNS">/dev/null 2>&1; then
         ipsb_v4=$(curl -ks4m6 -A Mozilla https://api.ip.sb/geoip)
         if [ "$?" -ne 0 ]; then
