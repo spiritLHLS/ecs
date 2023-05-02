@@ -1343,7 +1343,7 @@ ipv4_info() {
     if [ "$?" -ne 0 ] || echo "$org" | grep -q "Comodo Secure DNS">/dev/null 2>&1; then
         ipsb_v4=$(curl -ksL4m6 -A Mozilla https://api.ip.sb/geoip)
         if [ "$?" -ne 0 ]; then
-            sky4k_v4=$(curl -ks4m6 -A Mozilla ipdata.cheervision.co) &&
+            sky4k_v4=$(curl -ksL4m6 -A Mozilla ipdata.cheervision.co) &&
             local asn=$(echo "$sky4k_v4" | grep -oP '(?<="asn":)[^,]+')
             local organization=$(echo "$sky4k_v4" | grep -oP '(?<="organization":")[^"]+')
             local city=$(echo "$sky4k_v4" | grep -oP '(?<="city":")[^"]+')
@@ -1745,7 +1745,7 @@ google() {
 
 ipcheck(){
     ip4=$IPV4
-    ip6=$(curl -s6m8 -k ip.sb | tr -d '[:space:]')
+    ip6=$(curl -sL6m8 -k ip.sb | tr -d '[:space:]')
     ip4=$(echo "$ip4" | tr -d '\n')
     ip6=$(echo "$ip6" | tr -d '\n')
     scamalytics "$ip4"
@@ -1899,11 +1899,11 @@ fscarmen_route_script(){
     cd $myvar >/dev/null 2>&1
     echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
     rm -f $TEMP_FILE
-    IP_4=$(curl -ks4m8 -A Mozilla https://api.ip.sb/geoip) &&
+    IP_4=$(curl -ksL4m8 -A Mozilla https://api.ip.sb/geoip) &&
     WAN_4=$(expr "$IP_4" : '.*ip\":[ ]*\"\([^"]*\).*') &&
     ASNORG_4=$(expr "$IP_4" : '.*isp\":[ ]*\"\([^"]*\).*') &&
     _blue "IPv4 ASN: $ASNORG_4" >> $TEMP_FILE
-    IP_6=$(curl -ks6m8 -A Mozilla https://api.ip.sb/geoip) &> /dev/null &&
+    IP_6=$(curl -ksL6m8 -A Mozilla https://api.ip.sb/geoip) &> /dev/null &&
     WAN_6=$(expr "$IP_6" : '.*ip\":[ ]*\"\([^"]*\).*') &> /dev/null &&
     ASNORG_6=$(expr "$IP_6" : '.*isp\":[ ]*\"\([^"]*\).*') &> /dev/null &&
     _blue "IPv6 ASN: $ASNORG_6" >> $TEMP_FILE
