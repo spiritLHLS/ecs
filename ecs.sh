@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.05.03"
+ver="2023.05.04"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -143,14 +143,14 @@ pre_download() {
 _exit() {
     echo -e "\n\n${Msg_Error}Exiting ...\n"
     _red "\n检测到退出操作，脚本终止！\n"
-    Global_Exit_Action
+    global_exit_action
     rm_script
     exit 1
 }
 
 trap _exit INT QUIT TERM
 
-Global_StartupInit_Action() {
+global_startup_init_action() {
     # 清理残留, 为新一次的运行做好准备
     echo -e "${Msg_Info}Initializing Running Enviorment, Please wait ..."
     rm -rf "$WorkDir"
@@ -159,10 +159,11 @@ Global_StartupInit_Action() {
     echo -e "${Msg_Info}Checking Dependency ..."
     Check_Virtwhat
     Check_SysBench
+    SystemInfo_GetCPUInfo
     echo -e "${Msg_Info}Starting Test ..."
 }
 
-Global_Exit_Action() {
+global_exit_action() {
     build_text
     if [ -n "$shorturl" ]
     then
@@ -335,6 +336,7 @@ checkunzip() {
 }
 
 check_china(){
+    _yellow "In order to select the CDN is detecting the IP area......"
     if [[ -z "${CN}" ]]; then
         if [[ $(curl -m 10 -s https://ipapi.co/json | grep 'China') != "" ]]; then
             _yellow "根据ipapi.co提供的信息，当前IP可能在中国"
@@ -540,7 +542,7 @@ test_list() {
 }
 
 temp_head(){
-    echo "------------------------ ecs-net--本频道独创 -------------------------"
+    echo "------------------ 自动更新测速节点列表--本脚本原创 ------------------"
     if [[ $selection =~ ^[1-5]$ ]]; then
         if [ -f "./speedtest-cli/speedtest" ]; then
 	        echo -e "位置\t         上传速度\t 下载速度\t 延迟\t  丢包率"
@@ -813,7 +815,6 @@ Check_SysBench() {
 
 Check_Sysbench_InstantBuild() {
     SystemInfo_GetOSRelease
-    SystemInfo_GetCPUInfo
     if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux" ] || [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ] || [ "${Var_OSRelease}" = "fedora" ] || [ "${Var_OSRelease}" = "arch" ]; then
         echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
@@ -965,7 +966,7 @@ Function_ReadCPUStat() {
     fi
 }
 
-SystemInfo_GetSystemBit() {
+get_system_bit() {
     local sysarch="$(uname -m)"
     if [ "${sysarch}" = "unknown" ] || [ "${sysarch}" = "" ]; then
         local sysarch="$(arch)"
@@ -1063,13 +1064,6 @@ SystemInfo_GetVirtType() {
     fi
 }
 
-Entrance_SysBench_CPU_Fast() {
-    Check_SysBench 
-    SystemInfo_GetCPUInfo 
-    Function_SysBench_CPU_Fast
-    sleep 1
-}
-
 speed() {
     temp_head
     speed_test '' 'Speedtest.net'
@@ -1094,7 +1088,6 @@ speed2() {
 Run_DiskTest_DD() {
     # 调用方式: Run_DiskTest_DD "测试文件名" "块大小" "写入次数" "测试项目名称"
     mkdir -p ${WorkDir}/DiskTest/ >/dev/null 2>&1
-    SystemInfo_GetVirtType
     mkdir -p /.tmp_LBench/DiskTest >/dev/null 2>&1
     mkdir -p ${WorkDir}/data >/dev/null 2>&1
     local Var_DiskTestResultFile="${WorkDir}/data/disktest_result"
@@ -1716,7 +1709,7 @@ pre_check(){
     checkcurl
     check_ipv4
     check_cdn_file
-    Global_StartupInit_Action
+    global_startup_init_action
     cd $myvar >/dev/null 2>&1
     ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
     ! _exists "free" && _red "Error: free command not found.\n" && exit 1
@@ -1747,7 +1740,7 @@ basic_script(){
     cd $myvar >/dev/null 2>&1
     sleep 1
     echo "-------------------CPU测试--感谢lemonbench开源------------------------"
-    Entrance_SysBench_CPU_Fast
+    Function_SysBench_CPU_Fast
     cd $myvar >/dev/null 2>&1
     sleep 1
     echo "-------------------内存测试--感谢lemonbench开源-----------------------"
@@ -1818,7 +1811,7 @@ lmc999_script(){
 
 spiritlhl_script(){
     cd $myvar >/dev/null 2>&1
-    echo -e "-----------------欺诈分数以及IP质量检测--本频道原创-------------------"
+    echo -e "-----------------欺诈分数以及IP质量检测--本脚本原创-------------------"
     _yellow "以下仅作参考，不代表100%准确，如果和实际情况不一致请手动查询多个数据库比对"
     ipcheck
 }
@@ -2281,7 +2274,7 @@ Comprehensive_test_script(){
             6) bash <(wget -qO- git.io/ceshi) ; break ;;
             7) wget -N --no-check-certificate https://raw.githubusercontent.com/FunctionClub/ZBench/master/ZBench-CN.sh && bash ZBench-CN.sh ; break ;;
             8) wget --no-check-certificate https://raw.githubusercontent.com/teddysun/across/master/unixbench.sh && chmod +x unixbench.sh && ./unixbench.sh ; break ;;
-            0) Yuanshi_script ; break ;;
+            0) original_script ; break ;;
             *) echo "输入错误，请重新输入" ;;
         esac
     done
@@ -2315,7 +2308,7 @@ Media_test_script(){
             7) bash <(curl -Ls unlock.moe) ; break ;;
             8) bash <(curl -Ls https://cpp.li/openai) ; break ;;
             9) bash <(curl -Ls https://bash.spiritlhl.net/openai-checker) ; break ;;
-            0) Yuanshi_script ; break ;;
+            0) original_script ; break ;;
             *) echo "输入错误，请重新输入" ;;
         esac
     done
@@ -2334,7 +2327,7 @@ Network_test_script(){
     echo -e "${GREEN}7.${PLAIN} 原始作者维护的superspeed的三网测速脚本"
     echo -e "${GREEN}8.${PLAIN} 未知作者修复的superspeed的三网测速脚本"
     echo -e "${GREEN}9.${PLAIN} 由sunpma维护的superspeed的三网测速脚本"
-    echo -e "${GREEN}10.${PLAIN} 原始版hyperspeed的三网测速脚本"
+    echo -e "${GREEN}10.${PLAIN} 原始作者维护的hyperspeed的三网测速脚本(测速内核不开源)"
     echo -e "${GREEN}11.${PLAIN} 综合速度测试脚本(全球的测速节点)"
     echo -e "${GREEN}12.${PLAIN} 本人的ecs-net三网测速脚本(自动更新测速节点，对应 speedtest.net)"
     echo -e "${GREEN}13.${PLAIN} 本人的ecs-cn三网测速脚本(自动更新测速节点，对应 speedtest.cn)"
@@ -2358,7 +2351,7 @@ Network_test_script(){
             11) curl -sL network-speed.xyz | bash ; break ;;
             12) bash <(wget -qO- bash.spiritlhl.net/ecs-net) ; break ;;
             13) bash <(wget -qO- bash.spiritlhl.net/ecs-cn) ; break ;;
-            0) Yuanshi_script ; break ;;
+            0) original_script ; break ;;
             *) echo "输入错误，请重新输入" ;;
         esac
     done
@@ -2372,6 +2365,7 @@ Hardware_test_script(){
     echo -e "${GREEN}2.${PLAIN} Geekbench4测试"
     echo -e "${GREEN}3.${PLAIN} Geekbench5测试"
     echo -e "${GREEN}4.${PLAIN} Geekbench6测试"
+    echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
     echo ""
     while true
@@ -2382,13 +2376,13 @@ Hardware_test_script(){
             2) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench4.sh) ; break ;;
             3) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench5.sh) ; break ;;
             6) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench6.sh) ; break ;;
-            0) Yuanshi_script ; break ;;
+            0) original_script ; break ;;
             *) echo "输入错误，请重新输入" ;;
         esac
     done
 }
 
-Yuanshi_script(){
+original_script(){
     head_script
     _yellow "融合怪借鉴的脚本以及部分竞品脚本合集如下"
     echo -e "${GREEN}1.${PLAIN} 综合性测试脚本合集(比如yabs，superbench等)"
@@ -2406,19 +2400,19 @@ Yuanshi_script(){
             2) Media_test_script ; break ;;
             3) Network_test_script ; break ;;
             4) Hardware_test_script ; break ;;
-            0) Start_script ; break ;;
+            0) start_script ; break ;;
             *) echo "输入错误，请重新输入" ;;
         esac
     done
 }
 
-Jinjian_script(){
+simplify_script(){
     head_script
     _yellow "融合怪的精简脚本如下"
-    echo -e "${GREEN}1.${PLAIN} 极简版(系统信息+CPU+内存+磁盘IO+测速节点4个)(平均运行3分钟不到)"
-    echo -e "${GREEN}2.${PLAIN} 精简版(系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体+TikTok+OpenAI+回程+路由+测速节点4个)(平均运行4分钟左右)"
-    echo -e "${GREEN}3.${PLAIN} 精简网络版(系统信息+CPU+内存+磁盘IO+回程+路由+测速节点4个)(平均运行不到4分钟)"
-    echo -e "${GREEN}4.${PLAIN} 精简解锁版(系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体+TikTok+OpenAI+测速节点4个)(平均运行4分钟左右)"
+    echo -e "${GREEN}1.${PLAIN} 极简版(系统信息+CPU+内存+磁盘IO+测速节点4个)(平均运行3分钟)"
+    echo -e "${GREEN}2.${PLAIN} 精简版(系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体+TikTok+OpenAI+回程+路由+测速节点4个)(平均运行4分钟)"
+    echo -e "${GREEN}3.${PLAIN} 精简网络版(系统信息+CPU+内存+磁盘IO+回程+路由+测速节点4个)(平均运行4分钟)"
+    echo -e "${GREEN}4.${PLAIN} 精简解锁版(系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体+TikTok+OpenAI+测速节点4个)(平均运行4分钟)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
@@ -2430,13 +2424,13 @@ Jinjian_script(){
             2) minal_plus | tee -i test_result.txt; break ;;
             3) minal_plus_network | tee -i test_result.txt; break ;;
             4) minal_plus_media | tee -i test_result.txt; break ;;
-            0) Start_script ; break ;;
+            0) start_script ; break ;;
             *) echo "输入错误，请重新输入" ;;
         esac
     done
 }
 
-Danxiang_script(){
+single_item_script(){
     head_script
     _yellow "融合怪拆分的单项测试脚本如下"
     echo -e "${GREEN}1.${PLAIN} 网络方面(简化的IP质量检测+三网回程+三网路由与延迟+测速节点11个)(平均运行6分钟左右)"
@@ -2458,13 +2452,13 @@ Danxiang_script(){
             4) bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh); break ;;
             5) port_script ; break ;;
             6) sw_script ; break ;;
-            0) Start_script ; break ;;
+            0) start_script ; break ;;
             *) echo "输入错误，请重新输入" ;;
         esac
     done
 }
 
-Yuanchuang_script(){
+my_original_script(){
     head_script
     _yellow "本作者有原创成分的脚本如下"
     echo -e "${GREEN}1.${PLAIN} 完整的本机IP的IP质量检测(平均运行10~20秒)"
@@ -2502,7 +2496,7 @@ Yuanchuang_script(){
             12) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench6.sh) ; break ;;
             13) bash <(wget -qO- bash.spiritlhl.net/ecs-net) ; break ;;
             14) bash <(wget -qO- bash.spiritlhl.net/ecs-cn) ; break ;;
-            0) Start_script ; break ;;
+            0) start_script ; break ;;
             *) echo "输入错误，请重新输入" ;;
         esac
     done
@@ -2524,14 +2518,14 @@ head_script(){
     _green "请选择你接下来要使用的脚本"
 }
 
-Start_script(){
+start_script(){
     head_script
-    echo -e "${GREEN}1.${PLAIN} 融合怪完全体顺序测试版(所有项目都测试)(平均运行7分钟)(机器普通推荐使用)"
-    echo -e "${GREEN}2.${PLAIN} 融合怪完全体并行测试版(所有项目都测试)(平均运行5分钟)(仅机器强劲可使用，否则误差偏大)"
-    echo -e "${GREEN}3.${PLAIN} 融合怪精简区(融合怪的各种精简版并含单项测试精简版)"
+    echo -e "${GREEN}1.${PLAIN} 顺序测试--融合怪完全体(所有项目都测试)(平均运行7分钟)(机器普通推荐使用)"
+    echo -e "${GREEN}2.${PLAIN} 并行测试--融合怪完全体(所有项目都测试)(平均运行5分钟)(仅机器强劲可使用，机器普通勿要使用)"
+    echo -e "${GREEN}3.${PLAIN} 融合怪精简区(融合怪的精简版或单项测试精简版)"
     echo -e "${GREEN}4.${PLAIN} 融合怪单项区(融合怪的单项测试完整版)"
-    echo -e "${GREEN}5.${PLAIN} 第三方脚本区(其他作者的各种测试脚本)"
-    echo -e "${GREEN}6.${PLAIN} 原创区(本作者独有的一些测试脚本)"
+    echo -e "${GREEN}5.${PLAIN} 第三方脚本区(同类作者的各种测试脚本)"
+    echo -e "${GREEN}6.${PLAIN} 原创区(本脚本独有的一些测试脚本)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 退出"
     echo ""
@@ -2541,10 +2535,10 @@ Start_script(){
         case $StartInput in
             1) all_script "S" | tee -i test_result.txt ; break ;;
             2) all_script "B" | tee -i test_result.txt ; break ;;
-            3) Jinjian_script ; break ;;
-            4) Danxiang_script ; break ;;
-            5) Yuanshi_script ; break ;;
-            6) Yuanchuang_script ; break ;;
+            3) simplify_script ; break ;;
+            4) single_item_script ; break ;;
+            5) original_script ; break ;;
+            6) my_original_script ; break ;;
             0) exit 1 ; break ;;
             *) echo "输入错误，请重新输入" ;;
         esac
@@ -2553,7 +2547,7 @@ Start_script(){
 
 rm -rf $TEMP_DIR
 mkdir -p $TEMP_DIR
-SystemInfo_GetSystemBit
-Start_script
+get_system_bit
+start_script
 rm_script
-Global_Exit_Action
+global_exit_action
