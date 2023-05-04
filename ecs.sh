@@ -1634,6 +1634,9 @@ abuse() {
         echo "abuseipdb数据库-abuse得分：$score"
         echo "IP类型:"
         usageType=$(grep -oP '"usageType":\s*"\K[^"]+' <<< "$context2" | sed 's/\\\//\//g')
+        if [ -z "$usageType" ]; then
+            usageType="Unknown (Maybe Fixed Line ISP)"
+        fi
         echo "  IP2Location数据库: $usageType"
     fi
 }
