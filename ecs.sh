@@ -141,8 +141,8 @@ pre_download() {
 
 # Trap终止信号捕获
 _exit() {
-    echo -e "\n\n${Msg_Error}Exiting ...\n"
-    _red "\n检测到退出操作，脚本终止！\n"
+    echo -e "\n${Msg_Error}Exiting ...\n"
+    _red "检测到退出操作，脚本终止！\n"
     global_exit_action
     rm_script
     exit 1
@@ -542,7 +542,7 @@ test_list() {
 }
 
 temp_head(){
-    echo "------------------ 自动更新测速节点列表--本脚本原创 ------------------"
+    echo "-------------------自动更新测速节点列表--本脚本原创-------------------"
     if [[ $selection =~ ^[1-5]$ ]]; then
         if [ -f "./speedtest-cli/speedtest" ]; then
 	        echo -e "位置\t         上传速度\t 下载速度\t 延迟\t  丢包率"
@@ -1398,6 +1398,9 @@ get_system_info() {
         if [ $? -ne 0 ]; then
             ${PACKAGE_INSTALL[int]} util-linux
             cname=$(lscpu | grep "Model name" | sed 's/Model name: *//g')
+        fi
+        if [ -z "$cname" ]; then
+            cname=$(cat /proc/device-tree/model)
         fi
     fi
     cores=$( awk -F: '/processor/ {core++} END {print core}' /proc/cpuinfo )
