@@ -152,7 +152,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 # 更新
 
-2023.05.03 修复三网路由测试显示ASN时不显示AS号码的问题，删除无效的全国网络延迟测试
+2023.05.04 优化io测试中重复查询系统信息以及CPU检测时重复查询系统版本的函数，修改部分分区描述
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
