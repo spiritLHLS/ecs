@@ -152,7 +152,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 # 更新
 
-2023.05.04 优化io测试中重复查询系统信息以及CPU检测时重复查询系统版本的函数，修改部分分区描述
+2023.05.04 优化io测试中重复查询系统信息以及CPU检测时重复查询系统版本的函数，修改部分分区描述，修复在开发板上的本地设备检测不到CPU型号的问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
