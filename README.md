@@ -144,7 +144,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
-部分服务器在测试时使用speedtest-cli组件版本有要求，自动替换版本时部分服务器有问题重复测试了 - 待修复
+ - 待修复
 
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修复
 
@@ -154,7 +154,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 # 更新
 
-2023.05.04 优化io测试中重复查询系统信息以及CPU检测时重复查询系统版本的函数，修改部分分区描述，修复在开发板上的本地设备检测不到CPU型号的问题
+2023.05.05 部分服务器在测试时使用speedtest-cli组件版本有要求，修复自动替换版本时部分服务器重复测试的问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
