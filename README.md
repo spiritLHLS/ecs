@@ -144,8 +144,6 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
- - 待修复
-
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修复
 
 端口检测(检测是否被墙) - 待修复
