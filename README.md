@@ -144,6 +144,8 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
+部分服务器在测试时使用speedtest-cli组件版本有要求，自动替换版本时部分服务器有问题重复测试了 - 待修复
+
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修复
 
 端口检测(检测是否被墙) - 待修复
