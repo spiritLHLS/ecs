@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.05.04"
+ver="2023.05.05"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1862,7 +1862,7 @@ ecs_net_all_script(){
     speed | tee ./speedtest-cli/speedlog.txt
     e_time=$(date +%s)
     time=$(( ${e_time} - ${s_time} ))
-    if ! grep -q "Speedtest.net" ./speedtest-cli/speedlog.txt;
+    if ! grep -qE "(Speedtest.net|洛杉矶|新加坡|香港|联通|电信|移动|日本|中国)" ./speedtest-cli/speedlog.txt;
     then
         export speedtest_ver="1.0.0"
         rm -rf ./speedtest-cli/speedlog.txt
@@ -1880,7 +1880,7 @@ ecs_net_minal_script(){
     speed2 | tee ./speedtest-cli/speedlog.txt
     e_time=$(date +%s)
     time=$(( ${e_time} - ${s_time} ))
-    if ! grep -q "Speedtest.net" ./speedtest-cli/speedlog.txt;
+    if ! grep -qE "(Speedtest.net|洛杉矶|新加坡|香港|联通|电信|移动|日本|中国)" ./speedtest-cli/speedlog.txt;
     then
         export speedtest_ver="1.0.0"
         rm -rf ./speedtest-cli/speedlog.txt
