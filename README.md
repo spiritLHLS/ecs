@@ -72,16 +72,6 @@ echo 1 | bash <(wget -qO- bash.spiritlhl.net/ecs)
 
 融合怪的完整版和精简版运行完毕自动上传结果到pastebin并回传分享链接
 
-**有时候想要测一些配置极其拉跨的机器时，推荐使用screen挂起执行融合怪**
-
-**然后你可以关闭SSH连接，等待一段时间后使用```cat test_result.txt```查看运行的实时状况**
-
-**这样可以避免IO或者CPU过于垃圾导致的测试过程中的SSH连接中断，就不会测一半啥都没了**
-
-最烂机器测试的例子(跑了47分钟一样测完)：[跳转](https://github.com/spiritLHLS/ecs/blob/main/lowpage/README.md)
-
-使用**CDN**加速理论上已支持**国内**和**国外**服务器测试，但国内受CDN口子或国内机器口子的限制会加载慢很多
-
 融合怪测试说明以及部分测试结果的内容解释(初次使用推荐查看)：
 <details>
 
@@ -117,6 +107,16 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 </details>
 
+**有时候想要测一些配置极其拉跨的机器时，推荐使用screen挂起执行融合怪**
+
+**然后你可以关闭SSH连接，等待一段时间后使用```cat test_result.txt```查看运行的实时状况**
+
+**这样可以避免IO或者CPU过于垃圾导致的测试过程中的SSH连接中断，就不会测一半啥都没了**
+
+最烂机器测试的例子(跑了47分钟一样测完)：[跳转](https://github.com/spiritLHLS/ecs/blob/main/lowpage/README.md)
+
+使用**CDN**加速理论上已支持**国内**和**国外**服务器测试，但国内受CDN口子或国内机器口子的限制会加载慢很多
+
 **[返回顶部](https://github.com/spiritLHLS/ecs#top)**
 
 ### 纯测IP质量
@@ -136,11 +136,11 @@ bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/ma
 
 ### 部分服务器运行测试有各类bug一键修复后再测试
 
-一键修复各种bug的仓库：
+一键修复各种系统原生bug的仓库：
 
 https://github.com/spiritLHLS/one-click-installation-script
 
-如若还有bug请到上面仓库的issues反映
+如若还有系统bug请到上面仓库的issues反映，脚本原生BUG该仓库issues反映
 
 # 待解决事项
 
