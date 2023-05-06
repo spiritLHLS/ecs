@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.05.05"
+ver="2023.05.06"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1333,7 +1333,7 @@ check_ipv4(){
 
 ipv4_info() {
     org="$(curl -ksL4m6 -A Mozilla ipinfo.io/org)"
-    if [ "$?" -ne 0 ] || echo "$org" | grep -q "Comodo Secure DNS">/dev/null 2>&1; then
+    if [ "$?" -ne 0 ] || echo "$org" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)">/dev/null 2>&1; then
         ipsb_v4=$(curl -ksL4m6 -A Mozilla https://api.ip.sb/geoip)
         if [ "$?" -ne 0 ]; then
             sky4k_v4=$(curl -ksL4m6 -A Mozilla ipdata.cheervision.co) &&
