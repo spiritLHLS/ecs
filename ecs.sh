@@ -1403,6 +1403,7 @@ get_system_info() {
             cname=$(cat /proc/device-tree/model)
         fi
     fi
+    cname=$(echo -n "$cname" | tr '\n' ' ')
     cores=$( awk -F: '/processor/ {core++} END {print core}' /proc/cpuinfo )
     freq=$( awk -F'[ :]' '/cpu MHz/ {print $4;exit}' /proc/cpuinfo )
     ccache=$( awk -F: '/cache size/ {cache=$2} END {print cache}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
