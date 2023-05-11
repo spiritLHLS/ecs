@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.05.06"
+ver="2023.05.11"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -1965,8 +1965,6 @@ all_script(){
             io1_script
             sleep 0.5
             spiritlhl_script > ${TEMP_DIR}/spiritlhl_output.txt &
-            backtrace_script > ${TEMP_DIR}/backtrace_output.txt &
-            fscarmen_route_script test_area_g[@] test_ip_g[@] > ${TEMP_DIR}/fscarmen_route_output.txt &
             wait
             cat ${TEMP_DIR}/spiritlhl_output.txt
             cat ${TEMP_DIR}/backtrace_output.txt
@@ -2019,8 +2017,6 @@ all_script(){
             io1_script
             sleep 0.5
             spiritlhl_script
-            backtrace_script
-            fscarmen_route_script test_area_g[@] test_ip_g[@]
             wait
             ecs_net_all_script
         fi
