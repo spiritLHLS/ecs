@@ -144,6 +144,8 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
+增加全国省会的Ping值检测 - 待添加
+
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修复
 
 端口检测(检测是否被墙) - 待修复
@@ -152,7 +154,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 # 更新
 
-2023.05.06 网站 ipinfo.io 的API有的机器因为代理原因或同段欺诈分过高原因，免费的额度耗尽，修复自动替换为其他接口查询，修复查询开发板的CPU型号时有换行符的问题
+2023.05.11 删除当识别为中国IP时仍然检测线路和回程路由的部分，准备替换为全国省会的Ping值检测
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
