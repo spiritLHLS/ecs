@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.05.11"
+ver="2023.05.13"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -130,6 +130,9 @@ pre_download() {
                 ;;
             yabsiotest)
                 curl -sL -k https://gitlab.com/spiritysdx/za/-/raw/main/yabsiotest.sh -o yabsiotest.sh && chmod +x yabsiotest.sh
+            ;;
+            ecsspeed_ping)
+                curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecsspeed/main/script/ecsspeed-ping.sh" -o $TEMP_DIR/ecsspeed-ping.sh && chmod +x $TEMP_DIR/ecsspeed-ping.sh
             ;;
             *)
                 echo "Invalid file: $file"
@@ -338,22 +341,41 @@ checkunzip() {
 check_china(){
     _yellow "In order to select the CDN is detecting the IP area......"
     if [[ -z "${CN}" ]]; then
-        if [[ $(curl -m 10 -s https://ipapi.co/json | grep 'China') != "" ]]; then
+        if [[ $(curl -m 6 -s https://ipapi.co/json | grep 'China') != "" ]]; then
             _yellow "根据ipapi.co提供的信息，当前IP可能在中国"
-            read -e -r -p "是否选用中国镜像完成测速工具安装? [Y/n] " input
+            read -e -r -p "是否选用中国镜像完成相关组件安装? ([y]/n) " input
             case $input in
                 [yY][eE][sS] | [yY])
                     echo "使用中国镜像"
                     CN=true
-                ;;
+                    ;;
                 [nN][oO] | [nN])
                     echo "不使用中国镜像"
-                ;;
+                    ;;
                 *)
                     echo "使用中国镜像"
                     CN=true
-                ;;
+                    ;;
             esac
+        else
+            if [[ $? -ne 0 ]]; then
+                if [[ $(curl -m 6 -s cip.cc) =~ "中国" ]]; then
+                    _yellow "根据cip.cc提供的信息，当前IP可能在中国"
+                    read -e -r -p "是否选用中国镜像完成相关组件安装? [Y/n] " input
+                    case $input in
+                        [yY][eE][sS] | [yY])
+                            echo "使用中国镜像"
+                            CN=true
+                            ;;
+                        [nN][oO] | [nN])
+                            echo "不使用中国镜像"
+                            ;;
+                        *)
+                            echo "不使用中国镜像"
+                            ;;
+                    esac
+                fi
+            fi
         fi
     fi
 }
@@ -542,7 +564,7 @@ test_list() {
 }
 
 temp_head(){
-    echo "-------------------自动更新测速节点列表--本脚本原创-------------------"
+    echo "--------------------自动更新测速节点列表--本脚本原创--------------------"
     if [[ $selection =~ ^[1-5]$ ]]; then
         if [ -f "./speedtest-cli/speedtest" ]; then
 	        echo -e "位置\t         上传速度\t 下载速度\t 延迟\t  丢包率"
@@ -1384,7 +1406,7 @@ ipv4_info() {
 }
 
 print_intro() {
-    echo "-------------------- A Bench Script By spiritlhl ---------------------"
+    echo "--------------------- A Bench Script By spiritlhl ----------------------"
     echo "                   测评频道: https://t.me/vps_reviews                    "
     echo "版本：$ver"
     echo "更新日志：$changeLog"
@@ -1723,7 +1745,7 @@ pre_check(){
 sjlleo_script(){
     cd $myvar >/dev/null 2>&1
     mv $TEMP_DIR/{dp,nf,tubecheck} ./
-    echo "--------------------流媒体解锁--感谢sjlleo开源------------------------"
+    echo "---------------------流媒体解锁--感谢sjlleo开源-------------------------"
     _yellow "以下测试的解锁地区是准确的，但是不是完整解锁的判断可能有误，这方面仅作参考使用"
     _yellow "----------------Youtube----------------"
     ./tubecheck | sed "/@sjlleo/d;/^$/d"
@@ -1738,35 +1760,35 @@ sjlleo_script(){
 }
 
 basic_script(){
-    echo "-----------------感谢teddysun和superbench和yabs开源-------------------"
+    echo "-------------------感谢teddysun和superbench和yabs开源-------------------"
     print_system_info
     ipv4_info
     cd $myvar >/dev/null 2>&1
     sleep 1
-    echo "-------------------CPU测试--感谢lemonbench开源------------------------"
+    echo "---------------------CPU测试--感谢lemonbench开源------------------------"
     Function_SysBench_CPU_Fast
     cd $myvar >/dev/null 2>&1
     sleep 1
-    echo "-------------------内存测试--感谢lemonbench开源-----------------------"
+    echo "---------------------内存测试--感谢lemonbench开源-----------------------"
     Function_SysBench_Memory_Fast
 }
 
 io1_script(){
     cd $myvar >/dev/null 2>&1
     sleep 1
-    echo "----------------磁盘IO读写测试--感谢lemonbench开源--------------------"
+    echo "------------------磁盘IO读写测试--感谢lemonbench开源--------------------"
     Function_DiskTest_Fast
 }
 
 io2_script(){
     cd $myvar >/dev/null 2>&1
-    echo "-------------------磁盘IO读写测试--感谢yabs开源-----------------------"
+    echo "---------------------磁盘IO读写测试--感谢yabs开源-----------------------"
     bash ./yabsiotest.sh 2>/dev/null
     rm -rf yabsiotest.sh
 }
 
 RegionRestrictionCheck_script(){
-    echo -e "---------------流媒体解锁--感谢RegionRestrictionCheck开源-------------"
+    echo -e "----------------流媒体解锁--感谢RegionRestrictionCheck开源--------------"
     _yellow " 以下为IPV4网络测试，若无IPV4网络则无输出"
     echo 0 | bash media_lmc_check.sh -M 4 2>/dev/null | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
     _yellow " 以下为IPV6网络测试，若无IPV6网络则无输出"
@@ -1775,8 +1797,8 @@ RegionRestrictionCheck_script(){
 
 openai_script(){
     cd $myvar >/dev/null 2>&1
-    echo -e "--------OpenAi解锁--感谢missuo的OpenAI-Checker项目本人修改优化--------"
-    output=$(bash <(curl -Ls https://cdn.jsdelivr.net/gh/spiritLHLS/OpenAI-Checker/openai.sh))
+    echo -e "---------OpenAi解锁--感谢missuo的OpenAI-Checker项目本人修改优化---------"
+    output=$(bash <(curl -Ls "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/OpenAI-Checker/main/openai.sh"))
     output=$(echo "$output" | grep -v '^Your IPv[46]: [0-9a-fA-F:.]* -')
     output=$(echo "$output" | grep -v '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\|[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*')
     output=$(echo "$output" | grep -v '::')
@@ -1788,7 +1810,7 @@ openai_script(){
 
 lmc999_script(){
     cd $myvar >/dev/null 2>&1
-    echo -e "-------------TikTok解锁--感谢lmc999的源脚本及fscarmen PR--------------"
+    echo -e "---------------TikTok解锁--感谢lmc999的源脚本及fscarmen PR--------------"
     local Ftmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -sL --max-time 10 "https://www.tiktok.com/")
 
     if [[ "$Ftmpresult" = "curl"* ]]; then
@@ -1815,14 +1837,14 @@ lmc999_script(){
 
 spiritlhl_script(){
     cd $myvar >/dev/null 2>&1
-    echo -e "-----------------欺诈分数以及IP质量检测--本脚本原创-------------------"
+    echo -e "-------------------欺诈分数以及IP质量检测--本脚本原创-------------------"
     _yellow "以下仅作参考，不代表100%准确，如果和实际情况不一致请手动查询多个数据库比对"
     ipcheck
 }
 
 backtrace_script(){
     cd $myvar >/dev/null 2>&1
-    echo -e "-----------------三网回程--感谢zhanghanyun/backtrace开源--------------"
+    echo -e "----------------三网回程--感谢zhanghanyun/backtrace开源-----------------"
     if [ -f "${TEMP_DIR}/backtrace" ]; then
         curl_output=$(${TEMP_DIR}/backtrace 2>&1)
     else
@@ -1833,7 +1855,7 @@ backtrace_script(){
 
 fscarmen_route_script(){
     cd $myvar >/dev/null 2>&1
-    echo -e "------------------回程路由--感谢fscarmen开源及PR----------------------"
+    echo -e "---------------------回程路由--感谢fscarmen开源及PR---------------------"
     rm -f $TEMP_FILE
     IP_4=$(curl -ksL4m8 -A Mozilla https://api.ip.sb/geoip) &&
     WAN_4=$(expr "$IP_4" : '.*ip\":[ ]*\"\([^"]*\).*') &&
@@ -1854,6 +1876,17 @@ fscarmen_route_script(){
     done
     cat $TEMP_FILE
     rm -f $TEMP_FILE
+}
+
+ecs_ping(){
+    cd $myvar >/dev/null 2>&1
+    echo -e "-----------------------全国延迟检测--本脚本原创-------------------------"
+    if [ -f "${TEMP_DIR}/ecsspeed-ping.sh" ]; then
+        ping_output=$(bash ${TEMP_DIR}/ecsspeed-ping.sh 2>&1)
+    else
+        return
+    fi
+    echo "${ping_output}" | grep "|"
 }
 
 ecs_net_all_script(){
@@ -1942,7 +1975,7 @@ all_script(){
             cat ${TEMP_DIR}/fscarmen_route_output.txt
             cat ${TEMP_DIR}/ecs_net_output.txt
         else
-            dfiles=(besttrace backtrace)
+            dfiles=(ecsspeed_ping)
             for dfile in "${dfiles[@]}"
             do
                 { pre_download ${dfile};} &
@@ -1965,10 +1998,10 @@ all_script(){
             io1_script
             sleep 0.5
             spiritlhl_script > ${TEMP_DIR}/spiritlhl_output.txt &
+            ecs_ping > ${TEMP_DIR}/ecs_ping.txt &
             wait
             cat ${TEMP_DIR}/spiritlhl_output.txt
-            cat ${TEMP_DIR}/backtrace_output.txt
-            cat ${TEMP_DIR}/fscarmen_route_output.txt
+            cat ${TEMP_DIR}/ecs_ping.txt
             cat ${TEMP_DIR}/ecs_net_output.txt
         fi
     else
@@ -2000,7 +2033,7 @@ all_script(){
             wait
             ecs_net_all_script
         else
-            pre_download besttrace backtrace
+            pre_download ecsspeed_ping
             get_system_info >/dev/null 2>&1
             check_virt
             checkdnsutils
@@ -2017,6 +2050,7 @@ all_script(){
             io1_script
             sleep 0.5
             spiritlhl_script
+            ecs_ping
             wait
             ecs_net_all_script
         fi
@@ -2331,6 +2365,7 @@ Network_test_script(){
     echo -e "${GREEN}11.${PLAIN} 综合速度测试脚本(全球的测速节点)"
     echo -e "${GREEN}12.${PLAIN} 本人的ecs-net三网测速脚本(自动更新测速节点，对应 speedtest.net)"
     echo -e "${GREEN}13.${PLAIN} 本人的ecs-cn三网测速脚本(自动更新测速节点，对应 speedtest.cn)"
+    echo -e "${GREEN}14.${PLAIN} 本人的ecs-ping三网测ping脚本(自动更新测试节点)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
     echo ""
@@ -2351,6 +2386,7 @@ Network_test_script(){
             11) curl -sL network-speed.xyz | bash ; break ;;
             12) bash <(wget -qO- bash.spiritlhl.net/ecs-net) ; break ;;
             13) bash <(wget -qO- bash.spiritlhl.net/ecs-cn) ; break ;;
+            14) bash <(wget -qO- bash.spiritlhl.net/ecs-ping) ; break ;;
             0) original_script ; break ;;
             *) echo "输入错误，请重新输入" ;;
         esac
@@ -2475,6 +2511,7 @@ my_original_script(){
     echo -e "${GREEN}12.${PLAIN} Geekbench6测试(测的极其缓慢)"
     echo -e "${GREEN}13.${PLAIN} ecs-net三网测速脚本(自动更新测速节点，对应 speedtest.net)"
     echo -e "${GREEN}14.${PLAIN} ecs-cn三网测速脚本(自动更新测速节点，对应 speedtest.cn)"
+    echo -e "${GREEN}15.${PLAIN} ecs-ping三网测ping脚本(自动更新测试节点)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
@@ -2496,6 +2533,7 @@ my_original_script(){
             12) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench6.sh) ; break ;;
             13) bash <(wget -qO- bash.spiritlhl.net/ecs-net) ; break ;;
             14) bash <(wget -qO- bash.spiritlhl.net/ecs-cn) ; break ;;
+            15) bash <(wget -qO- bash.spiritlhl.net/ecs-ping) ; break ;;
             0) start_script ; break ;;
             *) echo "输入错误，请重新输入" ;;
         esac
