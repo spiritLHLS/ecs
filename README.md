@@ -144,6 +144,8 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
+三网回程测试基于 ipip.net 的程序，似乎有时区要求或者时间准确度要求，待检测修正避免出现 timestamp error 的错误报告 - 待修复
+
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修复
 
 端口检测(检测是否被墙) - 待修复
@@ -216,7 +218,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 # 致谢
 
-感谢 ipinfo.io ip.sb cheervision.co cip.cc 提供的网络检测组件
+感谢 ipinfo.io ip.sb cheervision.co ipip.net cip.cc 提供的网络检测组件
 
 感谢所有开源项目提供的原始测试脚本
 
