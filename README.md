@@ -144,8 +144,6 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
-增加全国省会的Ping值检测 - 待添加
-
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修复
 
 端口检测(检测是否被墙) - 待修复
@@ -154,7 +152,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 # 更新
 
-2023.05.11 删除当识别为中国IP时仍然检测线路和回程路由的部分，准备替换为全国省会的Ping值检测
+2023.05.13 增加全国三网ping值测试的脚本，指定检测到中国IP时使用延迟检测替换路由检测，增加可用的CDN(自建白名单CDN)，增加中国IP检测的API(cip.cc)，增加第三方脚本添加三网Ping值测试脚本
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -218,7 +216,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 # 致谢
 
-感谢 ipinfo.io ip.sb cheervision.co 提供的网络检测组件
+感谢 ipinfo.io ip.sb cheervision.co cip.cc 提供的网络检测组件
 
 感谢所有开源项目提供的原始测试脚本
 
