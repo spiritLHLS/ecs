@@ -84,11 +84,11 @@ check_time_zone(){
     system_timestamp=$(date -d "$system_time" +%s)
     time_diff=$((accurate_timestamp - system_timestamp))
     if [ $time_diff -gt 180 ] || [ $time_diff -lt -180 ]; then
-        _yellow "系统时间与时区准确时间相差超过180秒，进行时间矫正..."
-    date -s "$accurate_time"
-        _green "时间已矫正为: $(date +"%Y-%m-%d %H:%M:%S")"
+        _yellow "The system time differs from the accurate time of the time zone by more than 180 seconds, performing time correction..."
+        date -s "$accurate_time"
+        _green "Time has been corrected to: $(date +"%Y-%m-%d %H:%M:%S")"
     else
-        _green "系统时间与时区准确时间相差在180秒以内，无需矫正。"
+        _green "The system time differs from the accurate time of the time zone within 180 seconds, no correction is needed."
     fi
 }
 
