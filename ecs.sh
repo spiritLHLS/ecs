@@ -2294,7 +2294,7 @@ port_script(){
 
 sw_script(){
     pre_check
-    pre_download besttrace backtrace
+    pre_download besttrace backtrace ecsspeed_ping
     checkping
     start_time=$(date +%s)
     clear
