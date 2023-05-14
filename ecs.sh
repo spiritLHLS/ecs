@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.05.13"
+ver="2023.05.14"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -83,6 +83,14 @@ checkping() {
 	    ${PACKAGE_INSTALL[int]} iputils-ping > /dev/null 2>&1
 	    ${PACKAGE_INSTALL[int]} ping > /dev/null 2>&1
 	fi
+}
+
+checkstun() {
+    _yellow "checking stun"
+    if ! command -v stun > /dev/null 2>&1; then
+        _yellow "Installing stun"
+        ${PACKAGE_INSTALL[int]} stun-client > /dev/null 2>&1
+    fi
 }
 
 checksudo() {
@@ -1483,6 +1491,59 @@ get_system_info() {
             fi
         fi
     fi
+    if command -v stun > /dev/null 2>&1; then
+        result=$(stun stun.l.google.com)
+        nat_type=$(echo "$result" | grep '^Primary' | awk -F'Primary:' '{print $2}' | tr -d ' ')
+        nat_type_r=""
+        if echo "$nat_type" | grep -qE "IndependentMapping|Independent Mapping"; then
+            nat_type_r+="独立映射"
+        fi
+        if echo "$nat_type" | grep -qE "IndependentFilter|Independent Filter"; then
+            if [ -n "$nat_type_r" ]; then
+                nat_type_r+=","
+            fi
+                nat_type_r+="独立过滤"
+        fi
+        if echo "$nat_type" | grep -q "preservesports|preserves ports"; then
+            if [ -n "$nat_type_r" ]; then
+                nat_type_r+=","
+            fi
+            nat_type_r+="保留端口"
+        fi
+        if echo "$nat_type" | grep -q "randomport|random port"; then
+            if [ -n "$nat_type_r" ]; then
+                nat_type_r+=","
+            fi
+            nat_type_r+="随机端口"
+        fi
+        if echo "$nat_type" | grep -qE "nohairpin|no hairpin"; then
+            if [ -n "$nat_type_r" ]; then
+                nat_type_r+=","
+            fi
+            nat_type_r+="不支持回环"
+        fi
+        if echo "$nat_type" | grep -qE "willhairpin|will hairpin"; then
+            if [ -n "$nat_type_r" ]; then
+                nat_type_r+=","
+            fi
+            nat_type_r+="支持回环"
+        fi
+        if echo "$nat_type" | grep -q "Open"; then
+            if [ -n "$nat_type_r" ]; then
+                nat_type_r+=","
+            fi
+            nat_type_r+="开放型"
+        fi
+        if echo "$nat_type" | grep -qE "BlockedorcouldnotreachSTUNserver|Blocked or could not reach STUN server"; then
+            if [ -n "$nat_type_r" ]; then
+                nat_type_r+=","
+            fi
+            nat_type_r+="无法检测"
+        fi
+        if [ -z "$nat_type_r" ]; then
+            nat_type_r="$nat_type"
+        fi
+    fi
 }
 
 isvalidipv4()
@@ -1561,6 +1622,7 @@ print_system_info() {
     echo " 内核              : $(_blue "$kern")"
     echo " TCP加速方式       : $(_yellow "$tcpctrl")"
     echo " 虚拟化架构        : $(_blue "$virt")"
+    [[ -n "$nat_type_r" ]] && echo " NAT类型           : $(_blue "$nat_type_r")"
 }
 
 print_end_time() {
@@ -1728,6 +1790,7 @@ pre_check(){
     checkupdate
     checkroot
     checksudo
+    checkstun
     checkwget
     checkfree
     checkunzip
