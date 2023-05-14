@@ -36,7 +36,7 @@ main(){
 	yellow "\n 检测中，请稍等片刻。\n"
 
 	# 遍历本机可以使用的 IP API 服务商
-	API_NET=("api.ip.sb" "ifconfig.co")
+  API_NET=("ip.sb" "ipget.net" "ip.ping0.cc" "https://ip4.seeip.org" "https://api.my-ip.io/ip" "https://ipv4.icanhazip.com" "api.ipify.org")
 	API_URL=("api.ip.sb/geoip" "ifconfig.co/json")
 	API_ASN=("isp" "asn_org")
 	for ((p=0; p<${#API_NET[@]}; p++)); do ping -c1 -W1 ${API_NET[p]} >/dev/null 2>&1 && IP_API="${API_NET[p]}" && break; done
