@@ -154,7 +154,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 # 更新
 
-2023.05.13 增加全国三网ping值测试的脚本，指定检测到中国IP时使用延迟检测替换路由检测，增加可用的CDN(自建白名单CDN)，增加中国IP检测的API(cip.cc)，增加第三方脚本添加三网Ping值测试脚本
+2023.05.14 增加NAT类型检测，使用stun工具查询，如果查询结果为开放型或支持回环，那么应该是独立外网IP的服务器，其他的看情况，大概率是无独立IP的共享IP的服务器
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
