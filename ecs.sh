@@ -76,6 +76,22 @@ check_cdn_file() {
     fi
 }
 
+check_time_zone(){
+    current_timezone=$(date +%Z)
+    accurate_time=$(TZ=UTC date +"%Y-%m-%d %H:%M:%S")
+    system_time=$(date +"%Y-%m-%d %H:%M:%S")
+    accurate_timestamp=$(date -d "$accurate_time" +%s)
+    system_timestamp=$(date -d "$system_time" +%s)
+    time_diff=$((accurate_timestamp - system_timestamp))
+    if [ $time_diff -gt 180 ] || [ $time_diff -lt -180 ]; then
+        _yellow "系统时间与时区准确时间相差超过180秒，进行时间矫正..."
+    date -s "$accurate_time"
+        _green "时间已矫正为: $(date +"%Y-%m-%d %H:%M:%S")"
+    else
+        _green "系统时间与时区准确时间相差在180秒以内，无需矫正。"
+    fi
+}
+
 checkping() {
     _yellow "checking ping"
 	if  [ ! -e '/usr/bin/ping' ]; then
@@ -1790,6 +1806,7 @@ SERVER_BASE_URL="https://raw.githubusercontent.com/spiritLHLS/speedtest.net-CN-I
 pre_check(){
     checkupdate
     checkroot
+    check_time_zone
     checksudo
     checkwget
     checkfree
