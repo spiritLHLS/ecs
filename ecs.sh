@@ -1806,7 +1806,6 @@ SERVER_BASE_URL="https://raw.githubusercontent.com/spiritLHLS/speedtest.net-CN-I
 pre_check(){
     checkupdate
     checkroot
-    check_time_zone
     checksudo
     checkwget
     checkfree
@@ -1954,7 +1953,16 @@ fscarmen_route_script(){
         _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
         "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
     done
-    cat $TEMP_FILE
+    if [[ $(cat "$TEMP_FILE") == *"timestamp is error"* ]]; then
+        check_time_zone >/dev/null 2>&1
+        echo "" > $TEMP_FILE
+        for ((a=0;a<${#test_area[@]};a++)); do
+            _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
+            "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
+        done
+    else
+        cat $TEMP_FILE
+    fi
     rm -f $TEMP_FILE
 }
 
@@ -2556,7 +2564,7 @@ single_item_script(){
     echo -e "${GREEN}3.${PLAIN} 硬件方面(基础系统信息+CPU+内存+双重磁盘IO测试)(平均运行1分半钟)"
     echo -e "${GREEN}4.${PLAIN} 完整的IP质量检测(平均运行10~20秒)"
     echo -e "${GREEN}5.${PLAIN} 常用端口开通情况(是否有阻断)(平均运行1分钟左右)(暂时有bug未修复)"
-    echo -e "${GREEN}6.${PLAIN} 测三网回程+三网路由+三网延迟(平均运行1分10秒)"
+    echo -e "${GREEN}6.${PLAIN} 三网回程线路+广州三网路由+全国三网延迟(平均运行1分20秒)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
