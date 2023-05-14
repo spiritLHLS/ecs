@@ -2300,6 +2300,7 @@ sw_script(){
     print_intro
     backtrace_script
     fscarmen_route_script test_area_g[@] test_ip_g[@]
+    ecs_ping
     end_script
 }
 
@@ -2554,7 +2555,7 @@ single_item_script(){
     echo -e "${GREEN}3.${PLAIN} 硬件方面(基础系统信息+CPU+内存+双重磁盘IO测试)(平均运行1分半钟)"
     echo -e "${GREEN}4.${PLAIN} 完整的IP质量检测(平均运行10~20秒)"
     echo -e "${GREEN}5.${PLAIN} 常用端口开通情况(是否有阻断)(平均运行1分钟左右)(暂时有bug未修复)"
-    echo -e "${GREEN}6.${PLAIN} 测三网回程+三网路由与延迟(平均运行1分钟)"
+    echo -e "${GREEN}6.${PLAIN} 测三网回程+三网路由+三网延迟(平均运行1分10秒)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
