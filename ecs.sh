@@ -1960,9 +1960,8 @@ fscarmen_route_script(){
             _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
             "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
         done
-    else
-        cat $TEMP_FILE
     fi
+    cat $TEMP_FILE
     rm -f $TEMP_FILE
 }
 
