@@ -1491,6 +1491,7 @@ get_system_info() {
             fi
         fi
     fi
+    checkstun
     if command -v stun > /dev/null 2>&1; then
         result=$(stun stun.l.google.com)
         nat_type=$(echo "$result" | grep '^Primary' | awk -F'Primary:' '{print $2}' | tr -d ' ')
@@ -1790,7 +1791,6 @@ pre_check(){
     checkupdate
     checkroot
     checksudo
-    checkstun
     checkwget
     checkfree
     checkunzip
