@@ -2295,6 +2295,7 @@ port_script(){
 sw_script(){
     pre_check
     pre_download besttrace backtrace
+    checkping
     start_time=$(date +%s)
     clear
     print_intro
