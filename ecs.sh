@@ -199,7 +199,7 @@ get_opsy() {
 }
 
 next() {
-    printf "%-70s\n" "-" | sed 's/\s/-/g'
+    printf "%-72s\n" "-" | sed 's/\s/-/g'
 }
 
 # =============== 检查 Virt-what 组件 ===============
