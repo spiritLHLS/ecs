@@ -38,7 +38,7 @@ if [ $? -ne 0 ]; then
   apt-get -f install > /dev/null 2>&1
   ${PACKAGE_INSTALL[int]} curl
 fi
-[[ $EUID -ne 0 ]] && echo -e "请使用 root 用户运行本脚本！" && exit 1
+# [[ $EUID -ne 0 ]] && echo -e "请使用 root 用户运行本脚本！" && exit 1
 
 check_cdn() {
   local o_url=$1
