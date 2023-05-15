@@ -77,19 +77,13 @@ check_cdn_file() {
 }
 
 check_time_zone(){
-    current_timezone=$(date +%Z)
-    accurate_time=$(TZ=UTC date +"%Y-%m-%d %H:%M:%S")
-    system_time=$(date +"%Y-%m-%d %H:%M:%S")
-    accurate_timestamp=$(date -d "$accurate_time" +%s)
-    system_timestamp=$(date -d "$system_time" +%s)
-    time_diff=$((accurate_timestamp - system_timestamp))
-    if [ $time_diff -gt 180 ] || [ $time_diff -lt -180 ]; then
-        _yellow "The system time differs from the accurate time of the time zone by more than 180 seconds, performing time correction..."
-        date -s "$accurate_time"
-        _green "Time has been corrected to: $(date +"%Y-%m-%d %H:%M:%S")"
-    else
-        _green "The system time differs from the accurate time of the time zone within 180 seconds, no correction is needed."
+    if ! command -v chronyd > /dev/null 2>&1; then
+        ${PACKAGE_INSTALL[int]} chrony > /dev/null 2>&1
     fi
+    systemctl stop chronyd
+    chronyd -q
+    systemctl start chronyd
+    sleep 0.5
 }
 
 checkping() {
@@ -106,6 +100,18 @@ checkstun() {
     if ! command -v stun > /dev/null 2>&1; then
         _yellow "Installing stun"
         ${PACKAGE_INSTALL[int]} stun-client > /dev/null 2>&1
+    fi
+}
+
+checktar() {
+    _yellow "checking tar"
+	if ! command -v tar &> /dev/null; then
+            _yellow "Installing tar"
+	        ${PACKAGE_INSTALL[int]} tar 
+	fi
+    if [ $? -ne 0 ]; then
+        apt-get -f install > /dev/null 2>&1
+        ${PACKAGE_INSTALL[int]} tar > /dev/null 2>&1
     fi
 }
 
@@ -1810,8 +1816,10 @@ pre_check(){
     checkwget
     checkfree
     checkunzip
+    checktar
     checksystem
     checkcurl
+    check_time_zone
     check_ipv4
     check_cdn_file
     global_startup_init_action
@@ -1855,13 +1863,13 @@ basic_script(){
 io1_script(){
     cd $myvar >/dev/null 2>&1
     sleep 1
-    echo "------------------磁盘IO读写测试--感谢lemonbench开源--------------------"
+    echo "------------------磁盘dd读写测试--感谢lemonbench开源--------------------"
     Function_DiskTest_Fast
 }
 
 io2_script(){
     cd $myvar >/dev/null 2>&1
-    echo "---------------------磁盘IO读写测试--感谢yabs开源-----------------------"
+    echo "---------------------磁盘fio读写测试--感谢yabs开源----------------------"
     bash yabsiotest.sh 2>/dev/null
     rm -rf yabsiotest.sh
 }
@@ -1953,14 +1961,14 @@ fscarmen_route_script(){
         _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
         "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
     done
-    if [[ $(cat "$TEMP_FILE") == *"timestamp is error"* ]]; then
-        check_time_zone >/dev/null 2>&1
-        echo "" > $TEMP_FILE
-        for ((a=0;a<${#test_area[@]};a++)); do
-            _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
-            "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
-        done
-    fi
+    # if [[ $(cat "$TEMP_FILE") == *"timestamp is error"* ]]; then
+    #     check_time_zone >/dev/null 2>&1
+    #     echo "" > $TEMP_FILE
+    #     for ((a=0;a<${#test_area[@]};a++)); do
+    #         _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
+    #         "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
+    #     done
+    # fi
     cat $TEMP_FILE
     rm -f $TEMP_FILE
 }
