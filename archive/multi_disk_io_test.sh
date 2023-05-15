@@ -66,7 +66,7 @@ check_cdn_file
 
 # 当前路径下下载测试脚本
 rm -rf yabsiotest.sh > /dev/null 2>&1
-curl -L "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/yabsiotest.sh" -o yabsiotest.sh && chmod +x yabsiotest.sh
+curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/yabsiotest.sh" -o yabsiotest.sh && chmod +x yabsiotest.sh
 
 # 获取非以vda开头的盘名称
 disk_names=$(lsblk -e 11 -n -o NAME | grep -v "^vda")
