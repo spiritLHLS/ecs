@@ -160,7 +160,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 # 功能
 
-- [x] 自由组合测试方向和单项测试以及合集收录第三方脚本--原创
+- [x] 自由组合测试方向和单项测试以及合集收录第三方脚本
 - [x] 基础系统信息--感谢teddysun和superbench和yabs开源，本人修改整理优化
 - [x] CPU测试--感谢lemonbench开源，本人修改整理优化
 - [x] 内存测试--感谢lemonbench开源
@@ -173,7 +173,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 - [x] 三网回程以及路由延迟--感谢zhanghanyun/backtrace开源[项目](https://github.com/zhanghanyun/backtrace)，本人修改整理
 - [x] 回程路由以及带宽类型检测(商宽/家宽/数据中心)--由fscarmen的PR以及本人的技术思路提供，本人修改整理优化
 - [x] IP质量检测(检测IP白不白)(含IPV4和IPV6)--本人独创，感谢互联网提供的查询资源
-- [x] speedtest测速--使用自写[ecs-net](https://github.com/spiritLHLS/ecsspeed)脚本，自动更新测速服务器ID，一劳永逸解决老是要手动更新测速ID的问题
+- [x] speedtest测速--使用自写[ecsspeed](https://github.com/spiritLHLS/ecsspeed)仓库，自动更新测速服务器ID，一劳永逸解决老是要手动更新测速ID的问题
 - [ ] 端口检测(检测是否被墙)--由fscarmen的PR以及本人的技术思路提供 - 待修复
 
 # 友链
