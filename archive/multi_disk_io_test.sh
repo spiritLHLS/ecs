@@ -40,9 +40,33 @@ if [ $? -ne 0 ]; then
 fi
 [[ $EUID -ne 0 ]] && echo -e "请使用 root 用户运行本脚本！" && exit 1
 
+check_cdn() {
+  local o_url=$1
+  for cdn_url in "${cdn_urls[@]}"; do
+    if curl -sL -k "$cdn_url$o_url" --max-time 6 | grep -q "success" > /dev/null 2>&1; then
+      export cdn_success_url="$cdn_url"
+      return
+    fi
+    sleep 0.5
+  done
+  export cdn_success_url=""
+}
+
+check_cdn_file() {
+    check_cdn "https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test"
+    if [ -n "$cdn_success_url" ]; then
+        _yellow "CDN available, using CDN"
+    else
+        _yellow "No CDN available, no use CDN"
+    fi
+}
+
+cdn_urls=("https://cdn.spiritlhl.workers.dev/" "https://cdn3.spiritlhl.net/" "https://cdn1.spiritlhl.net/" "https://ghproxy.com/" "https://cdn2.spiritlhl.net/")
+check_cdn_file
+
 # 当前路径下下载测试脚本
 rm -rf yabsiotest.sh > /dev/null 2>&1
-curl -L https://gitlab.com/spiritysdx/za/-/raw/main/yabsiotest.sh -o "yabsiotest.sh" && chmod +x "yabsiotest.sh" > /dev/null
+curl -L "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/yabsiotest.sh" -o yabsiotest.sh && chmod +x yabsiotest.sh
 
 # 获取非以vda开头的盘名称
 disk_names=$(lsblk -e 11 -n -o NAME | grep -v "^vda")
