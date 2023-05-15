@@ -83,18 +83,24 @@ for disk_name in $disk_names; do
 done
 
 # 遍历数组，打开对应盘路径并检测IO
-for disk_path in "${disk_paths[@]}"; do
-    disk_name=$(echo "$disk_path" | cut -d ":" -f 1)
-    path=$(echo "$disk_path" | cut -d ":" -f 2)
-    cd "$path"
+if [ ${#disk_paths[@]} -gt 0 ]; then
+    for disk_path in "${disk_paths[@]}"; do
+        disk_name=$(echo "$disk_path" | cut -d ":" -f 1)
+        path=$(echo "$disk_path" | cut -d ":" -f 2)
+        if [ -n "$path" ]; then
+            cd "$path"
+            echo -e "---------------------------------"
+            echo "Current disk: ${disk_name}"
+            echo "Current path: ${path}"
+            if [ ! -f "yabsiotest.sh" ]; then
+                cp ${myvar}/yabsiotest.sh ./
+            fi
+            bash yabsiotest.sh
+        fi
+        cd $myvar >/dev/null 2>&1
+    done
     echo -e "---------------------------------"
-    echo "Current disk: ${disk_name}"
-    echo "Current path: ${path}"
-    if [ ! -f "yabsiotest.sh" ]; then
-        cp ${myvar}/yabsiotest.sh ./
-    fi
-    bash yabsiotest.sh
-    cd $myvar >/dev/null 2>&1
-done
-echo -e "---------------------------------"
+else
+    echo "No extra disk"
+fi
 rm -rf cp yabsiotest.sh
