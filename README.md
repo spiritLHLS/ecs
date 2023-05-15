@@ -152,7 +152,12 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 # 更新
 
-2023.05.15 更新io测试中yabs测试的部分使用GitHub的文件，不再使其依赖gitlab，适配使用cdn加速下载，硬件测试分区和原创区增加测试挂载的多个磁盘的IO(仅测试挂载盘)的单项
+2023.05.15 
+
+- 更新io测试中yabs测试的部分使用GitHub的文件，不再使其依赖gitlab，适配使用cdn加速下载
+- 硬件测试分区和原创区增加测试挂载的多个磁盘的IO(仅测试挂载盘)的单项
+- 替换timedatectl使用chronyd同步时间，规避时区识别，仅作时间同步
+- 修复部分系统缺少tar命令无法解压文件的问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
