@@ -458,6 +458,22 @@
 #     end_script
 # }
 
+# check_time_zone(){
+#     current_timezone=$(date +%Z)
+#     accurate_time=$(TZ=UTC date +"%Y-%m-%d %H:%M:%S")
+#     system_time=$(date +"%Y-%m-%d %H:%M:%S")
+#     accurate_timestamp=$(date -d "$accurate_time" +%s)
+#     system_timestamp=$(date -d "$system_time" +%s)
+#     time_diff=$((accurate_timestamp - system_timestamp))
+#     if [ $time_diff -gt 180 ] || [ $time_diff -lt -180 ]; then
+#         _yellow "The system time differs from the accurate time of the time zone by more than 180 seconds, performing time correction..."
+#         date -s "$accurate_time"
+#         _green "Time has been corrected to: $(date +"%Y-%m-%d %H:%M:%S")"
+#     else
+#         _green "The system time differs from the accurate time of the time zone within 180 seconds, no correction is needed."
+#     fi
+# }
+
 #     echo -e "${GREEN}7.${PLAIN} 全国网络延迟测试(平均运行1分钟)"
     
     
