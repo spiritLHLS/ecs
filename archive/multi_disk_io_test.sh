@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# by spiritlhl
+# from https://github.com/spiritLHLS/ecs
+
+myvar=$(pwd)
+export DEBIAN_FRONTEND=noninteractive
+reading(){ read -rp "$(_green "$1")" "$2"; }
+REGEX=("debian" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora" "arch")
+RELEASE=("Debian" "Ubuntu" "CentOS" "CentOS" "Fedora" "Arch")
+PACKAGE_UPDATE=("! apt-get update && apt-get --fix-broken install -y && apt-get update" "apt-get update" "yum -y update" "yum -y update" "yum -y update" "pacman -Sy")
+PACKAGE_INSTALL=("apt-get -y install" "apt-get -y install" "yum -y install" "yum -y install" "yum -y install" "pacman -Sy --noconfirm --needed")
+PACKAGE_REMOVE=("apt-get -y remove" "apt-get -y remove" "yum -y remove" "yum -y remove" "yum -y remove" "pacman -Rsc --noconfirm")
+PACKAGE_UNINSTALL=("apt-get -y autoremove" "apt-get -y autoremove" "yum -y autoremove" "yum -y autoremove" "yum -y autoremove" "")
+CMD=("$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(hostnamectl 2>/dev/null | grep -i system | cut -d : -f2)" "$(lsb_release -sd 2>/dev/null)" "$(grep -i description /etc/lsb-release 2>/dev/null | cut -d \" -f2)" "$(grep . /etc/redhat-release 2>/dev/null)" "$(grep . /etc/issue 2>/dev/null | cut -d \\ -f1 | sed '/^[ ]*$/d')" "$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)") 
+SYS="${CMD[0]}"
+[[ -n $SYS ]] || exit 1
+for ((int = 0; int < ${#REGEX[@]}; int++)); do
+    if [[ $(echo "$SYS" | tr '[:upper:]' '[:lower:]') =~ ${REGEX[int]} ]]; then
+        SYSTEM="${RELEASE[int]}"
+        [[ -n $SYSTEM ]] && break
+    fi
+done
+utf8_locale=$(locale -a 2>/dev/null | grep -i -m 1 -E "UTF-8|utf8")
+if [[ -z "$utf8_locale" ]]; then
+  _yellow "No UTF-8 locale found"
+else
+  export LC_ALL="$utf8_locale"
+  export LANG="$utf8_locale"
+  export LANGUAGE="$utf8_locale"
+  _green "Locale set to $utf8_locale"
+fi
+apt-get --fix-broken install -y > /dev/null 2>&1
+
+if  [ ! -e '/usr/bin/curl' ]; then
+  ${PACKAGE_INSTALL[int]} curl
+fi
+if [ $? -ne 0 ]; then
+  apt-get -f install > /dev/null 2>&1
+  ${PACKAGE_INSTALL[int]} curl
+fi
+[[ $EUID -ne 0 ]] && echo -e "请使用 root 用户运行本脚本！" && exit 1
+
+# 当前路径下下载测试脚本
+rm -rf yabsiotest.sh > /dev/null 2>&1
+curl -L https://gitlab.com/spiritysdx/za/-/raw/main/yabsiotest.sh -o "yabsiotest.sh" && chmod +x "yabsiotest.sh" > /dev/null
+
+# 获取非以vda开头的盘名称
+disk_names=$(lsblk -e 11 -n -o NAME | grep -v "^vda")
+
+# 存储盘名称和盘路径的数组
+declare -a disk_paths
+
+# 遍历每个盘名称并检索对应的盘路径，并将名称和路径存储到数组中
+for disk_name in $disk_names; do
+    disk_path=$(df -h | awk -v disk_name="$disk_name" '$0 ~ disk_name { print $NF }')
+    if [ -n "$disk_path" ]; then
+        disk_paths+=("$disk_name:$disk_path")
+    fi
+done
+
+# 遍历数组，打开对应盘路径并检测IO
+for disk_path in "${disk_paths[@]}"; do
+    disk_name=$(echo "$disk_path" | cut -d ":" -f 1)
+    path=$(echo "$disk_path" | cut -d ":" -f 2)
+    cd "$path"
+    echo -e "---------------------------------"
+    echo "Current disk: ${disk_name}"
+    echo "Current path: ${path}"
+    if [ ! -f "yabsiotest.sh" ]; then
+        cp ${myvar}/yabsiotest.sh ./
+    fi
+    bash yabsiotest.sh
+    cd $myvar >/dev/null 2>&1
+done
+echo -e "---------------------------------"
+rm -rf cp yabsiotest.sh
