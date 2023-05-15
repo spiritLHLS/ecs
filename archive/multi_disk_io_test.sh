@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # by spiritlhl
 # from https://github.com/spiritLHLS/ecs
+# curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/multi_disk_io_test.sh -o mdit.sh && chmod +x mdit.sh && bash mdit.sh
 
 myvar=$(pwd)
 export DEBIAN_FRONTEND=noninteractive
@@ -22,12 +23,12 @@ for ((int = 0; int < ${#REGEX[@]}; int++)); do
 done
 utf8_locale=$(locale -a 2>/dev/null | grep -i -m 1 -E "UTF-8|utf8")
 if [[ -z "$utf8_locale" ]]; then
-  _yellow "No UTF-8 locale found"
+  echo "No UTF-8 locale found"
 else
   export LC_ALL="$utf8_locale"
   export LANG="$utf8_locale"
   export LANGUAGE="$utf8_locale"
-  _green "Locale set to $utf8_locale"
+  echo "Locale set to $utf8_locale"
 fi
 apt-get --fix-broken install -y > /dev/null 2>&1
 
@@ -55,9 +56,9 @@ check_cdn() {
 check_cdn_file() {
     check_cdn "https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test"
     if [ -n "$cdn_success_url" ]; then
-        _yellow "CDN available, using CDN"
+        echo "CDN available, using CDN"
     else
-        _yellow "No CDN available, no use CDN"
+        echo "No CDN available, no use CDN"
     fi
 }
 
