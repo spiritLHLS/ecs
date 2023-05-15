@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.05.14"
+ver="2023.05.15"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.24")
@@ -153,7 +153,7 @@ pre_download() {
                 tar -xf $TEMP_DIR/backtrace.tar.gz -C $TEMP_DIR
                 ;;
             yabsiotest)
-                curl -sL -k https://gitlab.com/spiritysdx/za/-/raw/main/yabsiotest.sh -o yabsiotest.sh && chmod +x yabsiotest.sh
+                curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/yabsiotest.sh" -o yabsiotest.sh && chmod +x yabsiotest.sh
             ;;
             ecsspeed_ping)
                 curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecsspeed/main/script/ecsspeed-ping.sh" -o $TEMP_DIR/ecsspeed-ping.sh && chmod +x $TEMP_DIR/ecsspeed-ping.sh
@@ -1862,7 +1862,7 @@ io1_script(){
 io2_script(){
     cd $myvar >/dev/null 2>&1
     echo "---------------------磁盘IO读写测试--感谢yabs开源-----------------------"
-    bash ./yabsiotest.sh 2>/dev/null
+    bash yabsiotest.sh 2>/dev/null
     rm -rf yabsiotest.sh
 }
 
@@ -2139,6 +2139,7 @@ all_script(){
             spiritlhl_script
             ecs_ping
             wait
+            sleep 1
             ecs_net_all_script
         fi
     fi
@@ -2490,6 +2491,7 @@ Hardware_test_script(){
     echo -e "${GREEN}2.${PLAIN} Geekbench4测试"
     echo -e "${GREEN}3.${PLAIN} Geekbench5测试"
     echo -e "${GREEN}4.${PLAIN} Geekbench6测试"
+    echo -e "${GREEN}5.${PLAIN} 测试挂载的多个磁盘的IO(仅测试挂载盘)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
     echo ""
@@ -2500,7 +2502,8 @@ Hardware_test_script(){
             1) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/disk_info.sh) ; break ;;
             2) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench4.sh) ; break ;;
             3) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench5.sh) ; break ;;
-            6) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench6.sh) ; break ;;
+            4) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench6.sh) ; break ;;
+            5) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/multi_disk_io_test.sh) ; break ;;
             0) original_script ; break ;;
             *) echo "输入错误，请重新输入" ;;
         esac
@@ -2601,6 +2604,7 @@ my_original_script(){
     echo -e "${GREEN}13.${PLAIN} ecs-net三网测速脚本(自动更新测速节点，对应 speedtest.net)"
     echo -e "${GREEN}14.${PLAIN} ecs-cn三网测速脚本(自动更新测速节点，对应 speedtest.cn)"
     echo -e "${GREEN}15.${PLAIN} ecs-ping三网测ping脚本(自动更新测试节点)"
+    echo -e "${GREEN}16.${PLAIN} 测试挂载的多个磁盘的IO(仅测试挂载盘)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
@@ -2623,6 +2627,7 @@ my_original_script(){
             13) bash <(wget -qO- bash.spiritlhl.net/ecs-net) ; break ;;
             14) bash <(wget -qO- bash.spiritlhl.net/ecs-cn) ; break ;;
             15) bash <(wget -qO- bash.spiritlhl.net/ecs-ping) ; break ;;
+            16) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/multi_disk_io_test.sh) ; break ;;
             0) start_script ; break ;;
             *) echo "输入错误，请重新输入" ;;
         esac
