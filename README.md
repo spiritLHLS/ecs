@@ -144,6 +144,10 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
+speedtest.net 有时候移动节点列表会为空，应当此时切换至 speedtest.cn 的移动列表 - 待修复
+
+speedtest.net 的国际节点测速ID时常变换，待替换为自动更新的测速ID列表 - 待修复
+
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修复
 
 端口检测(检测是否被墙) - 待修复
