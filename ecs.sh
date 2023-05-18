@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.05.15"
+ver="2023.05.18"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.24")
@@ -579,6 +579,16 @@ speed_test() {
     fi
 }
 
+is_ipv4() {
+    local ip=$1
+    local regex="^([0-9]{1,3}\.){3}[0-9]{1,3}$"
+    if [[ $ip =~ $regex ]]; then
+        return 0  # 符合IPv4格式
+    else
+        return 1  # 不符合IPv4格式
+    fi
+}
+
 test_list() {
     local list=("$@")
     if [ ${#list[@]} -eq 0 ]; then
@@ -691,6 +701,105 @@ get_nearest_data() {
     sorted_data=("${sorted_data[@]:0:2}")
 
     # 返回结果
+    echo "${sorted_data[@]}"
+}
+
+checknslookup() {
+    _yellow "checking nslookup"
+	if ! command -v nslookup &> /dev/null; then
+        _yellow "Installing dnsutils"
+	    ${PACKAGE_INSTALL[int]} dnsutils
+	fi
+}
+
+get_ip_from_url() {
+    nslookup -querytype=A $1 | awk '/^Name:/ {next;} /^Address: / { print $2 }'
+}
+
+get_nearest_data2() {
+    local url="$1"
+    local data=()
+    local response
+    if [[ -z "${CN}" || "${CN}" != true ]]; then
+        local retries=0
+        while [[ $retries -lt 2 ]]; do
+            response=$(curl -sL --max-time 2 "$url")
+            if [[ $? -eq 0 ]]; then
+                break
+            else
+                retries=$((retries+1))
+                sleep 1
+            fi
+        done
+        if [[ $retries -eq 2 ]]; then
+            url="${cdn_success_url}${url}"
+            response=$(curl -sL --max-time 6 "$url")
+        fi
+    else
+        url="${cdn_success_url}${url}"
+        response=$(curl -sL --max-time 10 "$url")
+    fi
+    ip_list=()
+    city_list=()
+    while read line; do
+        if [[ -n "$line" ]]; then
+            # local id=$(echo "$line" | awk -F ',' '{print $1}')
+            local city=$(echo "$line" | sed 's/ //g' | awk -F ',' '{print $9}')
+            city=${city/市/}; city=${city/中国/}
+            local host=$(echo "$line" | awk -F ',' '{print $6}')
+            local host_url=$(echo $host | sed 's/:.*//')
+            if [[ "$host,$city" == "host,city" || "$city" == *"香港"* || "$city" == *"台湾"* ]]; then
+                continue
+            fi
+            if is_ipv4 "$host_url"; then
+                local ip="$host_url"
+            else
+                local ip=$(get_ip_from_url ${host_url})
+            fi
+            if [[ $url == *"mobile"* ]]; then
+                city="移动${city}"
+            elif [[ $url == *"telecom"* ]]; then
+                city="电信${city}"
+            elif [[ $url == *"unicom"* ]]; then
+                city="联通${city}" 
+            fi
+            if [[ ! " ${ip_list[@]} " =~ " ${ip} " ]] && [[ ! " ${city_list[@]} " =~ " ${city} " ]]; then
+                data+=("$host,$city,$ip")
+                ip_list+=("$ip")
+                city_list+=("$city")
+            fi
+        fi
+    done <<< "$response"
+ 
+    rm -f /tmp/pingtest
+    for (( i=0; i<${#data[@]}; i++ )); do
+        { ip=$(echo "${ip_list[$i]}")
+        ping_test "$ip" >> /tmp/pingtest; }&
+    done
+    wait
+    
+    output=$(cat /tmp/pingtest)
+    rm -f /tmp/pingtest
+    IFS=$'\n' read -rd '' -a lines <<<"$output"
+    results=()
+    for line in "${lines[@]}"; do
+        field=$(echo "$line" | cut -d',' -f1)
+        results+=("$field")
+    done
+
+    sorted_data=()
+    for result in "${results[@]}"; do
+        for item in "${data[@]}"; do
+            if [[ "$(echo "$item" | cut -d ',' -f 3)" == "$result" ]]; then
+# 	      if [[ "$item" == *"$result"* ]]; then
+                host=$(echo "$item" | cut -d',' -f1)
+                name=$(echo "$item" | cut -d',' -f2)
+                sorted_data+=("$host,$name")
+            fi
+        done
+    done
+    sorted_data=("${sorted_data[@]:0:2}")
+
     echo "${sorted_data[@]}"
 }
 
@@ -1116,16 +1225,56 @@ SystemInfo_GetVirtType() {
     fi
 }
 
+speed_test2() {
+    local nodeName="$2"
+    if [ ! -f "./speedtest-cli/speedtest" ]; then
+        if [ -z "$1" ]; then
+            ./speedtest-cli/speedtest-go > ./speedtest-cli/speedtest.log 2>&1
+        else
+            ./speedtest-cli/speedtest-go --custom-url=http://"$1"/upload.php > ./speedtest-cli/speedtest.log 2>&1
+        fi
+        if [ $? -eq 0 ]; then
+            local dl_speed=$(grep -oP 'Download: \K[\d\.]+' ./speedtest-cli/speedtest.log)
+            local up_speed=$(grep -oP 'Upload: \K[\d\.]+' ./speedtest-cli/speedtest.log)
+            local latency=$(grep -oP 'Latency: \K[\d\.]+' ./speedtest-cli/speedtest.log)
+            if [[ -n "${dl_speed}" || -n "${up_speed}" || -n "${latency}" ]]; then
+                if [[ $selection =~ ^[1-5]$ ]]; then
+                    echo -e "\r${nodeName}\t ${up_speed}Mbps\t ${dl_speed}Mbps\t ${latency}ms\t"
+                else
+                    length=$(get_string_length "$nodeName")
+                    if [ $length -ge 8 ]; then
+		    	echo -e "\r${nodeName}\t ${up_speed}Mbps\t ${dl_speed}Mbps\t ${latency}ms\t"
+                    else
+		    	echo -e "\r${nodeName}\t\t ${up_speed}Mbps\t ${dl_speed}Mbps\t ${latency}ms\t"
+                    fi
+                fi
+            fi
+        fi
+    fi
+}
+
 speed() {
     temp_head
     speed_test '' 'Speedtest.net'
-    # speed_test '21541' '洛杉矶'
-    # speed_test '13623' '新加坡'
-    # speed_test '44988' '日本东京'
-    # speed_test '16176' '中国香港'
+    test_list "${ls_sg_hk_jp[@]}"
     test_list "${CN_Unicom[@]}"
     test_list "${CN_Telecom[@]}"
-    test_list "${CN_Mobile[@]}"
+    if [ ${#CN_Mobile[@]} -eq 0 ]; then
+        echo -n "该运营商.net的节点列表为空，正在替换为.cn的节点列表。。。"
+        CN=true
+        if [ -f "./speedtest-cli/speedtest" ]; then
+            rm -rf ./speedtest-cli/speedtest
+            ( install_speedtest > /dev/null 2>&1 )
+        fi
+        checknslookup > /dev/null 2>&1
+        CN_Mobile=($(get_nearest_data2 "${SERVER_BASE_URL2}/mobile.csv")) > /dev/null 2>&1
+        unset -f speed_test
+        speed_test() { speed_test2 "$@"; }
+        echo -en "\r测速中                                                        "
+        test_list "${CN_Mobile[@]}"
+    else
+        test_list "${CN_Mobile[@]}"
+    fi
 }
 
 speed2() {
@@ -1133,7 +1282,22 @@ speed2() {
     speed_test '' 'Speedtest.net'
     test_list "${CN_Unicom[0]}"
     test_list "${CN_Telecom[0]}"
-    test_list "${CN_Mobile[0]}"
+    if [ ${#CN_Mobile[@]} -eq 0 ]; then
+        echo -n "该运营商.net的节点列表为空，正在替换为.cn的节点列表。。。"
+        CN=true
+        if [ -f "./speedtest-cli/speedtest" ]; then
+            rm -rf ./speedtest-cli/speedtest
+            ( install_speedtest > /dev/null 2>&1 )
+        fi
+        checknslookup > /dev/null 2>&1
+        CN_Mobile=($(get_nearest_data2 "${SERVER_BASE_URL2}/mobile.csv")) > /dev/null 2>&1
+        unset -f speed_test
+        speed_test() { speed_test2 "$@"; }
+        echo -en "\r测速中                                                         "
+        test_list "${CN_Mobile[0]}"
+    else
+        test_list "${CN_Mobile[0]}"
+    fi
 }
 
 # =============== 磁盘测试 部分 ===============
@@ -1808,6 +1972,7 @@ ST="dvWYwv20KSWm8AXSceRw8toa.MTY4MDQzMzUxNDczNw"
 head='key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c'
 speedtest_ver="1.2.0"
 SERVER_BASE_URL="https://raw.githubusercontent.com/spiritLHLS/speedtest.net-CN-ID/main"
+SERVER_BASE_URL2="https://raw.githubusercontent.com/spiritLHLS/speedtest.cn-CN-ID/main"
 
 pre_check(){
     checkupdate
@@ -1988,6 +2153,7 @@ ecs_net_all_script(){
     cd $myvar >/dev/null 2>&1
     s_time=$(date +%s)
     rm -rf ./speedtest-cli/speedlog.txt
+
     speed | tee ./speedtest-cli/speedlog.txt
     e_time=$(date +%s)
     time=$(( ${e_time} - ${s_time} ))
@@ -2039,6 +2205,7 @@ all_script(){
             check_virt
             checkdnsutils
             checkping
+            ls_sg_hk_jp=($(get_nearest_data "${SERVER_BASE_URL}/ls_sg_hk_jp.csv"))
             CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
             CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
             CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
@@ -2060,6 +2227,7 @@ all_script(){
             spiritlhl_script > ${TEMP_DIR}/spiritlhl_output.txt &
             backtrace_script > ${TEMP_DIR}/backtrace_output.txt &
             fscarmen_route_script test_area_g[@] test_ip_g[@] > ${TEMP_DIR}/fscarmen_route_output.txt &
+            echo "正在并发测试中，大概2~3分钟无输出，请耐心等待。。。"
             wait
             cat ${TEMP_DIR}/sjlleo_output.txt
             cat ${TEMP_DIR}/RegionRestrictionCheck_output.txt
@@ -2079,6 +2247,7 @@ all_script(){
             check_virt
             checkdnsutils
             checkping
+            ls_sg_hk_jp=($(get_nearest_data "${SERVER_BASE_URL}/ls_sg_hk_jp.csv"))
             CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
             CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
             CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
@@ -2094,6 +2263,7 @@ all_script(){
             sleep 0.5
             spiritlhl_script > ${TEMP_DIR}/spiritlhl_output.txt &
             ecs_ping > ${TEMP_DIR}/ecs_ping.txt &
+            echo "正在并发测试中，大概2~3分钟无输出，请耐心等待。。。"
             wait
             cat ${TEMP_DIR}/spiritlhl_output.txt
             cat ${TEMP_DIR}/ecs_ping.txt
@@ -2106,6 +2276,7 @@ all_script(){
             check_virt
             checkdnsutils
             checkping
+            ls_sg_hk_jp=($(get_nearest_data "${SERVER_BASE_URL}/ls_sg_hk_jp.csv"))
             CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
             CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
             CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
@@ -2133,6 +2304,7 @@ all_script(){
             check_virt
             checkdnsutils
             checkping
+            ls_sg_hk_jp=($(get_nearest_data "${SERVER_BASE_URL}/ls_sg_hk_jp.csv"))
             CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
             CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
             CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
@@ -2251,6 +2423,7 @@ network_script(){
     pre_check
     pre_download besttrace backtrace
     checkping
+    ls_sg_hk_jp=($(get_nearest_data "${SERVER_BASE_URL}/ls_sg_hk_jp.csv"))
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
     CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
     CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
