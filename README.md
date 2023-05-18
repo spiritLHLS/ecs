@@ -144,13 +144,11 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
-speedtest.net 有时候移动节点列表会为空，应当此时切换至 speedtest.cn 的移动列表 - 待修复
-
-speedtest.net 的国际节点测速ID时常变换，待替换为自动更新的测速ID列表 - 待修复
-
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修复
 
 部分开发板的内存测试似乎有问题，读测试异常大 - 待修复
+
+.cn测速时延迟显示小数位过长待约束为3位或2位小数 - 待修复
 
 端口检测(检测是否被墙) - 待修复
 
@@ -158,13 +156,10 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 # 更新
 
-2023.05.15 
+2023.05.18
 
-- 更新io测试中yabs测试的部分使用GitHub的文件，不再使其依赖gitlab，适配使用cdn加速下载
-- 硬件测试分区和原创区增加测试挂载的多个磁盘的IO(仅测试挂载盘)的单项
-- 替换timedatectl使用chronyd同步时间，规避时区识别，仅作时间同步
-- 修复部分系统缺少tar命令无法解压文件的问题
-- 增加RockyLinux 8+系统的支持
+- speedtest.net 有时候移动节点列表会为空，应当此时切换至 speedtest.cn 的移动列表，已修复添加
+- speedtest.net 的国际节点测速ID时常变换，待替换为自动更新的测速ID列表，已修复替换
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
