@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.05.18"
+ver="2023.05.19"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.24")
@@ -229,7 +229,7 @@ get_opsy() {
 }
 
 next() {
-    printf "%-72s\n" "-" | sed 's/\s/-/g'
+    printf "\n%-72s\n" "-" | sed 's/\s/-/g'
 }
 
 # =============== 检查 Virt-what 组件 ===============
@@ -2541,7 +2541,7 @@ build_text(){
         tr '\r' '\n' < test_result.txt > test_result1.txt && mv test_result1.txt test_result.txt
         sed -i -e '/^$/d' -e '/1\/1/d' -e '/Block\s*->/d' -e '/s)\s*->/d' -e '/^该运营商\|^测速中/d' test_result.txt
         if [ -s test_result.txt ]; then
-            shorturl=$(curl -sL -m 10 -X POST -H "Authorization: $ST" \
+            shorturl=$(curl --ipv4 -sL -m 10 -X POST -H "Authorization: $ST" \
             -H "Format: RANDOM" \
             -H "Max-Views: 0" \
             -H "UploadText: true" \
@@ -2549,6 +2549,16 @@ build_text(){
             -H "No-JSON: true" \
             -F "file=@${myvar}/test_result.txt" \
             "https://paste.spiritlhl.net/api/upload")
+            if [ $? -ne 0 ]; then
+                shorturl=$(curl --ipv6 -sL -m 10 -X POST -H "Authorization: $ST" \
+                -H "Format: RANDOM" \
+                -H "Max-Views: 0" \
+                -H "UploadText: true" \
+                -H "Content-Type: multipart/form-data" \
+                -H "No-JSON: true" \
+                -F "file=@${myvar}/test_result.txt" \
+                "https://paste.spiritlhl.net/api/upload")
+            fi
         fi
     fi
 }
