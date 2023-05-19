@@ -156,10 +156,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 # 更新
 
-2023.05.18
-
-- speedtest.net 有时候移动节点列表会为空，应当此时切换至 speedtest.cn 的移动列表，已修复添加
-- speedtest.net 的国际节点测速ID时常变换，待替换为自动更新的测速ID列表，已修复替换
+2023.05.19 修复一些输出和pastebin的问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
