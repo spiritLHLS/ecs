@@ -123,6 +123,7 @@ checkpystun(){
         if ! command -v pystun3 > /dev/null 2>&1; then
             _yellow "Installing pystun3"
             if ! pip3 install -q pystun3 > /dev/null 2>&1; then
+                checkpip
                 pip install -q pystun3
             fi
         fi
