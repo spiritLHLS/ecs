@@ -97,12 +97,13 @@ checkping() {
 }
 
 checkpip(){
-    pip_version=$(pip --version 2>&1)
+    local pvr="$1"
+    local pip_version=$(pip --version 2>&1)
     if [[ $? -eq 0 ]]; then
         _blue "$pip_version"
     else
-        _yellow "installing python${$1}-pip"
-        ${PACKAGE_INSTALL[int]} python${$1}-pip
+        _yellow "installing python${pvr}-pip"
+        ${PACKAGE_INSTALL[int]} python${pvr}-pip
         pip_version=$(pip --version 2>&1)
         if [[ $? -eq 0 ]]; then
             _blue "$pip_version"
@@ -115,17 +116,19 @@ checkpip(){
 
 checkpystun(){
     _yellow "checking pystun"
-    python3_version=$(python3 --version 2>&1)
+    local python3_version=$(python3 --version 2>&1)
     if [[ $? -eq 0 ]]; then
         _blue "$python3_version"
         checkpip 3
         if ! command -v pystun3 > /dev/null 2>&1; then
             _yellow "Installing pystun3"
-            pip3 install pystun3 -y || pip install pystun3 -y
+            if ! pip3 install -q pystun3 > /dev/null 2>&1; then
+                pip install -q pystun3
+            fi
         fi
         return
     else
-        python_version=$(python --version 2>&1)
+        local python_version=$(python --version 2>&1)
         if [[ $? -eq 0 ]]; then
             _blue "$python_version"
         else
@@ -140,14 +143,18 @@ checkpystun(){
         checkpip 3
         if ! command -v pystun3 > /dev/null 2>&1; then
             _yellow "Installing pystun3"
-            pip3 install pystun3 -y || pip install pystun3 -y
+            if ! pip3 install -q pystun3 > /dev/null 2>&1; then
+                pip install -q pystun3
+            fi
         fi
         return
     else
         python_version=$(python --version 2>&1)
         if [[ $python_version == Python\ 2* ]]; then
             _yellow "Installing pystun"
-            pip install pystun -y || pip install pystun3 -y
+            if ! pip install -q pystun > /dev/null 2>&1; then
+                pip install -q pystun3
+            fi
         fi
     fi
 }
@@ -540,7 +547,7 @@ download_speedtest_file() {
         chmod 777 ./speedtest-cli/speedtest-go
         rm -rf speedtest.tar.gz*
     else
-        # _red "Error: Failed to download speedtest tool."
+        _red "Error: Failed to download speedtest tool."
         exit 1
     fi
 }
@@ -2281,7 +2288,7 @@ all_script(){
             do
                 { pre_download ${dfile};} &
             done
-            get_system_info >/dev/null 2>&1
+            get_system_info
             check_virt
             checkdnsutils
             checkping
@@ -2323,7 +2330,7 @@ all_script(){
             do
                 { pre_download ${dfile};} &
             done
-            get_system_info >/dev/null 2>&1
+            get_system_info
             check_virt
             checkdnsutils
             checkping
@@ -2352,7 +2359,7 @@ all_script(){
     else
         if [[ -z "${CN}" || "${CN}" != true ]]; then
             pre_download yabsiotest dp nf tubecheck media_lmc_check besttrace backtrace
-            get_system_info >/dev/null 2>&1
+            get_system_info
             check_virt
             checkdnsutils
             checkping
@@ -2380,7 +2387,7 @@ all_script(){
             ecs_net_all_script
         else
             pre_download ecsspeed_ping
-            get_system_info >/dev/null 2>&1
+            get_system_info
             check_virt
             checkdnsutils
             checkping
@@ -2409,7 +2416,7 @@ all_script(){
 
 minal_script(){
     pre_check
-    get_system_info >/dev/null 2>&1
+    get_system_info
     pre_download yabsiotest
     check_virt
     checkping
@@ -2429,7 +2436,7 @@ minal_script(){
 minal_plus(){
     pre_check
     pre_download yabsiotest dp nf tubecheck media_lmc_check besttrace backtrace
-    get_system_info >/dev/null 2>&1
+    get_system_info
     check_virt
     check_lmc_script
     checkdnsutils
@@ -2456,7 +2463,7 @@ minal_plus(){
 minal_plus_network(){
     pre_check
     pre_download yabsiotest besttrace backtrace
-    get_system_info >/dev/null 2>&1
+    get_system_info
     check_virt
     checkping
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
@@ -2477,7 +2484,7 @@ minal_plus_network(){
 minal_plus_media(){
     pre_check
     pre_download yabsiotest dp nf tubecheck media_lmc_check
-    get_system_info >/dev/null 2>&1
+    get_system_info
     check_virt
     checkdnsutils
     check_lmc_script
@@ -2537,7 +2544,7 @@ media_script(){
 hardware_script(){
     pre_check
     pre_download yabsiotest
-    get_system_info >/dev/null 2>&1
+    get_system_info
     check_virt
     start_time=$(date +%s)
     clear
@@ -2551,7 +2558,7 @@ hardware_script(){
 port_script(){
     pre_check
     pre_download XXXX
-    get_system_info >/dev/null 2>&1
+    get_system_info
     check_virt
     # checkssh
     start_time=$(date +%s)
