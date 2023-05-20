@@ -99,7 +99,7 @@ checkping() {
 checkpip(){
     local pvr="$1"
     local pip_version=$(pip --version 2>&1)
-    if [[ $? -eq 0 ]]; then
+    if [[ $? -eq 0 && $pip_version != *"command not found"* ]]; then
         _blue "$pip_version"
     else
         _yellow "installing python${pvr}-pip"
@@ -117,7 +117,7 @@ checkpip(){
 checkpystun(){
     _yellow "checking pystun"
     local python3_version=$(python3 --version 2>&1)
-    if [[ $? -eq 0 ]]; then
+    if [[ $? -eq 0 && $python3_version != *"command not found"* ]]; then
         _blue "$python3_version"
         checkpip 3
         if ! command -v pystun3 > /dev/null 2>&1; then
@@ -130,7 +130,7 @@ checkpystun(){
         return
     else
         local python_version=$(python --version 2>&1)
-        if [[ $? -eq 0 ]]; then
+        if [[ $? -eq 0 && $python_version != *"command not found"* ]]; then
             _blue "$python_version"
         else
             _yellow "installing python"
@@ -139,7 +139,7 @@ checkpystun(){
         checkpip
     fi
     python3_version=$(python3 --version 2>&1)
-    if [[ $? -eq 0 ]]; then
+    if [[ $? -eq 0 && $python3_version != *"command not found"* ]]; then
         _blue "$python3_version"
         checkpip 3
         if ! command -v pystun3 > /dev/null 2>&1; then
