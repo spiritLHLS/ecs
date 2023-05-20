@@ -96,6 +96,62 @@ checkping() {
 	fi
 }
 
+checkpip(){
+    pip_version=$(pip --version 2>&1)
+    if [[ $? -eq 0 ]]; then
+        _blue "$pip_version"
+    else
+        _yellow "installing python${$1}-pip"
+        ${PACKAGE_INSTALL[int]} python${$1}-pip
+        pip_version=$(pip --version 2>&1)
+        if [[ $? -eq 0 ]]; then
+            _blue "$pip_version"
+        else
+            _red "python-pip installation failed, please install it manually"
+            return
+        fi
+    fi
+}
+
+checkpystun(){
+    _yellow "checking pystun"
+    python3_version=$(python3 --version 2>&1)
+    if [[ $? -eq 0 ]]; then
+        _blue "$python3_version"
+        checkpip 3
+        if ! command -v pystun3 > /dev/null 2>&1; then
+            _yellow "Installing pystun3"
+            pip3 install pystun3 -y || pip install pystun3 -y
+        fi
+        return
+    else
+        python_version=$(python --version 2>&1)
+        if [[ $? -eq 0 ]]; then
+            _blue "$python_version"
+        else
+            _yellow "installing python"
+            ${PACKAGE_INSTALL[int]} python
+        fi
+        checkpip
+    fi
+    python3_version=$(python3 --version 2>&1)
+    if [[ $? -eq 0 ]]; then
+        _blue "$python3_version"
+        checkpip 3
+        if ! command -v pystun3 > /dev/null 2>&1; then
+            _yellow "Installing pystun3"
+            pip3 install pystun3 -y || pip install pystun3 -y
+        fi
+        return
+    else
+        python_version=$(python --version 2>&1)
+        if [[ $python_version == Python\ 2* ]]; then
+            _yellow "Installing pystun"
+            pip install pystun -y || pip install pystun3 -y
+        fi
+    fi
+}
+
 checkstun() {
     _yellow "checking stun"
     if ! command -v stun > /dev/null 2>&1; then
@@ -1744,6 +1800,15 @@ get_system_info() {
         fi
         if [ -z "$nat_type_r" ]; then
             nat_type_r="$nat_type"
+        fi
+    else
+        checkpystun
+        if command -v pystun3 > /dev/null 2>&1; then
+            result=$(pystun3 </dev/null)
+            nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
+        elif command -v pystun > /dev/null 2>&1; then
+            result=$(pystun </dev/null)
+            nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
         fi
     fi
 }
