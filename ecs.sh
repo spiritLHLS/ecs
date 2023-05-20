@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.05.19"
+ver="2023.05.20"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.24")
@@ -77,6 +77,7 @@ check_cdn_file() {
 }
 
 check_time_zone(){
+    _yellow "adjusting the time"
     if ! command -v chronyd > /dev/null 2>&1; then
         ${PACKAGE_INSTALL[int]} chrony > /dev/null 2>&1
     fi
@@ -229,7 +230,8 @@ get_opsy() {
 }
 
 next() {
-    printf "\n%-72s\n" "-" | sed 's/\s/-/g'
+    echo -en "\r"
+    printf "%-72s\n" "-" | sed 's/\s/-/g'
 }
 
 # =============== 检查 Virt-what 组件 ===============
@@ -1237,15 +1239,18 @@ speed_test2() {
             local dl_speed=$(grep -oP 'Download: \K[\d\.]+' ./speedtest-cli/speedtest.log)
             local up_speed=$(grep -oP 'Upload: \K[\d\.]+' ./speedtest-cli/speedtest.log)
             local latency=$(grep -oP 'Latency: \K[\d\.]+' ./speedtest-cli/speedtest.log)
+            if [[ -n "${latency}" && "${latency}" == *.* ]]; then
+                latency=$(awk '{printf "%.2f", $1}' <<< "${latency}")
+            fi
             if [[ -n "${dl_speed}" || -n "${up_speed}" || -n "${latency}" ]]; then
                 if [[ $selection =~ ^[1-5]$ ]]; then
-                    echo -e "\r${nodeName}\t ${up_speed}Mbps\t ${dl_speed}Mbps\t ${latency}ms\t"
+                    echo -e "\r${nodeName}\t ${up_speed} Mbps\t ${dl_speed} Mbps\t ${latency}\t"
                 else
                     length=$(get_string_length "$nodeName")
                     if [ $length -ge 8 ]; then
-		    	echo -e "\r${nodeName}\t ${up_speed}Mbps\t ${dl_speed}Mbps\t ${latency}ms\t"
+		    	echo -e "\r${nodeName}\t ${up_speed} Mbps\t ${dl_speed} Mbps\t ${latency}\t"
                     else
-		    	echo -e "\r${nodeName}\t\t ${up_speed}Mbps\t ${dl_speed}Mbps\t ${latency}ms\t"
+		    	echo -e "\r${nodeName}\t\t ${up_speed} Mbps\t ${dl_speed} Mbps\t ${latency}\t"
                     fi
                 fi
             fi
@@ -1268,10 +1273,15 @@ speed() {
         fi
         checknslookup > /dev/null 2>&1
         CN_Mobile=($(get_nearest_data2 "${SERVER_BASE_URL2}/mobile.csv")) > /dev/null 2>&1
-        unset -f speed_test
-        speed_test() { speed_test2 "$@"; }
-        echo -en "\r测速中                                                        "
-        test_list "${CN_Mobile[@]}"
+        wait
+        if [ ${#CN_Mobile[@]} -eq 0 ]; then
+            return
+        else
+            unset -f speed_test
+            speed_test() { speed_test2 "$@"; }
+            echo -en "\r测速中                                                        \r"
+            test_list "${CN_Mobile[@]}"
+        fi
     else
         test_list "${CN_Mobile[@]}"
     fi
@@ -1291,10 +1301,15 @@ speed2() {
         fi
         checknslookup > /dev/null 2>&1
         CN_Mobile=($(get_nearest_data2 "${SERVER_BASE_URL2}/mobile.csv")) > /dev/null 2>&1
-        unset -f speed_test
-        speed_test() { speed_test2 "$@"; }
-        echo -en "\r测速中                                                         "
-        test_list "${CN_Mobile[0]}"
+        wait
+        if [ ${#CN_Mobile[@]} -eq 0 ]; then
+            return
+        else
+            unset -f speed_test
+            speed_test() { speed_test2 "$@"; }
+            echo -en "\r测速中                                                         "
+            test_list "${CN_Mobile[0]}"
+        fi
     else
         test_list "${CN_Mobile[0]}"
     fi
@@ -1619,7 +1634,7 @@ get_system_info() {
             cname=$(cat /proc/device-tree/model)
         fi
     fi
-    cname=$(echo -n "$cname" | tr '\n' ' ')
+    cname=$(echo -n "$cname" | tr '\n' ' ' | sed -E 's/ +/ /g')
     cores=$( awk -F: '/processor/ {core++} END {print core}' /proc/cpuinfo )
     freq=$( awk -F'[ :]' '/cpu MHz/ {print $4;exit}' /proc/cpuinfo )
     ccache=$( awk -F: '/cache size/ {cache=$2} END {print cache}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
