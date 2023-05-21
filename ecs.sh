@@ -1801,10 +1801,19 @@ get_system_info() {
             nat_type_r+="开放型"
         fi
         if echo "$nat_type" | grep -qE "BlockedorcouldnotreachSTUNserver|Blocked or could not reach STUN server"; then
-            if [ -n "$nat_type_r" ]; then
-                nat_type_r+=","
+            checkpystun
+            if command -v pystun3 > /dev/null 2>&1; then
+                result=$(pystun3 </dev/null)
+                nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
+            elif command -v pystun > /dev/null 2>&1; then
+                result=$(pystun </dev/null)
+                nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
+            else
+                if [ -n "$nat_type_r" ]; then
+                    nat_type_r+=","
+                fi
+                nat_type_r+="无法检测"
             fi
-            nat_type_r+="无法检测"
         fi
         if [ -z "$nat_type_r" ]; then
             nat_type_r="$nat_type"
