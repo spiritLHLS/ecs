@@ -2,8 +2,17 @@
 # by spiritlhl
 # from https://github.com/spiritLHLS/ecs
 
+echo=echo
+for cmd in echo /bin/echo; do
+    $cmd >/dev/null 2>&1 || continue
+
+    if ! $cmd -e "" | grep -qE '^-e'; then
+        echo=$cmd
+        break
+    fi
+done
 myvar=$(pwd)
-ver="2023.05.20"
+ver="2023.05.22"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.24")
@@ -78,6 +87,14 @@ check_cdn_file() {
 
 check_time_zone(){
     _yellow "adjusting the time"
+    if command -v ntpd > /dev/null 2>&1; then
+        systemctl stop chronyd
+        systemctl stop ntpd
+        ntpd -gq
+        systemctl start ntpd
+        sleep 0.5
+        return
+    fi
     if ! command -v chronyd > /dev/null 2>&1; then
         ${PACKAGE_INSTALL[int]} chrony > /dev/null 2>&1
     fi
@@ -85,6 +102,41 @@ check_time_zone(){
     chronyd -q
     systemctl start chronyd
     sleep 0.5
+}
+
+
+checkhaveged(){
+    _yellow "checking haveged"
+    if ! command -v haveged > /dev/null 2>&1; then
+        ${PACKAGE_INSTALL[int]} haveged > /dev/null 2>&1
+    fi
+    systemctl disable --now haveged
+    systemctl enable --now haveged
+}
+
+optimized_kernel(){
+    _yellow "optimizing resource limits"
+    cat > /etc/security/limits.conf << EOF
+* soft nofile 512000
+* hard nofile 512000
+* soft nproc 512000
+* hard nproc 512000
+root soft nofile 512000
+root hard nofile 512000
+root soft nproc 512000
+root hard nproc 512000
+EOF
+    _yellow "optimizing sysctl configuration"
+    for variable in "${!sysctl_vars[@]}"; do
+        value="${sysctl_vars[$variable]}"
+        if variable_exists "$variable"; then
+            sed -i "s/^$variable=.*/$variable=$value/" "$sysctl_conf"
+        else
+            echo "$variable=$value" >> "$sysctl_conf"
+        fi
+    done
+    sysctl_path=$(which sysctl)
+    $sysctl_path -p 2> /dev/null
 }
 
 checkping() {
@@ -2073,6 +2125,52 @@ head='key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b
 speedtest_ver="1.2.0"
 SERVER_BASE_URL="https://raw.githubusercontent.com/spiritLHLS/speedtest.net-CN-ID/main"
 SERVER_BASE_URL2="https://raw.githubusercontent.com/spiritLHLS/speedtest.cn-CN-ID/main"
+declare -A sysctl_vars=(
+    ["fs.file-max"]=1024000
+    ["net.core.rmem_max"]=134217728
+    ["net.core.wmem_max"]=134217728
+    ["net.core.netdev_max_backlog"]=250000
+    ["net.core.somaxconn"]=1024000
+    ["net.ipv4.conf.all.rp_filter"]=0
+    ["net.ipv4.conf.default.rp_filter"]=0
+    ["net.ipv4.conf.lo.arp_announce"]=2
+    ["net.ipv4.conf.all.arp_announce"]=2
+    ["net.ipv4.conf.default.arp_announce"]=2
+    ["net.ipv4.ip_forward"]=1
+    ["net.ipv4.ip_local_port_range"]="1024 65535"
+    ["net.ipv4.neigh.default.gc_stale_time"]=120
+    ["net.ipv4.tcp_syncookies"]=1
+    ["net.ipv4.tcp_tw_reuse"]=1
+    ["net.ipv4.tcp_low_latency"]=1
+    ["net.ipv4.tcp_fin_timeout"]=10
+    ["net.ipv4.tcp_window_scaling"]=1
+    ["net.ipv4.tcp_keepalive_time"]=10
+    ["net.ipv4.tcp_timestamps"]=0
+    ["net.ipv4.tcp_sack"]=1
+    ["net.ipv4.tcp_fack"]=1
+    ["net.ipv4.tcp_syn_retries"]=3
+    ["net.ipv4.tcp_synack_retries"]=3
+    ["net.ipv4.tcp_max_syn_backlog"]=16384
+    ["net.ipv4.tcp_max_tw_buckets"]=8192
+    ["net.ipv4.tcp_fastopen"]=3
+    ["net.ipv4.tcp_mtu_probing"]=1
+    ["net.ipv4.tcp_rmem"]="4096 87380 67108864"
+    ["net.ipv4.tcp_wmem"]="4096 65536 67108864"
+    ["net.ipv6.conf.all.forwarding"]=1
+    ["net.ipv6.conf.default.forwarding"]=1
+    ["net.nf_conntrack_max"]=25000000
+    ["net.netfilter.nf_conntrack_max"]=25000000
+    ["net.netfilter.nf_conntrack_tcp_timeout_time_wait"]=30
+    ["net.netfilter.nf_conntrack_tcp_timeout_established"]=180
+    ["net.netfilter.nf_conntrack_tcp_timeout_close_wait"]=30
+    ["net.netfilter.nf_conntrack_tcp_timeout_fin_wait"]=30
+)
+sysctl_conf="/etc/sysctl.conf"
+
+variable_exists() {
+    local variable="$1"
+    grep -q "^$variable=" "$sysctl_conf"
+}
 
 pre_check(){
     checkupdate
@@ -2082,9 +2180,11 @@ pre_check(){
     checkfree
     checkunzip
     checktar
+    check_time_zone
+    checkhaveged
+    optimized_kernel
     checksystem
     checkcurl
-    check_time_zone
     check_ipv4
     check_cdn_file
     global_startup_init_action
