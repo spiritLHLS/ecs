@@ -601,6 +601,9 @@ speed_test() {
             local dl_speed=$(grep -oP 'Download: \K[\d\.]+' ./speedtest-cli/speedtest.log)
             local up_speed=$(grep -oP 'Upload: \K[\d\.]+' ./speedtest-cli/speedtest.log)
             local latency=$(grep -oP 'Latency: \K[\d\.]+' ./speedtest-cli/speedtest.log)
+            if [[ -n "${latency}" && "${latency}" == *.* ]]; then
+                latency=$(awk '{printf "%.2f", $1}' <<< "${latency}")
+            fi
             if [[ -n "${dl_speed}" || -n "${up_speed}" || -n "${latency}" ]]; then
                 if [[ $selection =~ ^[1-5]$ ]]; then
                     echo -e "${nodeName}\t ${up_speed}Mbps\t ${dl_speed}Mbps\t ${latency}ms\t"
