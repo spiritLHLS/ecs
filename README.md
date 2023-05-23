@@ -131,6 +131,12 @@ bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/m
 或
 
 ```bash
+bash <(wget -qO- --no-check-certificate https://bash.spiritlhl.net/ecs-ipcheck)
+```
+
+或
+
+```bash
 bash <(wget -qO- --no-check-certificate https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck.sh)
 ```
 
