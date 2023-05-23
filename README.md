@@ -150,6 +150,8 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
+由于有上游仓库兼容了chatgpt的检测，故准备删除本人维护的版本 - 待删除分区
+
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修复
 
 Armbian系统待适配，部分检测和测试暂不支持Armbian系统 - 待增加
