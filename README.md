@@ -131,7 +131,7 @@ bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/m
 或
 
 ```bash
-bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/main/qzcheck.sh)
+bash <(wget -qO- --no-check-certificate https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck.sh)
 ```
 
 ### 部分服务器运行测试有各类bug一键修复后再测试
