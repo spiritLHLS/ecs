@@ -478,3 +478,13 @@
     
     
 #     7) ping_script ; break ;;
+
+# echo=echo
+# for cmd in echo /bin/echo; do
+#     $cmd >/dev/null 2>&1 || continue
+
+#     if ! $cmd -e "" | grep -qE '^-e'; then
+#         echo=$cmd
+#         break
+#     fi
+# done
