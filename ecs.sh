@@ -2,15 +2,15 @@
 # by spiritlhl
 # from https://github.com/spiritLHLS/ecs
 
-echo=echo
-for cmd in echo /bin/echo; do
-    $cmd >/dev/null 2>&1 || continue
+# echo=echo
+# for cmd in echo /bin/echo; do
+#     $cmd >/dev/null 2>&1 || continue
 
-    if ! $cmd -e "" | grep -qE '^-e'; then
-        echo=$cmd
-        break
-    fi
-done
+#     if ! $cmd -e "" | grep -qE '^-e'; then
+#         echo=$cmd
+#         break
+#     fi
+# done
 myvar=$(pwd)
 ver="2023.05.22"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
