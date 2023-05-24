@@ -1,3 +1,16 @@
+# openai_script(){
+#     cd $myvar >/dev/null 2>&1
+#     echo -e "---------OpenAi解锁--感谢missuo的OpenAI-Checker项目本人修改优化---------"
+#     output=$(bash <(curl -Ls "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/OpenAI-Checker/main/openai.sh"))
+#     output=$(echo "$output" | grep -v '^Your IPv[46]: [0-9a-fA-F:.]* -')
+#     output=$(echo "$output" | grep -v '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\|[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*')
+#     output=$(echo "$output" | grep -v '::')
+#     output=$(echo "$output" | grep -v '^-------------------------------------')
+#     output=$(echo "$output" | sed '1,/\[IPv4\]/d')
+#     echo "[IPv4]"
+#     echo "$output"
+# }
+
 
 # lmc999_script(){
 #     cd /root >/dev/null 2>&1
