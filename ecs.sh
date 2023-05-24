@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.05.22"
+ver="2023.05.23"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.24")
@@ -2238,19 +2238,6 @@ RegionRestrictionCheck_script(){
     echo 0 | bash media_lmc_check.sh -M 6 2>/dev/null | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
 }
 
-openai_script(){
-    cd $myvar >/dev/null 2>&1
-    echo -e "---------OpenAi解锁--感谢missuo的OpenAI-Checker项目本人修改优化---------"
-    output=$(bash <(curl -Ls "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/OpenAI-Checker/main/openai.sh"))
-    output=$(echo "$output" | grep -v '^Your IPv[46]: [0-9a-fA-F:.]* -')
-    output=$(echo "$output" | grep -v '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\|[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*:[0-9a-fA-F][0-9a-fA-F:]*')
-    output=$(echo "$output" | grep -v '::')
-    output=$(echo "$output" | grep -v '^-------------------------------------')
-    output=$(echo "$output" | sed '1,/\[IPv4\]/d')
-    echo "[IPv4]"
-    echo "$output"
-}
-
 lmc999_script(){
     cd $myvar >/dev/null 2>&1
     echo -e "---------------TikTok解锁--感谢lmc999的源脚本及fscarmen PR--------------"
@@ -2414,7 +2401,6 @@ all_script(){
             sjlleo_script > ${TEMP_DIR}/sjlleo_output.txt &
             RegionRestrictionCheck_script > ${TEMP_DIR}/RegionRestrictionCheck_output.txt &
             lmc999_script > ${TEMP_DIR}/lmc999_output.txt &
-            openai_script > ${TEMP_DIR}/openai_output.txt &
             spiritlhl_script > ${TEMP_DIR}/spiritlhl_output.txt &
             backtrace_script > ${TEMP_DIR}/backtrace_output.txt &
             fscarmen_route_script test_area_g[@] test_ip_g[@] > ${TEMP_DIR}/fscarmen_route_output.txt &
@@ -2423,7 +2409,6 @@ all_script(){
             cat ${TEMP_DIR}/sjlleo_output.txt
             cat ${TEMP_DIR}/RegionRestrictionCheck_output.txt
             cat ${TEMP_DIR}/lmc999_output.txt
-            cat ${TEMP_DIR}/openai_output.txt
             cat ${TEMP_DIR}/spiritlhl_output.txt
             cat ${TEMP_DIR}/backtrace_output.txt
             cat ${TEMP_DIR}/fscarmen_route_output.txt
@@ -2483,7 +2468,6 @@ all_script(){
             sjlleo_script
             RegionRestrictionCheck_script
             lmc999_script
-            openai_script
             spiritlhl_script
             backtrace_script
             fscarmen_route_script test_area_g[@] test_ip_g[@]
@@ -2557,7 +2541,6 @@ minal_plus(){
     sjlleo_script
     RegionRestrictionCheck_script
     lmc999_script
-    openai_script
     backtrace_script
     fscarmen_route_script test_area_g[@] test_ip_g[@]
     ecs_net_minal_script
@@ -2605,7 +2588,6 @@ minal_plus_media(){
     sjlleo_script
     RegionRestrictionCheck_script
     lmc999_script
-    openai_script
     ecs_net_minal_script
     end_script
 }
@@ -2641,7 +2623,6 @@ media_script(){
     sjlleo_script
     RegionRestrictionCheck_script
     lmc999_script
-    openai_script
     end_script
 }
 
@@ -2920,9 +2901,9 @@ simplify_script(){
     head_script
     _yellow "融合怪的精简脚本如下"
     echo -e "${GREEN}1.${PLAIN} 极简版(系统信息+CPU+内存+磁盘IO+测速节点4个)(平均运行3分钟)"
-    echo -e "${GREEN}2.${PLAIN} 精简版(系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体+TikTok+OpenAI+回程+路由+测速节点4个)(平均运行4分钟)"
+    echo -e "${GREEN}2.${PLAIN} 精简版(系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体+TikTok+回程+路由+测速节点4个)(平均运行4分钟)"
     echo -e "${GREEN}3.${PLAIN} 精简网络版(系统信息+CPU+内存+磁盘IO+回程+路由+测速节点4个)(平均运行4分钟)"
-    echo -e "${GREEN}4.${PLAIN} 精简解锁版(系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体+TikTok+OpenAI+测速节点4个)(平均运行4分钟)"
+    echo -e "${GREEN}4.${PLAIN} 精简解锁版(系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体+TikTok+测速节点4个)(平均运行4分钟)"
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
@@ -2944,7 +2925,7 @@ single_item_script(){
     head_script
     _yellow "融合怪拆分的单项测试脚本如下"
     echo -e "${GREEN}1.${PLAIN} 网络方面(简化的IP质量检测+三网回程+三网路由与延迟+测速节点11个)(平均运行6分钟左右)"
-    echo -e "${GREEN}2.${PLAIN} 解锁方面(御三家解锁+常用流媒体解锁+TikTok解锁+OpenAI解锁)(平均运行30~60秒)"
+    echo -e "${GREEN}2.${PLAIN} 解锁方面(御三家解锁+常用流媒体解锁+TikTok解锁)(平均运行30~60秒)"
     echo -e "${GREEN}3.${PLAIN} 硬件方面(基础系统信息+CPU+内存+双重磁盘IO测试)(平均运行1分半钟)"
     echo -e "${GREEN}4.${PLAIN} 完整的IP质量检测(平均运行10~20秒)"
     echo -e "${GREEN}5.${PLAIN} 常用端口开通情况(是否有阻断)(平均运行1分钟左右)(暂时有bug未修复)"
