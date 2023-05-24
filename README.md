@@ -150,8 +150,6 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
-由于有上游仓库兼容了chatgpt的检测，故准备删除本人维护的版本 - 待删除分区
-
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修复
 
 Armbian系统待适配，部分检测和测试暂不支持Armbian系统 - 待增加
@@ -162,12 +160,7 @@ Armbian系统待适配，部分检测和测试暂不支持Armbian系统 - 待增
 
 # 更新
 
-2023.05.22 
-
-- 修复部分开发板的内存测试读测试异常大的问题
-- 增加ntpd服务检测，避免存在ntpd时还使用chronyd同步时间
-- 增加内核参数优化，优化tcp请求和内核资源限制
-- 增加haveged以提供更优质的熵避免部分命令因此执行时间变长
+2023.05.24 由于有上游仓库兼容了chatgpt的检测，故在融合怪中删除本人维护的版本的分区，同时删除易造成echo错误的检测代码
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
