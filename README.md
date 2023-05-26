@@ -156,7 +156,7 @@ Armbian系统待适配，部分检测和测试暂不支持Armbian系统 - 待增
 
 端口检测(检测是否被墙) - 待修复
 
-全球网络延迟测试 - 待添加
+全球网络延迟测试(https://github.com/jsdelivr/globalping-cli) - 待添加
 
 # 更新
 
