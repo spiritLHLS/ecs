@@ -88,7 +88,10 @@ if [ ${#disk_paths[@]} -gt 0 ]; then
         disk_name=$(echo "$disk_path" | cut -d ":" -f 1)
         path=$(echo "$disk_path" | cut -d ":" -f 2)
         if [ -n "$path" ]; then
-            cd "$path"
+            cd "$path" >/dev/null 2>&1
+            if [ $? -ne 0 ]; then
+                continue
+            fi
             echo -e "---------------------------------"
             echo "Current disk: ${disk_name}"
             echo "Current path: ${path}"
