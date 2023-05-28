@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.05.24"
+ver="2023.05.28"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.24")
@@ -151,57 +151,71 @@ checkpip(){
         if [[ $? -eq 0 ]]; then
             _blue "$pip_version"
         else
-            _red "python-pip installation failed, please install it manually"
+            _red "python${pvr}-pip installation failed, please install it manually"
             return
         fi
     fi
 }
 
-checkpystun(){
+checkpystun() {
     _yellow "checking pystun"
-    local python3_version=$(python3 --version 2>&1)
-    if [[ $? -eq 0 && $python3_version != *"command not found"* ]]; then
-        _blue "$python3_version"
-        checkpip 3
-        if ! command -v pystun3 > /dev/null 2>&1; then
-            _yellow "Installing pystun3"
-            if ! pip3 install -q pystun3 > /dev/null 2>&1; then
-                checkpip
-                pip install -q pystun3
-            fi
-        fi
-        return
+    local python_command
+    local pip_command
+    if command -v python3 >/dev/null 2>&1; then
+        python_command="python3"
+        pip_command="pip3"
+        _blue "$($python_command --version 2>&1)"
+    elif command -v python >/dev/null 2>&1; then
+        python_command="python"
+        pip_command="pip"
+        _blue "$($python_command --version 2>&1)"
     else
-        local python_version=$(python --version 2>&1)
-        if [[ $? -eq 0 && $python_version != *"command not found"* ]]; then
-            _blue "$python_version"
+        _yellow "installing python3"
+        ${PACKAGE_INSTALL[int]} python3
+        if command -v python3 >/dev/null 2>&1; then
+            python_command="python3"
+            pip_command="pip3"
+            _blue "$($python_command --version 2>&1)"
+        elif command -v python >/dev/null 2>&1; then
+            python_command="python"
+            pip_command="pip"
+            _blue "$($python_command --version 2>&1)"
         else
             _yellow "installing python"
             ${PACKAGE_INSTALL[int]} python
-        fi
-        checkpip
-    fi
-    python3_version=$(python3 --version 2>&1)
-    if [[ $? -eq 0 && $python3_version != *"command not found"* ]]; then
-        _blue "$python3_version"
-        checkpip 3
-        if ! command -v pystun3 > /dev/null 2>&1; then
-            _yellow "Installing pystun3"
-            if ! pip3 install -q pystun3 > /dev/null 2>&1; then
-                pip install -q pystun3
+            if command -v python3 >/dev/null 2>&1; then
+                python_command="python3"
+                pip_command="pip3"
+                _blue "$($python_command --version 2>&1)"
+            elif command -v python >/dev/null 2>&1; then
+                python_command="python"
+                pip_command="pip"
+                _blue "$($python_command --version 2>&1)"
+            else
+                return
             fi
         fi
-        return
-    else
-        python_version=$(python --version 2>&1)
-        if [[ $python_version == Python\ 2* ]]; then
+    fi
+    if [[ $python_command == "python3" ]]; then
+        checkpip 3
+        if ! command -v pystun3 >/dev/null 2>&1; then
+            _yellow "Installing pystun3"
+            if ! "$pip_command" install -q pystun3 > /dev/null 2>&1; then
+                "$pip_command" install -q pystun3
+            fi
+        fi
+    fi
+    if [[ $python_command == "python" ]]; then
+        checkpip
+        if [[ $($python_command --version 2>&1) == Python\ 2* ]]; then
             _yellow "Installing pystun"
-            if ! pip install -q pystun > /dev/null 2>&1; then
-                pip install -q pystun3
+            if ! "$pip_command" install -q pystun > /dev/null 2>&1; then
+                "$pip_command" install -q pystun
             fi
         fi
     fi
 }
+
 
 checkstun() {
     _yellow "checking stun"
