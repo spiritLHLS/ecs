@@ -160,7 +160,7 @@ Armbian系统待适配，部分检测和测试暂不支持Armbian系统 - 待增
 
 # 更新
 
-2023.05.24 由于有上游仓库兼容了chatgpt的检测，故在融合怪中删除本人维护的版本的分区，同时删除易造成echo错误的检测代码
+2023.05.28 测试支持了OracleLinux 8+系统，修复在偏门的系统上安装NAT类型检测工具包失效的问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
