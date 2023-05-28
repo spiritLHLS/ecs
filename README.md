@@ -6,7 +6,7 @@
 
 如果脚本有任何问题或者任何修复系统的需求，可在issues中提出，有空会解决或者回答
 
-支持系统：Ubuntu 18+，Debian 8+，centos 7+，Fedora 22+，Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, Arch
+支持系统：Ubuntu 18+, Debian 8+, centos 7+, Fedora 22+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, Arch
 
 # 目录
  * [融合怪测评脚本](#融合怪测评脚本)
