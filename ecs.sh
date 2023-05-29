@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.05.28"
+ver="2023.05.29"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.24")
@@ -95,7 +95,6 @@ check_time_zone(){
     sleep 0.5
 }
 
-
 checkhaveged(){
     _yellow "checking haveged"
     if ! command -v haveged > /dev/null 2>&1; then
@@ -105,9 +104,61 @@ checkhaveged(){
     systemctl enable --now haveged
 }
 
+declare -A sysctl_vars=(
+    ["fs.file-max"]=1024000
+    ["net.core.rmem_max"]=134217728
+    ["net.core.wmem_max"]=134217728
+    ["net.core.netdev_max_backlog"]=250000
+    ["net.core.somaxconn"]=1024000
+    ["net.ipv4.conf.all.rp_filter"]=0
+    ["net.ipv4.conf.default.rp_filter"]=0
+    ["net.ipv4.conf.lo.arp_announce"]=2
+    ["net.ipv4.conf.all.arp_announce"]=2
+    ["net.ipv4.conf.default.arp_announce"]=2
+    ["net.ipv4.ip_forward"]=1
+    ["net.ipv4.ip_local_port_range"]="1024 65535"
+    ["net.ipv4.neigh.default.gc_stale_time"]=120
+    ["net.ipv4.tcp_syncookies"]=1
+    ["net.ipv4.tcp_tw_reuse"]=1
+    ["net.ipv4.tcp_low_latency"]=1
+    ["net.ipv4.tcp_fin_timeout"]=10
+    ["net.ipv4.tcp_window_scaling"]=1
+    ["net.ipv4.tcp_keepalive_time"]=10
+    ["net.ipv4.tcp_timestamps"]=0
+    ["net.ipv4.tcp_sack"]=1
+    ["net.ipv4.tcp_fack"]=1
+    ["net.ipv4.tcp_syn_retries"]=3
+    ["net.ipv4.tcp_synack_retries"]=3
+    ["net.ipv4.tcp_max_syn_backlog"]=16384
+    ["net.ipv4.tcp_max_tw_buckets"]=8192
+    ["net.ipv4.tcp_fastopen"]=3
+    ["net.ipv4.tcp_mtu_probing"]=1
+    ["net.ipv4.tcp_rmem"]="4096 87380 67108864"
+    ["net.ipv4.tcp_wmem"]="4096 65536 67108864"
+    ["net.ipv6.conf.all.forwarding"]=1
+    ["net.ipv6.conf.default.forwarding"]=1
+    ["net.nf_conntrack_max"]=25000000
+    ["net.netfilter.nf_conntrack_max"]=25000000
+    ["net.netfilter.nf_conntrack_tcp_timeout_time_wait"]=30
+    ["net.netfilter.nf_conntrack_tcp_timeout_established"]=180
+    ["net.netfilter.nf_conntrack_tcp_timeout_close_wait"]=30
+    ["net.netfilter.nf_conntrack_tcp_timeout_fin_wait"]=30
+)
+sysctl_conf="/etc/sysctl.conf"
+sysctl_conf_backup="/etc/sysctl.conf.backup"
+sysctl_default="/tmp/sysctl_backup.txt"
+sysctl_path=$(which sysctl)
+
+variable_exists() {
+    local variable="$1"
+    grep -q "^$variable=" "$sysctl_conf"
+}
+
 optimized_kernel(){
     _yellow "optimizing resource limits"
-    cat > /etc/security/limits.conf << EOF
+    if [ -f /etc/security/limits.conf ]; then
+        cp /etc/security/limits.conf /etc/security/limits.conf.backup
+        cat > /etc/security/limits.conf << EOF
 * soft nofile 512000
 * hard nofile 512000
 * soft nproc 512000
@@ -117,17 +168,32 @@ root hard nofile 512000
 root soft nproc 512000
 root hard nproc 512000
 EOF
+    fi
     _yellow "optimizing sysctl configuration"
-    for variable in "${!sysctl_vars[@]}"; do
-        value="${sysctl_vars[$variable]}"
-        if variable_exists "$variable"; then
-            sed -i "s/^$variable=.*/$variable=$value/" "$sysctl_conf"
-        else
-            echo "$variable=$value" >> "$sysctl_conf"
+    declare -A default_values
+    if [ -f "$sysctl_conf" ]; then
+        if [ ! -f "$sysctl_conf_backup" ]; then
+            cp "$sysctl_conf" "$sysctl_conf_backup"
         fi
-    done
-    sysctl_path=$(which sysctl)
-    $sysctl_path -p 2> /dev/null
+        while IFS= read -r line; do
+            variable="${line%%=*}"
+            variable="${variable%%[[:space:]]*}"
+            default_value="${line#*=}"
+            default_values["$variable"]="$default_value"
+        done < <($sysctl_path -a)
+        echo "" > "$sysctl_default"
+        for variable in "${!sysctl_vars[@]}"; do
+            value="${sysctl_vars[$variable]}"
+            if variable_exists "$variable"; then
+                sed -i "s/^$variable=.*/$variable=$value/" "$sysctl_conf"
+            else
+                echo "$variable=$value" >> "$sysctl_conf"
+                default_value="${default_values[$variable]}"
+                echo "$variable=$default_value" >> "$sysctl_default"
+            fi
+        done
+        $sysctl_path -p 2> /dev/null
+    fi
 }
 
 checkping() {
@@ -215,7 +281,6 @@ checkpystun() {
         fi
     fi
 }
-
 
 checkstun() {
     _yellow "checking stun"
@@ -318,7 +383,25 @@ global_startup_init_action() {
     echo -e "${Msg_Info}Starting Test ..."
 }
 
+reset_default_sysctl(){
+    _yellow "reseting default sysctl configuration"
+    if [ -f /etc/security/limits.conf ]; then
+        cp /etc/security/limits.conf.backup /etc/security/limits.conf
+        rm /etc/security/limits.conf.backup
+    fi
+    if [ -f "$sysctl_conf" ]; then
+        cp "$sysctl_conf_backup" "$sysctl_conf"
+        cat "$sysctl_default" >> "$sysctl_conf"
+        $sysctl_path -p 2> /dev/null
+        cp "$sysctl_conf_backup" "$sysctl_conf"
+        rm "$sysctl_conf_backup"
+        rm "$sysctl_default"
+    fi
+    $sysctl_path -p 2> /dev/null
+}
+
 global_exit_action() {
+    reset_default_sysctl > /dev/null 2>&1
     build_text
     if [ -n "$shorturl" ]
     then
@@ -1790,7 +1873,6 @@ get_system_info() {
     disk_size2=($( LC_ALL=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|snapd' | awk '{print $3}' ))
     disk_total_size=$( calc_disk "${disk_size1[@]}" )
     disk_used_size=$( calc_disk "${disk_size2[@]}" )
-    sysctl_path=$(which sysctl)
     if [ -z "$sysctl_path" ]; then
         tcpctrl="None"
     fi
@@ -1805,8 +1887,8 @@ get_system_info() {
                 reading "是否要开启bbr再进行测试？(回车则默认不开启) [y/n] " confirmbbr
                 echo ""
                 if [ "$confirmbbr" != "y" ]; then
-                    echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
-                    echo "net.ipv4.tcp_congestion_control=bbr" >> /etc/sysctl.conf
+                    echo "net.core.default_qdisc=fq" >> "$sysctl_conf"
+                    echo "net.ipv4.tcp_congestion_control=bbr" >> "$sysctl_conf"
                     $sysctl_path -p
                 fi
                 tcpctrl=$($sysctl_path -n net.ipv4.tcp_congestion_control 2> /dev/null)
@@ -2130,52 +2212,6 @@ head='key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b
 speedtest_ver="1.2.0"
 SERVER_BASE_URL="https://raw.githubusercontent.com/spiritLHLS/speedtest.net-CN-ID/main"
 SERVER_BASE_URL2="https://raw.githubusercontent.com/spiritLHLS/speedtest.cn-CN-ID/main"
-declare -A sysctl_vars=(
-    ["fs.file-max"]=1024000
-    ["net.core.rmem_max"]=134217728
-    ["net.core.wmem_max"]=134217728
-    ["net.core.netdev_max_backlog"]=250000
-    ["net.core.somaxconn"]=1024000
-    ["net.ipv4.conf.all.rp_filter"]=0
-    ["net.ipv4.conf.default.rp_filter"]=0
-    ["net.ipv4.conf.lo.arp_announce"]=2
-    ["net.ipv4.conf.all.arp_announce"]=2
-    ["net.ipv4.conf.default.arp_announce"]=2
-    ["net.ipv4.ip_forward"]=1
-    ["net.ipv4.ip_local_port_range"]="1024 65535"
-    ["net.ipv4.neigh.default.gc_stale_time"]=120
-    ["net.ipv4.tcp_syncookies"]=1
-    ["net.ipv4.tcp_tw_reuse"]=1
-    ["net.ipv4.tcp_low_latency"]=1
-    ["net.ipv4.tcp_fin_timeout"]=10
-    ["net.ipv4.tcp_window_scaling"]=1
-    ["net.ipv4.tcp_keepalive_time"]=10
-    ["net.ipv4.tcp_timestamps"]=0
-    ["net.ipv4.tcp_sack"]=1
-    ["net.ipv4.tcp_fack"]=1
-    ["net.ipv4.tcp_syn_retries"]=3
-    ["net.ipv4.tcp_synack_retries"]=3
-    ["net.ipv4.tcp_max_syn_backlog"]=16384
-    ["net.ipv4.tcp_max_tw_buckets"]=8192
-    ["net.ipv4.tcp_fastopen"]=3
-    ["net.ipv4.tcp_mtu_probing"]=1
-    ["net.ipv4.tcp_rmem"]="4096 87380 67108864"
-    ["net.ipv4.tcp_wmem"]="4096 65536 67108864"
-    ["net.ipv6.conf.all.forwarding"]=1
-    ["net.ipv6.conf.default.forwarding"]=1
-    ["net.nf_conntrack_max"]=25000000
-    ["net.netfilter.nf_conntrack_max"]=25000000
-    ["net.netfilter.nf_conntrack_tcp_timeout_time_wait"]=30
-    ["net.netfilter.nf_conntrack_tcp_timeout_established"]=180
-    ["net.netfilter.nf_conntrack_tcp_timeout_close_wait"]=30
-    ["net.netfilter.nf_conntrack_tcp_timeout_fin_wait"]=30
-)
-sysctl_conf="/etc/sysctl.conf"
-
-variable_exists() {
-    local variable="$1"
-    grep -q "^$variable=" "$sysctl_conf"
-}
 
 pre_check(){
     checkupdate
