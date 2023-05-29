@@ -384,7 +384,6 @@ global_startup_init_action() {
 }
 
 reset_default_sysctl(){
-    _yellow "reseting default sysctl configuration"
     if [ -f /etc/security/limits.conf ]; then
         cp /etc/security/limits.conf.backup /etc/security/limits.conf
         rm /etc/security/limits.conf.backup
@@ -3094,5 +3093,5 @@ rm -rf $TEMP_DIR
 mkdir -p $TEMP_DIR
 get_system_bit
 start_script
-rm_script
 global_exit_action
+rm_script
