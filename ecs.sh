@@ -146,7 +146,7 @@ declare -A sysctl_vars=(
 )
 sysctl_conf="/etc/sysctl.conf"
 sysctl_conf_backup="/etc/sysctl.conf.backup"
-sysctl_default="/tmp/sysctl_backup.txt"
+sysctl_default="${TEMP_DIR}/sysctl_backup.txt"
 sysctl_path=$(which sysctl)
 
 variable_exists() {
@@ -377,7 +377,7 @@ global_startup_init_action() {
     rm -rf /.tmp_LBench/
     mkdir "$WorkDir"/
     echo -e "${Msg_Info}Checking Dependency ..."
-    Check_Virtwhat
+    check_virtwhat
     Check_SysBench
     SystemInfo_GetCPUInfo
     echo -e "${Msg_Info}Starting Test ..."
@@ -439,7 +439,7 @@ next() {
 }
 
 # =============== 检查 Virt-what 组件 ===============
-Check_Virtwhat() {
+check_virtwhat() {
     if [ ! -f "/usr/sbin/virt-what" ]; then
         SystemInfo_GetOSRelease
         if [[ "${Var_OSRelease}" =~ ^(centos|rhel|almalinux|arch)$ ]]; then
@@ -2785,7 +2785,7 @@ build_text(){
     fi
 }
 
-Comprehensive_test_script(){
+comprehensive_test_script(){
     head_script
     _yellow "具备综合性测试的脚本如下"
     echo -e "${GREEN}1.${PLAIN} superbench VPS测试脚本-基于teddysun的二开"
@@ -2817,7 +2817,7 @@ Comprehensive_test_script(){
     done
 }
 
-Media_test_script(){
+media_test_script(){
     head_script
     _yellow "流媒体测试相关的脚本如下"
     echo -e "${GREEN}1.${PLAIN} sjlleo的NetFlix解锁检测脚本 "
@@ -2852,7 +2852,7 @@ Media_test_script(){
 }
 
 
-Network_test_script(){
+network_test_script(){
     head_script
     _yellow "网络测试相关的脚本如下"
     echo -e "${GREEN}1.${PLAIN} zhanghanyun的backtrace三网回程线路检测脚本"
@@ -2896,7 +2896,7 @@ Network_test_script(){
     done
 }
 
-Hardware_test_script(){
+hardware_test_script(){
     head_script
     _yellow "硬件测试合集如下"
     echo " -------------"
@@ -2937,10 +2937,10 @@ original_script(){
     do
         read -rp "请输入选项:" StartInput3
         case $StartInput3 in
-            1) Comprehensive_test_script ; break ;;
-            2) Media_test_script ; break ;;
-            3) Network_test_script ; break ;;
-            4) Hardware_test_script ; break ;;
+            1) comprehensive_test_script ; break ;;
+            2) media_test_script ; break ;;
+            3) network_test_script ; break ;;
+            4) hardware_test_script ; break ;;
             0) start_script ; break ;;
             *) echo "输入错误，请重新输入" ;;
         esac
