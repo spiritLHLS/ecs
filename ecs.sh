@@ -534,6 +534,7 @@ checksystem() {
     elif cat /proc/version | grep -Eqi "arch"; then
         release="arch"
 	fi
+    DISTRO=$(grep 'PRETTY_NAME' /etc/os-release | cut -d '"' -f 2 )
 }
 
 checkupdate(){
@@ -2074,7 +2075,6 @@ print_system_info() {
     echo " Swap              : $(_blue "$swap MB ($uswap MB 已用)")"
     echo " 系统在线时间      : $(_blue "$up")"
     echo " 负载              : $(_blue "$load")"
-    DISTRO=$(grep 'PRETTY_NAME' /etc/os-release | cut -d '"' -f 2 )
     echo " 系统              : $(_blue "$DISTRO")"  
     # $(_blue "$opsy")"
     CPU_AES=$(cat /proc/cpuinfo | grep aes)
