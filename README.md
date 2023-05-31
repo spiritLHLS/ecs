@@ -6,7 +6,7 @@
 
 如果脚本有任何问题或者任何修复系统的需求，可在issues中提出，有空会解决或者回答
 
-支持系统：Ubuntu 18+, Debian 8+, centos 7+, Fedora 22+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, Arch
+支持系统：Ubuntu 18+, Debian 8+, centos 7+, Fedora 22+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, AstraLinux CE, Arch
 
 # 目录
  * [融合怪测评脚本](#融合怪测评脚本)
@@ -160,7 +160,12 @@ Armbian系统待适配，部分检测和测试暂不支持Armbian系统 - 待增
 
 # 更新
 
-2023.05.29 修改脚本使得systl优化仅在测试期间起效果，执行完毕后重置回默认的设置，避免影响原系统环境
+2023.05.31
+
+- 优化dmidecode组件安装，尝试各种安装参数
+- 适配Astra Linux CE系统
+- 适配Debian11系统上的sysbench和virt-what安装，不再使用debian10的版本，预设了debian12的版本选项等待官方正式发布
+- 增加了apt-get自动修复缺失公钥的功能
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
