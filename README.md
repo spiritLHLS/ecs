@@ -165,6 +165,7 @@ Armbian系统待适配，部分检测和测试暂不支持Armbian系统 - 待增
 - 优化dmidecode组件安装，尝试各种安装参数
 - 适配Astra Linux CE系统
 - 适配Debian11系统上的sysbench和virt-what安装，不再使用debian10的版本，预设了debian12的版本选项等待官方正式发布
+- 修复sysbench在低版本系统安装时不存在events per second输出导致识别为空的问题，实测Debian8和9检测CPU时不再识别为空
 - 增加了apt-get自动修复缺失公钥的功能
 - 修改部分第三方分区描述，避免歧义
 
