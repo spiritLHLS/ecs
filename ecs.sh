@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.05.29"
+ver="2023.05.31"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.24")
@@ -15,6 +15,7 @@ test_area_c=("成都电信" "成都联通" "成都移动")
 test_ip_c=("61.139.2.69" "119.6.6.6" "211.137.96.205")
 TEMP_DIR='/tmp/ecs'
 TEMP_FILE='ip.test'
+temp_file_apt_fix="${TEMP_DIR}/apt_fix.txt"
 BrowserUA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36"
 WorkDir="/tmp/.LemonBench"
 RED="\033[31m"
@@ -28,7 +29,7 @@ _green() { echo -e "\033[32m\033[01m$@\033[0m"; }
 _yellow() { echo -e "\033[33m\033[01m$@\033[0m"; }
 _blue() { echo -e "\033[36m\033[01m$@\033[0m"; }
 reading(){ read -rp "$(_green "$1")" "$2"; }
-REGEX=("debian" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora" "arch")
+REGEX=("debian|astra" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora" "arch")
 RELEASE=("Debian" "Ubuntu" "CentOS" "CentOS" "Fedora" "Arch")
 PACKAGE_UPDATE=("! apt-get update && apt-get --fix-broken install -y && apt-get update" "apt-get update" "yum -y update" "yum -y update" "yum -y update" "pacman -Sy")
 PACKAGE_INSTALL=("apt-get -y install" "apt-get -y install" "yum -y install" "yum -y install" "yum -y install" "pacman -Sy --noconfirm --needed")
@@ -52,7 +53,6 @@ else
   export LANGUAGE="$utf8_locale"
   _green "Locale set to $utf8_locale"
 fi
-apt-get --fix-broken install -y > /dev/null 2>&1
 rm -rf test_result.txt > /dev/null 2>&1
 
 check_cdn() {
@@ -447,30 +447,47 @@ check_virtwhat() {
             if [ $? -ne 0 ]; then
                 dnf -y install virt-what
             fi
+        elif [ "${Var_OSRelease}" = "astra" ]; then
+            echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
+            apt-get install -y virt-what
+            if [ $? -ne 0 ]; then
+                echo "deb http://deb.debian.org/debian ${Var_OSReleaseVersion_Codename} main contrib non-free" >> /etc/apt/sources.list
+                echo "deb-src http://deb.debian.org/debian ${Var_OSReleaseVersion_Codename} main contrib non-free" >> /etc/apt/sources.list
+                apt_update_output=$(apt-get update 2>&1)
+                echo "$apt_update_output" > "$temp_file_apt_fix"
+                if grep -q 'NO_PUBKEY' "$temp_file_apt_fix"; then
+                    public_keys=$(grep -oE 'NO_PUBKEY [0-9A-F]+' "$temp_file_apt_fix" | awk '{ print $2 }')
+                    joined_keys=$(echo "$public_keys" | paste -sd " ")
+                    _yellow "No Public Keys: $joined_keys"
+                    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys $joined_keys
+                    apt-get update
+                    if [ $? -eq 0 ]; then
+                        _green "Fixed"
+                    fi
+                fi
+                rm "$temp_file_apt_fix"
+            fi
+            
+            apt-get install -y virt-what
         elif [[ "${Var_OSRelease}" =~ ^debian$ ]]; then
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
-            ! apt-get update && apt-get --fix-broken install -y && apt-get update
-            ! apt-get install -y dmidecode && apt-get --fix-broken install -y && apt-get install dmidecode -y
-            ! apt-get install -y virt-what && apt-get --fix-broken install -y && apt-get install virt-what -y
+            apt-get install -y virt-what
             if [ $? -ne 0 ]; then
-                ! apt-get update && apt-get --fix-broken install -y && apt-get update
-                ! apt-get install -y dmidecode && apt-get --fix-broken install -y && apt-get install dmidecode -y --force-yes
-                ! apt-get install -y virt-what && apt-get --fix-broken install -y && apt-get install virt-what -y --force-yes
+                echo "Retrying with additional options..."
+                apt-get update && apt-get --fix-broken install -y
+                apt-get install -y virt-what --force-yes
             fi
             if [ $? -ne 0 ]; then
-                ! apt-get update && apt-get --fix-broken install -y && apt-get update
-                ! apt-get install -y dmidecode && apt-get --fix-broken install -y && apt-get install dmidecode -y --allow
-                ! apt-get install -y virt-what && apt-get --fix-broken install -y && apt-get install virt-what -y --allow
+                echo "Retrying with different options..."
+                apt-get update && apt-get --fix-broken install -y
+                apt-get install -y virt-what --allow
             fi
         elif [[ "${Var_OSRelease}" =~ ^ubuntu$ ]]; then
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
-            ! apt-get update && apt-get --fix-broken install -y && apt-get update
-            ! apt-get install -y dmidecode && apt-get --fix-broken install -y && apt-get install dmidecode -y
-            ! apt-get install -y virt-what && apt-get --fix-broken install -y && apt-get install virt-what -y 
+            apt-get install -y virt-what
             if [ $? -ne 0 ]; then
-                ! apt-get update && apt-get --fix-broken install -y && apt-get update
-                ! apt-get install -y dmidecode && apt-get --fix-broken install -y && apt-get install dmidecode -y --allow-unauthenticated
-                ! apt-get install -y virt-what && apt-get --fix-broken install -y && apt-get install virt-what -y --allow-unauthenticated
+                echo "Retrying with additional options..."
+                apt-get install -y virt-what -y --allow-unauthenticated
             fi
         elif [ "${Var_OSRelease}" = "fedora" ]; then
             echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
@@ -521,9 +538,42 @@ checksystem() {
 
 checkupdate(){
 	    _yellow "Updating package management sources"
-		${PACKAGE_UPDATE[int]}
-        ${PACKAGE_INSTALL[int]} dmidecode
-        apt-key update > /dev/null 2>&1
+        if command -v apt-get > /dev/null 2>&1; then
+            apt_update_output=$(apt-get update 2>&1)
+            echo "$apt_update_output" > "$temp_file_apt_fix"
+            if grep -q 'NO_PUBKEY' "$temp_file_apt_fix"; then
+                public_keys=$(grep -oE 'NO_PUBKEY [0-9A-F]+' "$temp_file_apt_fix" | awk '{ print $2 }')
+                joined_keys=$(echo "$public_keys" | paste -sd " ")
+                _yellow "No Public Keys: ${joined_keys}"
+                apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ${joined_keys}
+                apt-get update
+                if [ $? -eq 0 ]; then
+                    _green "Fixed"
+                fi
+            fi
+            rm "$temp_file_apt_fix"
+        else
+            ${PACKAGE_UPDATE[int]}
+        fi 
+}
+
+checkdmidecode(){
+    ${PACKAGE_INSTALL[int]} dmidecode
+    if [ $? -ne 0 ]; then
+        if command -v apt-get > /dev/null 2>&1; then
+            echo "Retrying with additional options..."
+            apt-get update && apt-get --fix-broken install -y
+            apt-get install -y dmidecode --force-yes
+            if [ $? -ne 0 ]; then
+                apt-get update && apt-get --fix-broken install -y
+                apt-get install -y dmidecode --allow
+                if [ $? -ne 0 ]; then
+                    apt-get update && apt-get --fix-broken install -y
+                    apt-get install -y dmidecode -y --allow-unauthenticated
+                fi
+            fi
+        fi
+    fi   
 }
 
 checkdnsutils() {
@@ -574,7 +624,7 @@ checkunzip() {
 }
 
 check_china(){
-    _yellow "In order to select the CDN is detecting the IP area......"
+    _yellow "IP area being detected ......"
     if [[ -z "${CN}" ]]; then
         if [[ $(curl -m 6 -s https://ipapi.co/json | grep 'China') != "" ]]; then
             _yellow "根据ipapi.co提供的信息，当前IP可能在中国"
@@ -1011,12 +1061,9 @@ get_nearest_data2() {
     echo "${sorted_data[@]}"
 }
 
-
-
 SystemInfo_GetOSRelease() {
     if [ -f "/etc/centos-release" ]; then # CentOS
         Var_OSRelease="centos"
-        local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3,$4}')"
         if [ "$(rpm -qa | grep -o el6 | sort -u)" = "el6" ]; then
             Var_CentOSELRepoVersion="6"
             local Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $3}')"
@@ -1030,17 +1077,11 @@ SystemInfo_GetOSRelease() {
             local Var_CentOSELRepoVersion="unknown"
             local Var_OSReleaseVersion="<Unknown Release>"
         fi
-        local Var_OSReleaseArch="$(arch)"
-        LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
     elif [ -f "/etc/fedora-release" ]; then # Fedora
         Var_OSRelease="fedora"
-        local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3}')"
         local Var_OSReleaseVersion="$(cat /etc/fedora-release | awk '{print $3,$4,$5,$6,$7}')"
-        local Var_OSReleaseArch="$(arch)"
-        LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
     elif [ -f "/etc/redhat-release" ]; then # RedHat
         Var_OSRelease="rhel"
-        local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3,$4}')"
         if [ "$(rpm -qa | grep -o el6 | sort -u)" = "el6" ]; then
             Var_RedHatELRepoVersion="6"
             local Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $3}')"
@@ -1054,63 +1095,62 @@ SystemInfo_GetOSRelease() {
             local Var_RedHatELRepoVersion="unknown"
             local Var_OSReleaseVersion="<Unknown Release>"
         fi
-        local Var_OSReleaseArch="$(arch)"
-        LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
+    elif [ -f "/etc/astra_version" ]; then # Astra
+        Var_OSRelease="astra"
+        local Var_OSReleaseVersionShort="$(cat /etc/debian_version | awk '{printf "%d\n",$1}')"
+        if [ "${Var_OSReleaseVersionShort}" = "7" ]; then
+            Var_OSReleaseVersion_Codename="wheezy"
+        elif [ "${Var_OSReleaseVersionShort}" = "8" ]; then
+            Var_OSReleaseVersion_Codename="jessie"
+        elif [ "${Var_OSReleaseVersionShort}" = "9" ]; then
+            Var_OSReleaseVersion_Codename="stretch"
+        elif [ "${Var_OSReleaseVersionShort}" = "10" ]; then
+            Var_OSReleaseVersion_Codename="buster"
+        elif [ "${Var_OSReleaseVersionShort}" = "11" ]; then
+            Var_OSReleaseVersion_Codename="bullseye"
+        # elif [ "${Var_OSReleaseVersionShort}" = "12" ]; then
+        #     Var_OSReleaseVersion_Codename="bookworm"
+        else
+            Var_OSReleaseVersion_Codename="sid"
+        fi
     elif [ -f "/etc/lsb-release" ]; then # Ubuntu
         Var_OSRelease="ubuntu"
-        local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/NAME/{print $3}' | head -n1)"
         local Var_OSReleaseVersion="$(cat /etc/os-release | awk -F '[= "]' '/VERSION/{print $3,$4,$5,$6,$7}' | head -n1)"
-        local Var_OSReleaseArch="$(arch)"
-        LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
         Var_OSReleaseVersion_Short="$(cat /etc/lsb-release | awk -F '[= "]' '/DISTRIB_RELEASE/{print $2}')"
     elif [ -f "/etc/debian_version" ]; then # Debian
         Var_OSRelease="debian"
-        local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3,$4}')"
         local Var_OSReleaseVersion="$(cat /etc/debian_version | awk '{print $1}')"
         local Var_OSReleaseVersionShort="$(cat /etc/debian_version | awk '{printf "%d\n",$1}')"
         if [ "${Var_OSReleaseVersionShort}" = "7" ]; then
             Var_OSReleaseVersion_Short="7"
             Var_OSReleaseVersion_Codename="wheezy"
-            local Var_OSReleaseFullName="${Var_OSReleaseFullName} \"Wheezy\""
         elif [ "${Var_OSReleaseVersionShort}" = "8" ]; then
             Var_OSReleaseVersion_Short="8"
             Var_OSReleaseVersion_Codename="jessie"
-            local Var_OSReleaseFullName="${Var_OSReleaseFullName} \"Jessie\""
         elif [ "${Var_OSReleaseVersionShort}" = "9" ]; then
             Var_OSReleaseVersion_Short="9"
             Var_OSReleaseVersion_Codename="stretch"
-            local Var_OSReleaseFullName="${Var_OSReleaseFullName} \"Stretch\""
         elif [ "${Var_OSReleaseVersionShort}" = "10" ]; then
             Var_OSReleaseVersion_Short="10"
             Var_OSReleaseVersion_Codename="buster"
-            local Var_OSReleaseFullName="${Var_OSReleaseFullName} \"Buster\""
+        elif [ "${Var_OSReleaseVersionShort}" = "11" ]; then
+            Var_OSReleaseVersion_Codename="bullseye"
+        # elif [ "${Var_OSReleaseVersionShort}" = "12" ]; then
+        #     Var_OSReleaseVersion_Codename="bookworm"
         else
             Var_OSReleaseVersion_Short="sid"
             Var_OSReleaseVersion_Codename="sid"
-            local Var_OSReleaseFullName="${Var_OSReleaseFullName} \"Sid (Testing)\""
         fi
-        local Var_OSReleaseArch="$(arch)"
-        LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
     elif [ -f "/etc/alpine-release" ]; then # Alpine Linux
         Var_OSRelease="alpinelinux"
-        local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/NAME/{print $3,$4}' | head -n1)"
         local Var_OSReleaseVersion="$(cat /etc/alpine-release | awk '{print $1}')"
-        local Var_OSReleaseArch="$(arch)"
-        LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
     elif [ -f "/etc/almalinux-release" ]; then # almalinux
         Var_OSRelease="almalinux"
-        local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3}')"
         local Var_OSReleaseVersion="$(cat /etc/almalinux-release | awk '{print $3,$4,$5,$6,$7}')"
-        local Var_OSReleaseArch="$(arch)"
-        LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
     elif [ -f "/etc/arch-release" ]; then # archlinux
         Var_OSRelease="arch"
-        local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3}')"
-        local Var_OSReleaseArch="$(uname -m)"
-        LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName ($Var_OSReleaseArch)" # 滚动发行版 不存在版本号
     else
         Var_OSRelease="unknown" # 未知系统分支
-        LBench_Result_OSReleaseFullName="[Error: Unknown Linux Branch !]"
     fi
 }
 
@@ -1121,7 +1161,7 @@ GetOSRelease() {
   case "${Var_OSRelease}" in
     centos|rhel|almalinux) OS_TYPE="redhat";;
     ubuntu) OS_TYPE="ubuntu";;
-    debian) OS_TYPE="debian";;
+    debian|astra) OS_TYPE="debian";;
     fedora) OS_TYPE="fedora";;
     alpinelinux) OS_TYPE="alpinelinux";;
     arch) OS_TYPE="arch";;
@@ -2214,6 +2254,7 @@ SERVER_BASE_URL2="https://raw.githubusercontent.com/spiritLHLS/speedtest.cn-CN-I
 
 pre_check(){
     checkupdate
+    checkdmidecode
     checkroot
     checksudo
     checkwget
@@ -2822,8 +2863,8 @@ media_test_script(){
     echo -e "${GREEN}1.${PLAIN} sjlleo的NetFlix解锁检测脚本 "
     echo -e "${GREEN}2.${PLAIN} sjlleo的Youtube地域信息检测脚本"
     echo -e "${GREEN}3.${PLAIN} sjlleo的DisneyPlus解锁区域检测脚本"
-    echo -e "${GREEN}4.${PLAIN} lmc999的TikTok解锁区域检测脚本"
-    echo -e "${GREEN}5.${PLAIN} lmc999的TikTok解锁区域检测脚本"
+    echo -e "${GREEN}4.${PLAIN} lmc999的TikTok解锁区域检测脚本-本作者优化版本"
+    echo -e "${GREEN}5.${PLAIN} lmc999的TikTok解锁区域检测脚本-原版脚本"
     echo -e "${GREEN}6.${PLAIN} lmc999的流媒体检测脚本-综合性地域流媒体全测的"
     echo -e "${GREEN}7.${PLAIN} nkeonkeo的流媒体检测脚本-基于上者的GO重构版本"
     echo -e "${GREEN}8.${PLAIN} missuo的OpenAI-Checker检测脚本(可能卡住)"
