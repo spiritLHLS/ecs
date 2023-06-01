@@ -1208,7 +1208,11 @@ Check_SysBench() {
     if [ "$os_release" = "alpinelinux" ]; then
       Var_Skip_SysBench="1"
     else
-      InstallSysbench "$os_release"
+        if [ "$os_release" = "astra" ]; then
+            InstallSysbench "debian"
+        else
+            InstallSysbench "$os_release"
+        fi
     fi
   fi
   # 垂死挣扎 (尝试编译安装)
@@ -1225,10 +1229,14 @@ Check_SysBench() {
 
 Check_Sysbench_InstantBuild() {
     SystemInfo_GetOSRelease
-    if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux" ] || [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ] || [ "${Var_OSRelease}" = "fedora" ] || [ "${Var_OSRelease}" = "arch" ]; then
-        echo -e "${Msg_Info}Release Detected: ${Var_OSRelease}"
+    if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux" ] || [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ] || [ "${Var_OSRelease}" = "fedora" ] || [ "${Var_OSRelease}" = "arch" ] || [ "${Var_OSRelease}" = "astra" ]; then
+        local os_sysbench=${Var_OSRelease}
+        if [ "$os_sysbench" = "astra" ]; then
+            os_sysbench="debian"
+        fi
+        echo -e "${Msg_Info}Release Detected: ${os_sysbench}"
         echo -e "${Msg_Info}Preparing compile enviorment ..."
-        prepare_compile_env "${Var_OSRelease}"
+        prepare_compile_env "${os_sysbench}"
         echo -e "${Msg_Info}Downloading Source code (Version 1.0.20)..."
         mkdir -p /tmp/_LBench/src/
         pre_download sysbench
