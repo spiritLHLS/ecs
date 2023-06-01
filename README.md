@@ -160,7 +160,10 @@ Armbian系统待适配，部分检测和测试暂不支持Armbian系统 - 待增
 
 # 更新
 
-2023.06.01 修复部分机器被stun服务器和IP查询的API站点拉黑的问题，报错替换为中文显示而不是网页源码显示
+2023.06.01 
+
+- 修复部分机器被stun服务器和IP查询的API站点拉黑的问题，报错替换为中文显示而不是网页源码显示
+- 修复astralinux系统的部分机器无法使用apt源下载sysbench时编译出错的问题，替换为debian模式进行编译
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
