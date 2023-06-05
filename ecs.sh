@@ -671,25 +671,6 @@ check_china(){
     fi
 }
 
-# checkssh() {
-# 	for i in "${CMD[@]}"; do
-# 		SYS="$i" && [[ -n $SYS ]] && break
-# 	done
-# 	for ((int=0; int<${#REGEX[@]}; int++)); do
-# 		[[ $(echo "$SYS" | tr '[:upper:]' '[:lower:]') =~ ${REGEX[int]} ]] && SYSTEM="${RELEASE[int]}" && [[ -n $SYSTEM ]] && break
-# 	done
-# 	echo "开启22端口中，以便于测试IP是否被阻断"
-# 	sshport=22
-# 	[[ ! -f /etc/ssh/sshd_config ]] && sudo ${PACKAGE_UPDATE[int]} && sudo ${PACKAGE_INSTALL[int]} openssh-server
-# 	[[ -z $(type -P curl) ]] && sudo ${PACKAGE_UPDATE[int]} && sudo ${PACKAGE_INSTALL[int]} curl
-# 	sudo sed -i "s/^#\?Port.*/Port $sshport/g" /etc/ssh/sshd_config;
-# 	sudo service ssh restart >/dev/null 2>&1  # 某些VPS系统的ssh服务名称为ssh，以防无法重启服务导致无法立刻使用密码登录
-#     sudo systemctl restart sshd >/dev/null 2>&1 # Arch Linux没有使用init.d
-#     sudo systemctl restart ssh >/dev/null 2>&1
-# 	sudo service sshd restart >/dev/null 2>&1
-# 	echo "开启22端口完毕"
-# }
-
 download_speedtest_file() {
     file="./speedtest-cli/speedtest"
     if [[ -e "$file" ]]; then
@@ -2843,7 +2824,6 @@ port_script(){
     pre_download XXXX
     get_system_info
     check_virt
-    # checkssh
     start_time=$(date +%s)
     clear
     print_intro
