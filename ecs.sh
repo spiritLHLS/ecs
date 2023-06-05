@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.06.01"
+ver="2023.06.05"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.24")
@@ -29,13 +29,14 @@ _green() { echo -e "\033[32m\033[01m$@\033[0m"; }
 _yellow() { echo -e "\033[33m\033[01m$@\033[0m"; }
 _blue() { echo -e "\033[36m\033[01m$@\033[0m"; }
 reading(){ read -rp "$(_green "$1")" "$2"; }
-REGEX=("debian|astra" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora" "arch")
-RELEASE=("Debian" "Ubuntu" "CentOS" "CentOS" "Fedora" "Arch")
-PACKAGE_UPDATE=("! apt-get update && apt-get --fix-broken install -y && apt-get update" "apt-get update" "yum -y update" "yum -y update" "yum -y update" "pacman -Sy")
-PACKAGE_INSTALL=("apt-get -y install" "apt-get -y install" "yum -y install" "yum -y install" "yum -y install" "pacman -Sy --noconfirm --needed")
-PACKAGE_REMOVE=("apt-get -y remove" "apt-get -y remove" "yum -y remove" "yum -y remove" "yum -y remove" "pacman -Rsc --noconfirm")
-PACKAGE_UNINSTALL=("apt-get -y autoremove" "apt-get -y autoremove" "yum -y autoremove" "yum -y autoremove" "yum -y autoremove" "")
-CMD=("$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(hostnamectl 2>/dev/null | grep -i system | cut -d : -f2)" "$(lsb_release -sd 2>/dev/null)" "$(grep -i description /etc/lsb-release 2>/dev/null | cut -d \" -f2)" "$(grep . /etc/redhat-release 2>/dev/null)" "$(grep . /etc/issue 2>/dev/null | cut -d \\ -f1 | sed '/^[ ]*$/d')" "$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)") 
+REGEX=("debian|astra" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora" "arch" "freebsd")
+RELEASE=("Debian" "Ubuntu" "CentOS" "CentOS" "Fedora" "Arch" "FreeBSD")
+PACKAGE_UPDATE=("! apt-get update && apt-get --fix-broken install -y && apt-get update" "apt-get update" "yum -y update" "yum -y update" "yum -y update" "pacman -Sy" "pkg update")
+PACKAGE_INSTALL=("apt-get -y install" "apt-get -y install" "yum -y install" "yum -y install" "yum -y install" "pacman -Sy --noconfirm --needed" "pkg install -y")
+PACKAGE_REMOVE=("apt-get -y remove" "apt-get -y remove" "yum -y remove" "yum -y remove" "yum -y remove" "pacman -Rsc --noconfirm" "pkg delete")
+PACKAGE_UNINSTALL=("apt-get -y autoremove" "apt-get -y autoremove" "yum -y autoremove" "yum -y autoremove" "yum -y autoremove" "" "pkg autoremove")
+
+CMD=("$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(hostnamectl 2>/dev/null | grep -i system | cut -d : -f2)" "$(lsb_release -sd 2>/dev/null)" "$(grep -i description /etc/lsb-release 2>/dev/null | cut -d \" -f2)" "$(grep . /etc/redhat-release 2>/dev/null)" "$(grep . /etc/issue 2>/dev/null | cut -d \\ -f1 | sed '/^[ ]*$/d')" "$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(uname -s)") 
 SYS="${CMD[0]}"
 [[ -n $SYS ]] || exit 1
 for ((int = 0; int < ${#REGEX[@]}; int++)); do
@@ -79,29 +80,48 @@ check_cdn_file() {
 check_time_zone(){
     _yellow "adjusting the time"
     if command -v ntpd > /dev/null 2>&1; then
-        systemctl stop chronyd
-        systemctl stop ntpd
-        ntpd -gq
-        systemctl start ntpd
+        if which systemctl >/dev/null 2>&1; then
+            systemctl stop chronyd
+            systemctl stop ntpd
+            ntpd -gq
+            systemctl start ntpd
+        else
+            service chronyd stop
+            service ntpd stop
+            ntpd -gq
+            service ntpd start
+        fi
         sleep 0.5
         return
     fi
     if ! command -v chronyd > /dev/null 2>&1; then
         ${PACKAGE_INSTALL[int]} chrony > /dev/null 2>&1
     fi
-    systemctl stop chronyd
-    chronyd -q
-    systemctl start chronyd
+    if which systemctl >/dev/null 2>&1; then
+        systemctl stop chronyd
+        chronyd -q
+        systemctl start chronyd
+    else
+        service chronyd stop
+        chronyd -q
+        service chronyd start
+    fi
     sleep 0.5
 }
 
 checkhaveged(){
+    [ "${Var_OSRelease}" = "freebsd" ] && return
     _yellow "checking haveged"
     if ! command -v haveged > /dev/null 2>&1; then
         ${PACKAGE_INSTALL[int]} haveged > /dev/null 2>&1
     fi
-    systemctl disable --now haveged
-    systemctl enable --now haveged
+    if which systemctl >/dev/null 2>&1; then
+        systemctl disable --now haveged
+        systemctl enable --now haveged
+    else
+        service haveged stop
+        service haveged start
+    fi
 }
 
 declare -A sysctl_vars=(
@@ -169,30 +189,32 @@ root soft nproc 512000
 root hard nproc 512000
 EOF
     fi
-    _yellow "optimizing sysctl configuration"
-    declare -A default_values
-    if [ -f "$sysctl_conf" ]; then
-        if [ ! -f "$sysctl_conf_backup" ]; then
-            cp "$sysctl_conf" "$sysctl_conf_backup"
-        fi
-        while IFS= read -r line; do
-            variable="${line%%=*}"
-            variable="${variable%%[[:space:]]*}"
-            default_value="${line#*=}"
-            default_values["$variable"]="$default_value"
-        done < <($sysctl_path -a)
-        echo "" > "$sysctl_default"
-        for variable in "${!sysctl_vars[@]}"; do
-            value="${sysctl_vars[$variable]}"
-            if variable_exists "$variable"; then
-                sed -i "s/^$variable=.*/$variable=$value/" "$sysctl_conf"
-            else
-                echo "$variable=$value" >> "$sysctl_conf"
-                default_value="${default_values[$variable]}"
-                echo "$variable=$default_value" >> "$sysctl_default"
+    if which systemctl >/dev/null 2>&1; then
+        _yellow "optimizing sysctl configuration"
+        declare -A default_values
+        if [ -f "$sysctl_conf" ]; then
+            if [ ! -f "$sysctl_conf_backup" ]; then
+                cp "$sysctl_conf" "$sysctl_conf_backup"
             fi
-        done
-        $sysctl_path -p 2> /dev/null
+            while IFS= read -r line; do
+                variable="${line%%=*}"
+                variable="${variable%%[[:space:]]*}"
+                default_value="${line#*=}"
+                default_values["$variable"]="$default_value"
+            done < <($sysctl_path -a)
+            echo "" > "$sysctl_default"
+            for variable in "${!sysctl_vars[@]}"; do
+                value="${sysctl_vars[$variable]}"
+                if variable_exists "$variable"; then
+                    sed -i "s/^$variable=.*/$variable=$value/" "$sysctl_conf"
+                else
+                    echo "$variable=$value" >> "$sysctl_conf"
+                    default_value="${default_values[$variable]}"
+                    echo "$variable=$default_value" >> "$sysctl_default"
+                fi
+            done
+            $sysctl_path -p 2> /dev/null
+        fi
     fi
 }
 
@@ -206,6 +228,7 @@ checkping() {
 }
 
 checkpip(){
+    [ "${Var_OSRelease}" = "freebsd" ] && curl -L https://bootstrap.pypa.io/get-pip.py -o get-pip.py && chmod +x get-pip.py && python3 get-pip.py && rm -rf get-pip.py && return
     local pvr="$1"
     local pip_version=$(pip --version 2>&1)
     if [[ $? -eq 0 && $pip_version != *"command not found"* ]]; then
@@ -388,15 +411,17 @@ reset_default_sysctl(){
         cp /etc/security/limits.conf.backup /etc/security/limits.conf
         rm /etc/security/limits.conf.backup
     fi
-    if [ -f "$sysctl_conf" ]; then
-        cp "$sysctl_conf_backup" "$sysctl_conf"
-        cat "$sysctl_default" >> "$sysctl_conf"
+    if which systemctl >/dev/null 2>&1; then
+        if [ -f "$sysctl_conf" ]; then
+            cp "$sysctl_conf_backup" "$sysctl_conf"
+            cat "$sysctl_default" >> "$sysctl_conf"
+            $sysctl_path -p 2> /dev/null
+            cp "$sysctl_conf_backup" "$sysctl_conf"
+            rm "$sysctl_conf_backup"
+            rm "$sysctl_default"
+        fi
         $sysctl_path -p 2> /dev/null
-        cp "$sysctl_conf_backup" "$sysctl_conf"
-        rm "$sysctl_conf_backup"
-        rm "$sysctl_default"
     fi
-    $sysctl_path -p 2> /dev/null
 }
 
 global_exit_action() {
@@ -434,21 +459,20 @@ get_opsy() {
 
 next() {
     echo -en "\r"
+    [ "${Var_OSRelease}" = "freebsd" ] && printf "%-72s\n" "-" | tr ' ' '-' && return
     printf "%-72s\n" "-" | sed 's/\s/-/g'
 }
 
 # =============== 检查 Virt-what 组件 ===============
 check_virtwhat() {
     if [ ! -f "/usr/sbin/virt-what" ]; then
-        SystemInfo_GetOSRelease
+        echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
         if [[ "${Var_OSRelease}" =~ ^(centos|rhel|almalinux|arch)$ ]]; then
-            echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             yum -y install virt-what
             if [ $? -ne 0 ]; then
                 dnf -y install virt-what
             fi
         elif [ "${Var_OSRelease}" = "astra" ]; then
-            echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             apt-get install -y virt-what
             if [ $? -ne 0 ]; then
                 echo "deb http://deb.debian.org/debian ${Var_OSReleaseVersion_Codename} main contrib non-free" >> /etc/apt/sources.list
@@ -467,10 +491,8 @@ check_virtwhat() {
                 fi
                 rm "$temp_file_apt_fix"
             fi
-            
             apt-get install -y virt-what
         elif [[ "${Var_OSRelease}" =~ ^debian$ ]]; then
-            echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             apt-get install -y virt-what
             if [ $? -ne 0 ]; then
                 echo "Retrying with additional options..."
@@ -483,58 +505,33 @@ check_virtwhat() {
                 apt-get install -y virt-what --allow
             fi
         elif [[ "${Var_OSRelease}" =~ ^ubuntu$ ]]; then
-            echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             apt-get install -y virt-what
             if [ $? -ne 0 ]; then
                 echo "Retrying with additional options..."
                 apt-get install -y virt-what -y --allow-unauthenticated
             fi
         elif [ "${Var_OSRelease}" = "fedora" ]; then
-            echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             dnf -y install virt-what
         elif [ "${Var_OSRelease}" = "alpinelinux" ]; then
-            echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             apk update
             apk add virt-what
         elif [ "${Var_OSRelease}" = "arch" ]; then
-            echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
             pacman -Sy --needed --noconfirm virt-what
+        elif [ "${Var_OSRelease}" = "freebsd" ]; then
+            pkg install -y virt-what
         else
             echo -e "${Msg_Warning}Virt-What Module not found, but we could not find the os's release ..."
         fi
     fi
     # 二次检测
-    if [ ! -f "/usr/sbin/virt-what" ]; then
-        echo -e "Virt-What Moudle install Failure! Try Restart Bench or Manually install it! (/usr/sbin/virt-what)"
+    if ! which virt-what >/dev/null 2>&1; then
+        echo -e "Virt-What Moudle install Failure! Try Restart Bench or Manually install it!"
         exit 1
     fi
 }
 
 checkroot(){
 	[[ $EUID -ne 0 ]] && echo -e "${RED}请使用 root 用户运行本脚本！${PLAIN}" && exit 1
-}
-
-checksystem() {
-	if [ -f /etc/redhat-release ]; then
-	    release="centos"
-	elif cat /etc/issue | grep -Eqi "debian"; then
-	    release="debian"
-	elif cat /etc/issue | grep -Eqi "ubuntu"; then
-	    release="ubuntu"
-	elif cat /etc/issue | grep -Eqi "centos|red hat|redhat"; then
-	    release="centos"
-	elif cat /proc/version | grep -Eqi "debian"; then
-	    release="debian"
-	elif cat /proc/version | grep -Eqi "ubuntu"; then
-	    release="ubuntu"
-	elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
-	    release="centos"
-    elif cat /etc/os-release | grep -Eqi "almalinux"; then
-        release="centos"
-    elif cat /proc/version | grep -Eqi "arch"; then
-        release="arch"
-	fi
-    DISTRO=$(grep 'PRETTY_NAME' /etc/os-release | cut -d '"' -f 2 )
 }
 
 checkupdate(){
@@ -580,10 +577,10 @@ checkdmidecode(){
 checkdnsutils() {
 	if  [ ! -e '/usr/bin/dnsutils' ]; then
             _yellow "Installing dnsutils"
-	            if [ "${release}" == "centos" ]; then
+	            if [ "${Var_OSRelease}" == "centos" ]; then
 	                    yum -y install dnsutils > /dev/null 2>&1
                         yum -y install bind-utils > /dev/null 2>&1
-	                elif [ "${release}" == "arch" ]; then
+	                elif [ "${Var_OSRelease}" == "arch" ]; then
                         pacman -S --noconfirm --needed bind > /dev/null 2>&1
                     else
 	                    ${PACKAGE_INSTALL[int]} dnsutils > /dev/null 2>&1
@@ -611,9 +608,17 @@ checkwget() {
 }
 
 checkfree() {
+    [ "${Var_OSRelease}" = "freebsd" ] && return
 	if ! command -v free > /dev/null 2>&1; then
-            _yellow "Installing procps"
-	        ${PACKAGE_INSTALL[int]} procps
+        _yellow "Installing procps"
+	    ${PACKAGE_INSTALL[int]} procps
+	fi
+}
+
+checklscpu() {
+	if ! command -v lscpu > /dev/null 2>&1; then
+        _yellow "Installing lscpu"
+	    ${PACKAGE_INSTALL[int]} lscpu
 	fi
 }
 
@@ -666,24 +671,24 @@ check_china(){
     fi
 }
 
-checkssh() {
-	for i in "${CMD[@]}"; do
-		SYS="$i" && [[ -n $SYS ]] && break
-	done
-	for ((int=0; int<${#REGEX[@]}; int++)); do
-		[[ $(echo "$SYS" | tr '[:upper:]' '[:lower:]') =~ ${REGEX[int]} ]] && SYSTEM="${RELEASE[int]}" && [[ -n $SYSTEM ]] && break
-	done
-	echo "开启22端口中，以便于测试IP是否被阻断"
-	sshport=22
-	[[ ! -f /etc/ssh/sshd_config ]] && sudo ${PACKAGE_UPDATE[int]} && sudo ${PACKAGE_INSTALL[int]} openssh-server
-	[[ -z $(type -P curl) ]] && sudo ${PACKAGE_UPDATE[int]} && sudo ${PACKAGE_INSTALL[int]} curl
-	sudo sed -i "s/^#\?Port.*/Port $sshport/g" /etc/ssh/sshd_config;
-	sudo service ssh restart >/dev/null 2>&1  # 某些VPS系统的ssh服务名称为ssh，以防无法重启服务导致无法立刻使用密码登录
-    sudo systemctl restart sshd >/dev/null 2>&1 # Arch Linux没有使用init.d
-    sudo systemctl restart ssh >/dev/null 2>&1
-	sudo service sshd restart >/dev/null 2>&1
-	echo "开启22端口完毕"
-}
+# checkssh() {
+# 	for i in "${CMD[@]}"; do
+# 		SYS="$i" && [[ -n $SYS ]] && break
+# 	done
+# 	for ((int=0; int<${#REGEX[@]}; int++)); do
+# 		[[ $(echo "$SYS" | tr '[:upper:]' '[:lower:]') =~ ${REGEX[int]} ]] && SYSTEM="${RELEASE[int]}" && [[ -n $SYSTEM ]] && break
+# 	done
+# 	echo "开启22端口中，以便于测试IP是否被阻断"
+# 	sshport=22
+# 	[[ ! -f /etc/ssh/sshd_config ]] && sudo ${PACKAGE_UPDATE[int]} && sudo ${PACKAGE_INSTALL[int]} openssh-server
+# 	[[ -z $(type -P curl) ]] && sudo ${PACKAGE_UPDATE[int]} && sudo ${PACKAGE_INSTALL[int]} curl
+# 	sudo sed -i "s/^#\?Port.*/Port $sshport/g" /etc/ssh/sshd_config;
+# 	sudo service ssh restart >/dev/null 2>&1  # 某些VPS系统的ssh服务名称为ssh，以防无法重启服务导致无法立刻使用密码登录
+#     sudo systemctl restart sshd >/dev/null 2>&1 # Arch Linux没有使用init.d
+#     sudo systemctl restart ssh >/dev/null 2>&1
+# 	sudo service sshd restart >/dev/null 2>&1
+# 	echo "开启22端口完毕"
+# }
 
 download_speedtest_file() {
     file="./speedtest-cli/speedtest"
@@ -1062,7 +1067,7 @@ get_nearest_data2() {
     echo "${sorted_data[@]}"
 }
 
-SystemInfo_GetOSRelease() {
+systemInfo_get_os_release() {
     if [ -f "/etc/centos-release" ]; then # CentOS
         Var_OSRelease="centos"
         if [ "$(rpm -qa | grep -o el6 | sort -u)" = "el6" ]; then
@@ -1150,15 +1155,19 @@ SystemInfo_GetOSRelease() {
         local Var_OSReleaseVersion="$(cat /etc/almalinux-release | awk '{print $3,$4,$5,$6,$7}')"
     elif [ -f "/etc/arch-release" ]; then # archlinux
         Var_OSRelease="arch"
+    elif [ -f "/etc/freebsd-update.conf" ] && [ -d "/usr/src" ]; then # freebsd
+        Var_OSRelease="freebsd"
     else
         Var_OSRelease="unknown" # 未知系统分支
+    fi
+    if [ -f /etc/os-release ]; then
+        DISTRO=$(grep 'PRETTY_NAME' /etc/os-release | cut -d '"' -f 2)
     fi
 }
 
 # =============== 检查 SysBench 组件 ===============
 GetOSRelease() {
   local OS_TYPE
-  SystemInfo_GetOSRelease
   case "${Var_OSRelease}" in
     centos|rhel|almalinux) OS_TYPE="redhat";;
     ubuntu) OS_TYPE="ubuntu";;
@@ -1166,6 +1175,7 @@ GetOSRelease() {
     fedora) OS_TYPE="fedora";;
     alpinelinux) OS_TYPE="alpinelinux";;
     arch) OS_TYPE="arch";;
+    freebsd) OS_TYPE="freebsd";;
     *) OS_TYPE="unknown";;
   esac
   echo "${OS_TYPE}"
@@ -1197,6 +1207,7 @@ InstallSysbench() {
       fi ;;
     fedora) dnf -y install sysbench ;;
     arch) pacman -S --needed --noconfirm sysbench ;;
+    freebsd) pkg install -y sysbench ;;
     alpinelinux) echo -e "${Msg_Warning}Sysbench Module not found, installing ..." && echo -e "${Msg_Warning}SysBench Current not support Alpine Linux, Skipping..." && Var_Skip_SysBench="1" ;;
     *) echo "Error: Unknown OS release: $os_release" && exit 1 ;;
   esac
@@ -1228,7 +1239,6 @@ Check_SysBench() {
 }
 
 Check_Sysbench_InstantBuild() {
-    SystemInfo_GetOSRelease
     if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux" ] || [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ] || [ "${Var_OSRelease}" = "fedora" ] || [ "${Var_OSRelease}" = "arch" ] || [ "${Var_OSRelease}" = "astra" ]; then
         local os_sysbench=${Var_OSRelease}
         if [ "$os_sysbench" = "astra" ]; then
@@ -1292,7 +1302,7 @@ Run_SysBench_CPU() {
     done
     local ResultScore="$(echo "${TotalScore} ${maxtestcount}" | awk '{printf "%d",$1/$2}')"
     if [ "$1" = "1" ]; then
-        if [ "$ResultScore" -eq "0" ]; then
+        if [ "$ResultScore" -eq "0" ] || ([ "$1" -lt "2" ] && [ "$ResultScore" -gt "100000" ]); then
             echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_Red}sysbench测试失效，请使用本脚本选项6中的gb4或gb5测试${Font_Suffix}"
             echo -e " $4:\t\tsysbench测试失效，请使用本脚本选项6中的gb4或gb5测试" >>${WorkDir}/SysBench/CPU/result.txt
         else
@@ -1300,7 +1310,7 @@ Run_SysBench_CPU() {
             echo -e " $4:\t\t\t${ResultScore} Scores" >>${WorkDir}/SysBench/CPU/result.txt
         fi
     elif [ "$1" -ge "2" ]; then
-        if [ "$ResultScore" -eq "0" ]; then
+        if [ "$ResultScore" -eq "0" ] || ([ "$1" -lt "2" ] && [ "$ResultScore" -gt "100000" ]); then
             echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_Red}sysbench测试失效，请使用本脚本选项5中的gb4或gb5测试${Font_Suffix}"
             echo -e " $4:\t\tsysbench测试失效，请使用本脚本选项5中的gb4或gb5测试" >>${WorkDir}/SysBench/CPU/result.txt
         else
@@ -1327,54 +1337,93 @@ Function_SysBench_CPU_Fast() {
 # =============== SystemInfo模块 部分 ===============
 SystemInfo_GetCPUInfo() {
     mkdir -p ${WorkDir}/data >/dev/null 2>&1
-    cat /proc/cpuinfo >${WorkDir}/data/cpuinfo
-    local ReadCPUInfo="cat ${WorkDir}/data/cpuinfo"
-    LBench_Result_CPUModelName="$($ReadCPUInfo | awk -F ': ' '/model name/{print $2}' | sort -u)"
-    local CPUFreqCount="$($ReadCPUInfo | awk -F ': ' '/cpu MHz/{print $2}' | sort -run | wc -l)"
-    if [ "${CPUFreqCount}" -ge "2" ]; then
-        local CPUFreqArray="$(cat /proc/cpuinfo | awk -F ': ' '/cpu MHz/{print $2}' | sort -run)"
-        local CPUFreq_Min="$(echo "$CPUFreqArray" | grep -oE '[0-9]+.[0-9]{3}' | awk 'BEGIN {min = 2147483647} {if ($1+0 < min+0) min=$1} END {print min}')"
-        local CPUFreq_Max="$(echo "$CPUFreqArray" | grep -oE '[0-9]+.[0-9]{3}' | awk 'BEGIN {max = 0} {if ($1+0 > max+0) max=$1} END {print max}')"
-        LBench_Result_CPUFreqMinGHz="$(echo $CPUFreq_Min | awk '{printf "%.2f\n",$1/1000}')"
-        LBench_Result_CPUFreqMaxGHz="$(echo $CPUFreq_Max | awk '{printf "%.2f\n",$1/1000}')"
-        Flag_DymanicCPUFreqDetected="1"
-    else
-        LBench_Result_CPUFreqMHz="$($ReadCPUInfo | awk -F ': ' '/cpu MHz/{print $2}' | sort -u)"
-        LBench_Result_CPUFreqGHz="$(echo $LBench_Result_CPUFreqMHz | awk '{printf "%.2f\n",$1/1000}')"
-        Flag_DymanicCPUFreqDetected="0"
-    fi
-    LBench_Result_CPUCacheSize="$($ReadCPUInfo | awk -F ': ' '/cache size/{print $2}' | sort -u)"
-    LBench_Result_CPUPhysicalNumber="$($ReadCPUInfo | awk -F ': ' '/physical id/{print $2}' | sort -u | wc -l)"
-    LBench_Result_CPUCoreNumber="$($ReadCPUInfo | awk -F ': ' '/cpu cores/{print $2}' | sort -u)"
-    LBench_Result_CPUThreadNumber="$($ReadCPUInfo | awk -F ': ' '/cores/{print $2}' | wc -l)"
-    LBench_Result_CPUProcessorNumber="$($ReadCPUInfo | awk -F ': ' '/processor/{print $2}' | wc -l)"
-    LBench_Result_CPUSiblingsNumber="$($ReadCPUInfo | awk -F ': ' '/siblings/{print $2}' | sort -u)"
-    LBench_Result_CPUTotalCoreNumber="$($ReadCPUInfo | awk -F ': ' '/physical id/&&/0/{print $2}' | wc -l)"
-    
-    # 虚拟化能力检测
-    SystemInfo_GetVirtType
-    if [ "${Var_VirtType}" = "dedicated" ] || [ "${Var_VirtType}" = "wsl" ]; then
-        LBench_Result_CPUIsPhysical="1"
-        local VirtCheck="$(cat /proc/cpuinfo | grep -oE 'vmx|svm' | uniq)"
-        if [ "${VirtCheck}" != "" ]; then
-            LBench_Result_CPUVirtualization="1"
-            local VirtualizationType="$(lscpu | awk /Virtualization:/'{print $2}')"
-            LBench_Result_CPUVirtualizationType="${VirtualizationType}"
+    if [ -f "/proc/cpuinfo" ]; then
+        cat /proc/cpuinfo >${WorkDir}/data/cpuinfo
+        local ReadCPUInfo="cat ${WorkDir}/data/cpuinfo"
+        LBench_Result_CPUModelName="$($ReadCPUInfo | awk -F ': ' '/model name/{print $2}' | sort -u)"
+        local CPUFreqCount="$($ReadCPUInfo | awk -F ': ' '/cpu MHz/{print $2}' | sort -run | wc -l)"
+        if [ "${CPUFreqCount}" -ge "2" ]; then
+            local CPUFreqArray="$(cat /proc/cpuinfo | awk -F ': ' '/cpu MHz/{print $2}' | sort -run)"
+            local CPUFreq_Min="$(echo "$CPUFreqArray" | grep -oE '[0-9]+.[0-9]{3}' | awk 'BEGIN {min = 2147483647} {if ($1+0 < min+0) min=$1} END {print min}')"
+            local CPUFreq_Max="$(echo "$CPUFreqArray" | grep -oE '[0-9]+.[0-9]{3}' | awk 'BEGIN {max = 0} {if ($1+0 > max+0) max=$1} END {print max}')"
+            LBench_Result_CPUFreqMinGHz="$(echo $CPUFreq_Min | awk '{printf "%.2f\n",$1/1000}')"
+            LBench_Result_CPUFreqMaxGHz="$(echo $CPUFreq_Max | awk '{printf "%.2f\n",$1/1000}')"
+            Flag_DymanicCPUFreqDetected="1"
         else
-            LBench_Result_CPUVirtualization="0"
+            LBench_Result_CPUFreqMHz="$($ReadCPUInfo | awk -F ': ' '/cpu MHz/{print $2}' | sort -u)"
+            LBench_Result_CPUFreqGHz="$(echo $LBench_Result_CPUFreqMHz | awk '{printf "%.2f\n",$1/1000}')"
+            Flag_DymanicCPUFreqDetected="0"
         fi
-    elif [ "${Var_VirtType}" = "kvm" ] || [ "${Var_VirtType}" = "hyperv" ] || [ "${Var_VirtType}" = "microsoft" ] || [ "${Var_VirtType}" = "vmware" ]; then
-        LBench_Result_CPUIsPhysical="0"
-        local VirtCheck="$(cat /proc/cpuinfo | grep -oE 'vmx|svm' | uniq)"
-        if [ "${VirtCheck}" = "vmx" ] || [ "${VirtCheck}" = "svm" ]; then
-            LBench_Result_CPUVirtualization="2"
-            local VirtualizationType="$(lscpu | awk /Virtualization:/'{print $2}')"
-            LBench_Result_CPUVirtualizationType="${VirtualizationType}"
+        LBench_Result_CPUCacheSize="$($ReadCPUInfo | awk -F ': ' '/cache size/{print $2}' | sort -u)"
+        LBench_Result_CPUPhysicalNumber="$($ReadCPUInfo | awk -F ': ' '/physical id/{print $2}' | sort -u | wc -l)"
+        LBench_Result_CPUCoreNumber="$($ReadCPUInfo | awk -F ': ' '/cpu cores/{print $2}' | sort -u)"
+        LBench_Result_CPUThreadNumber="$($ReadCPUInfo | awk -F ': ' '/cores/{print $2}' | wc -l)"
+        LBench_Result_CPUProcessorNumber="$($ReadCPUInfo | awk -F ': ' '/processor/{print $2}' | wc -l)"
+        LBench_Result_CPUSiblingsNumber="$($ReadCPUInfo | awk -F ': ' '/siblings/{print $2}' | sort -u)"
+        LBench_Result_CPUTotalCoreNumber="$($ReadCPUInfo | awk -F ': ' '/physical id/&&/0/{print $2}' | wc -l)"
+        
+        # 虚拟化能力检测
+        SystemInfo_GetVirtType
+        if [ "${Var_VirtType}" = "dedicated" ] || [ "${Var_VirtType}" = "wsl" ]; then
+            LBench_Result_CPUIsPhysical="1"
+            local VirtCheck="$(cat /proc/cpuinfo | grep -oE 'vmx|svm' | uniq)"
+            if [ "${VirtCheck}" != "" ]; then
+                LBench_Result_CPUVirtualization="1"
+                local VirtualizationType="$(lscpu | awk /Virtualization:/'{print $2}')"
+                LBench_Result_CPUVirtualizationType="${VirtualizationType}"
+            else
+                LBench_Result_CPUVirtualization="0"
+            fi
+        elif [ "${Var_VirtType}" = "kvm" ] || [ "${Var_VirtType}" = "hyperv" ] || [ "${Var_VirtType}" = "microsoft" ] || [ "${Var_VirtType}" = "vmware" ]; then
+            LBench_Result_CPUIsPhysical="0"
+            local VirtCheck="$(cat /proc/cpuinfo | grep -oE 'vmx|svm' | uniq)"
+            if [ "${VirtCheck}" = "vmx" ] || [ "${VirtCheck}" = "svm" ]; then
+                LBench_Result_CPUVirtualization="2"
+                local VirtualizationType="$(lscpu | awk /Virtualization:/'{print $2}')"
+                LBench_Result_CPUVirtualizationType="${VirtualizationType}"
+            else
+                LBench_Result_CPUVirtualization="0"
+            fi        
         else
-            LBench_Result_CPUVirtualization="0"
-        fi        
+            LBench_Result_CPUIsPhysical="0"
+        fi
     else
-        LBench_Result_CPUIsPhysical="0"
+        $sysctl_path -a >${WorkDir}/data/sysctl_info
+        local ReadCPUInfo="cat ${WorkDir}/data/sysctl_info"
+        LBench_Result_CPUModelName="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.model/{print $2}' | sort -u)"
+        LBench_Result_CPUFreqMHz="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/dev.cpu.0.freq/{print $2}')"
+        LBench_Result_CPUCacheSize="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.cacheconfig/{print $2}')"
+        LBench_Result_CPUFreqGHz="$(echo $LBench_Result_CPUFreqMHz | awk '{printf "%.2f\n",$1/1000}')"
+        LBench_Result_CPUPhysicalNumber="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.physicalcpu/{print $2}')"
+        LBench_Result_CPUCoreNumber="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.ncpu/{print $2}')"
+        LBench_Result_CPUThreadNumber="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.ncpu/{print $2}')"
+        LBench_Result_CPUProcessorNumber="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.ncpu/{print $2}')"
+        LBench_Result_CPUSiblingsNumber="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.smt/{print $2}')"
+        LBench_Result_CPUTotalCoreNumber="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.ncpu/{print $2}')"
+
+        # 虚拟化能力检测
+        SystemInfo_GetVirtType
+        if [ "${Var_VirtType}" = "dedicated" ] || [ "${Var_VirtType}" = "wsl" ]; then
+            LBench_Result_CPUIsPhysical="1"
+            local VirtCheck="$($sysctl_path -a | grep -E 'hw.vmx|hw.svm' | uniq)"
+            if [ "${VirtCheck}" != "" ]; then
+                LBench_Result_CPUVirtualization="1"
+                LBench_Result_CPUVirtualizationType="Native"
+            else
+                LBench_Result_CPUVirtualization="0"
+            fi
+        elif [ "${Var_VirtType}" = "kvm" ] || [ "${Var_VirtType}" = "hyperv" ] || [ "${Var_VirtType}" = "microsoft" ] || [ "${Var_VirtType}" = "vmware" ]; then
+            LBench_Result_CPUIsPhysical="0"
+            local VirtCheck="$($sysctl_path -a | grep -E 'hw.vmx|hw.svm' | uniq)"
+            if [ "${VirtCheck}" != "" ]; then
+                LBench_Result_CPUVirtualization="2"
+                LBench_Result_CPUVirtualizationType="${Var_VirtType}"
+            else
+                LBench_Result_CPUVirtualization="0"
+            fi
+        else
+            LBench_Result_CPUIsPhysical="0"
+        fi
     fi
 }
 
@@ -1455,15 +1504,19 @@ SystemInfo_GetVirtType() {
                 fi
                 ;;
         esac
-    elif [ ! -f "/usr/sbin/virt-what" ]; then
-        Var_VirtType="Unknown"
-        LBench_Result_VirtType="[Error: virt-what not found !]"
     elif [ -f "/.dockerenv" ]; then # 处理Docker虚拟化
         Var_VirtType="docker"
         LBench_Result_VirtType="Docker"
     elif [ -c "/dev/lxss" ]; then # 处理WSL虚拟化
         Var_VirtType="wsl"
         LBench_Result_VirtType="Windows Subsystem for Linux (WSL)"
+    elif $sysctl_path kern.vm_guest >/dev/null 2>&1 && Var_VirtType=$($sysctl_path -n kern.vm_guest 2>/dev/null); then
+        LBench_Result_VirtType="Virtualization platform: $Var_VirtType"
+    elif $sysctl_path -a | grep hw.vmm >/dev/null 2>&1 && Var_VirtType=$($sysctl_path -n hw.vmm 2>/dev/null); then
+        LBench_Result_VirtType="Virtualization platform: $Var_VirtType"
+    elif [ ! -f "/usr/sbin/virt-what" ] && [ ! -f "/usr/local/sbin/virt-what" ]; then
+        Var_VirtType="Unknown"
+        LBench_Result_VirtType="[Error: virt-what not found !]"
     else # 正常判断流程
         Var_VirtType="$(virt-what | xargs)"
         local Var_VirtTypeCount="$(echo $Var_VirtTypeCount | wc -l)"
@@ -1517,6 +1570,7 @@ speed_test2() {
 }
 
 speed() {
+    [ "${Var_OSRelease}" = "freebsd" ] && return
     temp_head
     speed_test '' 'Speedtest.net'
     test_list "${ls_sg_hk_jp[@]}"
@@ -1546,6 +1600,7 @@ speed() {
 }
 
 speed2() {
+    [ "${Var_OSRelease}" = "freebsd" ] && return
     temp_head
     speed_test '' 'Speedtest.net'
     test_list "${CN_Unicom[0]}"
@@ -1633,7 +1688,6 @@ Function_DiskTest_Fast() {
     echo -e " ${Font_Yellow}-> 磁盘IO测试中 (4K Block/1M Block, Direct Mode)${Font_Suffix}"
     echo -e " -> 磁盘IO测试中 (4K Block/1M Block, Direct Mode)\n" >>${WorkDir}/DiskTest/result.txt
     SystemInfo_GetVirtType
-    SystemInfo_GetOSRelease
     if [ "${Var_VirtType}" = "docker" ] || [ "${Var_VirtType}" = "wsl" ]; then
         echo -e " ${Msg_Warning}Due to virt architecture limit, the result may affect by the cache !"
     fi
@@ -1881,7 +1935,47 @@ print_intro() {
 
 get_system_info() {
 	arch=$( uname -m )
-    cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
+    disk_size1=($( LC_ALL=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|snapd' | awk '{print $2}' ))
+    disk_size2=($( LC_ALL=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|snapd' | awk '{print $3}' ))
+    disk_total_size=$( calc_disk "${disk_size1[@]}" )
+    disk_used_size=$( calc_disk "${disk_size2[@]}" )
+    if [ -f "/proc/cpuinfo" ]; then
+        cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
+        cores=$( awk -F: '/processor/ {core++} END {print core}' /proc/cpuinfo )
+        freq=$( awk -F'[ :]' '/cpu MHz/ {print $4;exit}' /proc/cpuinfo )
+        ccache=$( awk -F: '/cache size/ {cache=$2} END {print cache}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
+        CPU_AES=$(cat /proc/cpuinfo | grep aes)
+        CPU_VIRT=$(cat /proc/cpuinfo | grep 'vmx\|svm')
+        up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60} {printf("%d days, %d hour %d min\n",a,b,c)}' /proc/uptime )
+        if _exists "w"; then
+            load=$( LANG=C; w | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
+        elif _exists "uptime"; then
+            load=$( LANG=C; uptime | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
+        fi
+    elif [ "${Var_OSRelease}" = "freebsd" ]; then
+        cname=$($sysctl_path -n hw.model)
+        cores=$($sysctl_path -n hw.ncpu)
+        freq=$($sysctl_path -n dev.cpu.0.freq 2>/dev/null || echo "")
+        ccache=$($sysctl_path -n hw.cacheconfig 2>/dev/null | awk -F: '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' || echo "")
+        CPU_AES=$($sysctl_path -a | grep -E 'crypto.aesni' | awk '{print $2}')
+        CPU_VIRT=$($sysctl_path -a | grep -E 'hw.vmx|hw.svm' | awk '{print $2}')
+        up=$($sysctl_path -n kern.boottime | perl -MPOSIX -nE 'if (/sec = (\d+), usec = (\d+)/) { $boottime = $1; $uptime = time() - $boottime; $days = int($uptime / 86400); $hours = int(($uptime % 86400) / 3600); $minutes = int(($uptime % 3600) / 60); say "$days days, $hours hours, $minutes minutes" }')
+        if _exists "w"; then
+            load=$( w | awk '{print $(NF-2), $(NF-1), $NF}' | head -n 1 )
+        elif _exists "uptime"; then
+            load=$( uptime | awk '{print $(NF-2), $(NF-1), $NF}' )
+        fi
+        disk_total_size=0
+        disk_used_size=0
+        for size in "${disk_size1[@]}"; do
+            size_gb=$(expr $size / 1024 / 1024)  # 转换为GB单位
+            disk_total_size=$(expr $disk_total_size + $size_gb)  # 总大小累加
+        done
+        for size in "${disk_size2[@]}"; do
+            size_gb=$(expr $size / 1024 / 1024)  # 转换为GB单位
+            disk_used_size=$(expr $disk_used_size + $size_gb)  # 已用空间累加
+        done
+    fi
     if [ -z "$cname" ] || [ ! -e /proc/cpuinfo ]; then
         cname=$(lscpu | grep "Model name" | sed 's/Model name: *//g')
         if [ $? -ne 0 ]; then
@@ -1893,25 +1987,23 @@ get_system_info() {
         fi
     fi
     cname=$(echo -n "$cname" | tr '\n' ' ' | sed -E 's/ +/ /g')
-    cores=$( awk -F: '/processor/ {core++} END {print core}' /proc/cpuinfo )
-    freq=$( awk -F'[ :]' '/cpu MHz/ {print $4;exit}' /proc/cpuinfo )
-    ccache=$( awk -F: '/cache size/ {cache=$2} END {print cache}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
-    if free -m | grep -q '内存'; then  # 如果输出中包含 "内存" 关键词
-        tram=$(free -m | awk '/内存/{print $2}')
-        uram=$(free -m | awk '/内存/{print $3}')
-        swap=$(free -m | awk '/交换/{print $2}')
-        uswap=$(free -m | awk '/交换/{print $3}')
-    else  # 否则，假定输出是英文的
-        tram=$(LANG=C; free -m | awk '/Mem/ {print $2}')
-        uram=$(LANG=C; free -m | awk '/Mem/ {print $3}')
-        swap=$(LANG=C; free -m | awk '/Swap/ {print $2}')
-        uswap=$(LANG=C; free -m | awk '/Swap/ {print $3}')
-    fi
-    up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60} {printf("%d days, %d hour %d min\n",a,b,c)}' /proc/uptime )
-    if _exists "w"; then
-        load=$( LANG=C; w | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
-    elif _exists "uptime"; then
-        load=$( LANG=C; uptime | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
+    if command -v free > /dev/null 2>&1; then
+        if free -m | grep -q '内存'; then  # 如果输出中包含 "内存" 关键词
+            tram=$(free -m | awk '/内存/{print $2}')
+            uram=$(free -m | awk '/内存/{print $3}')
+            swap=$(free -m | awk '/交换/{print $2}')
+            uswap=$(free -m | awk '/交换/{print $3}')
+        else  # 否则，假定输出是英文的
+            tram=$(LANG=C; free -m | awk '/Mem/ {print $2}')
+            uram=$(LANG=C; free -m | awk '/Mem/ {print $3}')
+            swap=$(LANG=C; free -m | awk '/Swap/ {print $2}')
+            uswap=$(LANG=C; free -m | awk '/Swap/ {print $3}')
+        fi
+    else
+        tram=$($sysctl_path -n hw.physmem | awk '{printf "%.0f", $1/1024/1024}')
+        uram=$($sysctl_path -n vm.stats.vm.v_active_count | awk '{printf "%.0f", $1/1024}')
+        swap=$(swapinfo -k | awk 'NR>1{sum+=$2} END{printf "%.0f", sum/1024}')
+        uswap=$(swapinfo -k | awk 'NR>1{sum+=$4} END{printf "%.0f", sum/1024}')
     fi
     opsy=$( get_opsy )
     if _exists "getconf"; then
@@ -1920,10 +2012,6 @@ get_system_info() {
         echo ${arch} | grep -q "64" && lbit="64" || lbit="32"
     fi
     kern=$( uname -r )
-    disk_size1=($( LC_ALL=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|snapd' | awk '{print $2}' ))
-    disk_size2=($( LC_ALL=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|snapd' | awk '{print $3}' ))
-    disk_total_size=$( calc_disk "${disk_size1[@]}" )
-    disk_used_size=$( calc_disk "${disk_size2[@]}" )
     if [ -z "$sysctl_path" ]; then
         tcpctrl="None"
     fi
@@ -2093,11 +2181,8 @@ print_system_info() {
     echo " 系统在线时间      : $(_blue "$up")"
     echo " 负载              : $(_blue "$load")"
     echo " 系统              : $(_blue "$DISTRO")"  
-    # $(_blue "$opsy")"
-    CPU_AES=$(cat /proc/cpuinfo | grep aes)
     [[ -z "$CPU_AES" ]] && CPU_AES="\xE2\x9D\x8C Disabled" || CPU_AES="\xE2\x9C\x94 Enabled"
     echo " AES-NI指令集      : $(_blue "$CPU_AES")"  
-    CPU_VIRT=$(cat /proc/cpuinfo | grep 'vmx\|svm')
     [[ -z "$CPU_VIRT" ]] && CPU_VIRT="\xE2\x9D\x8C Disabled" || CPU_VIRT="\xE2\x9C\x94 Enabled"
     echo " VM-x/AMD-V支持    : $(_blue "$CPU_VIRT")"  
     echo " 架构              : $(_blue "$arch ($lbit Bit)")"
@@ -2271,28 +2356,29 @@ SERVER_BASE_URL2="https://raw.githubusercontent.com/spiritLHLS/speedtest.cn-CN-I
 
 pre_check(){
     checkupdate
+    systemInfo_get_os_release
     checkdmidecode
     checkroot
     checksudo
     checkwget
     checkfree
+    checklscpu
     checkunzip
     checktar
     check_time_zone
     checkhaveged
     optimized_kernel
-    checksystem
     checkcurl
     check_ipv4
     check_cdn_file
     global_startup_init_action
     cd $myvar >/dev/null 2>&1
     ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
-    ! _exists "free" && _red "Error: free command not found.\n" && exit 1
     check_china
 }
 
 sjlleo_script(){
+    [ "${Var_OSRelease}" = "freebsd" ] && return
     cd $myvar >/dev/null 2>&1
     mv $TEMP_DIR/{dp,nf,tubecheck} ./
     echo "---------------------流媒体解锁--感谢sjlleo开源-------------------------"
@@ -2331,6 +2417,7 @@ io1_script(){
 }
 
 io2_script(){
+    [ "${Var_OSRelease}" = "freebsd" ] && return
     cd $myvar >/dev/null 2>&1
     echo "---------------------磁盘fio读写测试--感谢yabs开源----------------------"
     bash yabsiotest.sh 2>/dev/null
@@ -2373,6 +2460,7 @@ lmc999_script(){
 }
 
 spiritlhl_script(){
+    [ "${Var_OSRelease}" = "freebsd" ] && return
     cd $myvar >/dev/null 2>&1
     echo -e "-------------------欺诈分数以及IP质量检测--本脚本原创-------------------"
     _yellow "以下仅作参考，不代表100%准确，如果和实际情况不一致请手动查询多个数据库比对"
@@ -2380,9 +2468,11 @@ spiritlhl_script(){
 }
 
 backtrace_script(){
+    [ "${Var_OSRelease}" = "freebsd" ] && return
     cd $myvar >/dev/null 2>&1
     echo -e "----------------三网回程--感谢zhanghanyun/backtrace开源-----------------"
     if [ -f "${TEMP_DIR}/backtrace" ]; then
+        chmod 777 ${TEMP_DIR}/backtrace
         curl_output=$(${TEMP_DIR}/backtrace 2>&1)
     else
         return
@@ -2391,6 +2481,7 @@ backtrace_script(){
 }
 
 fscarmen_route_script(){
+    [ "${Var_OSRelease}" = "freebsd" ] && return
     cd $myvar >/dev/null 2>&1
     echo -e "---------------------回程路由--感谢fscarmen开源及PR---------------------"
     rm -f $TEMP_FILE
@@ -2814,6 +2905,7 @@ rm_script(){
 }
 
 build_text(){
+    cd $myvar >/dev/null 2>&1
     if { [ -n "${StartInput}" ] && [ "${StartInput}" -eq 1 ]; } || { [ -n "${StartInput}" ] && [ "${StartInput}" -eq 2 ]; } || { [ -n "${StartInput1}" ] && [ "${StartInput1}" -ge 1 ] && [ "${StartInput1}" -le 4 ]; }; then
         sed -i -e '1,/-------------------- A Bench Script By spiritlhl ---------------------/d; s/\x1B\[[0-9;]\+[a-zA-Z]//g; /^$/d' test_result.txt
         sed -i -e '/Preparing system for disk tests.../d; /Generating fio test file.../d; /Running fio random mixed R+W disk test with 4k block size.../d; /Running fio random mixed R+W disk test with 64k block size.../d; /Running fio random mixed R+W disk test with 512k block size.../d; /Running fio random mixed R+W disk test with 1m block size.../d' test_result.txt
