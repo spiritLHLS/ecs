@@ -12,3 +12,9 @@ bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/fore
 ```bash
 bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/foreverqzcheck.sh)
 ```
+
+### FreeBSD
+
+```bash
+pkg install -y curl bash
+```
