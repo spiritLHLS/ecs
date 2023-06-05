@@ -6,7 +6,7 @@
 
 如果脚本有任何问题或者任何修复系统的需求，可在issues中提出，有空会解决或者回答
 
-支持系统：Ubuntu 18+, Debian 8+, centos 7+, Fedora 22+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, AstraLinux CE, Arch
+支持系统：Ubuntu 18+, Debian 8+, centos 7+, Fedora 22+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, AstraLinux CE, Arch, FreeBSD
 
 # 目录
  * [融合怪测评脚本](#融合怪测评脚本)
@@ -160,10 +160,13 @@ Armbian系统待适配，部分检测和测试暂不支持Armbian系统 - 待增
 
 # 更新
 
-2023.06.01 
+2023.06.05
 
-- 修复部分机器被stun服务器和IP查询的API站点拉黑的问题，报错替换为中文显示而不是网页源码显示
-- 修复astralinux系统的部分机器无法使用apt源下载sysbench时编译出错的问题，替换为debian模式进行编译
+- 增加对FreeBSD系统的支持
+- 去除了系统OS重复判断的部分函数，精简该部分代码
+- 给分享文件增加路径修正，避免有时候因为意外退出路径不对导致分享链接对应的文件处理失败
+- 增加了systemctl还是rc.d支持的判断，避免部分系统无法使用相关的命令
+- virt-what的检测通过which进行而不是写死对/usr/sbin/virt-what路径进行判断，普适性更高
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
