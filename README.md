@@ -6,7 +6,7 @@
 
 支持系统：
 
-Ubuntu 18+, Debian 8+, centos 7+, Fedora 22+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, AstraLinux CE, Arch, FreeBSD
+Ubuntu 18+, Debian 8+, centos 7+, Fedora 22+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, AstraLinux CE, Arch, FreeBSD(前提已执行```pkg install -y curl bash```)
 
 # 目录
  * [融合怪测评脚本](#融合怪测评脚本)
