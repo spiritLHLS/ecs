@@ -160,13 +160,9 @@ FreeBSD系统的分享链接的预处理部分sed命令存在问题未删除内�
 
 # 更新
 
-2023.06.05
+2023.06.12
 
-- 增加对FreeBSD系统的支持
-- 去除了系统OS重复判断的部分函数，精简该部分代码
-- 给分享链接的生成增加路径修正，避免有时候因为意外退出路径不对导致分享链接对应的文件处理失败
-- 增加了systemctl还是rc.d支持的判断，避免部分系统无法使用相关的命令
-- virt-what的检测通过which进行而不是写死对/usr/sbin/virt-what路径进行判断，普适性更高
+- 适配已正式发布的Debian12系统
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
