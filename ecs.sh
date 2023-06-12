@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.06.05"
+ver="2023.06.12"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.24")
@@ -1095,8 +1095,8 @@ systemInfo_get_os_release() {
             Var_OSReleaseVersion_Codename="buster"
         elif [ "${Var_OSReleaseVersionShort}" = "11" ]; then
             Var_OSReleaseVersion_Codename="bullseye"
-        # elif [ "${Var_OSReleaseVersionShort}" = "12" ]; then
-        #     Var_OSReleaseVersion_Codename="bookworm"
+        elif [ "${Var_OSReleaseVersionShort}" = "12" ]; then
+            Var_OSReleaseVersion_Codename="bookworm"
         else
             Var_OSReleaseVersion_Codename="sid"
         fi
@@ -1122,8 +1122,8 @@ systemInfo_get_os_release() {
             Var_OSReleaseVersion_Codename="buster"
         elif [ "${Var_OSReleaseVersionShort}" = "11" ]; then
             Var_OSReleaseVersion_Codename="bullseye"
-        # elif [ "${Var_OSReleaseVersionShort}" = "12" ]; then
-        #     Var_OSReleaseVersion_Codename="bookworm"
+        elif [ "${Var_OSReleaseVersionShort}" = "12" ]; then
+            Var_OSReleaseVersion_Codename="bookworm"
         else
             Var_OSReleaseVersion_Short="sid"
             Var_OSReleaseVersion_Codename="sid"
