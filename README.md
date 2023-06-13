@@ -146,6 +146,8 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 # 待解决事项
 
+全球网络延迟测试(https://github.com/jsdelivr/globalping-cli) - 待添加
+
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修复
 
 Armbian系统待适配，部分检测和测试暂不支持Armbian系统 - 待增加
@@ -154,9 +156,9 @@ FreeBSD系统的硬盘测试和CPU测试待修复，目前是半残的 - 待修�
 
 FreeBSD系统的分享链接的预处理部分sed命令存在问题未删除内容 - 待修复
 
-端口检测(检测是否被墙) - 待修复
+个别(可能0.1%)的机器下载文件遇到CDN下载超时的问题，文件未下载完全就使用了，需要添加文件完整性校验 - 待添加
 
-全球网络延迟测试(https://github.com/jsdelivr/globalping-cli) - 待添加
+端口检测(检测是否被墙) - 待修复
 
 # 更新
 
