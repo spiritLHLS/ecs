@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.06.12"
+ver="2023.06.19"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.24")
@@ -220,7 +220,7 @@ EOF
 
 checkping() {
     _yellow "checking ping"
-	if  [ ! -e '/usr/bin/ping' ]; then
+	if ! which ping >/dev/null; then
         _yellow "Installing ping"
 	    ${PACKAGE_INSTALL[int]} iputils-ping > /dev/null 2>&1
 	    ${PACKAGE_INSTALL[int]} ping > /dev/null 2>&1
@@ -451,12 +451,6 @@ _exists() {
     return ${rt}
 }
 
-get_opsy() {
-    [ -f /etc/redhat-release ] && awk '{print $0}' /etc/redhat-release && return
-    [ -f /etc/os-release ] && awk -F'[= "]' '/PRETTY_NAME/{print $3,$4,$5}' /etc/os-release && return
-    [ -f /etc/lsb-release ] && awk -F'[="]+' '/DESCRIPTION/{print $2}' /etc/lsb-release && return
-}
-
 next() {
     echo -en "\r"
     [ "${Var_OSRelease}" = "freebsd" ] && printf "%-72s\n" "-" | tr ' ' '-' && return
@@ -575,24 +569,21 @@ checkdmidecode(){
 }
 
 checkdnsutils() {
-	if  [ ! -e '/usr/bin/dnsutils' ]; then
-            _yellow "Installing dnsutils"
-	            if [ "${Var_OSRelease}" == "centos" ]; then
-	                    yum -y install dnsutils > /dev/null 2>&1
-                        yum -y install bind-utils > /dev/null 2>&1
-	                elif [ "${Var_OSRelease}" == "arch" ]; then
-                        pacman -S --noconfirm --needed bind > /dev/null 2>&1
-                    else
-	                    ${PACKAGE_INSTALL[int]} dnsutils > /dev/null 2>&1
-	                fi
-
-	fi
+    _yellow "Installing dnsutils"
+    if [ "${Var_OSRelease}" == "centos" ]; then
+        yum -y install dnsutils > /dev/null 2>&1
+        yum -y install bind-utils > /dev/null 2>&1
+    elif [ "${Var_OSRelease}" == "arch" ]; then
+        pacman -S --noconfirm --needed bind > /dev/null 2>&1
+    else
+        ${PACKAGE_INSTALL[int]} dnsutils > /dev/null 2>&1
+    fi
 }
 
 checkcurl() {
-	if  [ ! -e '/usr/bin/curl' ]; then
-            _yellow "Installing curl"
-	        ${PACKAGE_INSTALL[int]} curl
+	if ! which curl >/dev/null; then
+        _yellow "Installing curl"
+        ${PACKAGE_INSTALL[int]} curl
 	fi
     if [ $? -ne 0 ]; then
         apt-get -f install > /dev/null 2>&1
@@ -601,9 +592,9 @@ checkcurl() {
 }
 
 checkwget() {
-	if  [ ! -e '/usr/bin/wget' ]; then
-            _yellow "Installing wget"
-	        ${PACKAGE_INSTALL[int]} wget
+	if ! which wget >/dev/null; then
+        _yellow "Installing wget"
+        ${PACKAGE_INSTALL[int]} wget
 	fi
 }
 
@@ -624,8 +615,8 @@ checklscpu() {
 
 checkunzip() {
 	if ! command -v unzip > /dev/null 2>&1; then
-            _yellow "Installing unzip"
-	        ${PACKAGE_INSTALL[int]} unzip
+        _yellow "Installing unzip"
+        ${PACKAGE_INSTALL[int]} unzip
 	fi
 }
 
@@ -1103,29 +1094,23 @@ systemInfo_get_os_release() {
     elif [ -f "/etc/lsb-release" ]; then # Ubuntu
         Var_OSRelease="ubuntu"
         local Var_OSReleaseVersion="$(cat /etc/os-release | awk -F '[= "]' '/VERSION/{print $3,$4,$5,$6,$7}' | head -n1)"
-        Var_OSReleaseVersion_Short="$(cat /etc/lsb-release | awk -F '[= "]' '/DISTRIB_RELEASE/{print $2}')"
     elif [ -f "/etc/debian_version" ]; then # Debian
         Var_OSRelease="debian"
         local Var_OSReleaseVersion="$(cat /etc/debian_version | awk '{print $1}')"
         local Var_OSReleaseVersionShort="$(cat /etc/debian_version | awk '{printf "%d\n",$1}')"
         if [ "${Var_OSReleaseVersionShort}" = "7" ]; then
-            Var_OSReleaseVersion_Short="7"
             Var_OSReleaseVersion_Codename="wheezy"
         elif [ "${Var_OSReleaseVersionShort}" = "8" ]; then
-            Var_OSReleaseVersion_Short="8"
             Var_OSReleaseVersion_Codename="jessie"
         elif [ "${Var_OSReleaseVersionShort}" = "9" ]; then
-            Var_OSReleaseVersion_Short="9"
             Var_OSReleaseVersion_Codename="stretch"
         elif [ "${Var_OSReleaseVersionShort}" = "10" ]; then
-            Var_OSReleaseVersion_Short="10"
             Var_OSReleaseVersion_Codename="buster"
         elif [ "${Var_OSReleaseVersionShort}" = "11" ]; then
             Var_OSReleaseVersion_Codename="bullseye"
         elif [ "${Var_OSReleaseVersionShort}" = "12" ]; then
             Var_OSReleaseVersion_Codename="bookworm"
         else
-            Var_OSReleaseVersion_Short="sid"
             Var_OSReleaseVersion_Codename="sid"
         fi
     elif [ -f "/etc/alpine-release" ]; then # Alpine Linux
@@ -1631,10 +1616,10 @@ Run_DiskTest_DD() {
     DiskTest_WriteSpeed="$(echo "${DiskTest_WriteSpeed_ResultRAW}" | sed "s/秒/s/")"
     local DiskTest_WriteTime_ResultRAW="$(cat ${Var_DiskTestResultFile} | grep -oE "[0-9]{1,}.[0-9]{1,} s|[0-9]{1,}.[0-9]{1,} s|[0-9]{1,}.[0-9]{1,} 秒|[0-9]{1,}.[0-9]{1,} 秒")"
     DiskTest_WriteTime="$(echo ${DiskTest_WriteTime_ResultRAW} | awk '{print $1}')"
-    DiskTest_WriteIOPS="$(echo ${DiskTest_WriteTime} $3 | awk '{printf "%d\n",$2/$1}')"
+    DiskTest_WriteIOPS=$(awk -v t="${DiskTest_WriteTime}" -v c="${3}" 'BEGIN{ printf "%.0f\n", c / t }')
     DiskTest_WritePastTime="$(echo ${DiskTest_WriteTime} | awk '{printf "%.2f\n",$1}')"
-    if [ "${DiskTest_WriteIOPS}" -ge "10000" ]; then
-        DiskTest_WriteIOPS="$(echo ${DiskTest_WriteIOPS} 1000 | awk '{printf "%.2f\n",$2/$1}')"
+    if [ ${DiskTest_WriteIOPS} -ge 10000 ]; then
+        DiskTest_WriteIOPS=$(awk -v i="${DiskTest_WriteIOPS}" 'BEGIN{ printf "%.2f\n", i / 1000 }')
         echo -n -e "\r $4\t\t${Font_SkyBlue}${DiskTest_WriteSpeed} (${DiskTest_WriteIOPS}K IOPS, ${DiskTest_WritePastTime}s)${Font_Suffix}\t\t->\c"
     else
         echo -n -e "\r $4\t\t${Font_SkyBlue}${DiskTest_WriteSpeed} (${DiskTest_WriteIOPS} IOPS, ${DiskTest_WritePastTime}s)${Font_Suffix}\t\t->\c"
@@ -1986,7 +1971,6 @@ get_system_info() {
         swap=$(swapinfo -k | awk 'NR>1{sum+=$2} END{printf "%.0f", sum/1024}')
         uswap=$(swapinfo -k | awk 'NR>1{sum+=$4} END{printf "%.0f", sum/1024}')
     fi
-    opsy=$( get_opsy )
     if _exists "getconf"; then
         lbit=$( getconf LONG_BIT )
     else
