@@ -162,9 +162,10 @@ FreeBSD系统的分享链接的预处理部分sed命令存在问题未删除内�
 
 # 更新
 
-2023.06.12
+2023.06.19
 
-- 适配已正式发布的Debian12系统
+- 修复部分组件的检测，避免检测的漏洞导致组件没被安装
+- 修复硬盘的DD测试中IOPS的部分隐性BUG，优化写入计算的部分
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
