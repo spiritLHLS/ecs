@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.06.19"
+ver="2023.06.21"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.24")
@@ -504,6 +504,22 @@ check_virtwhat() {
                 echo "Retrying with additional options..."
                 apt-get install -y virt-what -y --allow-unauthenticated
             fi
+            if [ $? -ne 0 ]; then
+                re='^[0-9]+$'
+                if [[ $Var_OSReleaseVersion =~ $re ]]; then
+                    local OSReleaseVersion=$(($Var_OSReleaseVersion + 0))
+                    if [ $OSReleaseVersion -le 18 ]; then
+                        if [ -f "/etc/apt/sources.list" ]; then
+                            if ! grep -q "deb.*universe" /etc/apt/sources.list; then
+                                check_lsb_release
+                                echo "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe" | tee -a /etc/apt/sources.list
+                                apt-get update
+                                apt-get install -y virt-what
+                            fi
+                        fi
+                    fi
+                fi
+            fi
         elif [ "${Var_OSRelease}" = "fedora" ]; then
             dnf -y install virt-what
         elif [ "${Var_OSRelease}" = "alpinelinux" ]; then
@@ -603,6 +619,14 @@ checkfree() {
 	if ! command -v free > /dev/null 2>&1; then
         _yellow "Installing procps"
 	    ${PACKAGE_INSTALL[int]} procps
+	fi
+}
+
+check_lsb_release() {
+    [ "${Var_OSRelease}" = "freebsd" ] && return
+	if ! command -v lsb_release > /dev/null 2>&1; then
+        _yellow "Installing lsb-release"
+	    ${PACKAGE_INSTALL[int]} lsb-release
 	fi
 }
 
@@ -1044,34 +1068,34 @@ systemInfo_get_os_release() {
         Var_OSRelease="centos"
         if [ "$(rpm -qa | grep -o el6 | sort -u)" = "el6" ]; then
             Var_CentOSELRepoVersion="6"
-            local Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $3}')"
+            Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $3}')"
         elif [ "$(rpm -qa | grep -o el7 | sort -u)" = "el7" ]; then
             Var_CentOSELRepoVersion="7"
-            local Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $4}')"
+            Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $4}')"
         elif [ "$(rpm -qa | grep -o el8 | sort -u)" = "el8" ]; then
             Var_CentOSELRepoVersion="8"
-            local Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $4}')"
+            Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $4}')"
         else
             local Var_CentOSELRepoVersion="unknown"
-            local Var_OSReleaseVersion="<Unknown Release>"
+            Var_OSReleaseVersion="<Unknown Release>"
         fi
     elif [ -f "/etc/fedora-release" ]; then # Fedora
         Var_OSRelease="fedora"
-        local Var_OSReleaseVersion="$(cat /etc/fedora-release | awk '{print $3,$4,$5,$6,$7}')"
+        Var_OSReleaseVersion="$(cat /etc/fedora-release | awk '{print $3,$4,$5,$6,$7}')"
     elif [ -f "/etc/redhat-release" ]; then # RedHat
         Var_OSRelease="rhel"
         if [ "$(rpm -qa | grep -o el6 | sort -u)" = "el6" ]; then
             Var_RedHatELRepoVersion="6"
-            local Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $3}')"
+            Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $3}')"
         elif [ "$(rpm -qa | grep -o el7 | sort -u)" = "el7" ]; then
             Var_RedHatELRepoVersion="7"
-            local Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $4}')"
+            Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $4}')"
         elif [ "$(rpm -qa | grep -o el8 | sort -u)" = "el8" ]; then
             Var_RedHatELRepoVersion="8"
-            local Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $4}')"
+            Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $4}')"
         else
             local Var_RedHatELRepoVersion="unknown"
-            local Var_OSReleaseVersion="<Unknown Release>"
+            Var_OSReleaseVersion="<Unknown Release>"
         fi
     elif [ -f "/etc/astra_version" ]; then # Astra
         Var_OSRelease="astra"
@@ -1093,7 +1117,13 @@ systemInfo_get_os_release() {
         fi
     elif [ -f "/etc/lsb-release" ]; then # Ubuntu
         Var_OSRelease="ubuntu"
-        local Var_OSReleaseVersion="$(cat /etc/os-release | awk -F '[= "]' '/VERSION/{print $3,$4,$5,$6,$7}' | head -n1)"
+        Var_OSReleaseVersion="$(cat /etc/os-release | awk -F '[= "]' '/VERSION/{print $3,$4,$5,$6,$7}' | head -n1)"
+        cleaned_string=$(echo "$Var_OSReleaseVersion" | sed 's/[^0-9A-Za-z.]//g')
+        if [[ "$cleaned_string" =~ \. ]]; then
+            Var_OSReleaseVersion=${cleaned_string%%.*}
+        else
+            Var_OSReleaseVersion=${cleaned_string}
+        fi
     elif [ -f "/etc/debian_version" ]; then # Debian
         Var_OSRelease="debian"
         local Var_OSReleaseVersion="$(cat /etc/debian_version | awk '{print $1}')"
@@ -1115,10 +1145,10 @@ systemInfo_get_os_release() {
         fi
     elif [ -f "/etc/alpine-release" ]; then # Alpine Linux
         Var_OSRelease="alpinelinux"
-        local Var_OSReleaseVersion="$(cat /etc/alpine-release | awk '{print $1}')"
+        Var_OSReleaseVersion="$(cat /etc/alpine-release | awk '{print $1}')"
     elif [ -f "/etc/almalinux-release" ]; then # almalinux
         Var_OSRelease="almalinux"
-        local Var_OSReleaseVersion="$(cat /etc/almalinux-release | awk '{print $3,$4,$5,$6,$7}')"
+        Var_OSReleaseVersion="$(cat /etc/almalinux-release | awk '{print $3,$4,$5,$6,$7}')"
     elif [ -f "/etc/arch-release" ]; then # archlinux
         Var_OSRelease="arch"
     elif [ -f "/etc/freebsd-update.conf" ] && [ -d "/usr/src" ]; then # freebsd
