@@ -164,8 +164,7 @@ FreeBSD系统的分享链接的预处理部分sed命令存在问题未删除内�
 
 2023.06.21
 
-- 修复 Ubuntu18 系统及其以下系统在安装 virt-what 组件时，缺少universe的情况，自动添加universe记录
-- Ubuntu18 系统由于22的出现已不再是长期维护版本，需要使用archive的链接了
+- 修复 Ubuntu18 系统在安装 virt-what 组件时，可能缺少universe的情况，自动添加universe记录
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
