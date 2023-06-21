@@ -162,10 +162,10 @@ FreeBSD系统的分享链接的预处理部分sed命令存在问题未删除内�
 
 # 更新
 
-2023.06.19
+2023.06.21
 
-- 修复部分组件的检测，避免检测的漏洞导致组件没被安装
-- 修复硬盘的DD测试中IOPS的部分隐性BUG，优化写入计算的部分
+- 修复 Ubuntu18 系统及其以下系统在安装 virt-what 组件时，缺少universe的情况，自动添加universe记录
+- Ubuntu18 系统由于22的出现已不再是长期维护版本，需要使用archive的链接了
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
