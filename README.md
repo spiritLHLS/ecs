@@ -222,7 +222,7 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 ![图片](https://user-images.githubusercontent.com/103393591/233967406-d2b74a20-8d95-4c18-8df1-254b97942f7d.png)
 ![图片](https://user-images.githubusercontent.com/103393591/233968402-135c3f5e-def7-4f6e-a113-06d627780323.png)
 ![图片](https://user-images.githubusercontent.com/103393591/233968486-60ccc9b7-2e4f-4cac-838f-fb4617eb118d.png)
-![图片](https://user-images.githubusercontent.com/103393591/233968544-b9d6f9ae-416a-4832-a516-8afb3846e33e.png)
+![图片](https://github.com/spiritLHLS/ecs/assets/103393591/621226bd-66fc-4ec3-a9c1-55c7d9a3e04d)
 ![图片](https://user-images.githubusercontent.com/103393591/233968662-f6174bed-1c72-4385-8716-8e1f9b9c4dce.png)
 ![图片](https://user-images.githubusercontent.com/103393591/233968669-f58624ba-2611-4232-9326-0ce3e9d02d44.png)
 ![图片](https://user-images.githubusercontent.com/103393591/233968819-f25086df-b3cd-4103-995a-8cc8512fe89d.png)
