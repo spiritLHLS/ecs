@@ -2369,7 +2369,6 @@ ipcheck(){
     if [[ -n "$ip6" ]]; then
     echo "------以下为IPV6检测------"
     scamalytics "$ip6"
-    virustotal "$ip6"
     abuse "$ip6"
     fi
 }
