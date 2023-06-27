@@ -53,8 +53,6 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 待解决事项
 
-全球网络延迟测试(https://github.com/jsdelivr/globalping-cli) - 待添加
-
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修复
 
 个别(可能0.1%)的机器下载文件遇到CDN下载超时的问题，文件未下载完全就使用了，需要添加文件完整性校验 - 待添加
