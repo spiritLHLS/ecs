@@ -3,8 +3,8 @@
 #from https://github.com/spiritLHLS/ecs
 
 
-ver="2023.04.30"
-changeLog="IP质量测试(含欺诈得分)，由频道 https://t.me/vps_reviews 原创"
+ver="2023.06.27"
+changeLog="IP质量测试，由频道 https://t.me/vps_reviews 原创"
 
 red(){
     echo -e "\033[31m\033[01m$1\033[0m"
@@ -77,24 +77,6 @@ checkroot(){
 	[[ $EUID -ne 0 ]] && echo -e "${RED}请使用 root 用户运行本脚本！${PLAIN}" && exit 1
 }
 
-checksystem() {
-	if [ -f /etc/redhat-release ]; then
-	    release="centos"
-	elif cat /etc/issue | grep -Eqi "debian"; then
-	    release="debian"
-	elif cat /etc/issue | grep -Eqi "ubuntu"; then
-	    release="ubuntu"
-	elif cat /etc/issue | grep -Eqi "centos|red hat|redhat"; then
-	    release="centos"
-	elif cat /proc/version | grep -Eqi "debian"; then
-	    release="debian"
-	elif cat /proc/version | grep -Eqi "ubuntu"; then
-	    release="ubuntu"
-	elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then
-	    release="centos"
-	fi
-}
-
 
 checkupdate(){
 	    echo "正在更新包管理源"
@@ -157,234 +139,6 @@ checkwget() {
 	                apt-get -y install wget > /dev/null 2>&1
 	            fi
 	fi
-}
-
-SystemInfo_GetOSRelease() {
-    _yellow "checking OS"
-    if [ -f "/etc/centos-release" ]; then # CentOS
-        Var_OSRelease="centos"
-        local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3,$4}')"
-        if [ "$(rpm -qa | grep -o el6 | sort -u)" = "el6" ]; then
-            Var_CentOSELRepoVersion="6"
-            local Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $3}')"
-        elif [ "$(rpm -qa | grep -o el7 | sort -u)" = "el7" ]; then
-            Var_CentOSELRepoVersion="7"
-            local Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $4}')"
-        elif [ "$(rpm -qa | grep -o el8 | sort -u)" = "el8" ]; then
-            Var_CentOSELRepoVersion="8"
-            local Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $4}')"
-        else
-            local Var_CentOSELRepoVersion="unknown"
-            local Var_OSReleaseVersion="<Unknown Release>"
-        fi
-        local Var_OSReleaseArch="$(arch)"
-        LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
-    elif [ -f "/etc/fedora-release" ]; then # Fedora
-        Var_OSRelease="fedora"
-        local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3}')"
-        local Var_OSReleaseVersion="$(cat /etc/fedora-release | awk '{print $3,$4,$5,$6,$7}')"
-        local Var_OSReleaseArch="$(arch)"
-        LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
-    elif [ -f "/etc/redhat-release" ]; then # RedHat
-        Var_OSRelease="rhel"
-        local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3,$4}')"
-        if [ "$(rpm -qa | grep -o el6 | sort -u)" = "el6" ]; then
-            Var_RedHatELRepoVersion="6"
-            local Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $3}')"
-        elif [ "$(rpm -qa | grep -o el7 | sort -u)" = "el7" ]; then
-            Var_RedHatELRepoVersion="7"
-            local Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $4}')"
-        elif [ "$(rpm -qa | grep -o el8 | sort -u)" = "el8" ]; then
-            Var_RedHatELRepoVersion="8"
-            local Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $4}')"
-        else
-            local Var_RedHatELRepoVersion="unknown"
-            local Var_OSReleaseVersion="<Unknown Release>"
-        fi
-        local Var_OSReleaseArch="$(arch)"
-        LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
-    elif [ -f "/etc/lsb-release" ]; then # Ubuntu
-        Var_OSRelease="ubuntu"
-        local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/NAME/{print $3}' | head -n1)"
-        local Var_OSReleaseVersion="$(cat /etc/os-release | awk -F '[= "]' '/VERSION/{print $3,$4,$5,$6,$7}' | head -n1)"
-        local Var_OSReleaseArch="$(arch)"
-        LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
-        Var_OSReleaseVersion_Short="$(cat /etc/lsb-release | awk -F '[= "]' '/DISTRIB_RELEASE/{print $2}')"
-    elif [ -f "/etc/debian_version" ]; then # Debian
-        Var_OSRelease="debian"
-        local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3,$4}')"
-        local Var_OSReleaseVersion="$(cat /etc/debian_version | awk '{print $1}')"
-        local Var_OSReleaseVersionShort="$(cat /etc/debian_version | awk '{printf "%d\n",$1}')"
-        if [ "${Var_OSReleaseVersionShort}" = "7" ]; then
-            Var_OSReleaseVersion_Short="7"
-            Var_OSReleaseVersion_Codename="wheezy"
-            local Var_OSReleaseFullName="${Var_OSReleaseFullName} \"Wheezy\""
-        elif [ "${Var_OSReleaseVersionShort}" = "8" ]; then
-            Var_OSReleaseVersion_Short="8"
-            Var_OSReleaseVersion_Codename="jessie"
-            local Var_OSReleaseFullName="${Var_OSReleaseFullName} \"Jessie\""
-        elif [ "${Var_OSReleaseVersionShort}" = "9" ]; then
-            Var_OSReleaseVersion_Short="9"
-            Var_OSReleaseVersion_Codename="stretch"
-            local Var_OSReleaseFullName="${Var_OSReleaseFullName} \"Stretch\""
-        elif [ "${Var_OSReleaseVersionShort}" = "10" ]; then
-            Var_OSReleaseVersion_Short="10"
-            Var_OSReleaseVersion_Codename="buster"
-            local Var_OSReleaseFullName="${Var_OSReleaseFullName} \"Buster\""
-        else
-            Var_OSReleaseVersion_Short="sid"
-            Var_OSReleaseVersion_Codename="sid"
-            local Var_OSReleaseFullName="${Var_OSReleaseFullName} \"Sid (Testing)\""
-        fi
-        local Var_OSReleaseArch="$(arch)"
-        LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
-    elif [ -f "/etc/alpine-release" ]; then # Alpine Linux
-        Var_OSRelease="alpinelinux"
-        local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/NAME/{print $3,$4}' | head -n1)"
-        local Var_OSReleaseVersion="$(cat /etc/alpine-release | awk '{print $1}')"
-        local Var_OSReleaseArch="$(arch)"
-        LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
-    elif [ -f "/etc/almalinux-release" ]; then # almalinux
-        Var_OSRelease="almalinux"
-        local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3}')"
-        local Var_OSReleaseVersion="$(cat /etc/almalinux-release | awk '{print $3,$4,$5,$6,$7}')"
-        local Var_OSReleaseArch="$(arch)"
-        LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName $Var_OSReleaseVersion ($Var_OSReleaseArch)"
-    elif [ -f "/etc/arch-release" ]; then # archlinux
-        Var_OSRelease="arch"
-        local Var_OSReleaseFullName="$(cat /etc/os-release | awk -F '[= "]' '/PRETTY_NAME/{print $3}')"
-        local Var_OSReleaseArch="$(uname -m)"
-        LBench_Result_OSReleaseFullName="$Var_OSReleaseFullName ($Var_OSReleaseArch)" # 滚动发行版 不存在版本号
-    else
-        Var_OSRelease="unknown" # 未知系统分支
-        LBench_Result_OSReleaseFullName="[Error: Unknown Linux Branch !]"
-    fi
-}
-
-checktar() {
-    _yellow "checking tar"
-	if  [ ! -e '/usr/bin/tar' ]; then
-            _yellow "Installing tar"
-	        ${PACKAGE_INSTALL[int]} tar 
-	fi
-    if [ $? -ne 0 ]; then
-        apt-get -f install > /dev/null 2>&1
-        ${PACKAGE_INSTALL[int]} tar > /dev/null 2>&1
-    fi
-}
-
-
-SystemInfo_GetSystemBit() {
-    _yellow "checking SystemBit"
-    local sysarch="$(uname -m)"
-    if [ "${sysarch}" = "unknown" ] || [ "${sysarch}" = "" ]; then
-        local sysarch="$(arch)"
-    fi
-    # 根据架构信息设置系统位数并下载文件,其余 * 包括了 x86_64
-    case "${sysarch}" in
-        "i386" | "i686")
-            LBench_Result_SystemBit_Short="32"
-            LBench_Result_SystemBit_Full="i386"
-            BESTTRACE_FILE=besttracemac
-            ;;
-        "armv7l" | "armv8" | "armv8l" | "aarch64")
-            LBench_Result_SystemBit_Short="arm"
-            LBench_Result_SystemBit_Full="arm"
-            BESTTRACE_FILE=besttracearm
-            BACKTRACE_FILE=backtrace-linux-arm64.tar.gz
-            ;;
-        *)
-            LBench_Result_SystemBit_Short="64"
-            LBench_Result_SystemBit_Full="amd64"
-            BESTTRACE_FILE=besttrace
-            BACKTRACE_FILE=backtrace-linux-amd64.tar.gz
-            ;;
-    esac
-}
-
-
-Check_JSONQuery() {
-    _yellow "checking jq"
-    # 判断 jq 命令是否存在
-    if ! command -v jq > /dev/null; then
-        # 获取系统位数
-        SystemInfo_GetSystemBit
-        # 获取操作系统版本
-        SystemInfo_GetOSRelease
-        # 根据系统位数设置下载地址
-        local DownloadSrc
-        if [ -z "${LBench_Result_SystemBit_Short}" ] || [ "${LBench_Result_SystemBit_Short}" != "amd64" ] || [ "${LBench_Result_SystemBit_Short}" != "i386" ]; then
-            DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/JSONQuery/jq-i386.tar.gz"
-        else
-            DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/JSONQuery/jq-${LBench_Result_SystemBit_Short}.tar.gz"
-            # local DownloadSrc="https://raw.githubusercontent.com/LemonBench/LemonBench/master/Resources/JSONQuery/jq-amd64.tar.gz"
-            # local DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/jq/1.6/amd64/jq.tar.gz"
-            # local DownloadSrc="https://raw.githubusercontent.com/LemonBench/LemonBench/master/Resources/JSONQuery/jq-i386.tar.gz"
-            # local DownloadSrc="https://raindrop.ilemonrain.com/LemonBench/include/jq/1.6/i386/jq.tar.gz"
-        fi
-        mkdir -p ${WorkDir}/
-        echo -e "${Msg_Warning}JSON Query Module not found, Installing ..."
-        echo -e "${Msg_Info}Installing Dependency ..."
-        if [[ "${Var_OSRelease}" =~ ^(centos|rhel|almalinux)$ ]]; then
-            yum install -y epel-release
-            if [ $? -ne 0 ]; then
-                if [ "$(grep -Ei 'centos|almalinux' /etc/os-release | awk -F'=' '{print $2}')" == "AlmaLinux" ]; then
-                    cd /etc/yum.repos.d/
-                    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/AlmaLinux-*
-                    sed -i 's|#baseurl=https://repo.almalinux.org/|baseurl=https://vault.almalinux.org/|g' /etc/yum.repos.d/AlmaLinux-*
-                    yum makecache
-                else
-                    cd /etc/yum.repos.d/
-                    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
-                    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
-                    yum makecache
-                fi
-                if [ $? -ne 0 ]; then
-                    yum -y update && yum install -y epel-release
-                fi
-            fi
-            yum install -y tar
-            yum install -y jq
-        elif [[ "${Var_OSRelease}" =~ ^debian$ ]]; then
-            ! apt-get update && apt-get --fix-broken install -y && apt-get update
-            ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install jq -y
-            if [ $? -ne 0 ]; then
-                ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install jq -y --force-yes
-            fi
-            if [ $? -ne 0 ]; then
-                ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install jq -y --allow
-            fi
-        elif [[ "${Var_OSRelease}" =~ ^ubuntu$ ]]; then
-            ! apt-get update && apt-get --fix-broken install -y && apt-get update
-            ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install jq -y
-            if [ $? -ne 0 ]; then
-                ! apt-get install -y jq && apt-get --fix-broken install -y && apt-get install jq -y --allow-unauthenticated
-            fi
-        elif [ "${Var_OSRelease}" = "fedora" ]; then
-            dnf install -y jq
-        elif [ "${Var_OSRelease}" = "alpinelinux" ]; then
-            apk update
-            apk add jq
-        elif [ "${Var_OSRelease}" = "arch" ]; then
-            pacman -Sy --needed --noconfirm jq
-        else
-            apk update
-            apk add wget unzip curl
-            echo -e "${Msg_Info}Downloading Json Query Module ..."
-            curl --user-agent "${UA_LemonBench}" ${DownloadSrc} -o ${WorkDir}/jq.tar.gz
-            echo -e "${Msg_Info}Installing JSON Query Module ..."
-            tar xvf ${WorkDir}/jq.tar.gz
-            mv ${WorkDir}/jq /usr/bin/jq
-            chmod +x /usr/bin/jq
-            echo -e "${Msg_Info}Cleaning up ..."
-            rm -rf ${WorkDir}/jq.tar.gz
-        fi
-    fi
-    # 二次检测
-    if [ ! -f "/usr/bin/jq" ]; then
-        echo -e "JSON Query Moudle install Failure! Try Restart Bench or Manually install it! (/usr/bin/jq)"
-        exit 1
-    fi
 }
 
 print_intro() {
@@ -480,30 +234,64 @@ scamalytics() {
     fi
 }
 
+virustotal() {
+    local ip="$1"
+    local api_keys=(
+    "401e74a0a76ff4a5c2462177bfe54d1fb71a86a97031a3a5b461eb9fe06fa9a5"
+    "e6184c04de532cd5a094f3fd6b3ce36cd187e41e671b5336fd69862257d07a9a"
+    "9929218dcd124c19bcee49ecd6d7555213de0e8f27d407cc3e85c92c3fc2508e"
+    "bcc1f94cc4ec1966f43a5552007d6c4fa3461cec7200f8d95053ebeeecc68afa"
+    )
+    local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
+    local output=$(curl -s --request GET --url "https://www.virustotal.com/api/v3/ip_addresses/$ip" --header "x-apikey:$api_key")
+    local result=$(echo "$output" | awk -F"[,:}]" '{
+        for(i=1;i<=NF;i++){
+            if($i~/\042timeout\042/){
+                exit
+            } else if($i~/\042harmless\042/){
+                print "  无害记录：" $(i+1)
+            } else if($i~/\042malicious\042/){
+                print "  恶意记录：" $(i+1)
+            } else if($i~/\042suspicious\042/){
+                print "  可疑记录：" $(i+1)
+            } else if($i~/\042undetected\042/){
+                print "  未检测到记录：" $(i+1)
+            }
+        }
+    }' | sed 's/\"//g')
+    if [[ -n "$result" ]] && [[ -n "$(echo "$result" | awk 'NF')" ]]; then
+        echo "黑名单记录统计:(有多少黑名单网站有记录)"
+        echo "$result"
+    fi
+}
 
 abuse() {
     ip="$1"
-    context2=$(curl -s -m 10 -H "$head" "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
+    context2=$(curl -sL -H "$head" -m 10 "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
     if [[ "$context2" == *"abuseConfidenceScore"* ]]; then
-        score=$(echo "$context2" | jq -r '.data.abuseConfidenceScore')
+        score=$(echo "$context2" | grep -o '"abuseConfidenceScore":[^,}]*' | sed 's/.*://')
         echo "abuseipdb数据库-abuse得分：$score"
         echo "IP类型:"
-        echo "  IP2Location数据库: $(echo "$context2" | jq -r '.data.usageType')"
+        usageType=$(grep -oP '"usageType":\s*"\K[^"]+' <<< "$context2" | sed 's/\\\//\//g')
+        if [ -z "$usageType" ]; then
+            usageType="Unknown (Maybe Fixed Line ISP)"
+        fi
+        echo "  IP2Location数据库: $usageType"
     fi
 }
 
 ipapi() {
     ip=$1
-    context4=$(curl -s -m 10 "http://ip-api.com/json/$ip?fields=mobile,proxy,hosting")
+    context4=$(curl -sL -m 10 "http://ip-api.com/json/$ip?fields=mobile,proxy,hosting")
     if [[ "$context4" == *"mobile"* ]]; then
         echo "ip-api数据库:"
-        mobile=$(echo "$context4" | jq -r '.mobile')
+        mobile=$(echo "$context4" | grep -o '"mobile":[^,}]*' | sed 's/.*://;s/"//g')
         tp1=$(translate_status ${mobile})
         echo "  手机流量: $tp1"
-        proxy=$(echo "$context4" | jq -r '.proxy')
+        proxy=$(echo "$context4" | grep -o '"proxy":[^,}]*' | sed 's/.*://;s/"//g')
         tp2=$(translate_status ${proxy})
         echo "  代理服务: $tp2"
-        hosting=$(echo "$context4" | jq -r '.hosting')
+        hosting=$(echo "$context4" | grep -o '"hosting":[^,}]*' | sed 's/.*://;s/"//g')
         tp3=$(translate_status ${hosting})
         echo "  数据中心: $tp3"
     fi
@@ -512,8 +300,8 @@ ipapi() {
 cloudflare() {
     status=0
     for ((i=1; i<=100; i++)); do
-        context1=$(curl -s -m 10 "https://cf-threat.sukkaw.com/hello.json?threat=$i" | jq -r '.ping')
-        if [[ "$context1" != "pong!" ]]; then
+        context1=$(curl -sL -m 10 "https://cf-threat.sukkaw.com/hello.json?threat=$i")
+        if [[ "$context1" != *"pong!"* ]]; then
             echo "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60"
             echo "Cloudflare威胁得分：$i"
             status=1
@@ -553,12 +341,7 @@ checkupdate
 checkroot
 checkwget
 checkcurl
-checksystem
-checktar
 check_ipv4
-SystemInfo_GetOSRelease
-SystemInfo_GetSystemBit
-Check_JSONQuery
 ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
 ! _exists "free" && _red "Error: free command not found.\n" && exit 1
 ip4=$(curl -s4m8 "$IP_API")
@@ -569,8 +352,9 @@ ip6=$(echo "$ip6" | tr -d '\n')
 start_time=$(date +%s)
 print_intro
 echo -e "-----------------欺诈分数以及IP质量检测--本频道独创-------------------"
-yellow "得分仅作参考，不代表100%准确，IP类型如果不一致请手动查询多个数据库比对"
+yellow "数据仅作参考，不代表100%准确，IP类型如果不一致请手动查询多个数据库比对"
 scamalytics "$ip4"
+virustotal "$ip4"
 ip234 "$ip4"
 ipapi "$ip4"
 abuse "$ip4"
@@ -579,6 +363,7 @@ google
 if [[ -n "$ip6" ]]; then
   echo "------以下为IPV6检测------"
   scamalytics "$ip6"
+  virustotal "$ip6"
   abuse "$ip6"
 fi
 next

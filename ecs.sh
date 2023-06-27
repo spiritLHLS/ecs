@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.06.21"
+ver="2023.06.27"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.24")
@@ -2252,6 +2252,36 @@ scamalytics() {
     fi
 }
 
+virustotal() {
+    local ip="$1"
+    local api_keys=(
+    "401e74a0a76ff4a5c2462177bfe54d1fb71a86a97031a3a5b461eb9fe06fa9a5"
+    "e6184c04de532cd5a094f3fd6b3ce36cd187e41e671b5336fd69862257d07a9a"
+    "9929218dcd124c19bcee49ecd6d7555213de0e8f27d407cc3e85c92c3fc2508e"
+    "bcc1f94cc4ec1966f43a5552007d6c4fa3461cec7200f8d95053ebeeecc68afa"
+    )
+    local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
+    local output=$(curl -s --request GET --url "https://www.virustotal.com/api/v3/ip_addresses/$ip" --header "x-apikey:$api_key")
+    local result=$(echo "$output" | awk -F"[,:}]" '{
+        for(i=1;i<=NF;i++){
+            if($i~/\042timeout\042/){
+                exit
+            } else if($i~/\042harmless\042/){
+                print "  无害记录：" $(i+1)
+            } else if($i~/\042malicious\042/){
+                print "  恶意记录：" $(i+1)
+            } else if($i~/\042suspicious\042/){
+                print "  可疑记录：" $(i+1)
+            } else if($i~/\042undetected\042/){
+                print "  未检测到记录：" $(i+1)
+            }
+        }
+    }' | sed 's/\"//g')
+    if [[ -n "$result" ]] && [[ -n "$(echo "$result" | awk 'NF')" ]]; then
+        echo "黑名单记录统计:(有多少黑名单网站有记录)"
+        echo "$result"
+    fi
+}
 
 cloudflare() {
     status=0
@@ -2331,6 +2361,7 @@ ipcheck(){
     ip4=$(echo "$ip4" | tr -d '\n')
     ip6=$(echo "$ip6" | tr -d '\n')
     scamalytics "$ip4"
+    virustotal "$ip4"
     ip234 "$ip4"
     ipapi "$ip4"
     abuse "$ip4"
@@ -2338,6 +2369,7 @@ ipcheck(){
     if [[ -n "$ip6" ]]; then
     echo "------以下为IPV6检测------"
     scamalytics "$ip6"
+    virustotal "$ip6"
     abuse "$ip6"
     fi
 }
@@ -2458,7 +2490,7 @@ spiritlhl_script(){
     [ "${Var_OSRelease}" = "freebsd" ] && return
     cd $myvar >/dev/null 2>&1
     echo -e "-------------------欺诈分数以及IP质量检测--本脚本原创-------------------"
-    _yellow "以下仅作参考，不代表100%准确，如果和实际情况不一致请手动查询多个数据库比对"
+    _yellow "数据仅作参考，不代表100%准确，如果和实际情况不一致请手动查询多个数据库比对"
     ipcheck
 }
 

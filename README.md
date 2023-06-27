@@ -6,18 +6,31 @@
 
 支持系统：
 
-Ubuntu 18+, Debian 8+, centos 7+, Fedora 22+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, AstraLinux CE, Arch, FreeBSD(前提已执行```pkg install -y curl bash```)
+Ubuntu 18+, Debian 8+, centos 7+, Fedora 22+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, AstraLinux CE, Arch,
+
+半支持系统：
+
+FreeBSD(前提已执行```pkg install -y curl bash```)，Armbian
+
+<details>
+Armbian系统部分检测和测试暂不支持Armbian系统
+
+FreeBSD系统的硬盘测试和CPU测试目前是半残的
+
+FreeBSD系统的分享链接的预处理部分sed命令存在问题未删除部分无效内容
+</details>
 
 # 目录
  * [融合怪测评脚本](#融合怪测评脚本)
-    * [交互形式](#交互形式)
-    * [无交互形式](#无交互形式)
-    * [说明](#说明)
- * [纯测IP质量](#纯测IP质量)
- * [部分服务器运行测试有各类bug一键修复后再测试](#部分服务器运行测试有各类bug一键修复后再测试)
- * [待解决事项](#待解决事项)
- * [更新](#更新)
- * [功能](#功能)
+    * [部分服务器运行测试有各类bug一键修复后再测试](#部分服务器运行测试有各类bug一键修复后再测试)
+    * [待解决事项](#待解决事项)
+    * [更新](#更新)
+    * [融合怪命令](#融合怪命令)
+      * [交互形式](#交互形式)
+      * [无交互形式](#无交互形式)
+    * [纯测IP质量](#纯测IP质量)
+    * [融合怪说明](#融合怪说明)
+    * [融合怪功能](#融合怪功能)
  * [友链](#友链)
     * [测评频道](#测评频道)
     * [自动更新测速服务器节点列表的网络基准测试脚本](#自动更新测速服务器节点列表的网络基准测试脚本)
@@ -28,9 +41,42 @@ Ubuntu 18+, Debian 8+, centos 7+, Fedora 22+, Almalinux 8.5+, OracleLinux 8+, Ro
 ------
 <a id="artical_1"></a>
 
-### 融合怪测评脚本
+# 融合怪测评脚本
 
-#### 交互形式
+## 部分服务器运行测试有各类bug一键修复后再测试
+
+一键修复各种系统原生bug的仓库：
+
+https://github.com/spiritLHLS/one-click-installation-script
+
+如若还有系统bug请到上面仓库的issues反映，脚本原生BUG该仓库issues反映
+
+## 待解决事项
+
+全球网络延迟测试(https://github.com/jsdelivr/globalping-cli) - 待添加
+
+ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修复
+
+个别(可能0.1%)的机器下载文件遇到CDN下载超时的问题，文件未下载完全就使用了，需要添加文件完整性校验 - 待添加
+
+端口检测(检测是否被墙) - 待修复
+
+## 更新
+
+2023.06.27
+
+- 增加IP质量检测分区检测源，新增黑名单网站数量检测，检测IP有多少个黑名单网站记录了
+- 暂时放弃适配FreeBSD和Armbian系统，太难适配了，手头无相关测试机器
+- 更新纯测IP质量部分脚本，去除jq依赖，缩短检测时长
+
+历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
+
+**[返回顶部](https://github.com/spiritLHLS/ecs#top)**
+
+## 融合怪命令
+
+
+### 交互形式
 
 ```bash
 curl -L https://gitlab.com/spiritysdx/za/-/raw/main/ecs.sh -o ecs.sh && chmod +x ecs.sh && bash ecs.sh
@@ -48,7 +94,7 @@ curl -L https://github.com/spiritLHLS/ecs/raw/main/ecs.sh -o ecs.sh && chmod +x 
 bash <(wget -qO- bash.spiritlhl.net/ecs)
 ```
 
-#### 无交互形式
+### 无交互形式
 
 ```bash
 echo 1 | bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/ecs.sh)
@@ -66,7 +112,28 @@ echo 1 | bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/e
 echo 1 | bash <(wget -qO- bash.spiritlhl.net/ecs)
 ```
 
-#### 说明
+## 纯测IP质量
+
+- IP黑 ```OR``` 白
+- 含IPV4 ```AND``` IPV6
+
+```bash
+bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh)
+```
+
+或
+
+```bash
+bash <(wget -qO- bash.spiritlhl.net/ecs-ipcheck)
+```
+
+或
+
+```bash
+bash <(wget -qO- --no-check-certificate https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck.sh)
+```
+
+## 融合怪说明
 
 融合怪的执行结果保存在当前路径下的test_result.txt中，运行完毕可用```cat test_result.txt```查看记录
 
@@ -115,62 +182,7 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 **[返回顶部](https://github.com/spiritLHLS/ecs#top)**
 
-### 纯测IP质量
-
-- IP黑 ```OR``` 白
-- 含IPV4 ```AND``` IPV6
-
-```bash
-bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh)
-```
-
-或
-
-```bash
-bash <(wget -qO- bash.spiritlhl.net/ecs-ipcheck)
-```
-
-或
-
-```bash
-bash <(wget -qO- --no-check-certificate https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck.sh)
-```
-
-### 部分服务器运行测试有各类bug一键修复后再测试
-
-一键修复各种系统原生bug的仓库：
-
-https://github.com/spiritLHLS/one-click-installation-script
-
-如若还有系统bug请到上面仓库的issues反映，脚本原生BUG该仓库issues反映
-
-# 待解决事项
-
-全球网络延迟测试(https://github.com/jsdelivr/globalping-cli) - 待添加
-
-ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修复
-
-Armbian系统待适配，部分检测和测试暂不支持Armbian系统 - 待增加
-
-FreeBSD系统的硬盘测试和CPU测试待修复，目前是半残的 - 待修复
-
-FreeBSD系统的分享链接的预处理部分sed命令存在问题未删除内容 - 待修复
-
-个别(可能0.1%)的机器下载文件遇到CDN下载超时的问题，文件未下载完全就使用了，需要添加文件完整性校验 - 待添加
-
-端口检测(检测是否被墙) - 待修复
-
-# 更新
-
-2023.06.21
-
-- 修复 Ubuntu18 系统在安装 virt-what 组件时，可能缺少universe的情况，自动添加universe记录
-
-历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
-
-**[返回顶部](https://github.com/spiritLHLS/ecs#top)**
-
-# 功能
+## 融合怪功能
 
 - [x] 自由组合测试方向和单项测试以及合集收录第三方脚本
 - [x] 基础系统信息--感谢teddysun和superbench和yabs开源，本人整理修改优化
