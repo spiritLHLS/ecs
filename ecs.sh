@@ -2511,12 +2511,12 @@ fscarmen_route_script(){
     cd $myvar >/dev/null 2>&1
     echo -e "---------------------回程路由--感谢fscarmen开源及PR---------------------"
     rm -f $TEMP_FILE
-    IP_4=$(curl -ksL4m8 -A Mozilla https://api.ip.sb/geoip) &&
+    IP_4=$(curl -ksL4m6 -A Mozilla https://api.ip.sb/geoip) &&
     WAN_4=$(expr "$IP_4" : '.*ip\":[ ]*\"\([^"]*\).*') &&
     ASNORG_4=$(expr "$IP_4" : '.*isp\":[ ]*\"\([^"]*\).*') &&
     ASNNUM_4=$(expr "$IP_4" : '.*asn\":[ ]*\([0-9]*\).*') &&
     _blue "IPv4 ASN: AS${ASNNUM_4} ${ASNORG_4}" >> $TEMP_FILE
-    IP_6=$(curl -ksL6m8 -A Mozilla https://api.ip.sb/geoip) &> /dev/null &&
+    IP_6=$(curl -ksL6m6 -A Mozilla https://api.ip.sb/geoip) &> /dev/null &&
     WAN_6=$(expr "$IP_6" : '.*ip\":[ ]*\"\([^"]*\).*') &> /dev/null &&
     ASNORG_6=$(expr "$IP_6" : '.*isp\":[ ]*\"\([^"]*\).*') &> /dev/null &&
     ASNNUM_6=$(expr "$IP_6" : '.*asn\":[ ]*\([0-9]*\).*') &> /dev/null &&
