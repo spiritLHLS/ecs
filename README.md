@@ -135,7 +135,9 @@ bash <(wget -qO- --no-check-certificate https://raw.githubusercontent.com/spirit
 
 融合怪脚本最好在 /root 路径下执行，避免各种奇奇怪怪的问题
 
-融合怪的执行结果保存在当前路径下的test_result.txt中，运行完毕可用```cat test_result.txt```查看记录
+融合怪的执行结果保存在当前路径下的test_result.txt中，可先退出SSH登录后续再查看文件
+
+假如screen中显示乱码，也没事，只要你重登ssh，运行完毕可用```cat test_result.txt```查看记录，就没乱码了
 
 融合怪的完整版和精简版运行完毕自动上传结果到pastebin并回传分享链接
 
