@@ -61,7 +61,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 ## 更新
 
-2023.06.27
+2023.07.04
 
 - 增加IP质量检测分区检测源，新增25端口的邮箱可达性检测
 - 更新纯测IP质量部分脚本，更新部分组件安装的流程
@@ -113,6 +113,7 @@ echo 1 | bash <(wget -qO- bash.spiritlhl.net/ecs)
 
 - IP黑 ```OR``` 白
 - 含IPV4 ```AND``` IPV6
+- 25端口以及邮件可达性
 
 ```bash
 bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh)
