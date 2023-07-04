@@ -65,6 +65,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 - 增加IP质量检测分区检测源，新增25端口的邮箱可达性检测
 - 更新纯测IP质量部分脚本，更新部分组件安装的流程
+- 增加脚本运行次数的统计
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
