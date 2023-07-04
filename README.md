@@ -63,9 +63,8 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 2023.06.27
 
-- 增加IP质量检测分区检测源，新增黑名单网站数量检测，检测IP被多少个黑名单网站记录了
-- 暂时放弃适配FreeBSD和Armbian系统，太难适配了，手头无相关测试机器
-- 更新纯测IP质量部分脚本，去除jq依赖，缩短检测时长
+- 增加IP质量检测分区检测源，新增25端口的邮箱可达性检测
+- 更新纯测IP质量部分脚本，更新部分组件安装的流程
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.06.27"
+ver="2023.07.04"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.24")
@@ -224,6 +224,18 @@ checkping() {
         _yellow "Installing ping"
 	    ${PACKAGE_INSTALL[int]} iputils-ping > /dev/null 2>&1
 	    ${PACKAGE_INSTALL[int]} ping > /dev/null 2>&1
+	fi
+}
+
+checknc() {
+    _yellow "checking nc"
+	if ! command -v nc >/dev/null; then
+        _yellow "Installing nc"
+        if command -v apt >/dev/null; then
+	        ${PACKAGE_INSTALL[int]} netcat > /dev/null 2>&1
+        else
+	        ${PACKAGE_INSTALL[int]} nc > /dev/null 2>&1
+        fi
 	fi
 }
 
@@ -2355,6 +2367,69 @@ google() {
   fi
 }
 
+local_port_25() {
+    host=$1
+    port=$2
+    nc -z -w5 $host $port > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo "  本地: Yes"
+    else
+        echo "  本地: No"
+    fi
+}
+
+check_email_service() {
+    service=$1
+    host=""
+    port=25
+    expected_response="220"
+    case $service in
+        "gmail邮箱")
+            host="smtp.gmail.com"
+            ;;
+        "163邮箱")
+            host="smtp.163.com"
+            ;;
+        "yandex邮箱")
+            host="smtp.yandex.com"
+            ;;
+        "outlook邮箱")
+            host="smtp.office365.com"
+            ;;
+        "qq邮箱")
+            host="smtp.qq.com"
+            ;;
+        *)
+            echo "不支持的邮箱服务: $service"
+            return
+            ;;
+    esac
+    response=$(echo -e "QUIT\r\n" | nc -w5 $host $port)
+    if [[ $response == *"$expected_response"* ]]; then
+        echo "  $service: Yes"
+        # echo "$response"
+    else
+        echo "  $service：No"
+        # echo "$response"
+    fi
+}
+
+check_port_25() {
+    echo "端口25检测:"
+    local_port_25 "localhost" 25
+    check_email_service "163邮箱"
+    if [[ $(check_email_service "163邮箱") == *"No"* ]]; then
+        return
+    fi
+    check_email_service "gmail邮箱"
+    if [[ $(check_email_service "gmail邮箱") == *"No"* ]]; then
+        return
+    fi
+    check_email_service "outlook邮箱"
+    check_email_service "yandex邮箱"
+    check_email_service "qq邮箱"
+}
+
 ipcheck(){
     ip4=$IPV4
     ip6=$(curl -sL6m8 -k ip.sb | tr -d '[:space:]')
@@ -2366,10 +2441,13 @@ ipcheck(){
     ipapi "$ip4"
     abuse "$ip4"
     google
+    if command -v nc >/dev/null; then
+        check_port_25
+    fi
     if [[ -n "$ip6" ]]; then
-    echo "------以下为IPV6检测------"
-    scamalytics "$ip6"
-    abuse "$ip6"
+        echo "------以下为IPV6检测------"
+        scamalytics "$ip6"
+        abuse "$ip6"
     fi
 }
 
@@ -2391,6 +2469,7 @@ pre_check(){
     checklscpu
     checkunzip
     checktar
+    checknc
     check_time_zone
     checkhaveged
     optimized_kernel

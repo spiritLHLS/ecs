@@ -3,7 +3,7 @@
 #from https://github.com/spiritLHLS/ecs
 
 
-ver="2023.06.27"
+ver="2023.07.04"
 changeLog="IP质量测试，由频道 https://t.me/vps_reviews 原创"
 
 red(){
@@ -18,6 +18,7 @@ yellow(){
     echo -e "\033[33m\033[01m$1\033[0m"
 }
 
+temp_file_apt_fix="/tmp/apt_fix.txt"
 REGEX=("debian" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "alpine")
 RELEASE=("Debian" "Ubuntu" "CentOS" "CentOS" "Alpine")
 PACKAGE_UPDATE=("apt -y update" "apt -y update" "yum -y update" "yum -y update" "apk update -f")
@@ -41,17 +42,11 @@ for ((int = 0; int < ${#REGEX[@]}; int++)); do
         SYSTEM="${RELEASE[int]}" && [[ -n $SYSTEM ]] && break
     fi
 done
-
 trap _exit INT QUIT TERM
-
 _red() { echo -e "\033[31m\033[01m$@\033[0m"; }
-
 _green() { echo -e "\033[32m\033[01m$@\033[0m"; }
-
 _yellow() { echo -e "\033[33m\033[01m$@\033[0m"; }
-
 _blue() { echo -e "\033[36m\033[01m$@\033[0m"; }
-
 _exists() {
     local cmd="$1"
     if eval type type > /dev/null 2>&1; then
@@ -77,67 +72,66 @@ checkroot(){
 	[[ $EUID -ne 0 ]] && echo -e "${RED}请使用 root 用户运行本脚本！${PLAIN}" && exit 1
 }
 
-
 checkupdate(){
-	    echo "正在更新包管理源"
-	    if [ "${release}" == "centos" ]; then
-		    yum update > /dev/null 2>&1
-		else
-		    apt-get update > /dev/null 2>&1
-		fi
-
+	    _yellow "Updating package management sources"
+        if command -v apt-get > /dev/null 2>&1; then
+            apt_update_output=$(apt-get update 2>&1)
+            echo "$apt_update_output" > "$temp_file_apt_fix"
+            if grep -q 'NO_PUBKEY' "$temp_file_apt_fix"; then
+                public_keys=$(grep -oE 'NO_PUBKEY [0-9A-F]+' "$temp_file_apt_fix" | awk '{ print $2 }')
+                joined_keys=$(echo "$public_keys" | paste -sd " ")
+                _yellow "No Public Keys: ${joined_keys}"
+                apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ${joined_keys}
+                apt-get update
+                if [ $? -eq 0 ]; then
+                    _green "Fixed"
+                fi
+            fi
+            rm "$temp_file_apt_fix"
+        else
+            ${PACKAGE_UPDATE[int]}
+        fi 
 }
-
-checkupdate(){
-	    echo "正在更新包管理源"
-	    if [ "${release}" == "centos" ]; then
-		    yum update > /dev/null 2>&1
-			yum install dos2unix -y
-		else
-		    apt-get update > /dev/null 2>&1
-			apt install dos2unix -y
-		fi
-
-}
-
 
 checkdnsutils() {
-	if  [ ! -e '/usr/bin/dnsutils' ]; then
-	        echo "正在安装 dnsutils"
-	            if [ "${release}" == "centos" ]; then
-# 	                    yum update > /dev/null 2>&1
-	                    yum -y install dnsutils > /dev/null 2>&1
-	                else
-# 	                    apt-get update > /dev/null 2>&1
-	                    apt-get -y install dnsutils > /dev/null 2>&1
-	                fi
-
-	fi
+    _yellow "Installing dnsutils"
+    if [ "${release}" == "centos" ]; then
+        yum -y install dnsutils > /dev/null 2>&1
+        yum -y install bind-utils > /dev/null 2>&1
+    elif [ "${release}" == "arch" ]; then
+        pacman -S --noconfirm --needed bind > /dev/null 2>&1
+    else
+        ${PACKAGE_INSTALL[int]} dnsutils > /dev/null 2>&1
+    fi
 }
 
 checkcurl() {
-	if  [ ! -e '/usr/bin/curl' ]; then
-	        echo "正在安装 Curl"
-	            if [ "${release}" == "centos" ]; then
-# 	                yum update > /dev/null 2>&1
-	                yum -y install curl > /dev/null 2>&1
-	            else
-# 	                apt-get update > /dev/null 2>&1
-	                apt-get -y install curl > /dev/null 2>&1
-	            fi
+	if ! which curl >/dev/null; then
+        _yellow "Installing curl"
+        ${PACKAGE_INSTALL[int]} curl
 	fi
+    if [ $? -ne 0 ]; then
+        apt-get -f install > /dev/null 2>&1
+        ${PACKAGE_INSTALL[int]} curl
+    fi
 }
 
 checkwget() {
-	if  [ ! -e '/usr/bin/wget' ]; then
-	        echo "正在安装 Wget"
-	            if [ "${release}" == "centos" ]; then
-# 	                yum update > /dev/null 2>&1
-	                yum -y install wget > /dev/null 2>&1
-	            else
-# 	                apt-get update > /dev/null 2>&1
-	                apt-get -y install wget > /dev/null 2>&1
-	            fi
+	if ! which wget >/dev/null; then
+        _yellow "Installing wget"
+        ${PACKAGE_INSTALL[int]} wget
+	fi
+}
+
+checknc() {
+    _yellow "checking nc"
+	if ! command -v nc >/dev/null; then
+        _yellow "Installing nc"
+        if command -v apt >/dev/null; then
+	        ${PACKAGE_INSTALL[int]} netcat > /dev/null 2>&1
+        else
+	        ${PACKAGE_INSTALL[int]} nc > /dev/null 2>&1
+        fi
 	fi
 }
 
@@ -337,10 +331,74 @@ google() {
   fi
 }
 
+local_port_25() {
+    host=$1
+    port=$2
+    nc -z -w5 $host $port > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo "  本地: Yes"
+    else
+        echo "  本地: No"
+    fi
+}
+
+check_email_service() {
+    service=$1
+    host=""
+    port=25
+    expected_response="220"
+    case $service in
+        "gmail邮箱")
+            host="smtp.gmail.com"
+            ;;
+        "163邮箱")
+            host="smtp.163.com"
+            ;;
+        "yandex邮箱")
+            host="smtp.yandex.com"
+            ;;
+        "outlook邮箱")
+            host="smtp.office365.com"
+            ;;
+        "qq邮箱")
+            host="smtp.qq.com"
+            ;;
+        *)
+            echo "不支持的邮箱服务: $service"
+            return
+            ;;
+    esac
+    response=$(echo -e "QUIT\r\n" | nc -w5 $host $port)
+    if [[ $response == *"$expected_response"* ]]; then
+        echo "  $service: Yes"
+        # echo "$response"
+    else
+        echo "  $service：No"
+        # echo "$response"
+    fi
+}
+
+check_port_25() {
+    echo "端口25检测:"
+    local_port_25 "localhost" 25
+    check_email_service "163邮箱"
+    if [[ $(check_email_service "163邮箱") == *"No"* ]]; then
+        return
+    fi
+    check_email_service "gmail邮箱"
+    if [[ $(check_email_service "gmail邮箱") == *"No"* ]]; then
+        return
+    fi
+    check_email_service "outlook邮箱"
+    check_email_service "yandex邮箱"
+    check_email_service "qq邮箱"
+}
+
 checkupdate
 checkroot
 checkwget
 checkcurl
+checknc
 check_ipv4
 ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
 ! _exists "free" && _red "Error: free command not found.\n" && exit 1
@@ -351,7 +409,7 @@ ip6=$(echo "$ip6" | tr -d '\n')
 # clear
 start_time=$(date +%s)
 print_intro
-echo -e "-----------------欺诈分数以及IP质量检测--本频道独创-------------------"
+echo -e "-----------------端口检测以及IP质量检测--本频道独创-------------------"
 yellow "数据仅作参考，不代表100%准确，IP类型如果不一致请手动查询多个数据库比对"
 scamalytics "$ip4"
 virustotal "$ip4"
@@ -360,6 +418,9 @@ ipapi "$ip4"
 abuse "$ip4"
 cloudflare
 google
+if command -v nc >/dev/null; then
+    check_port_25
+fi
 if [[ -n "$ip6" ]]; then
   echo "------以下为IPV6检测------"
   scamalytics "$ip6"
