@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.07.04"
+ver="2023.07.05"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.24")
@@ -1889,55 +1889,236 @@ check_ipv4(){
   export IPV4
 }
 
-ipv4_info() {
-    org="$(curl -ksL4m6 -A Mozilla ipinfo.io/org)"
-    if [ "$?" -ne 0 ] || echo "$org" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL">/dev/null 2>&1; then
-        ipsb_v4=$(curl -ksL4m6 -A Mozilla https://api.ip.sb/geoip)
-        if [ "$?" -ne 0 ] || echo "$ipsb_v4" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL">/dev/null 2>&1; then
-            sky4k_v4=$(curl -ksL4m6 -A Mozilla ipdata.cheervision.co) &&
-            local asn=$(echo "$sky4k_v4" | grep -oP '(?<="asn":)[^,]+')
-            local organization=$(echo "$sky4k_v4" | grep -oP '(?<="organization":")[^"]+')
-            local city=$(echo "$sky4k_v4" | grep -oP '(?<="city":")[^"]+')
-            local region=$(echo "$sky4k_v4" | grep -oP '(?<="name":")[^"]+(?="})' | tr -d '\n')
-            if [[ -n "$asn" && -n "$organization" ]]; then
-                org="AS${asn} ${organization}"
-            else
-                org=""
-            fi
+get_longest_first_element() {
+    # 获取一个列表中最长的元素 - 信息最多的
+    local list=("$@")
+    local longest_element="${list[0]}"
+    for element in "${list[@]}"; do
+        if [[ ${#element} -gt ${#longest_element} ]]; then
+            longest_element=$element
+        fi
+    done
+    echo "$longest_element"
+}
+
+check_ip_info_by_cloudflare(){
+    # cloudflare.com
+    rm -rf /tmp/cloudflare
+    # 获取 IPv4 信息
+    local ipv4_output=$(curl -ksL4m6 -A Mozilla https://speed.cloudflare.com/meta 2>/dev/null)
+    # 提取 IPv4 的 asn、asOrganization、city 和 region
+    local ipv4_asn=$(echo "$ipv4_output" | grep -oE '"asn":[0-9]+' | grep -oE '[0-9]+')
+    local ipv4_as_organization=$(echo "$ipv4_output" | grep -oE '"asOrganization":"[^"]+"' | grep -oE '":"[^"]+"' | sed 's/":"//g')
+    local ipv4_city=$(echo "$ipv4_output" | grep -oE '"city":"[^"]+"' | grep -oE '":"[^"]+"' | sed 's/":"//g')
+    local ipv4_region=$(echo "$ipv4_output" | grep -oE '"region":"[^"]+"' | grep -oE '":"[^"]+"' | sed 's/":"//g')
+    if [ -n "$ipv4_asn" ] && [ -n "$ipv4_as_organization" ] && [ -n "$ipv4_city" ] && [ -n "$ipv4_region" ]; then
+        local ipv4_asn_info="AS${ipv4_asn::-1} ${ipv4_as_organization::-1}"
+        local ipv4_location="${ipv4_city::-1} / ${ipv4_region::-1}"
+    else
+        local ipv4_asn_info="None"
+        local ipv4_location="None"
+    fi
+    # 返回结果
+    echo "$ipv4_asn_info" >> /tmp/cloudflare
+    echo "$ipv4_location" >> /tmp/cloudflare
+    # 获取 IPv6 信息
+    sleep 1
+    local ipv6_output=$(curl -ksL6m6 -A Mozilla https://speed.cloudflare.com/meta 2>/dev/null)
+    # 提取 IPv6 的 asn、asOrganization、city 和 region
+    local ipv6_asn=$(echo "$ipv6_output" | grep -oE '"asn":[0-9]+' | grep -oE '[0-9]+')
+    local ipv6_as_organization=$(echo "$ipv6_output" | grep -oE '"asOrganization":"[^"]+"' | grep -oE '":"[^"]+"' | sed 's/":"//g')
+    local ipv6_city=$(echo "$ipv6_output" | grep -oE '"city":"[^"]+"' | grep -oE '":"[^"]+"' | sed 's/":"//g')
+    local ipv6_region=$(echo "$ipv6_output" | grep -oE '"region":"[^"]+"' | grep -oE '":"[^"]+"' | sed 's/":"//g')
+    if [ -n "$ipv6_asn" ] && [ -n "$ipv6_as_organization" ] && [ -n "$ipv6_city" ] && [ -n "$ipv6_region" ]; then
+        local ipv6_asn_info="AS${ipv6_asn::-1} ${ipv6_as_organization::-1}"
+        local ipv6_location="${ipv6_city::-1} / ${ipv6_region::-1}"
+    else
+        local ipv6_asn_info="None"
+        local ipv6_location="None"
+    fi
+    # 返回结果
+    echo "$ipv6_asn_info" >> /tmp/cloudflare
+    echo "$ipv6_location" >> /tmp/cloudflare
+}
+
+check_ip_info_by_ipinfo(){
+    # ipinfo.io
+    rm -rf /tmp/ipinfo
+    # 获取IPv4的asn、city、region、country
+    local ipv4_asn=$(curl -ksL4m6 -A Mozilla ipinfo.io/org 2>/dev/null)
+    sleep 1
+    local ipv4_city=$(curl -ksL4m6 -A Mozilla ipinfo.io/city 2>/dev/null)
+    sleep 1
+    local ipv4_region=$(curl -ksL4m6 -A Mozilla ipinfo.io/region 2>/dev/null)
+    sleep 1
+    local ipv4_country=$(curl -ksL4m6 -A Mozilla ipinfo.io/country 2>/dev/null)
+    if [ -n "$ipv4_asn" ] && [ -n "$ipv4_city" ] && [ -n "$ipv4_country" ]; then
+        local ipv4_asn_info="${ipv4_asn}"
+        local ipv4_location="${ipv4_city} / ${ipv4_region} / ${ipv4_country}"
+    elif [[ -n $ipv4_asn && -n $ipv4_city && -n $ipv4_region ]]; then
+        local ipv4_asn_info="${ipv4_asn}"
+        local ipv4_location="${ipv4_city} / ${ipv4_region}"
+    else
+        local ipv4_asn_info="None"
+        local ipv4_location="None"
+    fi
+    # 返回结果
+    echo "$ipv4_asn_info" >> /tmp/ipinfo
+    echo "$ipv4_location" >> /tmp/ipinfo
+    # 获取IPv6的asn、city和region - 无 - 该站点不支持IPV6网络识别
+    local ipv6_asn_info="None"
+    local ipv6_location="None"
+    # 返回结果
+    echo "$ipv6_asn_info" >> /tmp/ipinfo
+    echo "$ipv6_location" >> /tmp/ipinfo
+}
+
+check_ip_info_by_ipsb(){
+    # ip.sb
+    rm -rf /tmp/ipsb
+    local result_ipv4=$(curl -ksL4m6 -A Mozilla https://api.ip.sb/geoip 2>/dev/null)
+    # 获取IPv4的asn、city、region、country
+    if [ -n "$result_ipv4" ]; then
+        local ipv4_asn=$(expr "$result_ipv4" : '.*asn\":[ ]*\([0-9]*\).*')
+        local ipv4_as_organization=$(expr "$result_ipv4" : '.*isp\":[ ]*\"\([^"]*\).*')
+        local ipv4_city=$(echo $result_ipv4 | grep -oE '"city":"[^"]+"' | cut -d ":" -f2 | tr -d '"')
+        local ipv4_region=$(echo $result_ipv4 | grep -oE '"region":"[^"]+"' | cut -d ":" -f2 | tr -d '"')
+        local ipv4_country=$(echo "$result_ipv4" | grep -oP '(?<="country":")[^"]*')
+        if [ -n "$ipv4_asn" ] && [ -n "$ipv4_as_organization" ] && [ -n "$ipv4_city" ] && [ -n "$ipv4_region" ] && [ -n "$ipv4_country" ]; then
+            local ipv4_asn_info="AS${ipv4_asn} ${ipv4_as_organization}"
+            local ipv4_location="${ipv4_city} / ${ipv4_region} / ${ipv4_country}"
         else
-            local asn=$(expr "$ipsb_v4" : '.*asn\":[ ]*\([0-9]*\).*')
-            local organization=$(expr "$ipsb_v4" : '.*isp\":[ ]*\"\([^"]*\).*')
-            local region=$(echo "$ipsb_v4" | grep -oP '(?<="country":")[^"]*')
-            if [[ -n "$asn" && -n "$organization" ]]; then
-                org="AS${asn} ${organization}"
-            else
-                org=""
-            fi
+            local ipv4_asn_info="None"
+            local ipv4_location="None"
         fi
     else
-        local city="$(curl -ksL4m6 -A Mozilla ipinfo.io/city)"
-        local country="$(curl -ksL4m6 -A Mozilla ipinfo.io/country)"
-        local region="$(curl -ksL4m6 -A Mozilla ipinfo.io/region)"
+        local ipv4_asn_info="None"
+        local ipv4_location="None"
     fi
-    if [[ -n "$org" ]]; then
-        echo " ASN组织           : $(_blue "$org")"
-    fi
-    if [[ -n "$city" && -n "$country" ]]; then
-        echo " 位置              : $(_blue "$city / $country")"
-    elif [[ -n "$city" ]]; then
-        echo " 位置              : $(_blue "$city")"
-    fi
-    if [[ -n "$region" ]]; then
-        echo " 地区              : $(_yellow "$region")"
-    fi
-    if [[ -z "$org" ]]; then
-        IP_6=$(curl -ksL6m8 -A Mozilla https://api.ip.sb/geoip) &&
-        WAN_6=$(expr "$IP_6" : '.*ip\":[ ]*\"\([^"]*\).*') &&
-        ASN_6=$(expr "$IP_6" : '.*asn\":[ ]*\([0-9]*\).*') &&
-        ASNORG_6=$(expr "$IP_6" : '.*asn_organization\":[ ]*\"\([^"]*\).*') &&
-        if [ -n "$ASNORG_6" ]; then
-            echo " IPV6网络          : $(_blue "AS$ASN_6 $ASNORG_6")"
+    # 返回结果
+    echo "$ipv4_asn_info" >> /tmp/ipsb
+    echo "$ipv4_location" >> /tmp/ipsb
+    # 获取IPv6的asn、city、region、country
+    sleep 1
+    local result_ipv6=$(curl -ksL6m6 -A Mozilla https://api.ip.sb/geoip 2>/dev/null)
+    if [ -n "$result_ipv6" ]; then
+        local ipv6_asn=$(expr "$result_ipv6" : '.*asn\":[ ]*\([0-9]*\).*')
+        local ipv6_as_organization=$(expr "$result_ipv6" : '.*isp\":[ ]*\"\([^"]*\).*')
+        local ipv6_city=$(echo $result_ipv6 | grep -oE '"city":"[^"]+"' | cut -d ":" -f2 | tr -d '"')
+        local ipv6_region=$(echo $result_ipv6 | grep -oE '"region":"[^"]+"' | cut -d ":" -f2 | tr -d '"')
+        local ipv6_country=$(echo "$result_ipv4" | grep -oP '(?<="country":")[^"]*')
+        if [ -n "$ipv6_asn" ] && [ -n "$ipv6_as_organization" ] && [ -n "$ipv6_city" ] && [ -n "$ipv6_region" ] && [ -n "$ipv6_country" ]; then
+            local ipv6_asn_info="AS${ipv6_asn} ${ipv6_as_organization}"
+            local ipv6_location="${ipv6_city} / ${ipv6_region} / ${ipv6_country}"
+        else
+            local ipv6_asn_info="None"
+            local ipv6_location="None"
         fi
+    else
+        local ipv6_asn_info="None"
+        local ipv6_location="None"
+    fi
+    # 返回结果
+    echo "$ipv6_asn_info" >> /tmp/ipsb
+    echo "$ipv6_location" >> /tmp/ipsb
+}
+
+check_ip_info_by_cheervision(){
+    # ipdata.cheervision.co
+    rm -rf /tmp/cheervision
+    local ipv4_result=$(curl -ksL4m6 -A Mozilla ipdata.cheervision.co 2>/dev/null)
+    # 获取IPv4的asn、city、region
+    if [ -n "$ipv4_result" ]; then
+        local ipv4_asn=$(echo "$ipv4_result" | sed -n 's/.*"asn":\([0-9]*\),.*/\1/p')
+        local ipv4_organization=$(echo "$ipv4_result" | sed -n 's/.*"organization":"\([^"]*\)",.*/\1/p')
+        local ipv4_city=$(echo "$ipv4_result" | sed -n 's/.*"city":"\([^"]*\)",.*/\1/p')
+        local ipv4_region=$(echo "$ipv4_result" | sed -n 's/.*"region":{"code":"\([^"]*\)".*/\1/p')
+        if [ -n "$ipv4_asn" ] && [ -n "$ipv4_organization" ] && [ -n "$ipv4_city" ] && [ -n "$ipv4_region" ]; then
+            local ipv4_asn_info="AS${ipv4_asn} ${ipv4_organization}"
+            local ipv4_location="${ipv4_city} / ${ipv4_region}"
+        else
+            local ipv4_asn_info="None"
+            local ipv4_location="None"
+        fi
+    else
+        local ipv4_asn_info="None"
+        local ipv4_location="None"
+    fi
+    # 返回结果
+    echo "$ipv4_asn_info" >> /tmp/cheervision
+    echo "$ipv4_location" >> /tmp/cheervision
+    # 获取IPv6的asn、city、region
+    sleep 1
+    local ipv6_result=$(curl -ksL6m6 -A Mozilla ipdata.cheervision.co 2>/dev/null)
+    if [ -n "$ipv6_result" ]; then
+        local ipv6_asn=$(echo "$ipv6_result" | sed -n 's/.*"asn":\([0-9]*\),.*/\1/p')
+        local ipv6_organization=$(echo "$ipv6_result" | sed -n 's/.*"organization":"\([^"]*\)",.*/\1/p')
+        local ipv6_city=$(echo "$ipv6_result" | sed -n 's/.*"city":"\([^"]*\)",.*/\1/p')
+        local ipv6_region=$(echo "$ipv6_result" | sed -n 's/.*"region":{"code":"\([^"]*\)".*/\1/p')
+        if [ -n "$ipv6_asn" ] && [ -n "$ipv6_organization" ] && [ -n "$ipv6_city" ] && [ -n "$ipv6_region" ]; then
+            local ipv6_asn_info="AS${ipv6_asn} ${ipv6_organization}"
+            local ipv6_location="${ipv6_city} / ${ipv6_region}"
+        else
+            local ipv6_asn_info="None"
+            local ipv6_location="None"
+        fi
+    else
+        local ipv6_asn_info="None"
+        local ipv6_location="None"
+    fi
+    # 返回结果
+    echo "$ipv6_asn_info" >> /tmp/cheervision
+    echo "$ipv6_location" >> /tmp/cheervision
+}
+
+check_ip_info(){
+    # 并行执行四个函数
+    check_ip_info_by_cloudflare &
+    check_ip_info_by_ipinfo &
+    check_ip_info_by_ipsb &
+    check_ip_info_by_cheervision
+    # 等待所有后台任务执行完毕
+    wait
+    # 存储结果的四个列表
+    local ipv4_asn_info_list=()
+    local ipv4_location_list=()
+    local ipv6_asn_info_list=()
+    local ipv6_location_list=()
+    # 遍历每个函数的结果文件，读取内容到对应的列表中
+    files=("/tmp/cloudflare" "/tmp/ipinfo" "/tmp/ipsb" "/tmp/cheervision")
+    for file in "${files[@]}"; do
+        {
+            read -r asn_info
+            read -r location
+            read -r ipv6_asn_info
+            read -r ipv6_location
+        } < "$file"
+        ipv4_asn_info_list+=("$asn_info")
+        ipv4_location_list+=("$location")
+        ipv6_asn_info_list+=("$ipv6_asn_info")
+        ipv6_location_list+=("$ipv6_location")
+    done
+    # 找到每个列表中最长的第一个元素作为最终结果
+    local ipv4_asn_info=$(get_longest_first_element "${ipv4_asn_info_list[@]}")
+    local ipv4_location=$(get_longest_first_element "${ipv4_location_list[@]}")
+    local ipv6_asn_info=$(get_longest_first_element "${ipv6_asn_info_list[@]}")
+    local ipv6_location=$(get_longest_first_element "${ipv6_location_list[@]}")
+    # 删除缓存文件
+    for file in "${files[@]}"; do
+        rm -rf ${file}
+    done
+    # 打印最终结果
+    if [[ -n "$ipv4_asn_info" ]]; then
+        echo " IPV4 ASN          : $(_blue "$ipv4_asn_info")"
+    fi
+    if [[ -n "$ipv4_location" ]]; then
+        echo " IPV4 位置         : $(_blue "$ipv4_location")"
+    fi
+    if [[ -n "$ipv6_asn_info" ]]; then
+        echo " IPV6 ASN          : $(_blue "$ipv6_asn_info")"
+    fi
+    if [[ -n "$ipv6_location" ]]; then
+        echo " IPV6 位置         : $(_blue "$ipv6_location")"
     fi
 }
 
@@ -2411,7 +2592,7 @@ check_email_service() {
             return
             ;;
     esac
-    response=$(echo -e "QUIT\r\n" | nc -w5 $host $port)
+    response=$(echo -e "QUIT\r\n" | nc -w5 $host $port 2>/dev/null)
     if [[ $response == *"$expected_response"* ]]; then
         echo "  $service: Yes"
         # echo "$response"
@@ -2510,7 +2691,7 @@ sjlleo_script(){
 basic_script(){
     echo "-------------------感谢teddysun和superbench和yabs开源-------------------"
     print_system_info
-    ipv4_info
+    check_ip_info
     cd $myvar >/dev/null 2>&1
     sleep 1
     echo "---------------------CPU测试--感谢lemonbench开源------------------------"
@@ -2597,16 +2778,6 @@ fscarmen_route_script(){
     cd $myvar >/dev/null 2>&1
     echo -e "---------------------回程路由--感谢fscarmen开源及PR---------------------"
     rm -f $TEMP_FILE
-    IP_4=$(curl -ksL4m6 -A Mozilla https://api.ip.sb/geoip) &&
-    WAN_4=$(expr "$IP_4" : '.*ip\":[ ]*\"\([^"]*\).*') &&
-    ASNORG_4=$(expr "$IP_4" : '.*isp\":[ ]*\"\([^"]*\).*') &&
-    ASNNUM_4=$(expr "$IP_4" : '.*asn\":[ ]*\([0-9]*\).*') &&
-    _blue "IPv4 ASN: AS${ASNNUM_4} ${ASNORG_4}" >> $TEMP_FILE
-    IP_6=$(curl -ksL6m6 -A Mozilla https://api.ip.sb/geoip) &> /dev/null &&
-    WAN_6=$(expr "$IP_6" : '.*ip\":[ ]*\"\([^"]*\).*') &> /dev/null &&
-    ASNORG_6=$(expr "$IP_6" : '.*isp\":[ ]*\"\([^"]*\).*') &> /dev/null &&
-    ASNNUM_6=$(expr "$IP_6" : '.*asn\":[ ]*\([0-9]*\).*') &> /dev/null &&
-    _blue "IPv6 ASN: AS${ASNNUM_6} ${ASNORG_6}" >> $TEMP_FILE
     _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
     local test_area=("${!1}")
     local test_ip=("${!2}")
