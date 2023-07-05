@@ -2076,7 +2076,7 @@ check_ip_info(){
     check_ip_info_by_cloudflare &
     check_ip_info_by_ipinfo &
     check_ip_info_by_ipsb &
-    check_ip_info_by_cheervision
+    check_ip_info_by_cheervision &
     # 等待所有后台任务执行完毕
     wait
     # 存储结果的四个列表
