@@ -368,7 +368,7 @@ check_email_service() {
             return
             ;;
     esac
-    response=$(echo -e "QUIT\r\n" | nc -w5 $host $port)
+    response=$(echo -e "QUIT\r\n" | nc -w5 $host $port 2>/dev/null)
     if [[ $response == *"$expected_response"* ]]; then
         echo "  $service: Yes"
         # echo "$response"
