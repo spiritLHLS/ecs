@@ -390,6 +390,35 @@
 #     fi
 # }
 
+# cnlatency() {    
+#     ipaddr=$(getent ahostsv4 $1 | grep STREAM | head -n 1 | cut -d ' ' -f 1)
+# 	if isvalidipv4 "$ipaddr"; then
+# 		host=$2
+# 		retry=1
+# 		rtt=999	
+# 		while [[ "$retry" < 4 ]] ; do
+# 			echo -en "\r\033[0K [$3 of $4] : $host ($ipaddr) attemp #$retry"
+# 			rtt=$(ping -c1 -w1 $ipaddr | sed -nE 's/.*time=([0-9.]+).*/\1/p')				
+# 			if [[ -z "$rtt" ]]; then
+# 				rtt=999
+# 				retry=$((retry+1))
+# 				continue
+# 			fi
+# 			[[ "$rtt" < 1 ]] && rtt=1
+# 			int=${rtt%.*}
+# 			if [[ "$int" -gt 999 || "$int" -eq 0 ]]; then
+# 				rtt=999
+# 				break
+# 			fi
+# 			rtt=$(printf "%.0f" $rtt)
+# 			rtt=$(printf "%03d" $rtt)
+# 			break
+# 		done
+# 		result="${rtt}ms : $host , $ipaddr"
+# 		CHINALIST[${#CHINALIST[@]}]=$result		
+# 	fi
+# }
+
 # # https://github.com/xsidc/zbench/blob/master/ZPing-CN.py
 # # https://ipasn.com/bench.sh
 # chinaping() {
