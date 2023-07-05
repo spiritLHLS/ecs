@@ -66,6 +66,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 - ASN查询与地址查询增加cloudflare的检测源，多源使用并行执行并发检测，提高了检测的成功率和准确性
 - ASN查询删除重复查询，精简了代码，提高了检测速度
 - 邮箱可达性检测增加错误代码处理，避免显示错误日志
+- 删除部分无效函数代码归档，调整代码块顺序，集合同类型的代码块，方便未来维护
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
