@@ -2108,16 +2108,16 @@ check_ip_info(){
         rm -rf ${file}
     done
     # 打印最终结果
-    if [[ -n "$ipv4_asn_info" ]]; then
+    if [[ -n "$ipv4_asn_info" && "$ipv4_asn_info" != "None" ]]; then
         echo " IPV4 ASN          : $(_blue "$ipv4_asn_info")"
     fi
-    if [[ -n "$ipv4_location" ]]; then
+    if [[ -n "$ipv4_location" && "$ipv4_location" != "None" ]]; then
         echo " IPV4 位置         : $(_blue "$ipv4_location")"
     fi
-    if [[ -n "$ipv6_asn_info" ]]; then
+    if [[ -n "$ipv6_asn_info" && "$ipv6_asn_info" != "None" ]]; then
         echo " IPV6 ASN          : $(_blue "$ipv6_asn_info")"
     fi
-    if [[ -n "$ipv6_location" ]]; then
+    if [[ -n "$ipv6_location" && "$ipv6_location" != "None" ]]; then
         echo " IPV6 位置         : $(_blue "$ipv6_location")"
     fi
 }
