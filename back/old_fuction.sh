@@ -1,3 +1,15 @@
+# get_longest_first_element() {
+#     # 获取一个列表中最长的元素 - 信息最多的
+#     local list=("$@")
+#     local longest_element="${list[0]}"
+#     for element in "${list[@]}"; do
+#         if [[ ${#element} -gt ${#longest_element} ]]; then
+#             longest_element=$element
+#         fi
+#     done
+#     echo "$longest_element"
+# }
+
 # isvalidipv4()
 # {
 #     local ipaddr=$1
