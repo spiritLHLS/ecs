@@ -35,7 +35,6 @@ PACKAGE_UPDATE=("! apt-get update && apt-get --fix-broken install -y && apt-get 
 PACKAGE_INSTALL=("apt-get -y install" "apt-get -y install" "yum -y install" "yum -y install" "yum -y install" "pacman -Sy --noconfirm --needed" "pkg install -y")
 PACKAGE_REMOVE=("apt-get -y remove" "apt-get -y remove" "yum -y remove" "yum -y remove" "yum -y remove" "pacman -Rsc --noconfirm" "pkg delete")
 PACKAGE_UNINSTALL=("apt-get -y autoremove" "apt-get -y autoremove" "yum -y autoremove" "yum -y autoremove" "yum -y autoremove" "" "pkg autoremove")
-
 CMD=("$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(hostnamectl 2>/dev/null | grep -i system | cut -d : -f2)" "$(lsb_release -sd 2>/dev/null)" "$(grep -i description /etc/lsb-release 2>/dev/null | cut -d \" -f2)" "$(grep . /etc/redhat-release 2>/dev/null)" "$(grep . /etc/issue 2>/dev/null | cut -d \\ -f1 | sed '/^[ ]*$/d')" "$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(uname -s)") 
 SYS="${CMD[0]}"
 [[ -n $SYS ]] || exit 1
@@ -56,57 +55,203 @@ else
 fi
 rm -rf test_result.txt > /dev/null 2>&1
 
-check_cdn() {
-  local o_url=$1
-  for cdn_url in "${cdn_urls[@]}"; do
-    if curl -sL -k "$cdn_url$o_url" --max-time 6 | grep -q "success" > /dev/null 2>&1; then
-      export cdn_success_url="$cdn_url"
-      return
-    fi
-    sleep 0.5
-  done
-  export cdn_success_url=""
+# =============== 脚本退出执行相关函数 部分 ===============
+trap _exit INT QUIT TERM
+
+# Trap终止信号捕获 - ctrl+c
+_exit() {
+    echo -e "\n${Msg_Error}Exiting ...\n"
+    _red "检测到退出操作，脚本终止！\n"
+    global_exit_action
+    rm_script
+    exit 1
 }
 
-check_cdn_file() {
-    check_cdn "https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test"
-    if [ -n "$cdn_success_url" ]; then
-        _yellow "CDN available, using CDN"
-    else
-        _yellow "No CDN available, no use CDN"
-    fi
+global_startup_init_action() {
+    # 清理残留, 为新一次的运行做好准备
+    echo -e "${Msg_Info}Initializing Running Enviorment, Please wait ..."
+    rm -rf "$WorkDir"
+    rm -rf /.tmp_LBench/
+    mkdir "$WorkDir"/
+    echo -e "${Msg_Info}Checking Dependency ..."
+    check_virtwhat
+    Check_SysBench
+    SystemInfo_GetCPUInfo
+    echo -e "${Msg_Info}Starting Test ..."
 }
 
-check_time_zone(){
-    _yellow "adjusting the time"
-    if command -v ntpd > /dev/null 2>&1; then
-        if which systemctl >/dev/null 2>&1; then
-            systemctl stop chronyd
-            systemctl stop ntpd
-            ntpd -gq
-            systemctl start ntpd
-        else
-            service chronyd stop
-            service ntpd stop
-            ntpd -gq
-            service ntpd start
-        fi
-        sleep 0.5
-        return
-    fi
-    if ! command -v chronyd > /dev/null 2>&1; then
-        ${PACKAGE_INSTALL[int]} chrony > /dev/null 2>&1
+reset_default_sysctl(){
+    if [ -f /etc/security/limits.conf ]; then
+        cp /etc/security/limits.conf.backup /etc/security/limits.conf
+        rm /etc/security/limits.conf.backup
     fi
     if which systemctl >/dev/null 2>&1; then
-        systemctl stop chronyd
-        chronyd -q
-        systemctl start chronyd
-    else
-        service chronyd stop
-        chronyd -q
-        service chronyd start
+        if [ -f "$sysctl_conf" ]; then
+            cp "$sysctl_conf_backup" "$sysctl_conf"
+            cat "$sysctl_default" >> "$sysctl_conf"
+            $sysctl_path -p 2> /dev/null
+            cp "$sysctl_conf_backup" "$sysctl_conf"
+            rm "$sysctl_conf_backup"
+            rm "$sysctl_default"
+        fi
+        $sysctl_path -p 2> /dev/null
     fi
-    sleep 0.5
+}
+
+global_exit_action() {
+    reset_default_sysctl > /dev/null 2>&1
+    build_text
+    if [ -n "$shorturl" ]
+    then
+        _green "  短链:"
+        _blue "    $shorturl"
+    fi
+    rm -rf ${TEMP_DIR}
+    rm -rf ${WorkDir}/
+    rm -rf /.tmp_LBench/
+    rm -rf *00_00
+}
+
+_exists() {
+    local cmd="$1"
+    if eval type type > /dev/null 2>&1; then
+        eval type "$cmd" > /dev/null 2>&1
+    elif command > /dev/null 2>&1; then
+        command -v "$cmd" > /dev/null 2>&1
+    else
+        which "$cmd" > /dev/null 2>&1
+    fi
+    local rt=$?
+    return ${rt}
+}
+
+next() {
+    echo -en "\r"
+    [ "${Var_OSRelease}" = "freebsd" ] && printf "%-72s\n" "-" | tr ' ' '-' && return
+    printf "%-72s\n" "-" | sed 's/\s/-/g'
+}
+
+# =============== 组件预安装及文件预下载 部分 ===============
+checkroot(){
+	[[ $EUID -ne 0 ]] && echo -e "${RED}请使用 root 用户运行本脚本！${PLAIN}" && exit 1
+}
+
+checkupdate(){
+    _yellow "Updating package management sources"
+    if command -v apt-get > /dev/null 2>&1; then
+        apt_update_output=$(apt-get update 2>&1)
+        echo "$apt_update_output" > "$temp_file_apt_fix"
+        if grep -q 'NO_PUBKEY' "$temp_file_apt_fix"; then
+            public_keys=$(grep -oE 'NO_PUBKEY [0-9A-F]+' "$temp_file_apt_fix" | awk '{ print $2 }')
+            joined_keys=$(echo "$public_keys" | paste -sd " ")
+            _yellow "No Public Keys: ${joined_keys}"
+            apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ${joined_keys}
+            apt-get update
+            if [ $? -eq 0 ]; then
+                _green "Fixed"
+            fi
+        fi
+        rm "$temp_file_apt_fix"
+    else
+        ${PACKAGE_UPDATE[int]}
+    fi 
+}
+
+checksudo() {
+    _yellow "checking sudo"
+    if ! command -v sudo > /dev/null 2>&1; then
+        _yellow "Installing sudo"
+        ${PACKAGE_INSTALL[int]} sudo > /dev/null 2>&1
+    fi
+}
+
+checkcurl() {
+	if ! which curl >/dev/null; then
+        _yellow "Installing curl"
+        ${PACKAGE_INSTALL[int]} curl
+	fi
+    if [ $? -ne 0 ]; then
+        apt-get -f install > /dev/null 2>&1
+        ${PACKAGE_INSTALL[int]} curl
+    fi
+}
+
+checkwget() {
+	if ! which wget >/dev/null; then
+        _yellow "Installing wget"
+        ${PACKAGE_INSTALL[int]} wget
+	fi
+}
+
+checkfree() {
+    [ "${Var_OSRelease}" = "freebsd" ] && return
+	if ! command -v free > /dev/null 2>&1; then
+        _yellow "Installing procps"
+	    ${PACKAGE_INSTALL[int]} procps
+	fi
+}
+
+check_lsb_release() {
+    [ "${Var_OSRelease}" = "freebsd" ] && return
+	if ! command -v lsb_release > /dev/null 2>&1; then
+        _yellow "Installing lsb-release"
+	    ${PACKAGE_INSTALL[int]} lsb-release
+	fi
+}
+
+checklscpu() {
+	if ! command -v lscpu > /dev/null 2>&1; then
+        _yellow "Installing lscpu"
+	    ${PACKAGE_INSTALL[int]} lscpu
+	fi
+}
+
+checkunzip() {
+	if ! command -v unzip > /dev/null 2>&1; then
+        _yellow "Installing unzip"
+        ${PACKAGE_INSTALL[int]} unzip
+	fi
+}
+
+checkping() {
+    _yellow "checking ping"
+	if ! which ping >/dev/null; then
+        _yellow "Installing ping"
+	    ${PACKAGE_INSTALL[int]} iputils-ping > /dev/null 2>&1
+	    ${PACKAGE_INSTALL[int]} ping > /dev/null 2>&1
+	fi
+}
+
+checknc() {
+    _yellow "checking nc"
+	if ! command -v nc >/dev/null; then
+        _yellow "Installing nc"
+        if command -v apt >/dev/null; then
+	        ${PACKAGE_INSTALL[int]} netcat > /dev/null 2>&1
+        else
+	        ${PACKAGE_INSTALL[int]} nc > /dev/null 2>&1
+        fi
+	fi
+}
+
+checkstun() {
+    _yellow "checking stun"
+    if ! command -v stun > /dev/null 2>&1; then
+        _yellow "Installing stun"
+        ${PACKAGE_INSTALL[int]} stun-client > /dev/null 2>&1
+    fi
+}
+
+checktar() {
+    _yellow "checking tar"
+	if ! command -v tar &> /dev/null; then
+            _yellow "Installing tar"
+	        ${PACKAGE_INSTALL[int]} tar 
+	fi
+    if [ $? -ne 0 ]; then
+        apt-get -f install > /dev/null 2>&1
+        ${PACKAGE_INSTALL[int]} tar > /dev/null 2>&1
+    fi
 }
 
 checkhaveged(){
@@ -124,6 +269,245 @@ checkhaveged(){
     fi
 }
 
+checkdmidecode(){
+    ${PACKAGE_INSTALL[int]} dmidecode
+    if [ $? -ne 0 ]; then
+        if command -v apt-get > /dev/null 2>&1; then
+            echo "Retrying with additional options..."
+            apt-get update && apt-get --fix-broken install -y
+            apt-get install -y dmidecode --force-yes
+            if [ $? -ne 0 ]; then
+                apt-get update && apt-get --fix-broken install -y
+                apt-get install -y dmidecode --allow
+                if [ $? -ne 0 ]; then
+                    apt-get update && apt-get --fix-broken install -y
+                    apt-get install -y dmidecode -y --allow-unauthenticated
+                fi
+            fi
+        fi
+    fi   
+}
+
+checkdnsutils() {
+    _yellow "Installing dnsutils"
+    if [ "${Var_OSRelease}" == "centos" ]; then
+        yum -y install dnsutils > /dev/null 2>&1
+        yum -y install bind-utils > /dev/null 2>&1
+    elif [ "${Var_OSRelease}" == "arch" ]; then
+        pacman -S --noconfirm --needed bind > /dev/null 2>&1
+    else
+        ${PACKAGE_INSTALL[int]} dnsutils > /dev/null 2>&1
+    fi
+}
+
+check_virtwhat() {
+    if [ ! -f "/usr/sbin/virt-what" ]; then
+        echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
+        if [[ "${Var_OSRelease}" =~ ^(centos|rhel|almalinux|arch)$ ]]; then
+            yum -y install virt-what
+            if [ $? -ne 0 ]; then
+                dnf -y install virt-what
+            fi
+        elif [ "${Var_OSRelease}" = "astra" ]; then
+            apt-get install -y virt-what
+            if [ $? -ne 0 ]; then
+                echo "deb http://deb.debian.org/debian ${Var_OSReleaseVersion_Codename} main contrib non-free" >> /etc/apt/sources.list
+                echo "deb-src http://deb.debian.org/debian ${Var_OSReleaseVersion_Codename} main contrib non-free" >> /etc/apt/sources.list
+                apt_update_output=$(apt-get update 2>&1)
+                echo "$apt_update_output" > "$temp_file_apt_fix"
+                if grep -q 'NO_PUBKEY' "$temp_file_apt_fix"; then
+                    public_keys=$(grep -oE 'NO_PUBKEY [0-9A-F]+' "$temp_file_apt_fix" | awk '{ print $2 }')
+                    joined_keys=$(echo "$public_keys" | paste -sd " ")
+                    _yellow "No Public Keys: $joined_keys"
+                    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys $joined_keys
+                    apt-get update
+                    if [ $? -eq 0 ]; then
+                        _green "Fixed"
+                    fi
+                fi
+                rm "$temp_file_apt_fix"
+            fi
+            apt-get install -y virt-what
+        elif [[ "${Var_OSRelease}" =~ ^debian$ ]]; then
+            apt-get install -y virt-what
+            if [ $? -ne 0 ]; then
+                echo "Retrying with additional options..."
+                apt-get update && apt-get --fix-broken install -y
+                apt-get install -y virt-what --force-yes
+            fi
+            if [ $? -ne 0 ]; then
+                echo "Retrying with different options..."
+                apt-get update && apt-get --fix-broken install -y
+                apt-get install -y virt-what --allow
+            fi
+        elif [[ "${Var_OSRelease}" =~ ^ubuntu$ ]]; then
+            apt-get install -y virt-what
+            if [ $? -ne 0 ]; then
+                echo "Retrying with additional options..."
+                apt-get install -y virt-what -y --allow-unauthenticated
+            fi
+            if [ $? -ne 0 ]; then
+                re='^[0-9]+$'
+                if [[ $Var_OSReleaseVersion =~ $re ]]; then
+                    local OSReleaseVersion=$(($Var_OSReleaseVersion + 0))
+                    if [ $OSReleaseVersion -le 18 ]; then
+                        if [ -f "/etc/apt/sources.list" ]; then
+                            if ! grep -q "deb.*universe" /etc/apt/sources.list; then
+                                check_lsb_release
+                                echo "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe" | tee -a /etc/apt/sources.list
+                                apt-get update
+                                apt-get install -y virt-what
+                            fi
+                        fi
+                    fi
+                fi
+            fi
+        elif [ "${Var_OSRelease}" = "fedora" ]; then
+            dnf -y install virt-what
+        elif [ "${Var_OSRelease}" = "alpinelinux" ]; then
+            apk update
+            apk add virt-what
+        elif [ "${Var_OSRelease}" = "arch" ]; then
+            pacman -Sy --needed --noconfirm virt-what
+        elif [ "${Var_OSRelease}" = "freebsd" ]; then
+            pkg install -y virt-what
+        else
+            echo -e "${Msg_Warning}Virt-What Module not found, but we could not find the os's release ..."
+        fi
+    fi
+    # 二次检测
+    if ! which virt-what >/dev/null 2>&1; then
+        echo -e "Virt-What Moudle install Failure! Try Restart Bench or Manually install it!"
+        exit 1
+    fi
+}
+
+checkpip(){
+    [ "${Var_OSRelease}" = "freebsd" ] && curl -L https://bootstrap.pypa.io/get-pip.py -o get-pip.py && chmod +x get-pip.py && python3 get-pip.py && rm -rf get-pip.py && return
+    local pvr="$1"
+    local pip_version=$(pip --version 2>&1)
+    if [[ $? -eq 0 && $pip_version != *"command not found"* ]]; then
+        _blue "$pip_version"
+    else
+        _yellow "installing python${pvr}-pip"
+        ${PACKAGE_INSTALL[int]} python${pvr}-pip
+        pip_version=$(pip --version 2>&1)
+        if [[ $? -eq 0 ]]; then
+            _blue "$pip_version"
+        else
+            _red "python${pvr}-pip installation failed, please install it manually"
+            return
+        fi
+    fi
+}
+
+checkpystun() {
+    _yellow "checking pystun"
+    local python_command
+    local pip_command
+    if command -v python3 >/dev/null 2>&1; then
+        python_command="python3"
+        pip_command="pip3"
+        _blue "$($python_command --version 2>&1)"
+    elif command -v python >/dev/null 2>&1; then
+        python_command="python"
+        pip_command="pip"
+        _blue "$($python_command --version 2>&1)"
+    else
+        _yellow "installing python3"
+        ${PACKAGE_INSTALL[int]} python3
+        if command -v python3 >/dev/null 2>&1; then
+            python_command="python3"
+            pip_command="pip3"
+            _blue "$($python_command --version 2>&1)"
+        elif command -v python >/dev/null 2>&1; then
+            python_command="python"
+            pip_command="pip"
+            _blue "$($python_command --version 2>&1)"
+        else
+            _yellow "installing python"
+            ${PACKAGE_INSTALL[int]} python
+            if command -v python3 >/dev/null 2>&1; then
+                python_command="python3"
+                pip_command="pip3"
+                _blue "$($python_command --version 2>&1)"
+            elif command -v python >/dev/null 2>&1; then
+                python_command="python"
+                pip_command="pip"
+                _blue "$($python_command --version 2>&1)"
+            else
+                return
+            fi
+        fi
+    fi
+    if [[ $python_command == "python3" ]]; then
+        checkpip 3
+        if ! command -v pystun3 >/dev/null 2>&1; then
+            _yellow "Installing pystun3"
+            if ! "$pip_command" install -q pystun3 > /dev/null 2>&1; then
+                "$pip_command" install -q pystun3
+            fi
+        fi
+    fi
+    if [[ $python_command == "python" ]]; then
+        checkpip
+        if [[ $($python_command --version 2>&1) == Python\ 2* ]]; then
+            _yellow "Installing pystun"
+            if ! "$pip_command" install -q pystun > /dev/null 2>&1; then
+                "$pip_command" install -q pystun
+            fi
+        fi
+    fi
+}
+
+# 后台静默预下载文件并解压
+pre_download() {
+    if [ -n "$LBench_Result_SystemBit_Full" ]; then
+        if [ "$LBench_Result_SystemBit_Full" = "arm" ]; then
+            tp_sys="arm64"
+        else
+            tp_sys="$LBench_Result_SystemBit_Full"
+        fi
+    fi
+    for file in "$@"; do
+        case $file in
+            sysbench)
+                wget -O $TEMP_DIR/sysbench.zip "${cdn_success_url}https://github.com/akopytov/sysbench/archive/1.0.20.zip"
+                unzip $TEMP_DIR/sysbench.zip -d ${TEMP_DIR}
+                ;;
+            dp)
+                curl -sL -k "${cdn_success_url}https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_${tp_sys}" -o $TEMP_DIR/dp && chmod +x $TEMP_DIR/dp
+                ;;
+            nf)
+                curl -sL -k "${cdn_success_url}https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_${tp_sys}" -o $TEMP_DIR/nf && chmod +x $TEMP_DIR/nf
+                ;;
+            tubecheck)
+                curl -sL -k "${cdn_success_url}https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_${tp_sys}" -o $TEMP_DIR/tubecheck && chmod +x $TEMP_DIR/tubecheck
+                ;;
+            media_lmc_check)
+                curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh" -o $TEMP_DIR/media_lmc_check.sh && chmod 777 $TEMP_DIR/media_lmc_check.sh
+                ;;
+            besttrace)
+                curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/fscarmen/tools/main/besttrace/${BESTTRACE_FILE}" -o $TEMP_DIR/$BESTTRACE_FILE && chmod +x $TEMP_DIR/$BESTTRACE_FILE
+                ;;
+            backtrace)
+                wget -q -O $TEMP_DIR/backtrace.tar.gz  https://github.com/zhanghanyun/backtrace/releases/latest/download/$BACKTRACE_FILE
+                tar -xf $TEMP_DIR/backtrace.tar.gz -C $TEMP_DIR
+                ;;
+            yabsiotest)
+                curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/yabsiotest.sh" -o yabsiotest.sh && chmod +x yabsiotest.sh
+            ;;
+            ecsspeed_ping)
+                curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecsspeed/main/script/ecsspeed-ping.sh" -o $TEMP_DIR/ecsspeed-ping.sh && chmod +x $TEMP_DIR/ecsspeed-ping.sh
+            ;;
+            *)
+                echo "Invalid file: $file"
+                ;;
+        esac
+    done
+}
+
+# =============== 其他相关信息查询 部分 ===============
 declare -A sysctl_vars=(
     ["fs.file-max"]=1024000
     ["net.core.rmem_max"]=134217728
@@ -218,442 +602,57 @@ EOF
     fi
 }
 
-checkping() {
-    _yellow "checking ping"
-	if ! which ping >/dev/null; then
-        _yellow "Installing ping"
-	    ${PACKAGE_INSTALL[int]} iputils-ping > /dev/null 2>&1
-	    ${PACKAGE_INSTALL[int]} ping > /dev/null 2>&1
-	fi
+check_cdn() {
+  local o_url=$1
+  for cdn_url in "${cdn_urls[@]}"; do
+    if curl -sL -k "$cdn_url$o_url" --max-time 6 | grep -q "success" > /dev/null 2>&1; then
+      export cdn_success_url="$cdn_url"
+      return
+    fi
+    sleep 0.5
+  done
+  export cdn_success_url=""
 }
 
-checknc() {
-    _yellow "checking nc"
-	if ! command -v nc >/dev/null; then
-        _yellow "Installing nc"
-        if command -v apt >/dev/null; then
-	        ${PACKAGE_INSTALL[int]} netcat > /dev/null 2>&1
-        else
-	        ${PACKAGE_INSTALL[int]} nc > /dev/null 2>&1
-        fi
-	fi
-}
-
-checkpip(){
-    [ "${Var_OSRelease}" = "freebsd" ] && curl -L https://bootstrap.pypa.io/get-pip.py -o get-pip.py && chmod +x get-pip.py && python3 get-pip.py && rm -rf get-pip.py && return
-    local pvr="$1"
-    local pip_version=$(pip --version 2>&1)
-    if [[ $? -eq 0 && $pip_version != *"command not found"* ]]; then
-        _blue "$pip_version"
+check_cdn_file() {
+    check_cdn "https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test"
+    if [ -n "$cdn_success_url" ]; then
+        _yellow "CDN available, using CDN"
     else
-        _yellow "installing python${pvr}-pip"
-        ${PACKAGE_INSTALL[int]} python${pvr}-pip
-        pip_version=$(pip --version 2>&1)
-        if [[ $? -eq 0 ]]; then
-            _blue "$pip_version"
+        _yellow "No CDN available, no use CDN"
+    fi
+}
+
+check_time_zone(){
+    _yellow "adjusting the time"
+    if command -v ntpd > /dev/null 2>&1; then
+        if which systemctl >/dev/null 2>&1; then
+            systemctl stop chronyd
+            systemctl stop ntpd
+            ntpd -gq
+            systemctl start ntpd
         else
-            _red "python${pvr}-pip installation failed, please install it manually"
-            return
+            service chronyd stop
+            service ntpd stop
+            ntpd -gq
+            service ntpd start
         fi
+        sleep 0.5
+        return
     fi
-}
-
-checkpystun() {
-    _yellow "checking pystun"
-    local python_command
-    local pip_command
-    if command -v python3 >/dev/null 2>&1; then
-        python_command="python3"
-        pip_command="pip3"
-        _blue "$($python_command --version 2>&1)"
-    elif command -v python >/dev/null 2>&1; then
-        python_command="python"
-        pip_command="pip"
-        _blue "$($python_command --version 2>&1)"
-    else
-        _yellow "installing python3"
-        ${PACKAGE_INSTALL[int]} python3
-        if command -v python3 >/dev/null 2>&1; then
-            python_command="python3"
-            pip_command="pip3"
-            _blue "$($python_command --version 2>&1)"
-        elif command -v python >/dev/null 2>&1; then
-            python_command="python"
-            pip_command="pip"
-            _blue "$($python_command --version 2>&1)"
-        else
-            _yellow "installing python"
-            ${PACKAGE_INSTALL[int]} python
-            if command -v python3 >/dev/null 2>&1; then
-                python_command="python3"
-                pip_command="pip3"
-                _blue "$($python_command --version 2>&1)"
-            elif command -v python >/dev/null 2>&1; then
-                python_command="python"
-                pip_command="pip"
-                _blue "$($python_command --version 2>&1)"
-            else
-                return
-            fi
-        fi
-    fi
-    if [[ $python_command == "python3" ]]; then
-        checkpip 3
-        if ! command -v pystun3 >/dev/null 2>&1; then
-            _yellow "Installing pystun3"
-            if ! "$pip_command" install -q pystun3 > /dev/null 2>&1; then
-                "$pip_command" install -q pystun3
-            fi
-        fi
-    fi
-    if [[ $python_command == "python" ]]; then
-        checkpip
-        if [[ $($python_command --version 2>&1) == Python\ 2* ]]; then
-            _yellow "Installing pystun"
-            if ! "$pip_command" install -q pystun > /dev/null 2>&1; then
-                "$pip_command" install -q pystun
-            fi
-        fi
-    fi
-}
-
-checkstun() {
-    _yellow "checking stun"
-    if ! command -v stun > /dev/null 2>&1; then
-        _yellow "Installing stun"
-        ${PACKAGE_INSTALL[int]} stun-client > /dev/null 2>&1
-    fi
-}
-
-checktar() {
-    _yellow "checking tar"
-	if ! command -v tar &> /dev/null; then
-            _yellow "Installing tar"
-	        ${PACKAGE_INSTALL[int]} tar 
-	fi
-    if [ $? -ne 0 ]; then
-        apt-get -f install > /dev/null 2>&1
-        ${PACKAGE_INSTALL[int]} tar > /dev/null 2>&1
-    fi
-}
-
-checksudo() {
-    _yellow "checking sudo"
-    if ! command -v sudo > /dev/null 2>&1; then
-        _yellow "Installing sudo"
-        ${PACKAGE_INSTALL[int]} sudo > /dev/null 2>&1
-    fi
-}
-
-
-# 后台静默预下载文件并解压
-pre_download() {
-    if [ -n "$LBench_Result_SystemBit_Full" ]; then
-        if [ "$LBench_Result_SystemBit_Full" = "arm" ]; then
-            tp_sys="arm64"
-        else
-            tp_sys="$LBench_Result_SystemBit_Full"
-        fi
-    fi
-    for file in "$@"; do
-        case $file in
-            sysbench)
-                wget -O $TEMP_DIR/sysbench.zip "${cdn_success_url}https://github.com/akopytov/sysbench/archive/1.0.20.zip"
-                unzip $TEMP_DIR/sysbench.zip -d ${TEMP_DIR}
-                ;;
-            dp)
-                curl -sL -k "${cdn_success_url}https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_${tp_sys}" -o $TEMP_DIR/dp && chmod +x $TEMP_DIR/dp
-                ;;
-            nf)
-                curl -sL -k "${cdn_success_url}https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_${tp_sys}" -o $TEMP_DIR/nf && chmod +x $TEMP_DIR/nf
-                ;;
-            tubecheck)
-                curl -sL -k "${cdn_success_url}https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_${tp_sys}" -o $TEMP_DIR/tubecheck && chmod +x $TEMP_DIR/tubecheck
-                ;;
-            media_lmc_check)
-                curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh" -o $TEMP_DIR/media_lmc_check.sh && chmod 777 $TEMP_DIR/media_lmc_check.sh
-                ;;
-            besttrace)
-                curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/fscarmen/tools/main/besttrace/${BESTTRACE_FILE}" -o $TEMP_DIR/$BESTTRACE_FILE && chmod +x $TEMP_DIR/$BESTTRACE_FILE
-                ;;
-            backtrace)
-                wget -q -O $TEMP_DIR/backtrace.tar.gz  https://github.com/zhanghanyun/backtrace/releases/latest/download/$BACKTRACE_FILE
-                tar -xf $TEMP_DIR/backtrace.tar.gz -C $TEMP_DIR
-                ;;
-            yabsiotest)
-                curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/yabsiotest.sh" -o yabsiotest.sh && chmod +x yabsiotest.sh
-            ;;
-            ecsspeed_ping)
-                curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecsspeed/main/script/ecsspeed-ping.sh" -o $TEMP_DIR/ecsspeed-ping.sh && chmod +x $TEMP_DIR/ecsspeed-ping.sh
-            ;;
-            *)
-                echo "Invalid file: $file"
-                ;;
-        esac
-    done
-}
-
-
-# Trap终止信号捕获
-_exit() {
-    echo -e "\n${Msg_Error}Exiting ...\n"
-    _red "检测到退出操作，脚本终止！\n"
-    global_exit_action
-    rm_script
-    exit 1
-}
-
-trap _exit INT QUIT TERM
-
-global_startup_init_action() {
-    # 清理残留, 为新一次的运行做好准备
-    echo -e "${Msg_Info}Initializing Running Enviorment, Please wait ..."
-    rm -rf "$WorkDir"
-    rm -rf /.tmp_LBench/
-    mkdir "$WorkDir"/
-    echo -e "${Msg_Info}Checking Dependency ..."
-    check_virtwhat
-    Check_SysBench
-    SystemInfo_GetCPUInfo
-    echo -e "${Msg_Info}Starting Test ..."
-}
-
-reset_default_sysctl(){
-    if [ -f /etc/security/limits.conf ]; then
-        cp /etc/security/limits.conf.backup /etc/security/limits.conf
-        rm /etc/security/limits.conf.backup
+    if ! command -v chronyd > /dev/null 2>&1; then
+        ${PACKAGE_INSTALL[int]} chrony > /dev/null 2>&1
     fi
     if which systemctl >/dev/null 2>&1; then
-        if [ -f "$sysctl_conf" ]; then
-            cp "$sysctl_conf_backup" "$sysctl_conf"
-            cat "$sysctl_default" >> "$sysctl_conf"
-            $sysctl_path -p 2> /dev/null
-            cp "$sysctl_conf_backup" "$sysctl_conf"
-            rm "$sysctl_conf_backup"
-            rm "$sysctl_default"
-        fi
-        $sysctl_path -p 2> /dev/null
-    fi
-}
-
-global_exit_action() {
-    reset_default_sysctl > /dev/null 2>&1
-    build_text
-    if [ -n "$shorturl" ]
-    then
-        _green "  短链:"
-        _blue "    $shorturl"
-    fi
-    rm -rf ${TEMP_DIR}
-    rm -rf ${WorkDir}/
-    rm -rf /.tmp_LBench/
-    rm -rf *00_00
-}
-
-_exists() {
-    local cmd="$1"
-    if eval type type > /dev/null 2>&1; then
-        eval type "$cmd" > /dev/null 2>&1
-    elif command > /dev/null 2>&1; then
-        command -v "$cmd" > /dev/null 2>&1
+        systemctl stop chronyd
+        chronyd -q
+        systemctl start chronyd
     else
-        which "$cmd" > /dev/null 2>&1
+        service chronyd stop
+        chronyd -q
+        service chronyd start
     fi
-    local rt=$?
-    return ${rt}
-}
-
-next() {
-    echo -en "\r"
-    [ "${Var_OSRelease}" = "freebsd" ] && printf "%-72s\n" "-" | tr ' ' '-' && return
-    printf "%-72s\n" "-" | sed 's/\s/-/g'
-}
-
-# =============== 检查 Virt-what 组件 ===============
-check_virtwhat() {
-    if [ ! -f "/usr/sbin/virt-what" ]; then
-        echo -e "${Msg_Warning}Virt-What Module not found, Installing ..."
-        if [[ "${Var_OSRelease}" =~ ^(centos|rhel|almalinux|arch)$ ]]; then
-            yum -y install virt-what
-            if [ $? -ne 0 ]; then
-                dnf -y install virt-what
-            fi
-        elif [ "${Var_OSRelease}" = "astra" ]; then
-            apt-get install -y virt-what
-            if [ $? -ne 0 ]; then
-                echo "deb http://deb.debian.org/debian ${Var_OSReleaseVersion_Codename} main contrib non-free" >> /etc/apt/sources.list
-                echo "deb-src http://deb.debian.org/debian ${Var_OSReleaseVersion_Codename} main contrib non-free" >> /etc/apt/sources.list
-                apt_update_output=$(apt-get update 2>&1)
-                echo "$apt_update_output" > "$temp_file_apt_fix"
-                if grep -q 'NO_PUBKEY' "$temp_file_apt_fix"; then
-                    public_keys=$(grep -oE 'NO_PUBKEY [0-9A-F]+' "$temp_file_apt_fix" | awk '{ print $2 }')
-                    joined_keys=$(echo "$public_keys" | paste -sd " ")
-                    _yellow "No Public Keys: $joined_keys"
-                    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys $joined_keys
-                    apt-get update
-                    if [ $? -eq 0 ]; then
-                        _green "Fixed"
-                    fi
-                fi
-                rm "$temp_file_apt_fix"
-            fi
-            apt-get install -y virt-what
-        elif [[ "${Var_OSRelease}" =~ ^debian$ ]]; then
-            apt-get install -y virt-what
-            if [ $? -ne 0 ]; then
-                echo "Retrying with additional options..."
-                apt-get update && apt-get --fix-broken install -y
-                apt-get install -y virt-what --force-yes
-            fi
-            if [ $? -ne 0 ]; then
-                echo "Retrying with different options..."
-                apt-get update && apt-get --fix-broken install -y
-                apt-get install -y virt-what --allow
-            fi
-        elif [[ "${Var_OSRelease}" =~ ^ubuntu$ ]]; then
-            apt-get install -y virt-what
-            if [ $? -ne 0 ]; then
-                echo "Retrying with additional options..."
-                apt-get install -y virt-what -y --allow-unauthenticated
-            fi
-            if [ $? -ne 0 ]; then
-                re='^[0-9]+$'
-                if [[ $Var_OSReleaseVersion =~ $re ]]; then
-                    local OSReleaseVersion=$(($Var_OSReleaseVersion + 0))
-                    if [ $OSReleaseVersion -le 18 ]; then
-                        if [ -f "/etc/apt/sources.list" ]; then
-                            if ! grep -q "deb.*universe" /etc/apt/sources.list; then
-                                check_lsb_release
-                                echo "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe" | tee -a /etc/apt/sources.list
-                                apt-get update
-                                apt-get install -y virt-what
-                            fi
-                        fi
-                    fi
-                fi
-            fi
-        elif [ "${Var_OSRelease}" = "fedora" ]; then
-            dnf -y install virt-what
-        elif [ "${Var_OSRelease}" = "alpinelinux" ]; then
-            apk update
-            apk add virt-what
-        elif [ "${Var_OSRelease}" = "arch" ]; then
-            pacman -Sy --needed --noconfirm virt-what
-        elif [ "${Var_OSRelease}" = "freebsd" ]; then
-            pkg install -y virt-what
-        else
-            echo -e "${Msg_Warning}Virt-What Module not found, but we could not find the os's release ..."
-        fi
-    fi
-    # 二次检测
-    if ! which virt-what >/dev/null 2>&1; then
-        echo -e "Virt-What Moudle install Failure! Try Restart Bench or Manually install it!"
-        exit 1
-    fi
-}
-
-checkroot(){
-	[[ $EUID -ne 0 ]] && echo -e "${RED}请使用 root 用户运行本脚本！${PLAIN}" && exit 1
-}
-
-checkupdate(){
-	    _yellow "Updating package management sources"
-        if command -v apt-get > /dev/null 2>&1; then
-            apt_update_output=$(apt-get update 2>&1)
-            echo "$apt_update_output" > "$temp_file_apt_fix"
-            if grep -q 'NO_PUBKEY' "$temp_file_apt_fix"; then
-                public_keys=$(grep -oE 'NO_PUBKEY [0-9A-F]+' "$temp_file_apt_fix" | awk '{ print $2 }')
-                joined_keys=$(echo "$public_keys" | paste -sd " ")
-                _yellow "No Public Keys: ${joined_keys}"
-                apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ${joined_keys}
-                apt-get update
-                if [ $? -eq 0 ]; then
-                    _green "Fixed"
-                fi
-            fi
-            rm "$temp_file_apt_fix"
-        else
-            ${PACKAGE_UPDATE[int]}
-        fi 
-}
-
-checkdmidecode(){
-    ${PACKAGE_INSTALL[int]} dmidecode
-    if [ $? -ne 0 ]; then
-        if command -v apt-get > /dev/null 2>&1; then
-            echo "Retrying with additional options..."
-            apt-get update && apt-get --fix-broken install -y
-            apt-get install -y dmidecode --force-yes
-            if [ $? -ne 0 ]; then
-                apt-get update && apt-get --fix-broken install -y
-                apt-get install -y dmidecode --allow
-                if [ $? -ne 0 ]; then
-                    apt-get update && apt-get --fix-broken install -y
-                    apt-get install -y dmidecode -y --allow-unauthenticated
-                fi
-            fi
-        fi
-    fi   
-}
-
-checkdnsutils() {
-    _yellow "Installing dnsutils"
-    if [ "${Var_OSRelease}" == "centos" ]; then
-        yum -y install dnsutils > /dev/null 2>&1
-        yum -y install bind-utils > /dev/null 2>&1
-    elif [ "${Var_OSRelease}" == "arch" ]; then
-        pacman -S --noconfirm --needed bind > /dev/null 2>&1
-    else
-        ${PACKAGE_INSTALL[int]} dnsutils > /dev/null 2>&1
-    fi
-}
-
-checkcurl() {
-	if ! which curl >/dev/null; then
-        _yellow "Installing curl"
-        ${PACKAGE_INSTALL[int]} curl
-	fi
-    if [ $? -ne 0 ]; then
-        apt-get -f install > /dev/null 2>&1
-        ${PACKAGE_INSTALL[int]} curl
-    fi
-}
-
-checkwget() {
-	if ! which wget >/dev/null; then
-        _yellow "Installing wget"
-        ${PACKAGE_INSTALL[int]} wget
-	fi
-}
-
-checkfree() {
-    [ "${Var_OSRelease}" = "freebsd" ] && return
-	if ! command -v free > /dev/null 2>&1; then
-        _yellow "Installing procps"
-	    ${PACKAGE_INSTALL[int]} procps
-	fi
-}
-
-check_lsb_release() {
-    [ "${Var_OSRelease}" = "freebsd" ] && return
-	if ! command -v lsb_release > /dev/null 2>&1; then
-        _yellow "Installing lsb-release"
-	    ${PACKAGE_INSTALL[int]} lsb-release
-	fi
-}
-
-checklscpu() {
-	if ! command -v lscpu > /dev/null 2>&1; then
-        _yellow "Installing lscpu"
-	    ${PACKAGE_INSTALL[int]} lscpu
-	fi
-}
-
-checkunzip() {
-	if ! command -v unzip > /dev/null 2>&1; then
-        _yellow "Installing unzip"
-        ${PACKAGE_INSTALL[int]} unzip
-	fi
+    sleep 0.5
 }
 
 check_china(){
@@ -705,6 +704,465 @@ COUNT=$(
   TODAY=$(expr "$COUNT" : '.*\s\([0-9]\{1,\}\)\s/.*') && TOTAL=$(expr "$COUNT" : '.*/\s\([0-9]\{1,\}\)\s.*')
 }
 
+# =============== 基础系统信息 部分 ===============
+systemInfo_get_os_release() {
+    if [ -f "/etc/centos-release" ]; then # CentOS
+        Var_OSRelease="centos"
+        if [ "$(rpm -qa | grep -o el6 | sort -u)" = "el6" ]; then
+            Var_CentOSELRepoVersion="6"
+            Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $3}')"
+        elif [ "$(rpm -qa | grep -o el7 | sort -u)" = "el7" ]; then
+            Var_CentOSELRepoVersion="7"
+            Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $4}')"
+        elif [ "$(rpm -qa | grep -o el8 | sort -u)" = "el8" ]; then
+            Var_CentOSELRepoVersion="8"
+            Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $4}')"
+        else
+            local Var_CentOSELRepoVersion="unknown"
+            Var_OSReleaseVersion="<Unknown Release>"
+        fi
+    elif [ -f "/etc/fedora-release" ]; then # Fedora
+        Var_OSRelease="fedora"
+        Var_OSReleaseVersion="$(cat /etc/fedora-release | awk '{print $3,$4,$5,$6,$7}')"
+    elif [ -f "/etc/redhat-release" ]; then # RedHat
+        Var_OSRelease="rhel"
+        if [ "$(rpm -qa | grep -o el6 | sort -u)" = "el6" ]; then
+            Var_RedHatELRepoVersion="6"
+            Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $3}')"
+        elif [ "$(rpm -qa | grep -o el7 | sort -u)" = "el7" ]; then
+            Var_RedHatELRepoVersion="7"
+            Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $4}')"
+        elif [ "$(rpm -qa | grep -o el8 | sort -u)" = "el8" ]; then
+            Var_RedHatELRepoVersion="8"
+            Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $4}')"
+        else
+            local Var_RedHatELRepoVersion="unknown"
+            Var_OSReleaseVersion="<Unknown Release>"
+        fi
+    elif [ -f "/etc/astra_version" ]; then # Astra
+        Var_OSRelease="astra"
+        local Var_OSReleaseVersionShort="$(cat /etc/debian_version | awk '{printf "%d\n",$1}')"
+        if [ "${Var_OSReleaseVersionShort}" = "7" ]; then
+            Var_OSReleaseVersion_Codename="wheezy"
+        elif [ "${Var_OSReleaseVersionShort}" = "8" ]; then
+            Var_OSReleaseVersion_Codename="jessie"
+        elif [ "${Var_OSReleaseVersionShort}" = "9" ]; then
+            Var_OSReleaseVersion_Codename="stretch"
+        elif [ "${Var_OSReleaseVersionShort}" = "10" ]; then
+            Var_OSReleaseVersion_Codename="buster"
+        elif [ "${Var_OSReleaseVersionShort}" = "11" ]; then
+            Var_OSReleaseVersion_Codename="bullseye"
+        elif [ "${Var_OSReleaseVersionShort}" = "12" ]; then
+            Var_OSReleaseVersion_Codename="bookworm"
+        else
+            Var_OSReleaseVersion_Codename="sid"
+        fi
+    elif [ -f "/etc/lsb-release" ]; then # Ubuntu
+        Var_OSRelease="ubuntu"
+        Var_OSReleaseVersion="$(cat /etc/os-release | awk -F '[= "]' '/VERSION/{print $3,$4,$5,$6,$7}' | head -n1)"
+        cleaned_string=$(echo "$Var_OSReleaseVersion" | sed 's/[^0-9A-Za-z.]//g')
+        if [[ "$cleaned_string" =~ \. ]]; then
+            Var_OSReleaseVersion=${cleaned_string%%.*}
+        else
+            Var_OSReleaseVersion=${cleaned_string}
+        fi
+    elif [ -f "/etc/debian_version" ]; then # Debian
+        Var_OSRelease="debian"
+        local Var_OSReleaseVersion="$(cat /etc/debian_version | awk '{print $1}')"
+        local Var_OSReleaseVersionShort="$(cat /etc/debian_version | awk '{printf "%d\n",$1}')"
+        if [ "${Var_OSReleaseVersionShort}" = "7" ]; then
+            Var_OSReleaseVersion_Codename="wheezy"
+        elif [ "${Var_OSReleaseVersionShort}" = "8" ]; then
+            Var_OSReleaseVersion_Codename="jessie"
+        elif [ "${Var_OSReleaseVersionShort}" = "9" ]; then
+            Var_OSReleaseVersion_Codename="stretch"
+        elif [ "${Var_OSReleaseVersionShort}" = "10" ]; then
+            Var_OSReleaseVersion_Codename="buster"
+        elif [ "${Var_OSReleaseVersionShort}" = "11" ]; then
+            Var_OSReleaseVersion_Codename="bullseye"
+        elif [ "${Var_OSReleaseVersionShort}" = "12" ]; then
+            Var_OSReleaseVersion_Codename="bookworm"
+        else
+            Var_OSReleaseVersion_Codename="sid"
+        fi
+    elif [ -f "/etc/alpine-release" ]; then # Alpine Linux
+        Var_OSRelease="alpinelinux"
+        Var_OSReleaseVersion="$(cat /etc/alpine-release | awk '{print $1}')"
+    elif [ -f "/etc/almalinux-release" ]; then # almalinux
+        Var_OSRelease="almalinux"
+        Var_OSReleaseVersion="$(cat /etc/almalinux-release | awk '{print $3,$4,$5,$6,$7}')"
+    elif [ -f "/etc/arch-release" ]; then # archlinux
+        Var_OSRelease="arch"
+    elif [ -f "/etc/freebsd-update.conf" ] && [ -d "/usr/src" ]; then # freebsd
+        Var_OSRelease="freebsd"
+    else
+        Var_OSRelease="unknown" # 未知系统分支
+    fi
+    if [ -f /etc/os-release ]; then
+        DISTRO=$(grep 'PRETTY_NAME' /etc/os-release | cut -d '"' -f 2)
+    fi
+}
+
+get_system_bit() {
+    local sysarch="$(uname -m)"
+    if [ "${sysarch}" = "unknown" ] || [ "${sysarch}" = "" ]; then
+        local sysarch="$(arch)"
+    fi
+    # 根据架构信息设置系统位数并下载文件,其余 * 包括了 x86_64
+    case "${sysarch}" in
+        "i386" | "i686")
+            LBench_Result_SystemBit_Short="32"
+            LBench_Result_SystemBit_Full="i386"
+            BESTTRACE_FILE=besttracemac
+            ;;
+        "armv7l" | "armv8" | "armv8l" | "aarch64")
+            LBench_Result_SystemBit_Short="arm"
+            LBench_Result_SystemBit_Full="arm"
+            BESTTRACE_FILE=besttracearm
+            BACKTRACE_FILE=backtrace-linux-arm64.tar.gz
+            ;;
+        *)
+            LBench_Result_SystemBit_Short="64"
+            LBench_Result_SystemBit_Full="amd64"
+            BESTTRACE_FILE=besttrace
+            BACKTRACE_FILE=backtrace-linux-amd64.tar.gz
+            ;;
+    esac
+}
+
+SystemInfo_GetVirtType() {
+    if [ -f "/usr/bin/systemd-detect-virt" ]; then
+        Var_VirtType="$(/usr/bin/systemd-detect-virt)"
+        # 虚拟机检测
+        case "${Var_VirtType}" in
+            "*qemu*") LBench_Result_VirtType="QEMU" ;;
+            "*kvm*") LBench_Result_VirtType="KVM" ;;
+            "*zvm*") LBench_Result_VirtType="S390 Z/VM" ;;
+            "*vmware*") LBench_Result_VirtType="VMware" ;;
+            "*microsoft*") LBench_Result_VirtType="Microsoft Hyper-V" ;;
+            "*xen*") LBench_Result_VirtType="Xen Hypervisor" ;;
+            "*bochs*") LBench_Result_VirtType="BOCHS" ;;
+            "*uml*") LBench_Result_VirtType="User-mode Linux" ;;
+            "*parallels*") LBench_Result_VirtType="Parallels" ;;
+            "*bhyve*") LBench_Result_VirtType="FreeBSD Hypervisor" ;;
+            "*openvz*") LBench_Result_VirtType="OpenVZ" ;;
+            "lxc") LBench_Result_VirtType="LXC" ;;
+            "lxc-libvirt") LBench_Result_VirtType="LXC (libvirt)" ;;
+            "*systemd-nspawn*") LBench_Result_VirtType="Systemd nspawn" ;;
+            "*docker*") LBench_Result_VirtType="Docker" ;;
+            "*rkt*") LBench_Result_VirtType="RKT" ;;
+            "none")
+                sleep 1
+                Var_VirtType="$(/usr/bin/systemd-detect-virt)"
+                LBench_Result_VirtType="None"
+                local Var_BIOSVendor="$(dmidecode -s bios-vendor)"
+                if [ "${Var_BIOSVendor}" = "SeaBIOS" ]; then
+                    Var_VirtType="Unknown"
+                    LBench_Result_VirtType="Unknown with SeaBIOS BIOS"
+                else
+                    Var_VirtType="dedicated"
+                    LBench_Result_VirtType="Dedicated with ${Var_BIOSVendor} BIOS"
+                fi
+                ;;
+            *)
+                if [ -c "/dev/lxss" ]; then
+                    Var_VirtType="wsl"
+                    LBench_Result_VirtType="Windows Subsystem for Linux (WSL)"
+                fi
+                ;;
+        esac
+    elif [ -f "/.dockerenv" ]; then # 处理Docker虚拟化
+        Var_VirtType="docker"
+        LBench_Result_VirtType="Docker"
+    elif [ -c "/dev/lxss" ]; then # 处理WSL虚拟化
+        Var_VirtType="wsl"
+        LBench_Result_VirtType="Windows Subsystem for Linux (WSL)"
+    elif $sysctl_path kern.vm_guest >/dev/null 2>&1 && Var_VirtType=$($sysctl_path -n kern.vm_guest 2>/dev/null); then
+        LBench_Result_VirtType="Virtualization platform: $Var_VirtType"
+    elif $sysctl_path -a | grep hw.vmm >/dev/null 2>&1 && Var_VirtType=$($sysctl_path -n hw.vmm 2>/dev/null); then
+        LBench_Result_VirtType="Virtualization platform: $Var_VirtType"
+    elif [ ! -f "/usr/sbin/virt-what" ] && [ ! -f "/usr/local/sbin/virt-what" ]; then
+        Var_VirtType="Unknown"
+        LBench_Result_VirtType="[Error: virt-what not found !]"
+    else # 正常判断流程
+        Var_VirtType="$(virt-what | xargs)"
+        local Var_VirtTypeCount="$(echo $Var_VirtTypeCount | wc -l)"
+        if [ "${Var_VirtTypeCount}" -gt "1" ]; then # 处理嵌套虚拟化
+            LBench_Result_VirtType="echo ${Var_VirtType}"
+            Var_VirtType="$(echo ${Var_VirtType} | head -n1)" # 使用检测到的第一种虚拟化继续做判断
+        elif [ "${Var_VirtTypeCount}" -eq "1" ] && [ "${Var_VirtType}" != "" ]; then # 只有一种虚拟化
+            LBench_Result_VirtType="${Var_VirtType}"
+        else
+            local Var_BIOSVendor="$(dmidecode -s bios-vendor)"
+            if [ "${Var_BIOSVendor}" = "SeaBIOS" ]; then
+                Var_VirtType="Unknown"
+                LBench_Result_VirtType="Unknown with SeaBIOS BIOS"
+            else
+                Var_VirtType="dedicated"
+                LBench_Result_VirtType="Dedicated with ${Var_BIOSVendor} BIOS"
+            fi
+        fi
+    fi
+}
+
+SystemInfo_GetCPUInfo() {
+    mkdir -p ${WorkDir}/data >/dev/null 2>&1
+    if [ -f "/proc/cpuinfo" ]; then
+        cat /proc/cpuinfo >${WorkDir}/data/cpuinfo
+        local ReadCPUInfo="cat ${WorkDir}/data/cpuinfo"
+        LBench_Result_CPUModelName="$($ReadCPUInfo | awk -F ': ' '/model name/{print $2}' | sort -u)"
+        local CPUFreqCount="$($ReadCPUInfo | awk -F ': ' '/cpu MHz/{print $2}' | sort -run | wc -l)"
+        if [ "${CPUFreqCount}" -ge "2" ]; then
+            local CPUFreqArray="$(cat /proc/cpuinfo | awk -F ': ' '/cpu MHz/{print $2}' | sort -run)"
+            local CPUFreq_Min="$(echo "$CPUFreqArray" | grep -oE '[0-9]+.[0-9]{3}' | awk 'BEGIN {min = 2147483647} {if ($1+0 < min+0) min=$1} END {print min}')"
+            local CPUFreq_Max="$(echo "$CPUFreqArray" | grep -oE '[0-9]+.[0-9]{3}' | awk 'BEGIN {max = 0} {if ($1+0 > max+0) max=$1} END {print max}')"
+            LBench_Result_CPUFreqMinGHz="$(echo $CPUFreq_Min | awk '{printf "%.2f\n",$1/1000}')"
+            LBench_Result_CPUFreqMaxGHz="$(echo $CPUFreq_Max | awk '{printf "%.2f\n",$1/1000}')"
+            Flag_DymanicCPUFreqDetected="1"
+        else
+            LBench_Result_CPUFreqMHz="$($ReadCPUInfo | awk -F ': ' '/cpu MHz/{print $2}' | sort -u)"
+            LBench_Result_CPUFreqGHz="$(echo $LBench_Result_CPUFreqMHz | awk '{printf "%.2f\n",$1/1000}')"
+            Flag_DymanicCPUFreqDetected="0"
+        fi
+        LBench_Result_CPUCacheSize="$($ReadCPUInfo | awk -F ': ' '/cache size/{print $2}' | sort -u)"
+        LBench_Result_CPUPhysicalNumber="$($ReadCPUInfo | awk -F ': ' '/physical id/{print $2}' | sort -u | wc -l)"
+        LBench_Result_CPUCoreNumber="$($ReadCPUInfo | awk -F ': ' '/cpu cores/{print $2}' | sort -u)"
+        LBench_Result_CPUThreadNumber="$($ReadCPUInfo | awk -F ': ' '/cores/{print $2}' | wc -l)"
+        LBench_Result_CPUProcessorNumber="$($ReadCPUInfo | awk -F ': ' '/processor/{print $2}' | wc -l)"
+        LBench_Result_CPUSiblingsNumber="$($ReadCPUInfo | awk -F ': ' '/siblings/{print $2}' | sort -u)"
+        LBench_Result_CPUTotalCoreNumber="$($ReadCPUInfo | awk -F ': ' '/physical id/&&/0/{print $2}' | wc -l)"
+        
+        # 虚拟化能力检测
+        SystemInfo_GetVirtType
+        if [ "${Var_VirtType}" = "dedicated" ] || [ "${Var_VirtType}" = "wsl" ]; then
+            LBench_Result_CPUIsPhysical="1"
+            local VirtCheck="$(cat /proc/cpuinfo | grep -oE 'vmx|svm' | uniq)"
+            if [ "${VirtCheck}" != "" ]; then
+                LBench_Result_CPUVirtualization="1"
+                local VirtualizationType="$(lscpu | awk /Virtualization:/'{print $2}')"
+                LBench_Result_CPUVirtualizationType="${VirtualizationType}"
+            else
+                LBench_Result_CPUVirtualization="0"
+            fi
+        elif [ "${Var_VirtType}" = "kvm" ] || [ "${Var_VirtType}" = "hyperv" ] || [ "${Var_VirtType}" = "microsoft" ] || [ "${Var_VirtType}" = "vmware" ]; then
+            LBench_Result_CPUIsPhysical="0"
+            local VirtCheck="$(cat /proc/cpuinfo | grep -oE 'vmx|svm' | uniq)"
+            if [ "${VirtCheck}" = "vmx" ] || [ "${VirtCheck}" = "svm" ]; then
+                LBench_Result_CPUVirtualization="2"
+                local VirtualizationType="$(lscpu | awk /Virtualization:/'{print $2}')"
+                LBench_Result_CPUVirtualizationType="${VirtualizationType}"
+            else
+                LBench_Result_CPUVirtualization="0"
+            fi        
+        else
+            LBench_Result_CPUIsPhysical="0"
+        fi
+    else
+        $sysctl_path -a >${WorkDir}/data/sysctl_info
+        local ReadCPUInfo="cat ${WorkDir}/data/sysctl_info"
+        LBench_Result_CPUModelName="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.model/{print $2}' | sort -u)"
+        LBench_Result_CPUFreqMHz="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/dev.cpu.0.freq/{print $2}')"
+        LBench_Result_CPUCacheSize="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.cacheconfig/{print $2}')"
+        LBench_Result_CPUFreqGHz="$(echo $LBench_Result_CPUFreqMHz | awk '{printf "%.2f\n",$1/1000}')"
+        LBench_Result_CPUPhysicalNumber="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.physicalcpu/{print $2}')"
+        LBench_Result_CPUCoreNumber="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.ncpu/{print $2}')"
+        LBench_Result_CPUThreadNumber="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.ncpu/{print $2}')"
+        LBench_Result_CPUProcessorNumber="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.ncpu/{print $2}')"
+        LBench_Result_CPUSiblingsNumber="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.smt/{print $2}')"
+        LBench_Result_CPUTotalCoreNumber="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.ncpu/{print $2}')"
+
+        # 虚拟化能力检测
+        SystemInfo_GetVirtType
+        if [ "${Var_VirtType}" = "dedicated" ] || [ "${Var_VirtType}" = "wsl" ]; then
+            LBench_Result_CPUIsPhysical="1"
+            local VirtCheck="$($sysctl_path -a | grep -E 'hw.vmx|hw.svm' | uniq)"
+            if [ "${VirtCheck}" != "" ]; then
+                LBench_Result_CPUVirtualization="1"
+                LBench_Result_CPUVirtualizationType="Native"
+            else
+                LBench_Result_CPUVirtualization="0"
+            fi
+        elif [ "${Var_VirtType}" = "kvm" ] || [ "${Var_VirtType}" = "hyperv" ] || [ "${Var_VirtType}" = "microsoft" ] || [ "${Var_VirtType}" = "vmware" ]; then
+            LBench_Result_CPUIsPhysical="0"
+            local VirtCheck="$($sysctl_path -a | grep -E 'hw.vmx|hw.svm' | uniq)"
+            if [ "${VirtCheck}" != "" ]; then
+                LBench_Result_CPUVirtualization="2"
+                LBench_Result_CPUVirtualizationType="${Var_VirtType}"
+            else
+                LBench_Result_CPUVirtualization="0"
+            fi
+        else
+            LBench_Result_CPUIsPhysical="0"
+        fi
+    fi
+}
+
+# =============== sysbench组件检测 部分 ===============
+get_sysbench_os_release() {
+  local OS_TYPE
+  case "${Var_OSRelease}" in
+    centos|rhel|almalinux) OS_TYPE="redhat";;
+    ubuntu) OS_TYPE="ubuntu";;
+    debian|astra) OS_TYPE="debian";;
+    fedora) OS_TYPE="fedora";;
+    alpinelinux) OS_TYPE="alpinelinux";;
+    arch) OS_TYPE="arch";;
+    freebsd) OS_TYPE="freebsd";;
+    *) OS_TYPE="unknown";;
+  esac
+  echo "${OS_TYPE}"
+}
+
+InstallSysbench() {
+  local os_release=$1
+  case "$os_release" in
+    redhat) yum -y install epel-release && yum -y install sysbench ;;
+    ubuntu) ! apt-get install sysbench -y && apt-get --fix-broken install -y && apt-get install sysbench -y ;;
+    debian)
+      local mirrorbase="https://raindrop.ilemonrain.com/LemonBench"
+      local componentname="Sysbench"
+      local version="1.0.19-1"
+      local arch="debian"
+      local codename="${Var_OSReleaseVersion_Codename}"
+      local bit="${LBench_Result_SystemBit_Full}"
+      local filenamebase="sysbench"
+      local filename="${filenamebase}_${version}_${bit}.deb"
+      local downurl="${mirrorbase}/include/${componentname}/${version}/${arch}/${codename}/${filename}"
+      mkdir -p ${WorkDir}/download/
+      pushd ${WorkDir}/download/ >/dev/null
+      wget -U "${UA_LemonBench}" -O ${filenamebase}_${version}_${bit}.deb ${downurl}
+      dpkg -i ./${filename}
+      ! apt-get install sysbench -y && apt-get --fix-broken install -y && apt-get install sysbench -y
+      popd
+      if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
+        echo -e "${Msg_Warning}Sysbench Module Install Failed!"
+      fi ;;
+    fedora) dnf -y install sysbench ;;
+    arch) pacman -S --needed --noconfirm sysbench ;;
+    freebsd) pkg install -y sysbench ;;
+    alpinelinux) echo -e "${Msg_Warning}Sysbench Module not found, installing ..." && echo -e "${Msg_Warning}SysBench Current not support Alpine Linux, Skipping..." && Var_Skip_SysBench="1" ;;
+    *) echo "Error: Unknown OS release: $os_release" && exit 1 ;;
+  esac
+}
+
+Check_SysBench() {
+  if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
+    local os_release=$(get_sysbench_os_release)
+    if [ "$os_release" = "alpinelinux" ]; then
+        Var_Skip_SysBench="1"
+    else
+        InstallSysbench "$os_release"
+    fi
+  fi
+  # 垂死挣扎 (尝试编译安装)
+  if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
+    echo -e "${Msg_Warning}Sysbench Module install Failure, trying compile modules ..."
+    Check_Sysbench_InstantBuild
+  fi
+  # 最终检测
+  if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
+    echo -e "${Msg_Error}SysBench Moudle install Failure! Try Restart Bench or Manually install it! (/usr/bin/sysbench)"
+    exit 1
+  fi
+}
+
+Check_Sysbench_InstantBuild() {
+    if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux" ] || [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ] || [ "${Var_OSRelease}" = "fedora" ] || [ "${Var_OSRelease}" = "arch" ] || [ "${Var_OSRelease}" = "astra" ]; then
+        local os_sysbench=${Var_OSRelease}
+        if [ "$os_sysbench" = "astra" ]; then
+            os_sysbench="debian"
+        fi
+        echo -e "${Msg_Info}Release Detected: ${os_sysbench}"
+        echo -e "${Msg_Info}Preparing compile enviorment ..."
+        prepare_compile_env "${os_sysbench}"
+        echo -e "${Msg_Info}Downloading Source code (Version 1.0.20)..."
+        mkdir -p /tmp/_LBench/src/
+        pre_download sysbench
+        mv ${TEMP_DIR}/sysbench-1.0.20 /tmp/_LBench/src/
+        echo -e "${Msg_Info}Compiling Sysbench Module ..."
+        cd /tmp/_LBench/src/sysbench-1.0.20
+        ./autogen.sh && ./configure --without-mysql && make -j8 && make install
+        echo -e "${Msg_Info}Cleaning up ..."
+        cd /tmp && rm -rf /tmp/_LBench/src/sysbench*
+    else
+        echo -e "${Msg_Warning}Unsupported operating system: ${Var_OSRelease}"
+    fi
+}
+
+prepare_compile_env() {
+    local system="$1"
+    if [ "${system}" = "centos" ] || [ "${system}" = "rhel" ] || [ "${system}" = "almalinux" ]; then
+        yum install -y epel-release
+        yum install -y wget curl make gcc gcc-c++ make automake libtool pkgconfig libaio-devel
+    elif [ "${system}" = "ubuntu" ] || [ "${system}" = "debian" ]; then
+        ! apt-get update &&  apt-get --fix-broken install -y && apt-get update
+        ! apt-get -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip && apt-get --fix-broken install -y && apt-get -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip
+    elif [ "${system}" = "fedora" ]; then
+        dnf install -y wget curl gcc gcc-c++ make automake libtool pkgconfig libaio-devel
+    elif [ "${system}" = "arch" ]; then
+        pacman -S --needed --noconfirm wget curl gcc gcc make automake libtool pkgconfig libaio lib32-libaio
+    else
+        echo -e "${Msg_Warning}Unsupported operating system: ${system}"
+    fi
+}
+
+# =============== CPU性能测试 部分 ===============
+Run_SysBench_CPU() {
+    # 调用方式: Run_SysBench_CPU "线程数" "测试时长(s)" "测试遍数" "说明"
+    # 变量初始化
+    mkdir -p ${WorkDir}/SysBench/CPU/ >/dev/null 2>&1
+    maxtestcount="$3"
+    local count="1"
+    local TestScore="0"
+    local TotalScore="0"
+    # 运行测试
+    while [ $count -le $maxtestcount ]; do
+        echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t$count/$maxtestcount \c"
+        local TestResult="$(sysbench --test=cpu --num-threads=$1 --cpu-max-prime=10000 --max-requests=1000000 --max-time=$2 run 2>&1)"
+        local TestScore="$(echo ${TestResult} | grep -oE "events per second: [0-9]+" | grep -oE "[0-9]+")"
+        if [ -z "$TestScore" ]; then
+            TestScore=$(echo "${TestResult}" | grep -oE "total number of events:\s+[0-9]+" | awk '{print $NF}' | awk -v time="$(echo "${TestResult}" | grep -oE "total time:\s+[0-9.]+[a-z]*" | awk '{print $NF}')" '{printf "%.2f\n", $0 / time}')
+        fi
+        local TotalScore="$(echo "${TotalScore} ${TestScore}" | awk '{printf "%d",$1+$2}')"
+        let count=count+1
+        local TestResult=""
+        local TestScore="0"
+    done
+    local ResultScore="$(echo "${TotalScore} ${maxtestcount}" | awk '{printf "%d",$1/$2}')"
+    if [ "$1" = "1" ]; then
+        if [ "$ResultScore" -eq "0" ] || ([ "$1" -lt "2" ] && [ "$ResultScore" -gt "100000" ]); then
+            echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_Red}sysbench测试失效，请使用本脚本选项6中的gb4或gb5测试${Font_Suffix}"
+            echo -e " $4:\t\tsysbench测试失效，请使用本脚本选项6中的gb4或gb5测试" >>${WorkDir}/SysBench/CPU/result.txt
+        else
+            echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_SkyBlue}${ResultScore}${Font_Suffix} ${Font_Yellow}Scores${Font_Suffix}"
+            echo -e " $4:\t\t\t${ResultScore} Scores" >>${WorkDir}/SysBench/CPU/result.txt
+        fi
+    elif [ "$1" -ge "2" ]; then
+        if [ "$ResultScore" -eq "0" ] || ([ "$1" -lt "2" ] && [ "$ResultScore" -gt "100000" ]); then
+            echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_Red}sysbench测试失效，请使用本脚本选项5中的gb4或gb5测试${Font_Suffix}"
+            echo -e " $4:\t\tsysbench测试失效，请使用本脚本选项5中的gb4或gb5测试" >>${WorkDir}/SysBench/CPU/result.txt
+        else
+            echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_SkyBlue}${ResultScore}${Font_Suffix} ${Font_Yellow}Scores${Font_Suffix}"
+            echo -e " $4:\t\t${ResultScore} Scores" >>${WorkDir}/SysBench/CPU/result.txt
+        fi
+    fi
+}
+
+Function_SysBench_CPU_Fast() {
+    cd $myvar >/dev/null 2>&1
+    mkdir -p ${WorkDir}/SysBench/CPU/ >/dev/null 2>&1
+    echo -e " ${Font_Yellow}-> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}"
+    echo -e " -> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/CPU/result.txt
+    Run_SysBench_CPU "1" "5" "1" "1 线程测试(1核)得分"
+    sleep 1
+    if [ "${LBench_Result_CPUThreadNumber}" -ge "2" ]; then
+        Run_SysBench_CPU "${LBench_Result_CPUThreadNumber}" "5" "1" "${LBench_Result_CPUThreadNumber} 线程测试(多核)得分"
+    elif [ "${LBench_Result_CPUProcessorNumber}" -ge "2" ]; then
+        Run_SysBench_CPU "${LBench_Result_CPUProcessorNumber}" "5" "1" "${LBench_Result_CPUProcessorNumber} 线程测试(多核)得分"
+    fi
+}
+
+# =============== 网速测试及延迟测试 部分 ===============
 download_speedtest_file() {
     file="./speedtest-cli/speedtest"
     if [[ -e "$file" ]]; then
@@ -1082,477 +1540,6 @@ get_nearest_data2() {
     echo "${sorted_data[@]}"
 }
 
-systemInfo_get_os_release() {
-    if [ -f "/etc/centos-release" ]; then # CentOS
-        Var_OSRelease="centos"
-        if [ "$(rpm -qa | grep -o el6 | sort -u)" = "el6" ]; then
-            Var_CentOSELRepoVersion="6"
-            Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $3}')"
-        elif [ "$(rpm -qa | grep -o el7 | sort -u)" = "el7" ]; then
-            Var_CentOSELRepoVersion="7"
-            Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $4}')"
-        elif [ "$(rpm -qa | grep -o el8 | sort -u)" = "el8" ]; then
-            Var_CentOSELRepoVersion="8"
-            Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $4}')"
-        else
-            local Var_CentOSELRepoVersion="unknown"
-            Var_OSReleaseVersion="<Unknown Release>"
-        fi
-    elif [ -f "/etc/fedora-release" ]; then # Fedora
-        Var_OSRelease="fedora"
-        Var_OSReleaseVersion="$(cat /etc/fedora-release | awk '{print $3,$4,$5,$6,$7}')"
-    elif [ -f "/etc/redhat-release" ]; then # RedHat
-        Var_OSRelease="rhel"
-        if [ "$(rpm -qa | grep -o el6 | sort -u)" = "el6" ]; then
-            Var_RedHatELRepoVersion="6"
-            Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $3}')"
-        elif [ "$(rpm -qa | grep -o el7 | sort -u)" = "el7" ]; then
-            Var_RedHatELRepoVersion="7"
-            Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $4}')"
-        elif [ "$(rpm -qa | grep -o el8 | sort -u)" = "el8" ]; then
-            Var_RedHatELRepoVersion="8"
-            Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $4}')"
-        else
-            local Var_RedHatELRepoVersion="unknown"
-            Var_OSReleaseVersion="<Unknown Release>"
-        fi
-    elif [ -f "/etc/astra_version" ]; then # Astra
-        Var_OSRelease="astra"
-        local Var_OSReleaseVersionShort="$(cat /etc/debian_version | awk '{printf "%d\n",$1}')"
-        if [ "${Var_OSReleaseVersionShort}" = "7" ]; then
-            Var_OSReleaseVersion_Codename="wheezy"
-        elif [ "${Var_OSReleaseVersionShort}" = "8" ]; then
-            Var_OSReleaseVersion_Codename="jessie"
-        elif [ "${Var_OSReleaseVersionShort}" = "9" ]; then
-            Var_OSReleaseVersion_Codename="stretch"
-        elif [ "${Var_OSReleaseVersionShort}" = "10" ]; then
-            Var_OSReleaseVersion_Codename="buster"
-        elif [ "${Var_OSReleaseVersionShort}" = "11" ]; then
-            Var_OSReleaseVersion_Codename="bullseye"
-        elif [ "${Var_OSReleaseVersionShort}" = "12" ]; then
-            Var_OSReleaseVersion_Codename="bookworm"
-        else
-            Var_OSReleaseVersion_Codename="sid"
-        fi
-    elif [ -f "/etc/lsb-release" ]; then # Ubuntu
-        Var_OSRelease="ubuntu"
-        Var_OSReleaseVersion="$(cat /etc/os-release | awk -F '[= "]' '/VERSION/{print $3,$4,$5,$6,$7}' | head -n1)"
-        cleaned_string=$(echo "$Var_OSReleaseVersion" | sed 's/[^0-9A-Za-z.]//g')
-        if [[ "$cleaned_string" =~ \. ]]; then
-            Var_OSReleaseVersion=${cleaned_string%%.*}
-        else
-            Var_OSReleaseVersion=${cleaned_string}
-        fi
-    elif [ -f "/etc/debian_version" ]; then # Debian
-        Var_OSRelease="debian"
-        local Var_OSReleaseVersion="$(cat /etc/debian_version | awk '{print $1}')"
-        local Var_OSReleaseVersionShort="$(cat /etc/debian_version | awk '{printf "%d\n",$1}')"
-        if [ "${Var_OSReleaseVersionShort}" = "7" ]; then
-            Var_OSReleaseVersion_Codename="wheezy"
-        elif [ "${Var_OSReleaseVersionShort}" = "8" ]; then
-            Var_OSReleaseVersion_Codename="jessie"
-        elif [ "${Var_OSReleaseVersionShort}" = "9" ]; then
-            Var_OSReleaseVersion_Codename="stretch"
-        elif [ "${Var_OSReleaseVersionShort}" = "10" ]; then
-            Var_OSReleaseVersion_Codename="buster"
-        elif [ "${Var_OSReleaseVersionShort}" = "11" ]; then
-            Var_OSReleaseVersion_Codename="bullseye"
-        elif [ "${Var_OSReleaseVersionShort}" = "12" ]; then
-            Var_OSReleaseVersion_Codename="bookworm"
-        else
-            Var_OSReleaseVersion_Codename="sid"
-        fi
-    elif [ -f "/etc/alpine-release" ]; then # Alpine Linux
-        Var_OSRelease="alpinelinux"
-        Var_OSReleaseVersion="$(cat /etc/alpine-release | awk '{print $1}')"
-    elif [ -f "/etc/almalinux-release" ]; then # almalinux
-        Var_OSRelease="almalinux"
-        Var_OSReleaseVersion="$(cat /etc/almalinux-release | awk '{print $3,$4,$5,$6,$7}')"
-    elif [ -f "/etc/arch-release" ]; then # archlinux
-        Var_OSRelease="arch"
-    elif [ -f "/etc/freebsd-update.conf" ] && [ -d "/usr/src" ]; then # freebsd
-        Var_OSRelease="freebsd"
-    else
-        Var_OSRelease="unknown" # 未知系统分支
-    fi
-    if [ -f /etc/os-release ]; then
-        DISTRO=$(grep 'PRETTY_NAME' /etc/os-release | cut -d '"' -f 2)
-    fi
-}
-
-# =============== 检查 SysBench 组件 ===============
-GetOSRelease() {
-  local OS_TYPE
-  case "${Var_OSRelease}" in
-    centos|rhel|almalinux) OS_TYPE="redhat";;
-    ubuntu) OS_TYPE="ubuntu";;
-    debian|astra) OS_TYPE="debian";;
-    fedora) OS_TYPE="fedora";;
-    alpinelinux) OS_TYPE="alpinelinux";;
-    arch) OS_TYPE="arch";;
-    freebsd) OS_TYPE="freebsd";;
-    *) OS_TYPE="unknown";;
-  esac
-  echo "${OS_TYPE}"
-}
-
-InstallSysbench() {
-  local os_release=$1
-  case "$os_release" in
-    redhat) yum -y install epel-release && yum -y install sysbench ;;
-    ubuntu) ! apt-get install sysbench -y && apt-get --fix-broken install -y && apt-get install sysbench -y ;;
-    debian)
-      local mirrorbase="https://raindrop.ilemonrain.com/LemonBench"
-      local componentname="Sysbench"
-      local version="1.0.19-1"
-      local arch="debian"
-      local codename="${Var_OSReleaseVersion_Codename}"
-      local bit="${LBench_Result_SystemBit_Full}"
-      local filenamebase="sysbench"
-      local filename="${filenamebase}_${version}_${bit}.deb"
-      local downurl="${mirrorbase}/include/${componentname}/${version}/${arch}/${codename}/${filename}"
-      mkdir -p ${WorkDir}/download/
-      pushd ${WorkDir}/download/ >/dev/null
-      wget -U "${UA_LemonBench}" -O ${filenamebase}_${version}_${bit}.deb ${downurl}
-      dpkg -i ./${filename}
-      ! apt-get install sysbench -y && apt-get --fix-broken install -y && apt-get install sysbench -y
-      popd
-      if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
-        echo -e "${Msg_Warning}Sysbench Module Install Failed!"
-      fi ;;
-    fedora) dnf -y install sysbench ;;
-    arch) pacman -S --needed --noconfirm sysbench ;;
-    freebsd) pkg install -y sysbench ;;
-    alpinelinux) echo -e "${Msg_Warning}Sysbench Module not found, installing ..." && echo -e "${Msg_Warning}SysBench Current not support Alpine Linux, Skipping..." && Var_Skip_SysBench="1" ;;
-    *) echo "Error: Unknown OS release: $os_release" && exit 1 ;;
-  esac
-}
-
-Check_SysBench() {
-  if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
-    local os_release=$(GetOSRelease)
-    if [ "$os_release" = "alpinelinux" ]; then
-      Var_Skip_SysBench="1"
-    else
-        if [ "$os_release" = "astra" ]; then
-            InstallSysbench "debian"
-        else
-            InstallSysbench "$os_release"
-        fi
-    fi
-  fi
-  # 垂死挣扎 (尝试编译安装)
-  if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
-    echo -e "${Msg_Warning}Sysbench Module install Failure, trying compile modules ..."
-    Check_Sysbench_InstantBuild
-  fi
-  # 最终检测
-  if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
-    echo -e "${Msg_Error}SysBench Moudle install Failure! Try Restart Bench or Manually install it! (/usr/bin/sysbench)"
-    exit 1
-  fi
-}
-
-Check_Sysbench_InstantBuild() {
-    if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux" ] || [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ] || [ "${Var_OSRelease}" = "fedora" ] || [ "${Var_OSRelease}" = "arch" ] || [ "${Var_OSRelease}" = "astra" ]; then
-        local os_sysbench=${Var_OSRelease}
-        if [ "$os_sysbench" = "astra" ]; then
-            os_sysbench="debian"
-        fi
-        echo -e "${Msg_Info}Release Detected: ${os_sysbench}"
-        echo -e "${Msg_Info}Preparing compile enviorment ..."
-        prepare_compile_env "${os_sysbench}"
-        echo -e "${Msg_Info}Downloading Source code (Version 1.0.20)..."
-        mkdir -p /tmp/_LBench/src/
-        pre_download sysbench
-        mv ${TEMP_DIR}/sysbench-1.0.20 /tmp/_LBench/src/
-        echo -e "${Msg_Info}Compiling Sysbench Module ..."
-        cd /tmp/_LBench/src/sysbench-1.0.20
-        ./autogen.sh && ./configure --without-mysql && make -j8 && make install
-        echo -e "${Msg_Info}Cleaning up ..."
-        cd /tmp && rm -rf /tmp/_LBench/src/sysbench*
-    else
-        echo -e "${Msg_Warning}Unsupported operating system: ${Var_OSRelease}"
-    fi
-}
-
-prepare_compile_env() {
-    local system="$1"
-    if [ "${system}" = "centos" ] || [ "${system}" = "rhel" ] || [ "${system}" = "almalinux" ]; then
-        yum install -y epel-release
-        yum install -y wget curl make gcc gcc-c++ make automake libtool pkgconfig libaio-devel
-    elif [ "${system}" = "ubuntu" ] || [ "${system}" = "debian" ]; then
-        ! apt-get update &&  apt-get --fix-broken install -y && apt-get update
-        ! apt-get -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip && apt-get --fix-broken install -y && apt-get -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip
-    elif [ "${system}" = "fedora" ]; then
-        dnf install -y wget curl gcc gcc-c++ make automake libtool pkgconfig libaio-devel
-    elif [ "${system}" = "arch" ]; then
-        pacman -S --needed --noconfirm wget curl gcc gcc make automake libtool pkgconfig libaio lib32-libaio
-    else
-        echo -e "${Msg_Warning}Unsupported operating system: ${system}"
-    fi
-}
-
-# =============== SysBench - CPU性能 部分 ===============
-Run_SysBench_CPU() {
-    # 调用方式: Run_SysBench_CPU "线程数" "测试时长(s)" "测试遍数" "说明"
-    # 变量初始化
-    mkdir -p ${WorkDir}/SysBench/CPU/ >/dev/null 2>&1
-    maxtestcount="$3"
-    local count="1"
-    local TestScore="0"
-    local TotalScore="0"
-    # 运行测试
-    while [ $count -le $maxtestcount ]; do
-        echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t$count/$maxtestcount \c"
-        local TestResult="$(sysbench --test=cpu --num-threads=$1 --cpu-max-prime=10000 --max-requests=1000000 --max-time=$2 run 2>&1)"
-        local TestScore="$(echo ${TestResult} | grep -oE "events per second: [0-9]+" | grep -oE "[0-9]+")"
-        if [ -z "$TestScore" ]; then
-            TestScore=$(echo "${TestResult}" | grep -oE "total number of events:\s+[0-9]+" | awk '{print $NF}' | awk -v time="$(echo "${TestResult}" | grep -oE "total time:\s+[0-9.]+[a-z]*" | awk '{print $NF}')" '{printf "%.2f\n", $0 / time}')
-        fi
-        local TotalScore="$(echo "${TotalScore} ${TestScore}" | awk '{printf "%d",$1+$2}')"
-        let count=count+1
-        local TestResult=""
-        local TestScore="0"
-    done
-    local ResultScore="$(echo "${TotalScore} ${maxtestcount}" | awk '{printf "%d",$1/$2}')"
-    if [ "$1" = "1" ]; then
-        if [ "$ResultScore" -eq "0" ] || ([ "$1" -lt "2" ] && [ "$ResultScore" -gt "100000" ]); then
-            echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_Red}sysbench测试失效，请使用本脚本选项6中的gb4或gb5测试${Font_Suffix}"
-            echo -e " $4:\t\tsysbench测试失效，请使用本脚本选项6中的gb4或gb5测试" >>${WorkDir}/SysBench/CPU/result.txt
-        else
-            echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_SkyBlue}${ResultScore}${Font_Suffix} ${Font_Yellow}Scores${Font_Suffix}"
-            echo -e " $4:\t\t\t${ResultScore} Scores" >>${WorkDir}/SysBench/CPU/result.txt
-        fi
-    elif [ "$1" -ge "2" ]; then
-        if [ "$ResultScore" -eq "0" ] || ([ "$1" -lt "2" ] && [ "$ResultScore" -gt "100000" ]); then
-            echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_Red}sysbench测试失效，请使用本脚本选项5中的gb4或gb5测试${Font_Suffix}"
-            echo -e " $4:\t\tsysbench测试失效，请使用本脚本选项5中的gb4或gb5测试" >>${WorkDir}/SysBench/CPU/result.txt
-        else
-            echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_SkyBlue}${ResultScore}${Font_Suffix} ${Font_Yellow}Scores${Font_Suffix}"
-            echo -e " $4:\t\t${ResultScore} Scores" >>${WorkDir}/SysBench/CPU/result.txt
-        fi
-    fi
-}
-
-Function_SysBench_CPU_Fast() {
-    cd $myvar >/dev/null 2>&1
-    mkdir -p ${WorkDir}/SysBench/CPU/ >/dev/null 2>&1
-    echo -e " ${Font_Yellow}-> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}"
-    echo -e " -> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/CPU/result.txt
-    Run_SysBench_CPU "1" "5" "1" "1 线程测试(1核)得分"
-    sleep 1
-    if [ "${LBench_Result_CPUThreadNumber}" -ge "2" ]; then
-        Run_SysBench_CPU "${LBench_Result_CPUThreadNumber}" "5" "1" "${LBench_Result_CPUThreadNumber} 线程测试(多核)得分"
-    elif [ "${LBench_Result_CPUProcessorNumber}" -ge "2" ]; then
-        Run_SysBench_CPU "${LBench_Result_CPUProcessorNumber}" "5" "1" "${LBench_Result_CPUProcessorNumber} 线程测试(多核)得分"
-    fi
-}
-
-# =============== SystemInfo模块 部分 ===============
-SystemInfo_GetCPUInfo() {
-    mkdir -p ${WorkDir}/data >/dev/null 2>&1
-    if [ -f "/proc/cpuinfo" ]; then
-        cat /proc/cpuinfo >${WorkDir}/data/cpuinfo
-        local ReadCPUInfo="cat ${WorkDir}/data/cpuinfo"
-        LBench_Result_CPUModelName="$($ReadCPUInfo | awk -F ': ' '/model name/{print $2}' | sort -u)"
-        local CPUFreqCount="$($ReadCPUInfo | awk -F ': ' '/cpu MHz/{print $2}' | sort -run | wc -l)"
-        if [ "${CPUFreqCount}" -ge "2" ]; then
-            local CPUFreqArray="$(cat /proc/cpuinfo | awk -F ': ' '/cpu MHz/{print $2}' | sort -run)"
-            local CPUFreq_Min="$(echo "$CPUFreqArray" | grep -oE '[0-9]+.[0-9]{3}' | awk 'BEGIN {min = 2147483647} {if ($1+0 < min+0) min=$1} END {print min}')"
-            local CPUFreq_Max="$(echo "$CPUFreqArray" | grep -oE '[0-9]+.[0-9]{3}' | awk 'BEGIN {max = 0} {if ($1+0 > max+0) max=$1} END {print max}')"
-            LBench_Result_CPUFreqMinGHz="$(echo $CPUFreq_Min | awk '{printf "%.2f\n",$1/1000}')"
-            LBench_Result_CPUFreqMaxGHz="$(echo $CPUFreq_Max | awk '{printf "%.2f\n",$1/1000}')"
-            Flag_DymanicCPUFreqDetected="1"
-        else
-            LBench_Result_CPUFreqMHz="$($ReadCPUInfo | awk -F ': ' '/cpu MHz/{print $2}' | sort -u)"
-            LBench_Result_CPUFreqGHz="$(echo $LBench_Result_CPUFreqMHz | awk '{printf "%.2f\n",$1/1000}')"
-            Flag_DymanicCPUFreqDetected="0"
-        fi
-        LBench_Result_CPUCacheSize="$($ReadCPUInfo | awk -F ': ' '/cache size/{print $2}' | sort -u)"
-        LBench_Result_CPUPhysicalNumber="$($ReadCPUInfo | awk -F ': ' '/physical id/{print $2}' | sort -u | wc -l)"
-        LBench_Result_CPUCoreNumber="$($ReadCPUInfo | awk -F ': ' '/cpu cores/{print $2}' | sort -u)"
-        LBench_Result_CPUThreadNumber="$($ReadCPUInfo | awk -F ': ' '/cores/{print $2}' | wc -l)"
-        LBench_Result_CPUProcessorNumber="$($ReadCPUInfo | awk -F ': ' '/processor/{print $2}' | wc -l)"
-        LBench_Result_CPUSiblingsNumber="$($ReadCPUInfo | awk -F ': ' '/siblings/{print $2}' | sort -u)"
-        LBench_Result_CPUTotalCoreNumber="$($ReadCPUInfo | awk -F ': ' '/physical id/&&/0/{print $2}' | wc -l)"
-        
-        # 虚拟化能力检测
-        SystemInfo_GetVirtType
-        if [ "${Var_VirtType}" = "dedicated" ] || [ "${Var_VirtType}" = "wsl" ]; then
-            LBench_Result_CPUIsPhysical="1"
-            local VirtCheck="$(cat /proc/cpuinfo | grep -oE 'vmx|svm' | uniq)"
-            if [ "${VirtCheck}" != "" ]; then
-                LBench_Result_CPUVirtualization="1"
-                local VirtualizationType="$(lscpu | awk /Virtualization:/'{print $2}')"
-                LBench_Result_CPUVirtualizationType="${VirtualizationType}"
-            else
-                LBench_Result_CPUVirtualization="0"
-            fi
-        elif [ "${Var_VirtType}" = "kvm" ] || [ "${Var_VirtType}" = "hyperv" ] || [ "${Var_VirtType}" = "microsoft" ] || [ "${Var_VirtType}" = "vmware" ]; then
-            LBench_Result_CPUIsPhysical="0"
-            local VirtCheck="$(cat /proc/cpuinfo | grep -oE 'vmx|svm' | uniq)"
-            if [ "${VirtCheck}" = "vmx" ] || [ "${VirtCheck}" = "svm" ]; then
-                LBench_Result_CPUVirtualization="2"
-                local VirtualizationType="$(lscpu | awk /Virtualization:/'{print $2}')"
-                LBench_Result_CPUVirtualizationType="${VirtualizationType}"
-            else
-                LBench_Result_CPUVirtualization="0"
-            fi        
-        else
-            LBench_Result_CPUIsPhysical="0"
-        fi
-    else
-        $sysctl_path -a >${WorkDir}/data/sysctl_info
-        local ReadCPUInfo="cat ${WorkDir}/data/sysctl_info"
-        LBench_Result_CPUModelName="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.model/{print $2}' | sort -u)"
-        LBench_Result_CPUFreqMHz="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/dev.cpu.0.freq/{print $2}')"
-        LBench_Result_CPUCacheSize="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.cacheconfig/{print $2}')"
-        LBench_Result_CPUFreqGHz="$(echo $LBench_Result_CPUFreqMHz | awk '{printf "%.2f\n",$1/1000}')"
-        LBench_Result_CPUPhysicalNumber="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.physicalcpu/{print $2}')"
-        LBench_Result_CPUCoreNumber="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.ncpu/{print $2}')"
-        LBench_Result_CPUThreadNumber="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.ncpu/{print $2}')"
-        LBench_Result_CPUProcessorNumber="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.ncpu/{print $2}')"
-        LBench_Result_CPUSiblingsNumber="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.smt/{print $2}')"
-        LBench_Result_CPUTotalCoreNumber="$($ReadCPUInfo 2>/dev/null | awk -F ': ' '/hw.ncpu/{print $2}')"
-
-        # 虚拟化能力检测
-        SystemInfo_GetVirtType
-        if [ "${Var_VirtType}" = "dedicated" ] || [ "${Var_VirtType}" = "wsl" ]; then
-            LBench_Result_CPUIsPhysical="1"
-            local VirtCheck="$($sysctl_path -a | grep -E 'hw.vmx|hw.svm' | uniq)"
-            if [ "${VirtCheck}" != "" ]; then
-                LBench_Result_CPUVirtualization="1"
-                LBench_Result_CPUVirtualizationType="Native"
-            else
-                LBench_Result_CPUVirtualization="0"
-            fi
-        elif [ "${Var_VirtType}" = "kvm" ] || [ "${Var_VirtType}" = "hyperv" ] || [ "${Var_VirtType}" = "microsoft" ] || [ "${Var_VirtType}" = "vmware" ]; then
-            LBench_Result_CPUIsPhysical="0"
-            local VirtCheck="$($sysctl_path -a | grep -E 'hw.vmx|hw.svm' | uniq)"
-            if [ "${VirtCheck}" != "" ]; then
-                LBench_Result_CPUVirtualization="2"
-                LBench_Result_CPUVirtualizationType="${Var_VirtType}"
-            else
-                LBench_Result_CPUVirtualization="0"
-            fi
-        else
-            LBench_Result_CPUIsPhysical="0"
-        fi
-    fi
-}
-
-Function_ReadCPUStat() {
-    if [ "$1" == "" ]; then
-        echo -n "nil"
-    else
-        local result="$(echo $1 | grep -oE "[0-9]{1,2}.[0-9]{1} $2" | awk '{print $1}')"
-        echo $result
-    fi
-}
-
-get_system_bit() {
-    local sysarch="$(uname -m)"
-    if [ "${sysarch}" = "unknown" ] || [ "${sysarch}" = "" ]; then
-        local sysarch="$(arch)"
-    fi
-    # 根据架构信息设置系统位数并下载文件,其余 * 包括了 x86_64
-    case "${sysarch}" in
-        "i386" | "i686")
-            LBench_Result_SystemBit_Short="32"
-            LBench_Result_SystemBit_Full="i386"
-            BESTTRACE_FILE=besttracemac
-            ;;
-        "armv7l" | "armv8" | "armv8l" | "aarch64")
-            LBench_Result_SystemBit_Short="arm"
-            LBench_Result_SystemBit_Full="arm"
-            BESTTRACE_FILE=besttracearm
-            BACKTRACE_FILE=backtrace-linux-arm64.tar.gz
-            ;;
-        *)
-            LBench_Result_SystemBit_Short="64"
-            LBench_Result_SystemBit_Full="amd64"
-            BESTTRACE_FILE=besttrace
-            BACKTRACE_FILE=backtrace-linux-amd64.tar.gz
-            ;;
-    esac
-}
-
-SystemInfo_GetVirtType() {
-    if [ -f "/usr/bin/systemd-detect-virt" ]; then
-        Var_VirtType="$(/usr/bin/systemd-detect-virt)"
-        # 虚拟机检测
-        case "${Var_VirtType}" in
-            "*qemu*") LBench_Result_VirtType="QEMU" ;;
-            "*kvm*") LBench_Result_VirtType="KVM" ;;
-            "*zvm*") LBench_Result_VirtType="S390 Z/VM" ;;
-            "*vmware*") LBench_Result_VirtType="VMware" ;;
-            "*microsoft*") LBench_Result_VirtType="Microsoft Hyper-V" ;;
-            "*xen*") LBench_Result_VirtType="Xen Hypervisor" ;;
-            "*bochs*") LBench_Result_VirtType="BOCHS" ;;
-            "*uml*") LBench_Result_VirtType="User-mode Linux" ;;
-            "*parallels*") LBench_Result_VirtType="Parallels" ;;
-            "*bhyve*") LBench_Result_VirtType="FreeBSD Hypervisor" ;;
-            "*openvz*") LBench_Result_VirtType="OpenVZ" ;;
-            "lxc") LBench_Result_VirtType="LXC" ;;
-            "lxc-libvirt") LBench_Result_VirtType="LXC (libvirt)" ;;
-            "*systemd-nspawn*") LBench_Result_VirtType="Systemd nspawn" ;;
-            "*docker*") LBench_Result_VirtType="Docker" ;;
-            "*rkt*") LBench_Result_VirtType="RKT" ;;
-            "none")
-                sleep 1
-                Var_VirtType="$(/usr/bin/systemd-detect-virt)"
-                LBench_Result_VirtType="None"
-                local Var_BIOSVendor="$(dmidecode -s bios-vendor)"
-                if [ "${Var_BIOSVendor}" = "SeaBIOS" ]; then
-                    Var_VirtType="Unknown"
-                    LBench_Result_VirtType="Unknown with SeaBIOS BIOS"
-                else
-                    Var_VirtType="dedicated"
-                    LBench_Result_VirtType="Dedicated with ${Var_BIOSVendor} BIOS"
-                fi
-                ;;
-            *)
-                if [ -c "/dev/lxss" ]; then
-                    Var_VirtType="wsl"
-                    LBench_Result_VirtType="Windows Subsystem for Linux (WSL)"
-                fi
-                ;;
-        esac
-    elif [ -f "/.dockerenv" ]; then # 处理Docker虚拟化
-        Var_VirtType="docker"
-        LBench_Result_VirtType="Docker"
-    elif [ -c "/dev/lxss" ]; then # 处理WSL虚拟化
-        Var_VirtType="wsl"
-        LBench_Result_VirtType="Windows Subsystem for Linux (WSL)"
-    elif $sysctl_path kern.vm_guest >/dev/null 2>&1 && Var_VirtType=$($sysctl_path -n kern.vm_guest 2>/dev/null); then
-        LBench_Result_VirtType="Virtualization platform: $Var_VirtType"
-    elif $sysctl_path -a | grep hw.vmm >/dev/null 2>&1 && Var_VirtType=$($sysctl_path -n hw.vmm 2>/dev/null); then
-        LBench_Result_VirtType="Virtualization platform: $Var_VirtType"
-    elif [ ! -f "/usr/sbin/virt-what" ] && [ ! -f "/usr/local/sbin/virt-what" ]; then
-        Var_VirtType="Unknown"
-        LBench_Result_VirtType="[Error: virt-what not found !]"
-    else # 正常判断流程
-        Var_VirtType="$(virt-what | xargs)"
-        local Var_VirtTypeCount="$(echo $Var_VirtTypeCount | wc -l)"
-        if [ "${Var_VirtTypeCount}" -gt "1" ]; then # 处理嵌套虚拟化
-            LBench_Result_VirtType="echo ${Var_VirtType}"
-            Var_VirtType="$(echo ${Var_VirtType} | head -n1)" # 使用检测到的第一种虚拟化继续做判断
-        elif [ "${Var_VirtTypeCount}" -eq "1" ] && [ "${Var_VirtType}" != "" ]; then # 只有一种虚拟化
-            LBench_Result_VirtType="${Var_VirtType}"
-        else
-            local Var_BIOSVendor="$(dmidecode -s bios-vendor)"
-            if [ "${Var_BIOSVendor}" = "SeaBIOS" ]; then
-                Var_VirtType="Unknown"
-                LBench_Result_VirtType="Unknown with SeaBIOS BIOS"
-            else
-                Var_VirtType="dedicated"
-                LBench_Result_VirtType="Dedicated with ${Var_BIOSVendor} BIOS"
-            fi
-        fi
-    fi
-}
-
 speed_test2() {
     local nodeName="$2"
     if [ ! -f "./speedtest-cli/speedtest" ]; then
@@ -1804,6 +1791,7 @@ Function_SysBench_Memory_Fast() {
     sleep 0.5
 }
 
+# =============== 机器配置检测 部分 ===============
 calc_disk() {
     local total_size=0
     local array=$@
@@ -1869,24 +1857,24 @@ check_virt(){
 }
 
 check_ipv4(){
-  # 遍历本机可以使用的 IP API 服务商
-  # 定义可能的 IP API 服务商
-  API_NET=("ip.sb" "ipget.net" "ip.ping0.cc" "https://ip4.seeip.org" "https://api.my-ip.io/ip" "https://ipv4.icanhazip.com" "api.ipify.org")
+    # 遍历本机可以使用的 IP API 服务商
+    # 定义可能的 IP API 服务商
+    API_NET=("ip.sb" "ipget.net" "ip.ping0.cc" "https://ip4.seeip.org" "https://api.my-ip.io/ip" "https://ipv4.icanhazip.com" "api.ipify.org")
 
-  # 遍历每个 API 服务商，并检查它是否可用
-  for p in "${API_NET[@]}"; do
-    # 使用 curl 请求每个 API 服务商
-    response=$(curl -s4m8 "$p")
-    sleep 1
-    # 检查请求是否失败，或者回传内容中是否包含 error
-    if [ $? -eq 0 ] && ! echo "$response" | grep -q "error"; then
-      # 如果请求成功且不包含 error，则设置 IP_API 并退出循环
-      IP_API="$p"
-      IPV4=$(curl -s4m8 "$IP_API")
-      break
-    fi
-  done
-  export IPV4
+    # 遍历每个 API 服务商，并检查它是否可用
+    for p in "${API_NET[@]}"; do
+        # 使用 curl 请求每个 API 服务商
+        response=$(curl -s4m8 "$p")
+        sleep 1
+        # 检查请求是否失败，或者回传内容中是否包含 error
+        if [ $? -eq 0 ] && ! echo "$response" | grep -q "error"; then
+        # 如果请求成功且不包含 error，则设置 IP_API 并退出循环
+        IP_API="$p"
+        IPV4=$(curl -s4m8 "$IP_API")
+        break
+        fi
+    done
+    export IPV4
 }
 
 get_longest_first_element() {
@@ -2069,64 +2057,6 @@ check_ip_info_by_cheervision(){
     # 返回结果
     echo "$ipv6_asn_info" >> /tmp/cheervision
     echo "$ipv6_location" >> /tmp/cheervision
-}
-
-check_ip_info(){
-    # 并行执行四个函数
-    check_ip_info_by_cloudflare &
-    check_ip_info_by_ipinfo &
-    check_ip_info_by_ipsb &
-    check_ip_info_by_cheervision &
-    # 等待所有后台任务执行完毕
-    wait
-    # 存储结果的四个列表
-    local ipv4_asn_info_list=()
-    local ipv4_location_list=()
-    local ipv6_asn_info_list=()
-    local ipv6_location_list=()
-    # 遍历每个函数的结果文件，读取内容到对应的列表中
-    files=("/tmp/cloudflare" "/tmp/ipinfo" "/tmp/ipsb" "/tmp/cheervision")
-    for file in "${files[@]}"; do
-        {
-            read -r asn_info
-            read -r location
-            read -r ipv6_asn_info
-            read -r ipv6_location
-        } < "$file"
-        ipv4_asn_info_list+=("$asn_info")
-        ipv4_location_list+=("$location")
-        ipv6_asn_info_list+=("$ipv6_asn_info")
-        ipv6_location_list+=("$ipv6_location")
-    done
-    # 找到每个列表中最长的第一个元素作为最终结果
-    local ipv4_asn_info=$(get_longest_first_element "${ipv4_asn_info_list[@]}")
-    local ipv4_location=$(get_longest_first_element "${ipv4_location_list[@]}")
-    local ipv6_asn_info=$(get_longest_first_element "${ipv6_asn_info_list[@]}")
-    local ipv6_location=$(get_longest_first_element "${ipv6_location_list[@]}")
-    # 删除缓存文件
-    for file in "${files[@]}"; do
-        rm -rf ${file}
-    done
-    # 打印最终结果
-    if [[ -n "$ipv4_asn_info" && "$ipv4_asn_info" != "None" ]]; then
-        echo " IPV4 ASN          : $(_blue "$ipv4_asn_info")"
-    fi
-    if [[ -n "$ipv4_location" && "$ipv4_location" != "None" ]]; then
-        echo " IPV4 位置         : $(_blue "$ipv4_location")"
-    fi
-    if [[ -n "$ipv6_asn_info" && "$ipv6_asn_info" != "None" ]]; then
-        echo " IPV6 ASN          : $(_blue "$ipv6_asn_info")"
-    fi
-    if [[ -n "$ipv6_location" && "$ipv6_location" != "None" ]]; then
-        echo " IPV6 位置         : $(_blue "$ipv6_location")"
-    fi
-}
-
-print_intro() {
-    echo "--------------------- A Bench Script By spiritlhl ----------------------"
-    echo "                   测评频道: https://t.me/vps_reviews                    "
-    echo "版本：$ver"
-    echo "更新日志：$changeLog"
 }
 
 get_system_info() {
@@ -2312,49 +2242,63 @@ get_system_info() {
     fi
 }
 
-isvalidipv4()
-{
-    local ipaddr=$1
-    local stat=1
-    if [[ $ipaddr =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-        OIFS=$IFS
-        IFS='.'
-        ipaddr=($ipaddr)
-        IFS=$OIFS
-        [[ ${ipaddr[0]} -le 255 && ${ipaddr[1]} -le 255 \
-            && ${ipaddr[2]} -le 255 && ${ipaddr[3]} -le 255 ]]
-        stat=$?
-    fi
-    return $stat
+# =============== 正式输出 部分 ===============
+print_intro() {
+    echo "--------------------- A Bench Script By spiritlhl ----------------------"
+    echo "                   测评频道: https://t.me/vps_reviews                    "
+    echo "版本：$ver"
+    echo "更新日志：$changeLog"
 }
 
-cnlatency() {    
-    ipaddr=$(getent ahostsv4 $1 | grep STREAM | head -n 1 | cut -d ' ' -f 1)
-	if isvalidipv4 "$ipaddr"; then
-		host=$2
-		retry=1
-		rtt=999	
-		while [[ "$retry" < 4 ]] ; do
-			echo -en "\r\033[0K [$3 of $4] : $host ($ipaddr) attemp #$retry"
-			rtt=$(ping -c1 -w1 $ipaddr | sed -nE 's/.*time=([0-9.]+).*/\1/p')				
-			if [[ -z "$rtt" ]]; then
-				rtt=999
-				retry=$((retry+1))
-				continue
-			fi
-			[[ "$rtt" < 1 ]] && rtt=1
-			int=${rtt%.*}
-			if [[ "$int" -gt 999 || "$int" -eq 0 ]]; then
-				rtt=999
-				break
-			fi
-			rtt=$(printf "%.0f" $rtt)
-			rtt=$(printf "%03d" $rtt)
-			break
-		done
-		result="${rtt}ms : $host , $ipaddr"
-		CHINALIST[${#CHINALIST[@]}]=$result		
-	fi
+print_ip_info(){
+    # 并行执行并发查询IP信息
+    check_ip_info_by_cloudflare &
+    check_ip_info_by_ipinfo &
+    check_ip_info_by_ipsb &
+    check_ip_info_by_cheervision &
+    # 等待所有后台任务执行完毕
+    wait
+    # 存储结果的四个列表
+    local ipv4_asn_info_list=()
+    local ipv4_location_list=()
+    local ipv6_asn_info_list=()
+    local ipv6_location_list=()
+    # 遍历每个函数的结果文件，读取内容到对应的列表中
+    files=("/tmp/cloudflare" "/tmp/ipinfo" "/tmp/ipsb" "/tmp/cheervision")
+    for file in "${files[@]}"; do
+        {
+            read -r asn_info
+            read -r location
+            read -r ipv6_asn_info
+            read -r ipv6_location
+        } < "$file"
+        ipv4_asn_info_list+=("$asn_info")
+        ipv4_location_list+=("$location")
+        ipv6_asn_info_list+=("$ipv6_asn_info")
+        ipv6_location_list+=("$ipv6_location")
+    done
+    # 找到每个列表中最长的第一个元素作为最终结果
+    local ipv4_asn_info=$(get_longest_first_element "${ipv4_asn_info_list[@]}")
+    local ipv4_location=$(get_longest_first_element "${ipv4_location_list[@]}")
+    local ipv6_asn_info=$(get_longest_first_element "${ipv6_asn_info_list[@]}")
+    local ipv6_location=$(get_longest_first_element "${ipv6_location_list[@]}")
+    # 删除缓存文件
+    for file in "${files[@]}"; do
+        rm -rf ${file}
+    done
+    # 打印最终结果
+    if [[ -n "$ipv4_asn_info" && "$ipv4_asn_info" != "None" ]]; then
+        echo " IPV4 ASN          : $(_blue "$ipv4_asn_info")"
+    fi
+    if [[ -n "$ipv4_location" && "$ipv4_location" != "None" ]]; then
+        echo " IPV4 位置         : $(_blue "$ipv4_location")"
+    fi
+    if [[ -n "$ipv6_asn_info" && "$ipv6_asn_info" != "None" ]]; then
+        echo " IPV6 ASN          : $(_blue "$ipv6_asn_info")"
+    fi
+    if [[ -n "$ipv6_location" && "$ipv6_location" != "None" ]]; then
+        echo " IPV6 位置         : $(_blue "$ipv6_location")"
+    fi
 }
 
 print_system_info() {
@@ -2398,7 +2342,6 @@ print_end_time() {
         echo " 总共花费      : ${time} 秒"
     fi
     date_time=$(date)
-    # date_time=$(date +%Y-%m-%d" "%H:%M:%S)
     echo " 时间          : $date_time"
 }
 
@@ -2691,7 +2634,7 @@ sjlleo_script(){
 basic_script(){
     echo "-------------------感谢teddysun和superbench和yabs开源-------------------"
     print_system_info
-    check_ip_info
+    print_ip_info
     cd $myvar >/dev/null 2>&1
     sleep 1
     echo "---------------------CPU测试--感谢lemonbench开源------------------------"
@@ -2851,6 +2794,7 @@ end_script(){
     next
 }
 
+# =============== 分区选择 部分 ===============
 all_script(){
     pre_check
     if [ "$1" = "B" ]; then
@@ -3522,6 +3466,7 @@ start_script(){
     done
 }
 
+# =============== 正式执行 部分 ===============
 rm -rf $TEMP_DIR
 mkdir -p $TEMP_DIR
 get_system_bit
