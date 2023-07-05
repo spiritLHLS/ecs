@@ -1,3 +1,19 @@
+# isvalidipv4()
+# {
+#     local ipaddr=$1
+#     local stat=1
+#     if [[ $ipaddr =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+#         OIFS=$IFS
+#         IFS='.'
+#         ipaddr=($ipaddr)
+#         IFS=$OIFS
+#         [[ ${ipaddr[0]} -le 255 && ${ipaddr[1]} -le 255 \
+#             && ${ipaddr[2]} -le 255 && ${ipaddr[3]} -le 255 ]]
+#         stat=$?
+#     fi
+#     return $stat
+# }
+
 # openai_script(){
 #     cd $myvar >/dev/null 2>&1
 #     echo -e "---------OpenAi解锁--感谢missuo的OpenAI-Checker项目本人修改优化---------"
