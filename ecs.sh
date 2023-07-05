@@ -1877,18 +1877,6 @@ check_ipv4(){
     export IPV4
 }
 
-get_longest_first_element() {
-    # 获取一个列表中最长的元素 - 信息最多的
-    local list=("$@")
-    local longest_element="${list[0]}"
-    for element in "${list[@]}"; do
-        if [[ ${#element} -gt ${#longest_element} ]]; then
-            longest_element=$element
-        fi
-    done
-    echo "$longest_element"
-}
-
 check_ip_info_by_cloudflare(){
     # cloudflare.com
     rm -rf /tmp/cloudflare
@@ -2250,6 +2238,16 @@ print_intro() {
     echo "更新日志：$changeLog"
 }
 
+get_first_non_empty_element() {
+    local array=("$@")
+    for element in "${array[@]}"; do
+        if [[ "$element" != "None" ]]; then
+            echo "$element"
+            break
+        fi
+    done
+}
+
 print_ip_info(){
     # 并行执行并发查询IP信息
     check_ip_info_by_cloudflare &
@@ -2278,10 +2276,10 @@ print_ip_info(){
         ipv6_location_list+=("$ipv6_location")
     done
     # 找到每个列表中最长的第一个元素作为最终结果
-    local ipv4_asn_info=$(get_longest_first_element "${ipv4_asn_info_list[@]}")
-    local ipv4_location=$(get_longest_first_element "${ipv4_location_list[@]}")
-    local ipv6_asn_info=$(get_longest_first_element "${ipv6_asn_info_list[@]}")
-    local ipv6_location=$(get_longest_first_element "${ipv6_location_list[@]}")
+    local ipv4_asn_info=$(get_first_non_empty_element "${ipv4_asn_info_list[@]}")
+    local ipv4_location=$(get_first_non_empty_element "${ipv4_location_list[@]}")
+    local ipv6_asn_info=$(get_first_non_empty_element "${ipv6_asn_info_list[@]}")
+    local ipv6_location=$(get_first_non_empty_element "${ipv6_location_list[@]}")
     # 删除缓存文件
     for file in "${files[@]}"; do
         rm -rf ${file}
