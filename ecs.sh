@@ -1799,46 +1799,6 @@ check_ipv4(){
     export IPV4
 }
 
-check_ip_info_by_cloudflare(){
-    # cloudflare.com
-    rm -rf /tmp/cloudflare
-    # 获取 IPv4 信息
-    local ipv4_output=$(curl -ksL4m6 -A Mozilla https://speed.cloudflare.com/meta 2>/dev/null)
-    # 提取 IPv4 的 asn、asOrganization、city 和 region
-    local ipv4_asn=$(echo "$ipv4_output" | grep -oE '"asn":[0-9]+' | grep -oE '[0-9]+')
-    local ipv4_as_organization=$(echo "$ipv4_output" | grep -oE '"asOrganization":"[^"]+"' | grep -oE '":"[^"]+"' | sed 's/":"//g')
-    local ipv4_city=$(echo "$ipv4_output" | grep -oE '"city":"[^"]+"' | grep -oE '":"[^"]+"' | sed 's/":"//g')
-    local ipv4_region=$(echo "$ipv4_output" | grep -oE '"region":"[^"]+"' | grep -oE '":"[^"]+"' | sed 's/":"//g')
-    if [ -n "$ipv4_asn" ] && [ -n "$ipv4_as_organization" ] && [ -n "$ipv4_city" ] && [ -n "$ipv4_region" ]; then
-        local ipv4_asn_info="AS${ipv4_asn::-1} ${ipv4_as_organization::-1}"
-        local ipv4_location="${ipv4_city::-1} / ${ipv4_region::-1}"
-    else
-        local ipv4_asn_info="None"
-        local ipv4_location="None"
-    fi
-    # 返回结果
-    echo "$ipv4_asn_info" >> /tmp/cloudflare
-    echo "$ipv4_location" >> /tmp/cloudflare
-    # 获取 IPv6 信息
-    sleep 1
-    local ipv6_output=$(curl -ksL6m6 -A Mozilla https://speed.cloudflare.com/meta 2>/dev/null)
-    # 提取 IPv6 的 asn、asOrganization、city 和 region
-    local ipv6_asn=$(echo "$ipv6_output" | grep -oE '"asn":[0-9]+' | grep -oE '[0-9]+')
-    local ipv6_as_organization=$(echo "$ipv6_output" | grep -oE '"asOrganization":"[^"]+"' | grep -oE '":"[^"]+"' | sed 's/":"//g')
-    local ipv6_city=$(echo "$ipv6_output" | grep -oE '"city":"[^"]+"' | grep -oE '":"[^"]+"' | sed 's/":"//g')
-    local ipv6_region=$(echo "$ipv6_output" | grep -oE '"region":"[^"]+"' | grep -oE '":"[^"]+"' | sed 's/":"//g')
-    if [ -n "$ipv6_asn" ] && [ -n "$ipv6_as_organization" ] && [ -n "$ipv6_city" ] && [ -n "$ipv6_region" ]; then
-        local ipv6_asn_info="AS${ipv6_asn::-1} ${ipv6_as_organization::-1}"
-        local ipv6_location="${ipv6_city::-1} / ${ipv6_region::-1}"
-    else
-        local ipv6_asn_info="None"
-        local ipv6_location="None"
-    fi
-    # 返回结果
-    echo "$ipv6_asn_info" >> /tmp/cloudflare
-    echo "$ipv6_location" >> /tmp/cloudflare
-}
-
 check_ip_info_by_ipinfo(){
     # ipinfo.io
     rm -rf /tmp/ipinfo
@@ -1869,6 +1829,60 @@ check_ip_info_by_ipinfo(){
     # 返回结果
     echo "$ipv6_asn_info" >> /tmp/ipinfo
     echo "$ipv6_location" >> /tmp/ipinfo
+}
+
+check_ip_info_by_cloudflare(){
+    # cloudflare.com
+    rm -rf /tmp/cloudflare
+    # 获取 IPv4 信息
+    local ipv4_output=$(curl -ksL4m6 -A Mozilla https://speed.cloudflare.com/meta 2>/dev/null)
+    # 提取 IPv4 的 asn、asOrganization、city 和 region
+    local ipv4_asn=$(echo "$ipv4_output" | grep -oE '"asn":[0-9]+' | grep -oE '[0-9]+')
+    local ipv4_as_organization=$(echo "$ipv4_output" | grep -oE '"asOrganization":"[^"]+"' | grep -oE '":"[^"]+"' | sed 's/":"//g')
+    local ipv4_city=$(echo "$ipv4_output" | grep -oE '"city":"[^"]+"' | grep -oE '":"[^"]+"' | sed 's/":"//g')
+    local ipv4_region=$(echo "$ipv4_output" | grep -oE '"region":"[^"]+"' | grep -oE '":"[^"]+"' | sed 's/":"//g')
+    if [ -n "$ipv4_asn" ] && [ -n "$ipv4_as_organization" ] && [ -n "$ipv4_city" ] && [ -n "$ipv4_region" ]; then
+        local ipv4_asn_info="AS${ipv4_asn} ${ipv4_as_organization}"
+        local ipv4_location="${ipv4_city} / ${ipv4_region}"
+    else
+        local ipv4_asn_info="None"
+        local ipv4_location="None"
+    fi
+    # 去除双引号
+    if [[ $ipv4_asn_info == *"\""* ]]; then
+        ipv4_asn_info="${ipv4_asn_info//\"/}"
+    fi
+    if [[ $ipv4_location == *"\""* ]]; then
+        ipv4_location="${ipv4_location//\"/}"
+    fi
+    # 返回结果
+    echo "$ipv4_asn_info" >> /tmp/cloudflare
+    echo "$ipv4_location" >> /tmp/cloudflare
+    # 获取 IPv6 信息
+    sleep 1
+    local ipv6_output=$(curl -ksL6m6 -A Mozilla https://speed.cloudflare.com/meta 2>/dev/null)
+    # 提取 IPv6 的 asn、asOrganization、city 和 region
+    local ipv6_asn=$(echo "$ipv6_output" | grep -oE '"asn":[0-9]+' | grep -oE '[0-9]+')
+    local ipv6_as_organization=$(echo "$ipv6_output" | grep -oE '"asOrganization":"[^"]+"' | grep -oE '":"[^"]+"' | sed 's/":"//g')
+    local ipv6_city=$(echo "$ipv6_output" | grep -oE '"city":"[^"]+"' | grep -oE '":"[^"]+"' | sed 's/":"//g')
+    local ipv6_region=$(echo "$ipv6_output" | grep -oE '"region":"[^"]+"' | grep -oE '":"[^"]+"' | sed 's/":"//g')
+    if [ -n "$ipv6_asn" ] && [ -n "$ipv6_as_organization" ] && [ -n "$ipv6_city" ] && [ -n "$ipv6_region" ]; then
+        local ipv6_asn_info="AS${ipv6_asn} ${ipv6_as_organization}"
+        local ipv6_location="${ipv6_city} / ${ipv6_region}"
+    else
+        local ipv6_asn_info="None"
+        local ipv6_location="None"
+    fi
+    # 去除双引号
+    if [[ $ipv6_asn_info == *"\""* ]]; then
+        ipv6_asn_info="${ipv6_asn_info//\"/}"
+    fi
+    if [[ $ipv6_location == *"\""* ]]; then
+        ipv6_location="${ipv6_location//\"/}"
+    fi
+    # 返回结果
+    echo "$ipv6_asn_info" >> /tmp/cloudflare
+    echo "$ipv6_location" >> /tmp/cloudflare
 }
 
 check_ip_info_by_ipsb(){
