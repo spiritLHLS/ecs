@@ -384,17 +384,15 @@ check_port_25() {
     local result
 
     result=$(check_email_service "163邮箱")
+    echo "$result"
     if [[ $result == *"No"* ]]; then
         return
-    else
-    	echo "$result"
     fi
 
     result=$(check_email_service "gmail邮箱")
+    echo "$result"
     if [[ $result == *"No"* ]]; then
         return
-    else
-    	echo "$result"
     fi
 
     check_email_service "outlook邮箱"
