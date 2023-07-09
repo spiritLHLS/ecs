@@ -187,7 +187,7 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 - [x] 自由组合测试方向和单项测试以及合集收录第三方脚本
 - [x] 基础系统信息--感谢teddysun和superbench和yabs开源，本人整理修改优化
-- [x] CPU测试--感谢lemonbench开源，本人整理修改优化
+- [x] CPU测试--感谢[lemonbench](https://github.com/LemonBench/LemonBench)开源，本人整理修改优化
 - [x] 内存测试--感谢lemonbench开源，本人整理修改优化
 - [x] 磁盘dd读写测试--感谢lemonbench开源，本人整理修改优化
 - [x] 硬盘fio读写测试--感谢yabs开源[项目](https://github.com/masonr/yet-another-bench-script)，本人整理修改优化
