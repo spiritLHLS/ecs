@@ -2464,15 +2464,15 @@ print_ip_info(){
 }
 
 print_system_info() {
-    if [ -n "$cname" ]; then
+    if [ -n "$cname" ] >/dev/null 2>&1; then
         echo " CPU 型号          : $(_blue "$cname")"
-    elif [ -n "$Result_Systeminfo_CPUModelName" ]; then
+    elif [ -n "$Result_Systeminfo_CPUModelName" ] >/dev/null 2>&1; then
         echo " CPU 型号          : $(_blue "$Result_Systeminfo_CPUModelName")"
     else
         echo " CPU 型号          : $(_blue "无法检测到CPU型号")"
     fi
     if [ "$Result_Systeminfo_isPhysical" = "1" ]; then
-        if [ -n "$Result_Systeminfo_CPUSockets"] && [ -n "$Result_Systeminfo_CPUCores"] && [ -n "$Result_Systeminfo_CPUThreads"]; then
+        if [ -n "$Result_Systeminfo_CPUCacheSizeL1" ] && [ -n "$Result_Systeminfo_CPUCacheSizeL2" ] && [ -n "$Result_Systeminfo_CPUCacheSizeL3" ] >/dev/null 2>&1; then
             echo " CPU 核心数        : $(_blue "${Result_Systeminfo_CPUSockets} 物理核心, ${Result_Systeminfo_CPUCores} 总核心, ${Result_Systeminfo_CPUThreads} 总线程数")"
         elif [ -n "$cores" ]; then
             echo " CPU 核心数        : $(_blue "$cores")"
@@ -2480,45 +2480,45 @@ print_system_info() {
             echo " CPU 核心数        : $(_blue "无法检测到CPU核心数量")"
         fi
     elif [ "$Result_Systeminfo_isPhysical" = "0" ]; then
-        if [ -n "$Result_Systeminfo_CPUThreads"]; then
+        if [ -n "$Result_Systeminfo_CPUThreads"] >/dev/null 2>&1; then
             echo " CPU 核心数        : $(_blue "${Result_Systeminfo_CPUThreads}")"
-        elif [ -n "$cores" ]; then
+        elif [ -n "$cores" ] >/dev/null 2>&1; then
             echo " CPU 核心数        : $(_blue "$cores")"
         else
             echo " CPU 核心数        : $(_blue "无法检测到CPU核心数量")"
         fi
     fi
-    if [ -n "$freq" ]; then
+    if [ -n "$freq" ] >/dev/null 2>&1; then
         echo " CPU 频率          : $(_blue "$freq MHz")"
     fi
-    if [ -n "$Result_Systeminfo_CPUCacheSizeL1"] && [ -n "$Result_Systeminfo_CPUCacheSizeL2"] && [ -n "$Result_Systeminfo_CPUCacheSizeL3"]; then
+    if [ -n "$Result_Systeminfo_CPUCacheSizeL1"] && [ -n "$Result_Systeminfo_CPUCacheSizeL2"] && [ -n "$Result_Systeminfo_CPUCacheSizeL3"] >/dev/null 2>&1; then
         echo " CPU 缓存          : $(_blue "L1: ${Result_Systeminfo_CPUCacheSizeL1} / L2: ${Result_Systeminfo_CPUCacheSizeL2} / L3: ${Result_Systeminfo_CPUCacheSizeL3}")"
-    elif [ -n "$ccache" ]; then
+    elif [ -n "$ccache" ] >/dev/null 2>&1; then
         echo " CPU 缓存          : $(_blue "$ccache")"
     fi
-    if [ -n "$Result_Systeminfo_Diskinfo" ]; then
+    if [ -n "$Result_Systeminfo_Diskinfo" ] >/dev/null 2>&1; then
         echo " 硬盘空间          : $(_blue "$Result_Systeminfo_Diskinfo")"
     else
         echo " 硬盘空间          : $(_yellow "$disk_total_size GB") $(_blue "($disk_used_size GB 已用)")"
     fi
-    if [ -n "$Result_Systeminfo_DiskRootPath" ]; then
+    if [ -n "$Result_Systeminfo_DiskRootPath" ] >/dev/null 2>&1; then
         echo " 启动盘路径        : $(_blue "$Result_Systeminfo_DiskRootPath")"
     fi
-    if [ -n "$Result_Systeminfo_Memoryinfo" ]; then
+    if [ -n "$Result_Systeminfo_Memoryinfo" ] >/dev/null 2>&1; then
         echo " 内存              : $(_blue "$Result_Systeminfo_Memoryinfo")"
     elif [ -n "$tram"] && [ -n "$uram"]; then
         echo " 内存              : $(_yellow "$tram MB") $(_blue "($uram MB 已用)")"
     fi
-    if [ -n "$Result_Systeminfo_Swapinfo" ]; then
+    if [ -n "$Result_Systeminfo_Swapinfo" ] >/dev/null 2>&1; then
         echo " Swap              : $(_blue "$Result_Systeminfo_Swapinfo")"
     elif [ -n "$swap"] && [ -n "$uswap"]; then
         echo " Swap              : $(_blue "$swap MB ($uswap MB 已用)")"
     fi
     echo " 系统在线时间      : $(_blue "$up")"
     echo " 负载              : $(_blue "$load")"
-    if [ -n "$Result_Systeminfo_OSReleaseNameFull" ]; then
+    if [ -n "$Result_Systeminfo_OSReleaseNameFull" ] >/dev/null 2>&1; then
         echo " 系统              : $(_blue "$Result_Systeminfo_OSReleaseNameFull")"
-    elif [ -n "$DISTRO" ]; then
+    elif [ -n "$DISTRO" ] >/dev/null 2>&1; then
         echo " 系统              : $(_blue "$DISTRO")"
     fi
     [[ -z "$CPU_AES" ]] && CPU_AES="\xE2\x9D\x8C Disabled" || CPU_AES="\xE2\x9C\x94 Enabled"
