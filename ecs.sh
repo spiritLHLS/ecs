@@ -126,7 +126,7 @@ reset_default_sysctl(){
     if which systemctl >/dev/null 2>&1; then
         if [ -f "$sysctl_conf" ]; then
             cp "$sysctl_conf_backup" "$sysctl_conf"
-            cat "$sysctl_default" >> "$sysctl_conf"
+            check_and_cat_file "$sysctl_default" >> "$sysctl_conf"
             $sysctl_path -p 2> /dev/null
             cp "$sysctl_conf_backup" "$sysctl_conf"
             rm "$sysctl_conf_backup"
@@ -2765,8 +2765,8 @@ check_email_service() {
 }
 
 combine_result_of_ip_quality(){
-    cat /tmp/ip_quality_local_port_25 >> /tmp/ip_quality_check_port_25
-    cat /tmp/ip_quality_check_email_service >> /tmp/ip_quality_check_port_25
+    check_and_cat_file /tmp/ip_quality_local_port_25 >> /tmp/ip_quality_check_port_25
+    check_and_cat_file /tmp/ip_quality_check_email_service >> /tmp/ip_quality_check_port_25
 }
 
 check_port_25() {
@@ -2796,6 +2796,14 @@ check_port_25() {
     combine_result_of_ip_quality
 }
 
+check_and_cat_file() {
+    # 检测到文件存在再输出
+    local file="$1"
+    if [[ -f "$file" ]]; then
+        cat "$file"
+    fi
+}
+
 ipcheck(){
     local ip4=$(echo "$IPV4" | tr -d '\n')
     local ip6=$(echo "$IPV6" | tr -d '\n')
@@ -2813,17 +2821,17 @@ ipcheck(){
         { abuse "$ip6" "/tmp/ip_quality_abuse_ipv6"; }&
     fi
     wait
-    cat /tmp/ip_quality_scamalytics_ipv4
-    cat /tmp/ip_quality_virustotal
-    cat /tmp/ip_quality_ip234
-    cat /tmp/ip_quality_ipapi
-    cat /tmp/ip_quality_abuse_ipv4
-    cat /tmp/ip_quality_google
-    cat /tmp/ip_quality_check_port_25
+    check_and_cat_file "/tmp/ip_quality_scamalytics_ipv4"
+    check_and_cat_file "/tmp/ip_quality_virustotal"
+    check_and_cat_file "/tmp/ip_quality_ip234"
+    check_and_cat_file "/tmp/ip_quality_ipapi"
+    check_and_cat_file "/tmp/ip_quality_abuse_ipv4"
+    check_and_cat_file "/tmp/ip_quality_google"
+    check_and_cat_file "/tmp/ip_quality_check_port_25"
     if [[ -n "$ip6" ]]; then
         echo "------以下为IPV6检测------"
-        cat /tmp/ip_quality_scamalytics_ipv6
-        cat /tmp/ip_quality_abuse_ipv6
+        check_and_cat_file "/tmp/ip_quality_scamalytics_ipv6"
+        check_and_cat_file "/tmp/ip_quality_abuse_ipv6"
     fi
     rm -rf /tmp/ip_quality_*
 }
@@ -2859,8 +2867,8 @@ pre_check(){
     ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
     check_china
     wait
-    IPV4=$(cat /tmp/ip_quality_ipv4)
-    IPV6=$(cat /tmp/ip_quality_ipv6)
+    IPV4=$(check_and_cat_file /tmp/ip_quality_ipv4)
+    IPV6=$(check_and_cat_file /tmp/ip_quality_ipv6)
 }
 
 sjlleo_script(){
@@ -2978,7 +2986,7 @@ fscarmen_route_script(){
         _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
         "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
     done
-    cat $TEMP_FILE
+    check_and_cat_file $TEMP_FILE
     rm -f $TEMP_FILE
 }
 
@@ -3072,13 +3080,13 @@ all_script(){
             fscarmen_route_script test_area_g[@] test_ip_g[@] > ${TEMP_DIR}/fscarmen_route_output.txt &
             echo "正在并发测试中，大概2~3分钟无输出，请耐心等待。。。"
             wait
-            cat ${TEMP_DIR}/sjlleo_output.txt
-            cat ${TEMP_DIR}/RegionRestrictionCheck_output.txt
-            cat ${TEMP_DIR}/lmc999_output.txt
-            cat ${TEMP_DIR}/spiritlhl_output.txt
-            cat ${TEMP_DIR}/backtrace_output.txt
-            cat ${TEMP_DIR}/fscarmen_route_output.txt
-            cat ${TEMP_DIR}/ecs_net_output.txt
+            check_and_cat_file ${TEMP_DIR}/sjlleo_output.txt
+            check_and_cat_file ${TEMP_DIR}/RegionRestrictionCheck_output.txt
+            check_and_cat_file ${TEMP_DIR}/lmc999_output.txt
+            check_and_cat_file ${TEMP_DIR}/spiritlhl_output.txt
+            check_and_cat_file ${TEMP_DIR}/backtrace_output.txt
+            check_and_cat_file ${TEMP_DIR}/fscarmen_route_output.txt
+            check_and_cat_file ${TEMP_DIR}/ecs_net_output.txt
         else
             dfiles=(ecsspeed_ping)
             for dfile in "${dfiles[@]}"
@@ -3106,9 +3114,9 @@ all_script(){
             ecs_ping > ${TEMP_DIR}/ecs_ping.txt &
             echo "正在并发测试中，大概2~3分钟无输出，请耐心等待。。。"
             wait
-            cat ${TEMP_DIR}/spiritlhl_output.txt
-            cat ${TEMP_DIR}/ecs_ping.txt
-            cat ${TEMP_DIR}/ecs_net_output.txt
+            check_and_cat_file ${TEMP_DIR}/spiritlhl_output.txt
+            check_and_cat_file ${TEMP_DIR}/ecs_ping.txt
+            check_and_cat_file ${TEMP_DIR}/ecs_net_output.txt
         fi
     else
         if [[ -z "${CN}" || "${CN}" != true ]]; then
