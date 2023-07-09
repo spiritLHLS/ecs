@@ -1,3 +1,33 @@
+        # disk_total_size=0
+        # disk_used_size=0
+        # for size in "${disk_size1[@]}"; do
+        #     size_gb=$(expr $size / 1024 / 1024)  # 转换为GB单位
+        #     disk_total_size=$(expr $disk_total_size + $size_gb)  # 总大小累加
+        # done
+        # for size in "${disk_size2[@]}"; do
+        #     size_gb=$(expr $size / 1024 / 1024)  # 转换为GB单位
+        #     disk_used_size=$(expr $disk_used_size + $size_gb)  # 已用空间累加
+        # done
+
+# check_dmidecode(){
+#     ${PACKAGE_INSTALL[int]} dmidecode
+#     if [ $? -ne 0 ]; then
+#         if command -v apt-get > /dev/null 2>&1; then
+#             echo "Retrying with additional options..."
+#             apt-get update && apt-get --fix-broken install -y
+#             apt-get install -y dmidecode --force-yes
+#             if [ $? -ne 0 ]; then
+#                 apt-get update && apt-get --fix-broken install -y
+#                 apt-get install -y dmidecode --allow
+#                 if [ $? -ne 0 ]; then
+#                     apt-get update && apt-get --fix-broken install -y
+#                     apt-get install -y dmidecode -y --allow-unauthenticated
+#                 fi
+#             fi
+#         fi
+#     fi   
+# }
+
 # SystemInfo_GetCPUInfo() {
 #     mkdir -p ${WorkDir}/data >/dev/null 2>&1
 #     if [ -f "/proc/cpuinfo" ]; then
