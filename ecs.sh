@@ -370,6 +370,14 @@ checkpystun() {
     fi
 }
 
+check_and_cat_file() {
+    # 检测到文件存在再输出
+    local file="$1"
+    if [[ -f "$file" ]]; then
+        cat "$file"
+    fi
+}
+
 # 后台静默预下载文件并解压
 pre_download() {
     if [ -n "$LBench_Result_SystemBit_Full" ]; then
@@ -2794,14 +2802,6 @@ check_port_25() {
     fi
     wait
     combine_result_of_ip_quality
-}
-
-check_and_cat_file() {
-    # 检测到文件存在再输出
-    local file="$1"
-    if [[ -f "$file" ]]; then
-        cat "$file"
-    fi
 }
 
 ipcheck(){
