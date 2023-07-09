@@ -2491,7 +2491,7 @@ print_system_info() {
     if [ -n "$freq" ] >/dev/null 2>&1; then
         echo " CPU 频率          : $(_blue "$freq MHz")"
     fi
-    if [ -n "$Result_Systeminfo_CPUCacheSizeL1"] && [ -n "$Result_Systeminfo_CPUCacheSizeL2"] && [ -n "$Result_Systeminfo_CPUCacheSizeL3"] >/dev/null 2>&1; then
+    if [ -n "$Result_Systeminfo_CPUCacheSizeL1" ] && [ -n "$Result_Systeminfo_CPUCacheSizeL2" ] && [ -n "$Result_Systeminfo_CPUCacheSizeL3" ] >/dev/null 2>&1; then
         echo " CPU 缓存          : $(_blue "L1: ${Result_Systeminfo_CPUCacheSizeL1} / L2: ${Result_Systeminfo_CPUCacheSizeL2} / L3: ${Result_Systeminfo_CPUCacheSizeL3}")"
     elif [ -n "$ccache" ] >/dev/null 2>&1; then
         echo " CPU 缓存          : $(_blue "$ccache")"
