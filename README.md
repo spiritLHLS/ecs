@@ -188,17 +188,17 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 ## 融合怪功能
 
 - [x] 自由组合测试方向和单项测试以及合集收录第三方脚本
-- [x] 基础系统信息--感谢teddysun和superbench和yabs开源，本人整理修改优化
+- [x] 基础系统信息--感谢teddysun、superbench、yabs、[lemonbench](https://github.com/LemonBench/LemonBench)开源，本人整理修改优化
 - [x] CPU测试--感谢[lemonbench](https://github.com/LemonBench/LemonBench)开源，本人整理修改优化
-- [x] 内存测试--感谢lemonbench开源，本人整理修改优化
-- [x] 磁盘dd读写测试--感谢lemonbench开源，本人整理修改优化
-- [x] 硬盘fio读写测试--感谢yabs开源[项目](https://github.com/masonr/yet-another-bench-script)，本人整理修改优化
-- [x] 御三家流媒体解锁测试--感谢sjlleo的[二进制文件](https://github.com/sjlleo?tab=repositories)，本人修改整理优化
-- [x] 常用流媒体解锁测试--感谢RegionRestrictionCheck的[项目](https://github.com/lmc999/RegionRestrictionCheck)，本人整理修改优化
-- [x] Tiktok解锁--感谢lmc999的[项目](https://github.com/lmc999/TikTokCheck)，本人整理修改优化
-- [x] 三网回程以及路由延迟--感谢zhanghanyun/backtrace开源[项目](https://github.com/zhanghanyun/backtrace)，本人整理修改
-- [x] 回程路由以及带宽类型检测(商宽/家宽/数据中心)--由fscarmen的PR以及本人的技术思路提供，本人整理修改优化
-- [x] IP质量检测(检测IP白不白)(含IPV4和IPV6)--本脚本独创，感谢互联网提供的查询资源
+- [x] 内存测试--感谢[lemonbench](https://github.com/LemonBench/LemonBench)开源，本人整理修改优化
+- [x] 磁盘dd读写测试--感谢[lemonbench](https://github.com/LemonBench/LemonBench)开源，本人整理修改优化
+- [x] 硬盘fio读写测试--感谢[yabs](https://github.com/masonr/yet-another-bench-script)开源，本人整理修改优化
+- [x] 御三家流媒体解锁测试--感谢[sjlleo的二进制文件](https://github.com/sjlleo?tab=repositories)，本人修改整理优化
+- [x] 常用流媒体解锁测试--感谢[RegionRestrictionCheck](https://github.com/lmc999/RegionRestrictionCheck)开源，本人整理修改优化
+- [x] Tiktok解锁--感谢[TikTokCheck](https://github.com/lmc999/TikTokCheck)开源，本人整理修改优化
+- [x] 三网回程以及路由延迟--感谢[zhanghanyun/backtrace](https://github.com/zhanghanyun/backtrace)开源，本人整理修改
+- [x] 回程路由以及带宽类型检测(商宽/家宽/数据中心)--由[fscarmen](https://github.com/fscarmen)的PR以及本人的技术思路提供，本人后续修改优化
+- [x] IP质量与25端口检测(含IPV4和IPV6)--本脚本独创，感谢互联网提供的查询资源
 - [x] speedtest测速--使用自写[ecsspeed](https://github.com/spiritLHLS/ecsspeed)仓库，自动更新测速服务器ID，一劳永逸解决老是要手动更新测速ID的问题
 - [ ] 端口检测(检测是否被墙)--由fscarmen的PR以及本人的技术思路提供 - 待修复
 
