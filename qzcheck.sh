@@ -3,7 +3,7 @@
 #from https://github.com/spiritLHLS/ecs
 
 
-ver="2023.07.04"
+ver="2023.07.09"
 changeLog="IP质量测试，由频道 https://t.me/vps_reviews 原创"
 
 red(){
@@ -381,18 +381,27 @@ check_email_service() {
 check_port_25() {
     echo "端口25检测:"
     local_port_25 "localhost" 25
-    check_email_service "163邮箱"
-    if [[ $(check_email_service "163邮箱") == *"No"* ]]; then
+    local result
+
+    result=$(check_email_service "163邮箱")
+    if [[ $result == *"No"* ]]; then
         return
+    else
+    	echo "$result"
     fi
-    check_email_service "gmail邮箱"
-    if [[ $(check_email_service "gmail邮箱") == *"No"* ]]; then
+
+    result=$(check_email_service "gmail邮箱")
+    if [[ $result == *"No"* ]]; then
         return
+    else
+    	echo "$result"
     fi
+
     check_email_service "outlook邮箱"
     check_email_service "yandex邮箱"
     check_email_service "qq邮箱"
 }
+
 
 checkupdate
 checkroot
