@@ -2580,12 +2580,13 @@ check_email_service() {
 check_port_25() {
     rm -rf /tmp/ip_quality_check_port_25
     rm -rf /tmp/ip_quality_check_email_service
+    rm -rf /tmp/ip_quality_local_port_25
     check_email_service "163邮箱";
-    if [[ $(check_email_service "163邮箱") == *"No"* ]]; then
+    if [[ $(cat /tmp/ip_quality_check_email_service) == *"No"* ]]; then
         return
     fi
     check_email_service "gmail邮箱";
-    if [[ $(check_email_service "gmail邮箱") == *"No"* ]]; then
+    if [[ $(cat /tmp/ip_quality_check_email_service) == *"No"* ]]; then
         return
     fi
     echo "端口25检测:" >> /tmp/ip_quality_check_port_25
