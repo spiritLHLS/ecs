@@ -2577,26 +2577,36 @@ check_email_service() {
     fi
 }
 
+combine_result_of_ip_quality(){
+    cat /tmp/ip_quality_local_port_25 >> /tmp/ip_quality_check_port_25
+    cat /tmp/ip_quality_check_email_service >> /tmp/ip_quality_check_port_25
+}
+
 check_port_25() {
     rm -rf /tmp/ip_quality_check_port_25
     rm -rf /tmp/ip_quality_check_email_service
     rm -rf /tmp/ip_quality_local_port_25
-    check_email_service "163邮箱";
-    if [[ $(cat /tmp/ip_quality_check_email_service) == *"No"* ]]; then
-        return
-    fi
-    check_email_service "gmail邮箱";
-    if [[ $(cat /tmp/ip_quality_check_email_service) == *"No"* ]]; then
-        return
-    fi
     echo "端口25检测:" >> /tmp/ip_quality_check_port_25
     { local_port_25 "localhost" 25; }&
-    { check_email_service "outlook邮箱"; }&
-    { check_email_service "yandex邮箱"; }&
-    { check_email_service "qq邮箱"; }&
+    check_email_service "163邮箱";
+    if [[ $(cat /tmp/ip_quality_check_email_service) == *"No"* ]]; then
+        wait
+        combine_result_of_ip_quality
+        return
+    else
+        check_email_service "gmail邮箱";
+        if [[ $(cat /tmp/ip_quality_check_email_service) == *"No"* ]]; then
+            wait
+            combine_result_of_ip_quality
+            return
+        else
+            { check_email_service "outlook邮箱"; }&
+            { check_email_service "yandex邮箱"; }&
+            { check_email_service "qq邮箱"; }&
+        fi
+    fi
     wait
-    cat /tmp/ip_quality_local_port_25 >> /tmp/ip_quality_check_port_25
-    cat /tmp/ip_quality_check_email_service >> /tmp/ip_quality_check_port_25
+    combine_result_of_ip_quality
 }
 
 ipcheck(){
