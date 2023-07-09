@@ -61,12 +61,9 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 ## 更新
 
-2023.07.08
+2023.07.09
 
-- IPV4和IPV6的查询增加本地查询选项，增加内外网IP检测，保证查询到的IP是外网IP
-- 如果查询到是内网IP，再使用API进行外网IP查询
-- 并发查询ASN和IPV4/IPV6，并发查询IP质量各项，减少脚本的运行时长大概5~10秒
-- virt-what的检测修改为which的检测方式，避免某些特殊情况查询不到 
+- 增加错误处理，增加速率限制识别，避免ASN的识别和邮箱可达性识别出问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
