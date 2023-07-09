@@ -65,6 +65,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修�
 
 - 增加错误处理，增加速率限制识别，避免ASN的识别和邮箱可达性识别出问题
 - 更新系统基础信息查询，使用两个原始脚本融合，更新lemonbench的部分
+- 去除virt-what的依赖，对基础信息的查询减少了很多依赖项
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
