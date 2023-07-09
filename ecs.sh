@@ -3,7 +3,7 @@
 # from https://github.com/spiritLHLS/ecs
 
 myvar=$(pwd)
-ver="2023.07.08"
+ver="2023.07.09"
 changeLog="融合怪十代目(集合百家之长)(专为测评频道小鸡而生)"
 test_area_g=("广州电信" "广州联通" "广州移动")
 test_ip_g=("58.60.188.222" "210.21.196.6" "120.196.165.24")
@@ -1881,21 +1881,23 @@ check_ip_info_by_ipinfo(){
     rm -rf /tmp/ipinfo
     # 获取IPv4的asn、city、region、country
     local ipv4_asn=$(curl -ksL4m6 -A Mozilla ipinfo.io/org 2>/dev/null)
-    sleep 1
-    local ipv4_city=$(curl -ksL4m6 -A Mozilla ipinfo.io/city 2>/dev/null)
-    sleep 1
-    local ipv4_region=$(curl -ksL4m6 -A Mozilla ipinfo.io/region 2>/dev/null)
-    sleep 1
-    local ipv4_country=$(curl -ksL4m6 -A Mozilla ipinfo.io/country 2>/dev/null)
-    if [ -n "$ipv4_asn" ] && [ -n "$ipv4_city" ] && [ -n "$ipv4_country" ]; then
-        local ipv4_asn_info="${ipv4_asn}"
-        local ipv4_location="${ipv4_city} / ${ipv4_region} / ${ipv4_country}"
-    elif [[ -n $ipv4_asn && -n $ipv4_city && -n $ipv4_region ]]; then
-        local ipv4_asn_info="${ipv4_asn}"
-        local ipv4_location="${ipv4_city} / ${ipv4_region}"
-    else
+    if [ "$?" -ne 0 ] || echo "$ipv4_asn" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL">/dev/null 2>&1; then
         local ipv4_asn_info="None"
         local ipv4_location="None"
+    else
+        local ipv4_city=$(curl -ksL4m6 -A Mozilla ipinfo.io/city 2>/dev/null)
+        local ipv4_region=$(curl -ksL4m6 -A Mozilla ipinfo.io/region 2>/dev/null)
+        local ipv4_country=$(curl -ksL4m6 -A Mozilla ipinfo.io/country 2>/dev/null)
+        if [ -n "$ipv4_asn" ] && [ -n "$ipv4_city" ] && [ -n "$ipv4_country" ]; then
+            local ipv4_asn_info="${ipv4_asn}"
+            local ipv4_location="${ipv4_city} / ${ipv4_region} / ${ipv4_country}"
+        elif [[ -n $ipv4_asn && -n $ipv4_city && -n $ipv4_region ]]; then
+            local ipv4_asn_info="${ipv4_asn}"
+            local ipv4_location="${ipv4_city} / ${ipv4_region}"
+        else
+            local ipv4_asn_info="None"
+            local ipv4_location="None"
+        fi
     fi
     # 返回结果
     echo "$ipv4_asn_info" >> /tmp/ipinfo
@@ -1966,23 +1968,28 @@ check_ip_info_by_ipsb(){
     # ip.sb
     rm -rf /tmp/ipsb
     local result_ipv4=$(curl -ksL4m6 -A Mozilla https://api.ip.sb/geoip 2>/dev/null)
-    # 获取IPv4的asn、city、region、country
-    if [ -n "$result_ipv4" ]; then
-        local ipv4_asn=$(expr "$result_ipv4" : '.*asn\":[ ]*\([0-9]*\).*')
-        local ipv4_as_organization=$(expr "$result_ipv4" : '.*isp\":[ ]*\"\([^"]*\).*')
-        local ipv4_city=$(echo $result_ipv4 | grep -oE '"city":"[^"]+"' | cut -d ":" -f2 | tr -d '"')
-        local ipv4_region=$(echo $result_ipv4 | grep -oE '"region":"[^"]+"' | cut -d ":" -f2 | tr -d '"')
-        local ipv4_country=$(echo "$result_ipv4" | grep -oP '(?<="country":")[^"]*')
-        if [ -n "$ipv4_asn" ] && [ -n "$ipv4_as_organization" ] && [ -n "$ipv4_city" ] && [ -n "$ipv4_region" ] && [ -n "$ipv4_country" ]; then
-            local ipv4_asn_info="AS${ipv4_asn} ${ipv4_as_organization}"
-            local ipv4_location="${ipv4_city} / ${ipv4_region} / ${ipv4_country}"
+    if [ "$?" -ne 0 ] || echo "$result_ipv4" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL">/dev/null 2>&1; then
+        local ipv4_asn_info="None"
+        local ipv4_location="None"
+    else
+        # 获取IPv4的asn、city、region、country
+        if [ -n "$result_ipv4" ]; then
+            local ipv4_asn=$(expr "$result_ipv4" : '.*asn\":[ ]*\([0-9]*\).*')
+            local ipv4_as_organization=$(expr "$result_ipv4" : '.*isp\":[ ]*\"\([^"]*\).*')
+            local ipv4_city=$(echo $result_ipv4 | grep -oE '"city":"[^"]+"' | cut -d ":" -f2 | tr -d '"')
+            local ipv4_region=$(echo $result_ipv4 | grep -oE '"region":"[^"]+"' | cut -d ":" -f2 | tr -d '"')
+            local ipv4_country=$(echo "$result_ipv4" | grep -oP '(?<="country":")[^"]*')
+            if [ -n "$ipv4_asn" ] && [ -n "$ipv4_as_organization" ] && [ -n "$ipv4_city" ] && [ -n "$ipv4_region" ] && [ -n "$ipv4_country" ]; then
+                local ipv4_asn_info="AS${ipv4_asn} ${ipv4_as_organization}"
+                local ipv4_location="${ipv4_city} / ${ipv4_region} / ${ipv4_country}"
+            else
+                local ipv4_asn_info="None"
+                local ipv4_location="None"
+            fi
         else
             local ipv4_asn_info="None"
             local ipv4_location="None"
         fi
-    else
-        local ipv4_asn_info="None"
-        local ipv4_location="None"
     fi
     # 返回结果
     echo "$ipv4_asn_info" >> /tmp/ipsb
@@ -1990,22 +1997,27 @@ check_ip_info_by_ipsb(){
     # 获取IPv6的asn、city、region、country
     sleep 1
     local result_ipv6=$(curl -ksL6m6 -A Mozilla https://api.ip.sb/geoip 2>/dev/null)
-    if [ -n "$result_ipv6" ]; then
-        local ipv6_asn=$(expr "$result_ipv6" : '.*asn\":[ ]*\([0-9]*\).*')
-        local ipv6_as_organization=$(expr "$result_ipv6" : '.*isp\":[ ]*\"\([^"]*\).*')
-        local ipv6_city=$(echo $result_ipv6 | grep -oE '"city":"[^"]+"' | cut -d ":" -f2 | tr -d '"')
-        local ipv6_region=$(echo $result_ipv6 | grep -oE '"region":"[^"]+"' | cut -d ":" -f2 | tr -d '"')
-        local ipv6_country=$(echo "$result_ipv4" | grep -oP '(?<="country":")[^"]*')
-        if [ -n "$ipv6_asn" ] && [ -n "$ipv6_as_organization" ] && [ -n "$ipv6_city" ] && [ -n "$ipv6_region" ] && [ -n "$ipv6_country" ]; then
-            local ipv6_asn_info="AS${ipv6_asn} ${ipv6_as_organization}"
-            local ipv6_location="${ipv6_city} / ${ipv6_region} / ${ipv6_country}"
+    if [ "$?" -ne 0 ] || echo "$result_ipv6" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL">/dev/null 2>&1; then
+        local ipv6_asn_info="None"
+        local ipv6_location="None"
+    else
+        if [ -n "$result_ipv6" ]; then
+            local ipv6_asn=$(expr "$result_ipv6" : '.*asn\":[ ]*\([0-9]*\).*')
+            local ipv6_as_organization=$(expr "$result_ipv6" : '.*isp\":[ ]*\"\([^"]*\).*')
+            local ipv6_city=$(echo $result_ipv6 | grep -oE '"city":"[^"]+"' | cut -d ":" -f2 | tr -d '"')
+            local ipv6_region=$(echo $result_ipv6 | grep -oE '"region":"[^"]+"' | cut -d ":" -f2 | tr -d '"')
+            local ipv6_country=$(echo "$result_ipv4" | grep -oP '(?<="country":")[^"]*')
+            if [ -n "$ipv6_asn" ] && [ -n "$ipv6_as_organization" ] && [ -n "$ipv6_city" ] && [ -n "$ipv6_region" ] && [ -n "$ipv6_country" ]; then
+                local ipv6_asn_info="AS${ipv6_asn} ${ipv6_as_organization}"
+                local ipv6_location="${ipv6_city} / ${ipv6_region} / ${ipv6_country}"
+            else
+                local ipv6_asn_info="None"
+                local ipv6_location="None"
+            fi
         else
             local ipv6_asn_info="None"
             local ipv6_location="None"
         fi
-    else
-        local ipv6_asn_info="None"
-        local ipv6_location="None"
     fi
     # 返回结果
     echo "$ipv6_asn_info" >> /tmp/ipsb
