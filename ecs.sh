@@ -2479,7 +2479,7 @@ print_system_info() {
     else
         echo " CPU 型号          : $(_blue "无法检测到CPU型号")"
     fi
-    if [ "$Result_Systeminfo_isPhysical" = "1" ]; then
+    if [[ -n "$Result_Systeminfo_isPhysical" && "$Result_Systeminfo_isPhysical" = "1" ]] >/dev/null 2>&1; then
         if [ -n "$Result_Systeminfo_CPUCacheSizeL1" ] && [ "$Result_Systeminfo_CPUCacheSizeL1" -ne 0 ] && \
         [ -n "$Result_Systeminfo_CPUCacheSizeL2" ] && [ "$Result_Systeminfo_CPUCacheSizeL2" -ne 0 ] && \
         [ -n "$Result_Systeminfo_CPUCacheSizeL3" ] && [ "$Result_Systeminfo_CPUCacheSizeL3" -ne 0 ] >/dev/null 2>&1; then
@@ -2489,7 +2489,7 @@ print_system_info() {
         else
             echo " CPU 核心数        : $(_blue "无法检测到CPU核心数量")"
         fi
-    elif [ "$Result_Systeminfo_isPhysical" = "0" ]; then
+    elif [[ -n "$Result_Systeminfo_isPhysical" && "$Result_Systeminfo_isPhysical" = "0" ]] >/dev/null 2>&1; then
         if [[ -n "$Result_Systeminfo_CPUThreads" && "$Result_Systeminfo_CPUThreads" -ne 0 ]] >/dev/null 2>&1; then
             echo " CPU 核心数        : $(_blue "${Result_Systeminfo_CPUThreads}")"
         elif [ -n "$cores" ] >/dev/null 2>&1; then
@@ -2497,6 +2497,8 @@ print_system_info() {
         else
             echo " CPU 核心数        : $(_blue "无法检测到CPU核心数量")"
         fi
+    else
+        echo " CPU 核心数        : $(_blue "$cores")"
     fi
     if [ -n "$freq" ] >/dev/null 2>&1; then
         echo " CPU 频率          : $(_blue "$freq MHz")"
@@ -2518,12 +2520,12 @@ print_system_info() {
     fi
     if [ -n "$Result_Systeminfo_Memoryinfo" ] >/dev/null 2>&1; then
         echo " 内存              : $(_blue "$Result_Systeminfo_Memoryinfo")"
-    elif [ -n "$tram" ] && [ -n "$uram" ]; then
+    elif [ -n "$tram" ] && [ -n "$uram" ] >/dev/null 2>&1; then
         echo " 内存              : $(_yellow "$tram MB") $(_blue "($uram MB 已用)")"
     fi
     if [ -n "$Result_Systeminfo_Swapinfo" ] >/dev/null 2>&1; then
         echo " Swap              : $(_blue "$Result_Systeminfo_Swapinfo")"
-    elif [ -n "$swap" ] && [ -n "$uswap" ]; then
+    elif [ -n "$swap" ] && [ -n "$uswap" ] >/dev/null 2>&1; then
         echo " Swap              : $(_blue "$swap MB ($uswap MB 已用)")"
     fi
     echo " 系统在线时间      : $(_blue "$up")"
