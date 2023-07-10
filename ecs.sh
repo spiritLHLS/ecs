@@ -2480,9 +2480,9 @@ print_system_info() {
         echo " CPU 型号          : $(_blue "无法检测到CPU型号")"
     fi
     if [[ -n "$Result_Systeminfo_isPhysical" && "$Result_Systeminfo_isPhysical" = "1" ]] >/dev/null 2>&1; then
-        if [ -n "$Result_Systeminfo_CPUCacheSizeL1" ] && [ "$Result_Systeminfo_CPUCacheSizeL1" -ne 0 ] && \
-        [ -n "$Result_Systeminfo_CPUCacheSizeL2" ] && [ "$Result_Systeminfo_CPUCacheSizeL2" -ne 0 ] && \
-        [ -n "$Result_Systeminfo_CPUCacheSizeL3" ] && [ "$Result_Systeminfo_CPUCacheSizeL3" -ne 0 ] >/dev/null 2>&1; then
+        if [ -n "$Result_Systeminfo_CPUSockets" ] && [ "$Result_Systeminfo_CPUSockets" -ne 0 ] && \
+        [ -n "$Result_Systeminfo_CPUCores" ] && [ "$Result_Systeminfo_CPUCores" -ne 0 ] && \
+        [ -n "$Result_Systeminfo_CPUThreads" ] && [ "$Result_Systeminfo_CPUThreads" -ne 0 ] >/dev/null 2>&1; then
             echo " CPU 核心数        : $(_blue "${Result_Systeminfo_CPUSockets} 物理核心, ${Result_Systeminfo_CPUCores} 总核心, ${Result_Systeminfo_CPUThreads} 总线程数")"
         elif [ -n "$cores" ]; then
             echo " CPU 核心数        : $(_blue "$cores")"
@@ -2503,9 +2503,7 @@ print_system_info() {
     if [ -n "$freq" ] >/dev/null 2>&1; then
         echo " CPU 频率          : $(_blue "$freq MHz")"
     fi
-    if [ -n "$Result_Systeminfo_CPUCacheSizeL1" ] && [ "$Result_Systeminfo_CPUCacheSizeL1" -ne 0 ] &&
-    [ -n "$Result_Systeminfo_CPUCacheSizeL2" ] && [ "$Result_Systeminfo_CPUCacheSizeL2" -ne 0 ] &&
-    [ -n "$Result_Systeminfo_CPUCacheSizeL3" ] && [ "$Result_Systeminfo_CPUCacheSizeL3" -ne 0 ] >/dev/null 2>&1; then
+    if [ -n "$Result_Systeminfo_CPUCacheSizeL1" ] && [ -n "$Result_Systeminfo_CPUCacheSizeL2" ] && [ -n "$Result_Systeminfo_CPUCacheSizeL3" ] >/dev/null 2>&1; then
         echo " CPU 缓存          : $(_blue "L1: ${Result_Systeminfo_CPUCacheSizeL1} / L2: ${Result_Systeminfo_CPUCacheSizeL2} / L3: ${Result_Systeminfo_CPUCacheSizeL3}")"
     elif [ -n "$ccache" ] >/dev/null 2>&1; then
         echo " CPU 缓存          : $(_blue "$ccache")"
