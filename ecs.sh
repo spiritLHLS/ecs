@@ -1037,7 +1037,7 @@ function BenchAPI_Systeminfo_GetVMMinfo() {
             echo -e "${Msg_Error} BenchAPI_Systeminfo_GetVirtinfo(): invalid result (${r_vmmtype}), please check parameter!"
             ;;
         esac
-    elif [ -f "/.dockerenv" ]; then
+    if [ -f "/.dockerenv" ]; then
         Result_Systeminfo_VMMType="Docker"
         Result_Systeminfo_VMMTypeShort="docker"
         Result_Systeminfo_isPhysical="0"
