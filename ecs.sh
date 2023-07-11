@@ -567,7 +567,6 @@ check_time_zone(){
             echo "Port 123 is already in use. Skipping ntpd command."
         else
             ntpd -gq
-
             if which systemctl >/dev/null 2>&1; then
                 systemctl start ntpd
             else
@@ -1299,8 +1298,8 @@ Function_SysBench_CPU_Fast() {
     sleep 1
     if [ "${Result_Systeminfo_CPUCores}" -ge "2" ]; then
         Run_SysBench_CPU "${Result_Systeminfo_CPUCores}" "5" "1" "${Result_Systeminfo_CPUCores} 线程测试(多核)得分"
-    elif [ "${Result_Systeminfo_CPUThreads}" -ge "2" ]; then
-        Run_SysBench_CPU "${Result_Systeminfo_CPUThreads}" "5" "1" "${Result_Systeminfo_CPUThreads} 线程测试(多核)得分"
+    elif [ "${cores}" -ge "2" ]; then
+        Run_SysBench_CPU "${cores}" "5" "1" "${cores} 线程测试(多核)得分"
     fi
 }
 
