@@ -5,7 +5,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.07.09"
+ver="2023.07.10"
 changeLog="VPS融合怪测试(集百家之长)"
 
 # =============== 默认输入设置 ===============
@@ -262,6 +262,18 @@ check_tar() {
     if [ $? -ne 0 ]; then
         apt-get -f install > /dev/null 2>&1
         ${PACKAGE_INSTALL[int]} tar > /dev/null 2>&1
+    fi
+}
+
+check_lsof() {
+    _yellow "checking lsof"
+	if ! command -v lsof &> /dev/null; then
+        _yellow "Installing lsof"
+	    ${PACKAGE_INSTALL[int]} lsof
+	fi
+    if [ $? -ne 0 ]; then
+        apt-get -f install > /dev/null 2>&1
+        ${PACKAGE_INSTALL[int]} lsof > /dev/null 2>&1
     fi
 }
 
@@ -547,13 +559,20 @@ check_time_zone(){
         if which systemctl >/dev/null 2>&1; then
             systemctl stop chronyd
             systemctl stop ntpd
-            ntpd -gq
-            systemctl start ntpd
         else
             service chronyd stop
             service ntpd stop
+        fi
+        if lsof -i:123 | grep -q "ntpd"; then
+            echo "Port 123 is already in use. Skipping ntpd command."
+        else
             ntpd -gq
-            service ntpd start
+
+            if which systemctl >/dev/null 2>&1; then
+                systemctl start ntpd
+            else
+                service ntpd start
+            fi
         fi
         sleep 0.5
         return
@@ -2858,6 +2877,7 @@ pre_check(){
     check_cdn_file
     check_wget
     systemInfo_get_os_release
+    check_lsof
     check_time_zone
     check_haveged
     check_root
