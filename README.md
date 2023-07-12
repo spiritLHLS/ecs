@@ -6,19 +6,27 @@
 
 支持系统：
 
-Ubuntu 18+, Debian 8+, centos 7+, Fedora 22+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, AstraLinux CE, Arch,
+Ubuntu 18+, Debian 8+, Centos 7+, Fedora 22+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, AstraLinux CE, Arch
 
 半支持系统：
 
 FreeBSD(前提已执行```pkg install -y curl bash```)，Armbian
 
 <details>
-Armbian系统部分检测和测试暂不支持Armbian系统
+Armbian系统部分检测和测试暂不支持，部分会编码错误
 
-FreeBSD系统的硬盘测试和CPU测试目前是半残的
+FreeBSD系统的硬盘测试和CPU测试目前是半残的，有些东西显示有问题
 
 FreeBSD系统的分享链接的预处理部分sed命令存在问题未删除部分无效内容
 </details>
+
+支持架构：
+
+基本都支持，无论是本地服务器还是云端服务器
+
+支持地域：
+
+能连得上网都支持
 
 # 目录
  * [融合怪测评脚本](#融合怪测评脚本)
