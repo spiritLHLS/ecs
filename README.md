@@ -61,6 +61,8 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 待解决事项
 
+lxc或openvz架构由于部分测试项目可能输出了错误日志，导致命令行窗口虽然显示正常，但有部分机器上传上去的文件显示空缺部分内容，应该是正则匹配删东西删多了 - 待修复
+
 Fedora32的CPU测试有可能失败 - 待修复
 
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试均失效 - 待修复
