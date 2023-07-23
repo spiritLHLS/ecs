@@ -5,7 +5,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.07.16"
+ver="2023.07.23"
 changeLog="VPS融合怪测试(集百家之长)"
 
 # =============== 默认输入设置 ===============
@@ -1721,6 +1721,10 @@ speed_test2() {
 
 speed() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
+    local ip4=$(echo "$IPV4" | tr -d '\n' | tr -d '[:space:]')
+    if [[ -z "${ip4}" ]]; then
+        return
+    fi
     temp_head
     speed_test '' 'Speedtest.net'
     test_list "${ls_sg_hk_jp[@]}"
@@ -1751,6 +1755,10 @@ speed() {
 
 speed2() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
+    local ip4=$(echo "$IPV4" | tr -d '\n' | tr -d '[:space:]')
+    if [[ -z "${ip4}" ]]; then
+        return
+    fi
     temp_head
     speed_test '' 'Speedtest.net'
     test_list "${CN_Unicom[0]}"
@@ -2996,13 +3004,13 @@ spiritlhl_script(){
 backtrace_script(){
     [ "${Var_OSRelease}" = "freebsd" ] && return
     cd $myvar >/dev/null 2>&1
-    echo -e "----------------三网回程--感谢zhanghanyun/backtrace开源-----------------"
     if [ -f "${TEMP_DIR}/backtrace" ]; then
         chmod 777 ${TEMP_DIR}/backtrace
         curl_output=$(${TEMP_DIR}/backtrace 2>&1)
     else
         return
     fi
+    echo -e "----------------三网回程--感谢zhanghanyun/backtrace开源-----------------"
     grep -sq 'sendto: network is unreachable' <<< $curl_output && _yellow "纯IPV6网络无法查询" || echo "${curl_output}" | grep -v 'github.com/zhanghanyun/backtrace' | grep -v '正在测试'
 }
 
@@ -3405,8 +3413,15 @@ rm_script(){
 build_text(){
     cd $myvar >/dev/null 2>&1
     if { [ -n "${StartInput}" ] && [ "${StartInput}" -eq 1 ]; } || { [ -n "${StartInput}" ] && [ "${StartInput}" -eq 2 ]; } || { [ -n "${StartInput1}" ] && [ "${StartInput1}" -ge 1 ] && [ "${StartInput1}" -le 4 ]; }; then
-        sed -i -e '1,/-------------------- A Bench Script By spiritlhl ---------------------/d; s/\x1B\[[0-9;]\+[a-zA-Z]//g; /^$/d' test_result.txt
-        sed -i -e '/Preparing system for disk tests.../d; /Generating fio test file.../d; /Running fio random mixed R+W disk test with 4k block size.../d; /Running fio random mixed R+W disk test with 64k block size.../d; /Running fio random mixed R+W disk test with 512k block size.../d; /Running fio random mixed R+W disk test with 1m block size.../d' test_result.txt
+        sed -i -e '1,/-------------------- A Bench Script By spiritlhl ---------------------/d' \
+            -e 's/\x1B\[[0-9;]\+[a-zA-Z]//g' \
+            -e '/^$/d' test_result.txt
+        sed -i -e '/Preparing system for disk tests.../d' \
+            -e '/Generating fio test file.../d' \
+            -e '/Running fio random mixed R+W disk test with 4k block size.../d' \
+            -e '/Running fio random mixed R+W disk test with 64k block size.../d' \
+            -e '/Running fio random mixed R+W disk test with 512k block size.../d' \
+            -e '/Running fio random mixed R+W disk test with 1m block size.../d' test_result.txt
         tr '\r' '\n' < test_result.txt > test_result1.txt && mv test_result1.txt test_result.txt
         sed -i -e '/^$/d' -e '/1\/1/d' -e '/Block\s*->/d' -e '/s)\s*->/d' -e '/^该运营商\|^测速中/d' test_result.txt
         if [ -s test_result.txt ]; then
