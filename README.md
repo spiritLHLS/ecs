@@ -61,8 +61,6 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 待解决事项
 
-正在迁移脚本测试上传结果的宿主机，分享链接暂时失效，大概半小时后修复
-
 Fedora32的CPU测试有可能失败 - 待修复
 
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试可能失效 - 待修复
