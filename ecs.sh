@@ -2876,7 +2876,7 @@ ipcheck(){
 }
 
 cdn_urls=("https://cdn.spiritlhl.workers.dev/" "https://cdn3.spiritlhl.net/" "https://cdn1.spiritlhl.net/" "https://ghproxy.com/" "https://cdn2.spiritlhl.net/")
-ST="dvWYwv20KSWm8AXSceRw8toa.MTY4MDQzMzUxNDczNw"
+ST="6pxyBn3eJGI57mF8J1HBmH98.MTY5MDM4NDc1MjUwNw"
 head='key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c'
 speedtest_ver="1.2.0"
 SERVER_BASE_URL="https://raw.githubusercontent.com/spiritLHLS/speedtest.net-CN-ID/main"
