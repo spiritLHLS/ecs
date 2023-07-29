@@ -148,9 +148,9 @@ next() {
 # =============== 组件预安装及文件预下载 部分 ===============
 checkver(){
     check_cdn_file
-    running_version=$(grep "ver=\"[0-9]\{4\}\.[0-9]\{2\}\.[0-9]\{2\}\.[0-9]\{2\}\.[0-9]\{2\}" "$0" | awk -F '"' '{print $2}')
+    running_version=$(sed -n '8s/ver="\(.*\)"/\1/p' "$0")
     curl -L "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/ecs.sh" -o ecs1.sh && chmod 777 ecs1.sh
-    downloaded_version=$(grep "ver=\"[0-9]\{4\}\.[0-9]\{2\}\.[0-9]\{2\}\.[0-9]\{2\}\.[0-9]\{2\}" ecs1.sh | awk -F '"' '{print $2}')
+    downloaded_version=$(sed -n '8s/ver="\(.*\)"/\1/p' ecs1.sh)
     if [ "$running_version" != "$downloaded_version" ]; then
         _yellow "更新脚本从 $ver 到 $downloaded_version"
         mv ecs1.sh "$0"

@@ -71,9 +71,10 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试可能失效 - 待�
 
 ## 更新
 
-2023.07.27
+2023.07.29
 
-- 迁移分享链接的地址
+- 增加脚本一键更新的选项，避免有些脚本下了之后再也没更新过了
+- IP质量检测再次完全重构，支持10个数据库查询，又因为用了异步并发查询，新增数据源不会导致速度变慢，测试速度不变
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -250,7 +251,7 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 # 致谢
 
-感谢 ipinfo.io ip.sb cheervision.co ipip.net cip.cc 等网站提供的检测API
+感谢 ipinfo.io ip.sb cheervision.co ipip.net cip.cc 等网站提供的检测API，感谢互联网各网站提供的查询资源
 
 感谢所有开源项目提供的原始测试脚本
 
