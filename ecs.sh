@@ -3095,8 +3095,8 @@ ipcheck(){
     echo "IP类型: "
     local ip_quality_filename_data=("/tmp/ip_quality_ipinfo_" "/tmp/ip_quality_scamalytics_ipv4_" "/tmp/ip_quality_ip2location_ipv4_" "/tmp/ip_quality_ip_api_" "/tmp/ip_quality_ipregistry_" "/tmp/ip_quality_ipdata_" "/tmp/ip_quality_ipgeolocation_")
     local serial_number=("①" "②" "⑤" "⑥" "⑧" "⑨" "⑩")
-    local project_data=("usage_type" "company_type" "proxy" "vpn" "tor" "tor_exit" "search_engine_robot" "cloud_provider" "datacenter" "mobile" "anonymous" "attacker" "abuser" "threat" "icloud_relay" "bogon")
-    local project_translate_data=("使用类型" "公司类型" "代理" "VPN" "TOR" "TOR出口" "搜索引擎机器人" "云服务提供商" "数据中心" "移动网络" "匿名代理" "攻击方" "滥用者" "威胁" "iCloud中继" "未分配IP")
+    local project_data=("usage_type" "company_type" "cloud_provider" "datacenter" "mobile" "proxy" "vpn" "tor" "tor_exit" "search_engine_robot" "anonymous" "attacker" "abuser" "threat" "icloud_relay" "bogon")
+    local project_translate_data=("使用类型" "公司类型" "云服务提供商" "数据中心" "移动网络" "代理" "VPN" "TOR" "TOR出口" "搜索引擎机器人" "匿名代理" "攻击方" "滥用者" "威胁" "iCloud中继" "未分配IP")
     declare -A project_translate
     for ((i = 0; i < ${#project_data[@]}; i++)); do
         project_translate[${project_data[i]}]=${project_translate_data[i]}

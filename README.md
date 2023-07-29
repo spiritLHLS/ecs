@@ -76,6 +76,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试可能失效 - 待�
 - 增加脚本一键更新的选项，避免有些脚本下了之后再也没更新过了
 - IP质量检测再次完全重构，支持10个数据库查询，又因为用了异步并发查询，新增数据源不会导致速度变慢，测试速度不变
 - 更新仓库说明中的展示图为最新的脚本截图
+- 单独的IP质量检测也支持分享链接了
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -120,10 +121,10 @@ echo 1 | bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/e
 echo 1 | bash <(wget -qO- bash.spiritlhl.net/ecs)
 ```
 
-## 纯测IP质量
+## IP质量检测
 
 - IP质量检测，含多家数据库查询，含黑名单查询
-- 含 ```IPV4``` 和 ```IPV6``` 检测
+- 含 ```IPV4``` 和 ```IPV6``` 检测，含ASN和地址查询
 - 含25端口的邮箱可达性检测，如果某个邮箱可达，则可搭建邮局
 
 ```bash
