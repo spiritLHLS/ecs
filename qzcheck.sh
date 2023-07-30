@@ -1016,20 +1016,36 @@ ipcheck(){
     done
     for project in "${project_data[@]}"; do
         content=""
+        no_appear=0
+        yes_appear=0
         for ((i = 0; i < ${#ip_quality_filename_data[@]}; i++)); do
             file_content=$(check_and_cat_file "${ip_quality_filename_data[i]}${project}")
             if [ -n "$file_content" ]; then
-                if [ "$project" = "usage_type" ] || [ "$company_type" = "company_type" ]; then
+                if [ "$project" = "usage_type" ] || [ "$project" = "company_type" ]; then
                     content+="${file_content}${serial_number[i]}"
+                    content+=" "
                 else
                     file_status=$(translate_status ${file_content})
-                    content+="${file_status}${serial_number[i]}"
+                    if [ "$file_status" = "No" ]; then
+                        if [ $no_appear -eq 0 ]; then
+                            content+="  "
+                            content+="No"
+                            no_appear=1
+                        fi
+                    elif [ "$file_status" = "Yes" ]; then
+                        if [ $yes_appear -eq 0 ]; then
+                            content+="  "
+                            content+="Yes"
+                            yes_appear=1
+                        fi
+                    fi
+                    content+="${serial_number[i]}"
                 fi
-                content+="  "
+                content+=" "
             fi
         done
         if [ -n "$content" ]; then
-            echo "  ${project_translate[$project]}(${project}): ${content}"
+            echo "  ${project_translate[$project]}(${project}):${content}"
         fi
     done
     local score_3_1=$(check_and_cat_file '/tmp/ip_quality_virustotal_harmlessness_records')
