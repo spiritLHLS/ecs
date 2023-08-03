@@ -6,7 +6,7 @@
 
 支持系统：
 
-Ubuntu 18+, Debian 8+, Centos 7+, Fedora 22+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, AstraLinux CE, Arch
+Ubuntu 18+, Debian 8+, Centos 7+, Fedora 33+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, AstraLinux CE, Arch
 
 半支持系统：
 
@@ -60,8 +60,6 @@ https://github.com/spiritLHLS/one-click-installation-script
 如若还有系统bug请到上面仓库的issues反映，脚本原生BUG该仓库issues反映
 
 ## 待解决事项
-
-Fedora32的CPU测试有可能失败 - 待修复
 
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试可能失效 - 待修复
 
