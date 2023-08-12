@@ -61,6 +61,8 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 待解决事项
 
+CPU检测区分受测机是物理还是虚拟以便使用物理核心数测试还是线程数测试 - 待修复
+
 测速节点增加欧洲地区节点 - 待添加
 
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试可能失效 - 待修复
