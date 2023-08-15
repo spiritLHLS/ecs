@@ -259,7 +259,7 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 # 致谢
 
-感谢 ipinfo.io ip.sb cheervision.co ipip.net cip.cc 等网站提供的检测API，感谢互联网各网站提供的查询资源
+感谢 [ipinfo.io](https://ipinfo.io/) [ip.sb](https://ip.sb/) [cheervision.co](https://cheervision.co) [ipip.net](https://en.ipip.net/) [cip.cc](http://www.cip.cc/) 等网站提供的API进行检测，感谢互联网各网站提供的查询资源
 
 感谢所有开源项目提供的原始测试脚本
 
