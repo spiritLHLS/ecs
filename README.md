@@ -61,10 +61,6 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 待解决事项
 
-CPU检测区分受测机是物理还是虚拟以便使用物理核心数测试还是线程数测试 - 待修复
-
-测速节点增加欧洲地区节点 - 待添加
-
 besttrace的API由于平台可能时不时存在403问题，遇到403应自动替换为备用的nexttrace测试，即使精度有下降 - 待添加
 
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试可能失效 - 待修复
@@ -75,13 +71,11 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试可能失效 - 待�
 
 ## 更新
 
-2023.07.29
+2023.08.15
 
-- 增加主体脚本一键更新的选项，避免有些人主体脚本下了之后再也没更新过了，导致部分BUG实际修复了但未更新反馈有问题，实际没问题
-- IP质量检测再次完全重构，支持10个数据库查询，又因为用了异步并发查询，新增数据源不会导致速度变慢，测试速度不变
-- 更新仓库说明中的展示图为最新的脚本截图
-- 单独的IP质量检测也支持分享链接了
-- IP质量检测同样输出的数据将合并输出，只留下数据库编号
+- 测速节点增加欧洲地区节点
+- CPU检测区分受测机是物理还是虚拟以便使用物理核心数测试还是线程数测试
+- ip234.in 测试网站已炸，更换为 ipwhois.io 查询
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -259,7 +253,7 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 # 致谢
 
-感谢 [ipinfo.io](https://ipinfo.io) [ip.sb](https://ip.sb) [cheervision.co](https://cheervision.co) [ipip.net](https://en.ipip.net) [cip.cc](http://www.cip.cc) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [virustotal.com](https://www.virustotal.com/) [ip2location.com](ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) 等网站提供的API进行检测，感谢互联网各网站提供的查询资源
+感谢 [ipinfo.io](https://ipinfo.io) [ip.sb](https://ip.sb) [cheervision.co](https://cheervision.co) [ipip.net](https://en.ipip.net) [cip.cc](http://www.cip.cc) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [virustotal.com](https://www.virustotal.com/) [ip2location.com](ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) 等网站提供的API进行检测，感谢互联网各网站提供的查询资源
 
 感谢所有开源项目提供的原始测试脚本
 

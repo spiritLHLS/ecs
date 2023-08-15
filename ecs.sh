@@ -5,7 +5,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.07.29"
+ver="2023.08.15"
 changeLog="VPS融合怪测试(集百家之长)"
 
 # =============== 默认输入设置 ===============
@@ -1322,9 +1322,11 @@ Function_SysBench_CPU_Fast() {
     echo -e " -> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/CPU/result.txt
     Run_SysBench_CPU "1" "5" "1" "1 线程测试(1核)得分"
     sleep 1
-    if [ "${Result_Systeminfo_CPUCores}" -ge "2" ] >/dev/null 2>&1; then
+    if [ -n "${Result_Systeminfo_CPUThreads}" ] && [ "${Result_Systeminfo_CPUThreads}" -ge "2" ] >/dev/null 2>&1; then
+        Run_SysBench_CPU "${Result_Systeminfo_CPUThreads}" "5" "1" "${Result_Systeminfo_CPUThreads} 线程测试(多核)得分"
+    elif [ -n "${Result_Systeminfo_CPUCores}" ] && [ "${Result_Systeminfo_CPUCores}" -ge "2" ] >/dev/null 2>&1; then
         Run_SysBench_CPU "${Result_Systeminfo_CPUCores}" "5" "1" "${Result_Systeminfo_CPUCores} 线程测试(多核)得分"
-    elif [ "${cores}" -ge "2" ] >/dev/null 2>&1; then
+    elif [ -n "${cores}" ] && [ "${cores}" -ge "2" ] >/dev/null 2>&1; then
         Run_SysBench_CPU "${cores}" "5" "1" "${cores} 线程测试(多核)得分"
     fi
 }
@@ -2846,19 +2848,37 @@ ipapi() {
     fi
 }
 
-# ip234数据库 ⑦
-ip234() {
+# ipwhois数据库 ⑦
+ipwhois() {
     local ip="$1"
-    local risk
-    rm -rf /tmp/ip_quality_ip234*
-    local context5=$(curl -sL -m 10 "http://ip234.in/fraud_check?ip=${ip}")
+    rm -rf /tmp/ip_quality_ipwhois*
+    local url="https://ipwhois.app/widget.php?ip=${ip}&lang=en"
+    local response=$(curl -s -X GET "$url" \
+    -H "Host: ipwhois.app" \
+    -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/116.0" \
+    -H "Accept: */*" \
+    -H "Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2" \
+    -H "Accept-Encoding: gzip, deflate, br" \
+    -H "Origin: https://ipwhois.io" \
+    -H "Connection: keep-alive" \
+    -H "Referer: https://ipwhois.io/" \
+    -H "Sec-Fetch-Dest: empty" \
+    -H "Sec-Fetch-Mode: cors" \
+    -H "Sec-Fetch-Site: cross-site")
     if [[ "$?" -ne 0 ]]; then
         return
     fi
-    risk=$(grep -oP '(?<="score":)[^,}]+' <<< "$context5")
-    if [[ -n "$risk" ]]; then
-        echo "$risk" >> /tmp/ip_quality_ip234_score
-    fi
+    security_section=$(echo "$response" | grep -o '"security":{[^}]*}')
+    anonymous=$(echo "$security_section" | awk -F'"anonymous":' '{print $2}' | cut -d',' -f1)
+    proxy=$(echo "$security_section" | awk -F'"proxy":' '{print $2}' | cut -d',' -f1)
+    vpn=$(echo "$security_section" | awk -F'"vpn":' '{print $2}' | cut -d',' -f1)
+    tor=$(echo "$security_section" | awk -F'"tor":' '{print $2}' | cut -d',' -f1)
+    hosting=$(echo "$security_section" | awk -F'"hosting":' '{print $2}' | cut -d',' -f1 | sed 's/}//')
+    echo "$anonymous" >> /tmp/ip_quality_ipwhois_anonymous
+    echo "$proxy" >> /tmp/ip_quality_ipwhois_proxy
+    echo "$vpn" >> /tmp/ip_quality_ipwhois_vpn
+    echo "$tor" >> /tmp/ip_quality_ipwhois_tor
+    echo "$hosting" >> /tmp/ip_quality_ipwhois_hosting
 }
 
 # ipregistry数据库 ⑧
@@ -3051,7 +3071,7 @@ check_port_25() {
 ipcheck(){
     _blue "以下为各数据库编号，输出结果后将自带数据库来源对应的编号"
     _blue "ipinfo数据库 ①  | scamalytics数据库 ②  | virustotal数据库 ③  | abuseipdb数据库 ④  | ip2location数据库   ⑤"
-    _blue "ip-api数据库 ⑥  | ip234数据库       ⑦  | ipregistry数据库 ⑧  | ipdata数据库    ⑨  | ipgeolocation数据库 ⑩"
+    _blue "ip-api数据库 ⑥  | ipwhois数据库     ⑦  | ipregistry数据库 ⑧  | ipdata数据库    ⑨  | ipgeolocation数据库 ⑩"
     local ip4=$(echo "$IPV4" | tr -d '\n')
     local ip6=$(echo "$IPV6" | tr -d '\n')
     { ipinfo "$ip4"; }&
@@ -3059,7 +3079,7 @@ ipcheck(){
     { virustotal "$ip4"; }&
     { abuse_ipv4 "$ip4"; }&
     { ipapi "$ip4"; }&
-    { ip234 "$ip4"; }&
+    { ipwhois "$ip4"; }&
     { ipregistry "$ip4"; }&
     { ipdata "$ip4"; }&
     { ipgeolocation "$ip4"; }&
@@ -3084,7 +3104,7 @@ ipcheck(){
         fi
     fi
     local score_2_4=$(check_and_cat_file '/tmp/ip_quality_scamalytics_ipv4_score')
-    local score_7=$(check_and_cat_file '/tmp/ip_quality_ip234_score')
+    local score_7=$(check_and_cat_file '/tmp/ip_quality_ipwhois_score')
     if [[ -n "$score_2_4" && -n "$score_7" ]]; then
         echo "欺诈分数(越低越好): $score_2_4②  $score_7⑦"
     elif [[ -n "$score_2_4" ]]; then
@@ -3097,8 +3117,8 @@ ipcheck(){
         echo "abuse得分(越低越好): $score_4_4④"
     fi
     echo "IP类型: "
-    local ip_quality_filename_data=("/tmp/ip_quality_ipinfo_" "/tmp/ip_quality_scamalytics_ipv4_" "/tmp/ip_quality_ip2location_ipv4_" "/tmp/ip_quality_ip_api_" "/tmp/ip_quality_ipregistry_" "/tmp/ip_quality_ipdata_" "/tmp/ip_quality_ipgeolocation_")
-    local serial_number=("①" "②" "⑤" "⑥" "⑧" "⑨" "⑩")
+    local ip_quality_filename_data=("/tmp/ip_quality_ipinfo_" "/tmp/ip_quality_scamalytics_ipv4_" "/tmp/ip_quality_ip2location_ipv4_" "/tmp/ip_quality_ip_api_" "/tmp/ip_quality_ipwhois_" "/tmp/ip_quality_ipregistry_" "/tmp/ip_quality_ipdata_" "/tmp/ip_quality_ipgeolocation_")
+    local serial_number=("①" "②" "⑤" "⑥" "⑦" "⑧" "⑨" "⑩")
     local project_data=("usage_type" "company_type" "cloud_provider" "datacenter" "mobile" "proxy" "vpn" "tor" "tor_exit" "search_engine_robot" "anonymous" "attacker" "abuser" "threat" "icloud_relay" "bogon")
     local project_translate_data=("使用类型" "公司类型" "云服务提供商" "数据中心" "移动网络" "代理" "VPN" "TOR" "TOR出口" "搜索引擎机器人" "匿名代理" "攻击方" "滥用者" "威胁" "iCloud中继" "未分配IP")
     declare -A project_translate
