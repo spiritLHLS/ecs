@@ -1016,13 +1016,8 @@ ipcheck(){
         fi
     fi
     local score_2_4=$(check_and_cat_file '/tmp/ip_quality_scamalytics_ipv4_score')
-    local score_7=$(check_and_cat_file '/tmp/ip_quality_ipwhois_score')
-    if [[ -n "$score_2_4" && -n "$score_7" ]]; then
-        echo "欺诈分数(越低越好): $score_2_4②  $score_7⑦"
-    elif [[ -n "$score_2_4" ]]; then
+    if [[ -n "$score_2_4" ]]; then
         echo "欺诈分数(越低越好): $score_2_4②"
-    elif [[ -n "$score_7" ]]; then
-        echo "欺诈分数(越低越好): $score_7⑦"
     fi
     local score_4_4=$(check_and_cat_file '/tmp/ip_quality_abuseipdb_ipv4_score')
     if [[ -n "$score_4_4" ]]; then
