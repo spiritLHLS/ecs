@@ -5,7 +5,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.08.15"
+ver="2023.08.20"
 changeLog="VPS融合怪测试(集百家之长)"
 
 # =============== 默认输入设置 ===============
@@ -31,7 +31,6 @@ fi
 # =============== 自定义基础参数 ==============
 shorturl=""
 TEMP_DIR='/tmp/ecs'
-TEMP_FILE='ip.test'
 temp_file_apt_fix="${TEMP_DIR}/apt_fix.txt"
 WorkDir="/tmp/.LemonBench"
 test_area_g=("广州电信" "广州联通" "广州移动")
@@ -438,6 +437,9 @@ pre_download() {
             besttrace)
                 curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/fscarmen/tools/main/besttrace/${BESTTRACE_FILE}" -o $TEMP_DIR/$BESTTRACE_FILE && chmod +x $TEMP_DIR/$BESTTRACE_FILE
                 ;;
+            nexttrace)
+                NEXTTRACE_VERSION=$(curl -sSL "https://api.github.com/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}') && curl -sL -k "${cdn_success_url}https://github.com/nxtrace/Ntrace-core/releases/download/${NEXTTRACE_VERSION}/${NEXTTRACE_FILE}" -o $TEMP_DIR/$NEXTTRACE_FILE && chmod +x $TEMP_DIR/$NEXTTRACE_FILE
+                ;;
             backtrace)
                 wget -q -O $TEMP_DIR/backtrace.tar.gz  https://github.com/zhanghanyun/backtrace/releases/latest/download/$BACKTRACE_FILE
                 tar -xf $TEMP_DIR/backtrace.tar.gz -C $TEMP_DIR
@@ -768,18 +770,21 @@ get_system_bit() {
             LBench_Result_SystemBit_Short="32"
             LBench_Result_SystemBit_Full="i386"
             BESTTRACE_FILE=besttracemac
+            NEXTTRACE_FILE=nexttrace_darwin_amd64
             ;;
         "armv7l" | "armv8" | "armv8l" | "aarch64")
             LBench_Result_SystemBit_Short="arm"
             LBench_Result_SystemBit_Full="arm"
             BESTTRACE_FILE=besttracearm
             BACKTRACE_FILE=backtrace-linux-arm64.tar.gz
+            NEXTTRACE_FILE=nexttrace_linux_arm64
             ;;
         *)
             LBench_Result_SystemBit_Short="64"
             LBench_Result_SystemBit_Full="amd64"
             BESTTRACE_FILE=besttrace
             BACKTRACE_FILE=backtrace-linux-amd64.tar.gz
+            NEXTTRACE_FILE=nexttrace_linux_amd64
             ;;
     esac
 }
@@ -3324,16 +3329,31 @@ fscarmen_route_script(){
     [ "${Var_OSRelease}" = "freebsd" ] && return
     cd $myvar >/dev/null 2>&1
     echo -e "---------------------回程路由--感谢fscarmen开源及PR---------------------"
-    rm -f $TEMP_FILE
-    _green "依次测试电信，联通，移动经过的地区及线路，核心程序来由: ipip.net ，请知悉!" >> $TEMP_FILE
+    rm -f /tmp/ecs/ip.test
+    _green "依次测试电信/联通/移动经过的地区及线路，核心程序来自ipip.net或nexttrace，请知悉!" > /tmp/ecs/ip.test
     local test_area=("${!1}")
     local test_ip=("${!2}")
     for ((a=0;a<${#test_area[@]};a++)); do
-        _yellow "${test_area[a]} ${test_ip[a]}" >> $TEMP_FILE
-        "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> $TEMP_FILE
+        "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> /tmp/ip_temp
+        if [ ! -s "/tmp/ip_temp" ] || grep -q "http: 403" /tmp/ip_temp 2>/dev/null; then
+            rm -rf /tmp/ip_temp
+            RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null)
+            PART_1=$(echo "$RESULT" | grep '^[0-9]\{1,2\}[ ]\+[0-9a-f]' | awk '{$1="";$2="";print}' | sed "s@^[ ]\+@@g")
+            PART_2=$(echo "$RESULT" | grep '\(.*ms\)\{3\}' | sed 's/.* \([0-9*].*ms\).*ms.*ms/\1/g')
+            SPACE=' '
+            for ((i=1; i<=$(echo "$PART_1" | wc -l); i++)); do
+                [ "$i" -eq 10 ] && unset SPACE
+                p_1=$(echo "$PART_2" | sed -n "${i}p") 2>/dev/null
+                p_2=$(echo "$PART_1" | sed -n "${i}p") 2>/dev/null
+                echo -e "$p_1 \t$p_2" >> /tmp/ip_temp
+            done
+        fi
+        _yellow "${test_area[a]} ${test_ip[a]}" >> /tmp/ecs/ip.test
+        cat /tmp/ip_temp >> /tmp/ecs/ip.test
+        rm -rf /tmp/ip_temp
     done
-    check_and_cat_file $TEMP_FILE
-    rm -f $TEMP_FILE
+    check_and_cat_file /tmp/ecs/ip.test
+    rm -f /tmp/ecs/ip.test
 }
 
 ecs_ping(){
@@ -3395,7 +3415,7 @@ all_script(){
     pre_check
     if [ "$1" = "B" ]; then
         if [[ -z "${CN}" || "${CN}" != true ]]; then
-            dfiles=(yabsiotest dp nf tubecheck media_lmc_check besttrace backtrace)
+            dfiles=(yabsiotest dp nf tubecheck media_lmc_check besttrace nexttrace backtrace)
             for dfile in "${dfiles[@]}"
             do
                 { pre_download ${dfile};} &
@@ -3466,7 +3486,7 @@ all_script(){
         fi
     else
         if [[ -z "${CN}" || "${CN}" != true ]]; then
-            pre_download yabsiotest dp nf tubecheck media_lmc_check besttrace backtrace
+            pre_download yabsiotest dp nf tubecheck media_lmc_check besttrace nexttrace backtrace
             get_system_info
             check_dnsutils
             check_ping
@@ -3539,7 +3559,7 @@ minal_script(){
 
 minal_plus(){
     pre_check
-    pre_download yabsiotest dp nf tubecheck media_lmc_check besttrace backtrace
+    pre_download yabsiotest dp nf tubecheck media_lmc_check besttrace nexttrace backtrace
     get_system_info
     check_lmc_script
     check_dnsutils
@@ -3564,7 +3584,7 @@ minal_plus(){
 
 minal_plus_network(){
     pre_check
-    pre_download yabsiotest besttrace backtrace
+    pre_download yabsiotest besttrace nexttrace backtrace
     get_system_info
     check_ping
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
@@ -3607,7 +3627,7 @@ minal_plus_media(){
 
 network_script(){
     pre_check
-    pre_download besttrace backtrace
+    pre_download besttrace nexttrace backtrace
     check_ping
     ls_sg_hk_jp=($(get_nearest_data "${SERVER_BASE_URL}/ls_sg_hk_jp.csv"))
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
@@ -3665,7 +3685,7 @@ port_script(){
 
 sw_script(){
     pre_check
-    pre_download besttrace backtrace ecsspeed_ping
+    pre_download besttrace nexttrace backtrace ecsspeed_ping
     check_ping
     start_time=$(date +%s)
     clear
@@ -3678,7 +3698,7 @@ sw_script(){
 
 network_script_select() {
     pre_check
-    pre_download besttrace
+    pre_download besttrace nexttrace
     start_time=$(date +%s)
     clear
     print_intro
@@ -3706,6 +3726,7 @@ rm_script(){
     rm -rf nf
     rm -rf tubecheck
     rm -rf besttrace
+    rm -rf nexttrace
     rm -rf LemonBench.Result.txt*
     rm -rf speedtest.log*
     rm -rf test
@@ -3713,7 +3734,6 @@ rm_script(){
     rm -rf speedtest.tgz*
     rm -rf speedtest.tar.gz*
     rm -rf speedtest-cli*
-    rm -rf $TEMP_FILE
 }
 
 build_text(){
