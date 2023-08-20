@@ -61,8 +61,6 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 待解决事项
 
-besttrace的API由于平台可能时不时存在403问题，遇到403应自动替换为备用的nexttrace测试，即使精度有下降 - 待添加
-
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试可能失效 - 待修复
 
 个别(可能0.1%)的机器下载文件遇到CDN下载超时的问题，文件未下载完全就使用了，需要添加文件完整性校验 - 待添加
@@ -71,11 +69,9 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试可能失效 - 待�
 
 ## 更新
 
-2023.08.15
+2023.08.20
 
-- 测速节点增加欧洲地区节点
-- CPU检测区分受测机是物理还是虚拟以便使用物理核心数测试还是线程数测试
-- ip234.in 测试网站已炸，更换为 ipwhois.io 查询
+- besttrace的API由于平台可能时不时存在403问题，遇到403或查询失败将应自动替换为备用的nexttrace测试，即使精度有下降
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
