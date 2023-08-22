@@ -2,7 +2,6 @@
 # by spiritlhl
 # from https://github.com/spiritLHLS/ecs
 
-
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
 ver="2023.08.20"
@@ -17,7 +16,7 @@ _red() { echo -e "\033[31m\033[01m$@\033[0m"; }
 _green() { echo -e "\033[32m\033[01m$@\033[0m"; }
 _yellow() { echo -e "\033[33m\033[01m$@\033[0m"; }
 _blue() { echo -e "\033[36m\033[01m$@\033[0m"; }
-reading(){ read -rp "$(_green "$1")" "$2"; }
+reading() { read -rp "$(_green "$1")" "$2"; }
 utf8_locale=$(locale -a 2>/dev/null | grep -i -m 1 -E "UTF-8|utf8")
 if [[ -z "$utf8_locale" ]]; then
     _yellow "No UTF-8 locale found"
@@ -50,7 +49,7 @@ PACKAGE_UPDATE=("! apt-get update && apt-get --fix-broken install -y && apt-get 
 PACKAGE_INSTALL=("apt-get -y install" "apt-get -y install" "yum -y install" "yum -y install" "yum -y install" "pacman -Sy --noconfirm --needed" "pkg install -y")
 PACKAGE_REMOVE=("apt-get -y remove" "apt-get -y remove" "yum -y remove" "yum -y remove" "yum -y remove" "pacman -Rsc --noconfirm" "pkg delete")
 PACKAGE_UNINSTALL=("apt-get -y autoremove" "apt-get -y autoremove" "yum -y autoremove" "yum -y autoremove" "yum -y autoremove" "" "pkg autoremove")
-CMD=("$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(hostnamectl 2>/dev/null | grep -i system | cut -d : -f2)" "$(lsb_release -sd 2>/dev/null)" "$(grep -i description /etc/lsb-release 2>/dev/null | cut -d \" -f2)" "$(grep . /etc/redhat-release 2>/dev/null)" "$(grep . /etc/issue 2>/dev/null | cut -d \\ -f1 | sed '/^[ ]*$/d')" "$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(uname -s)") 
+CMD=("$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(hostnamectl 2>/dev/null | grep -i system | cut -d : -f2)" "$(lsb_release -sd 2>/dev/null)" "$(grep -i description /etc/lsb-release 2>/dev/null | cut -d \" -f2)" "$(grep . /etc/redhat-release 2>/dev/null)" "$(grep . /etc/issue 2>/dev/null | cut -d \\ -f1 | sed '/^[ ]*$/d')" "$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(uname -s)")
 SYS="${CMD[0]}"
 [[ -n $SYS ]] || exit 1
 for ((int = 0; int < ${#REGEX[@]}; int++)); do
@@ -62,7 +61,7 @@ done
 
 # =================== 其他脚本相关设置 ===================
 export DEBIAN_FRONTEND=noninteractive
-rm -rf test_result.txt > /dev/null 2>&1
+rm -rf test_result.txt >/dev/null 2>&1
 if [ ! -d "/tmp" ]; then
     mkdir /tmp
 fi
@@ -92,10 +91,9 @@ global_startup_init_action() {
 }
 
 global_exit_action() {
-    reset_default_sysctl > /dev/null 2>&1
+    reset_default_sysctl >/dev/null 2>&1
     build_text
-    if [ -n "$shorturl" ]
-    then
+    if [ -n "$shorturl" ]; then
         _green "  短链:"
         _blue "    $shorturl"
     fi
@@ -108,18 +106,18 @@ global_exit_action() {
 _exists() {
     # 查询对应变量或组件是否存在
     local cmd="$1"
-    if eval type type > /dev/null 2>&1; then
-        eval type "$cmd" > /dev/null 2>&1
-    elif command > /dev/null 2>&1; then
-        command -v "$cmd" > /dev/null 2>&1
+    if eval type type >/dev/null 2>&1; then
+        eval type "$cmd" >/dev/null 2>&1
+    elif command >/dev/null 2>&1; then
+        command -v "$cmd" >/dev/null 2>&1
     else
-        which "$cmd" > /dev/null 2>&1
+        which "$cmd" >/dev/null 2>&1
     fi
     local rt=$?
     return ${rt}
 }
 
-reset_default_sysctl(){
+reset_default_sysctl() {
     # 还原系统原有的设置
     if [ -f /etc/security/limits.conf ]; then
         cp /etc/security/limits.conf.backup /etc/security/limits.conf
@@ -128,13 +126,13 @@ reset_default_sysctl(){
     if which systemctl >/dev/null 2>&1; then
         if [ -f "$sysctl_conf" ]; then
             cp "$sysctl_conf_backup" "$sysctl_conf"
-            check_and_cat_file "$sysctl_default" >> "$sysctl_conf"
-            $sysctl_path -p 2> /dev/null
+            check_and_cat_file "$sysctl_default" >>"$sysctl_conf"
+            $sysctl_path -p 2>/dev/null
             cp "$sysctl_conf_backup" "$sysctl_conf"
             rm "$sysctl_conf_backup"
             rm "$sysctl_default"
         fi
-        $sysctl_path -p 2> /dev/null
+        $sysctl_path -p 2>/dev/null
     fi
 }
 
@@ -145,7 +143,7 @@ next() {
 }
 
 # =============== 组件预安装及文件预下载 部分 ===============
-checkver(){
+checkver() {
     check_cdn_file
     running_version=$(sed -n '8s/ver="\(.*\)"/\1/p' "$0")
     curl -L "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/ecs.sh" -o ecs1.sh && chmod 777 ecs1.sh
@@ -160,15 +158,15 @@ checkver(){
     fi
 }
 
-check_root(){
-	[[ $EUID -ne 0 ]] && echo -e "${RED}请使用 root 用户运行本脚本！${PLAIN}" && exit 1
+check_root() {
+    [[ $EUID -ne 0 ]] && echo -e "${RED}请使用 root 用户运行本脚本！${PLAIN}" && exit 1
 }
 
-check_update(){
+check_update() {
     _yellow "Updating package management sources"
-    if command -v apt-get > /dev/null 2>&1; then
+    if command -v apt-get >/dev/null 2>&1; then
         apt_update_output=$(apt-get update 2>&1)
-        echo "$apt_update_output" > "$temp_file_apt_fix"
+        echo "$apt_update_output" >"$temp_file_apt_fix"
         if grep -q 'NO_PUBKEY' "$temp_file_apt_fix"; then
             public_keys=$(grep -oE 'NO_PUBKEY [0-9A-F]+' "$temp_file_apt_fix" | awk '{ print $2 }')
             joined_keys=$(echo "$public_keys" | paste -sd " ")
@@ -182,123 +180,123 @@ check_update(){
         rm "$temp_file_apt_fix"
     else
         ${PACKAGE_UPDATE[int]}
-    fi 
+    fi
 }
 
 check_sudo() {
     _yellow "checking sudo"
-    if ! command -v sudo > /dev/null 2>&1; then
+    if ! command -v sudo >/dev/null 2>&1; then
         _yellow "Installing sudo"
-        ${PACKAGE_INSTALL[int]} sudo > /dev/null 2>&1
+        ${PACKAGE_INSTALL[int]} sudo >/dev/null 2>&1
     fi
 }
 
 check_curl() {
-	if ! which curl >/dev/null; then
+    if ! which curl >/dev/null; then
         _yellow "Installing curl"
         ${PACKAGE_INSTALL[int]} curl
-	fi
+    fi
     if [ $? -ne 0 ]; then
-        apt-get -f install > /dev/null 2>&1
+        apt-get -f install >/dev/null 2>&1
         ${PACKAGE_INSTALL[int]} curl
     fi
 }
 
 check_wget() {
-	if ! which wget >/dev/null; then
+    if ! which wget >/dev/null; then
         _yellow "Installing wget"
         ${PACKAGE_INSTALL[int]} wget
-	fi
+    fi
 }
 
 check_free() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
-	if ! command -v free > /dev/null 2>&1; then
+    if ! command -v free >/dev/null 2>&1; then
         _yellow "Installing procps"
-	    ${PACKAGE_INSTALL[int]} procps
-	fi
+        ${PACKAGE_INSTALL[int]} procps
+    fi
 }
 
 check_lsb_release() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
-	if ! command -v lsb_release > /dev/null 2>&1; then
+    if ! command -v lsb_release >/dev/null 2>&1; then
         _yellow "Installing lsb-release"
-	    ${PACKAGE_INSTALL[int]} lsb-release
-	fi
+        ${PACKAGE_INSTALL[int]} lsb-release
+    fi
 }
 
 check_lscpu() {
-	if ! command -v lscpu > /dev/null 2>&1; then
+    if ! command -v lscpu >/dev/null 2>&1; then
         _yellow "Installing lscpu"
-	    ${PACKAGE_INSTALL[int]} lscpu
-	fi
+        ${PACKAGE_INSTALL[int]} lscpu
+    fi
 }
 
 check_unzip() {
-	if ! command -v unzip > /dev/null 2>&1; then
+    if ! command -v unzip >/dev/null 2>&1; then
         _yellow "Installing unzip"
         ${PACKAGE_INSTALL[int]} unzip
-	fi
+    fi
 }
 
 check_ping() {
     _yellow "checking ping"
-	if ! which ping >/dev/null; then
+    if ! which ping >/dev/null; then
         _yellow "Installing ping"
-	    ${PACKAGE_INSTALL[int]} iputils-ping > /dev/null 2>&1
-	    ${PACKAGE_INSTALL[int]} ping > /dev/null 2>&1
-	fi
+        ${PACKAGE_INSTALL[int]} iputils-ping >/dev/null 2>&1
+        ${PACKAGE_INSTALL[int]} ping >/dev/null 2>&1
+    fi
 }
 
 check_nc() {
     _yellow "checking nc"
-	if ! command -v nc >/dev/null; then
+    if ! command -v nc >/dev/null; then
         _yellow "Installing nc"
         if command -v apt >/dev/null; then
-	        ${PACKAGE_INSTALL[int]} netcat > /dev/null 2>&1
+            ${PACKAGE_INSTALL[int]} netcat >/dev/null 2>&1
         else
-	        ${PACKAGE_INSTALL[int]} nc > /dev/null 2>&1
+            ${PACKAGE_INSTALL[int]} nc >/dev/null 2>&1
         fi
-	fi
+    fi
 }
 
 check_stun() {
     _yellow "checking stun"
-    if ! command -v stun > /dev/null 2>&1; then
+    if ! command -v stun >/dev/null 2>&1; then
         _yellow "Installing stun"
-        ${PACKAGE_INSTALL[int]} stun-client > /dev/null 2>&1
+        ${PACKAGE_INSTALL[int]} stun-client >/dev/null 2>&1
     fi
 }
 
 check_tar() {
     _yellow "checking tar"
-	if ! command -v tar &> /dev/null; then
+    if ! command -v tar &>/dev/null; then
         _yellow "Installing tar"
-	    ${PACKAGE_INSTALL[int]} tar 
-	fi
+        ${PACKAGE_INSTALL[int]} tar
+    fi
     if [ $? -ne 0 ]; then
-        apt-get -f install > /dev/null 2>&1
-        ${PACKAGE_INSTALL[int]} tar > /dev/null 2>&1
+        apt-get -f install >/dev/null 2>&1
+        ${PACKAGE_INSTALL[int]} tar >/dev/null 2>&1
     fi
 }
 
 check_lsof() {
     _yellow "checking lsof"
-	if ! command -v lsof &> /dev/null; then
+    if ! command -v lsof &>/dev/null; then
         _yellow "Installing lsof"
-	    ${PACKAGE_INSTALL[int]} lsof
-	fi
+        ${PACKAGE_INSTALL[int]} lsof
+    fi
     if [ $? -ne 0 ]; then
-        apt-get -f install > /dev/null 2>&1
-        ${PACKAGE_INSTALL[int]} lsof > /dev/null 2>&1
+        apt-get -f install >/dev/null 2>&1
+        ${PACKAGE_INSTALL[int]} lsof >/dev/null 2>&1
     fi
 }
 
-check_haveged(){
+check_haveged() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
     _yellow "checking haveged"
-    if ! command -v haveged > /dev/null 2>&1; then
-        ${PACKAGE_INSTALL[int]} haveged > /dev/null 2>&1
+    if ! command -v haveged >/dev/null 2>&1; then
+        ${PACKAGE_INSTALL[int]} haveged >/dev/null 2>&1
     fi
     if which systemctl >/dev/null 2>&1; then
         systemctl disable --now haveged
@@ -312,16 +310,16 @@ check_haveged(){
 check_dnsutils() {
     _yellow "Installing dnsutils"
     if [ "${Var_OSRelease}" == "centos" ]; then
-        yum -y install dnsutils > /dev/null 2>&1
-        yum -y install bind-utils > /dev/null 2>&1
+        yum -y install dnsutils >/dev/null 2>&1
+        yum -y install bind-utils >/dev/null 2>&1
     elif [ "${Var_OSRelease}" == "arch" ]; then
-        pacman -S --noconfirm --needed bind > /dev/null 2>&1
+        pacman -S --noconfirm --needed bind >/dev/null 2>&1
     else
-        ${PACKAGE_INSTALL[int]} dnsutils > /dev/null 2>&1
+        ${PACKAGE_INSTALL[int]} dnsutils >/dev/null 2>&1
     fi
 }
 
-checkpip(){
+checkpip() {
     [ "${Var_OSRelease}" = "freebsd" ] && curl -L https://bootstrap.pypa.io/get-pip.py -o get-pip.py && chmod +x get-pip.py && python3 get-pip.py && rm -rf get-pip.py && return
     local pvr="$1"
     local pip_version=$(pip --version 2>&1)
@@ -383,7 +381,7 @@ checkpystun() {
         checkpip 3
         if ! command -v pystun3 >/dev/null 2>&1; then
             _yellow "Installing pystun3"
-            if ! "$pip_command" install -q pystun3 > /dev/null 2>&1; then
+            if ! "$pip_command" install -q pystun3 >/dev/null 2>&1; then
                 "$pip_command" install -q pystun3
             fi
         fi
@@ -392,7 +390,7 @@ checkpystun() {
         checkpip
         if [[ $($python_command --version 2>&1) == Python\ 2* ]]; then
             _yellow "Installing pystun"
-            if ! "$pip_command" install -q pystun > /dev/null 2>&1; then
+            if ! "$pip_command" install -q pystun >/dev/null 2>&1; then
                 "$pip_command" install -q pystun
             fi
         fi
@@ -418,41 +416,41 @@ pre_download() {
     fi
     for file in "$@"; do
         case $file in
-            sysbench)
-                wget -O $TEMP_DIR/sysbench.zip "${cdn_success_url}https://github.com/akopytov/sysbench/archive/1.0.20.zip"
-                unzip $TEMP_DIR/sysbench.zip -d ${TEMP_DIR}
-                ;;
-            dp)
-                curl -sL -k "${cdn_success_url}https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_${tp_sys}" -o $TEMP_DIR/dp && chmod +x $TEMP_DIR/dp
-                ;;
-            nf)
-                curl -sL -k "${cdn_success_url}https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_${tp_sys}" -o $TEMP_DIR/nf && chmod +x $TEMP_DIR/nf
-                ;;
-            tubecheck)
-                curl -sL -k "${cdn_success_url}https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_${tp_sys}" -o $TEMP_DIR/tubecheck && chmod +x $TEMP_DIR/tubecheck
-                ;;
-            media_lmc_check)
-                curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh" -o $TEMP_DIR/media_lmc_check.sh && chmod 777 $TEMP_DIR/media_lmc_check.sh
-                ;;
-            besttrace)
-                curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/fscarmen/tools/main/besttrace/${BESTTRACE_FILE}" -o $TEMP_DIR/$BESTTRACE_FILE && chmod +x $TEMP_DIR/$BESTTRACE_FILE
-                ;;
-            nexttrace)
-                NEXTTRACE_VERSION=$(curl -sSL "https://api.github.com/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}') && curl -sL -k "${cdn_success_url}https://github.com/nxtrace/Ntrace-core/releases/download/${NEXTTRACE_VERSION}/${NEXTTRACE_FILE}" -o $TEMP_DIR/$NEXTTRACE_FILE && chmod +x $TEMP_DIR/$NEXTTRACE_FILE
-                ;;
-            backtrace)
-                wget -q -O $TEMP_DIR/backtrace.tar.gz  https://github.com/zhanghanyun/backtrace/releases/latest/download/$BACKTRACE_FILE
-                tar -xf $TEMP_DIR/backtrace.tar.gz -C $TEMP_DIR
-                ;;
-            yabsiotest)
-                curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/yabsiotest.sh" -o yabsiotest.sh && chmod +x yabsiotest.sh
+        sysbench)
+            wget -O $TEMP_DIR/sysbench.zip "${cdn_success_url}https://github.com/akopytov/sysbench/archive/1.0.20.zip"
+            unzip $TEMP_DIR/sysbench.zip -d ${TEMP_DIR}
             ;;
-            ecsspeed_ping)
-                curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecsspeed/main/script/ecsspeed-ping.sh" -o $TEMP_DIR/ecsspeed-ping.sh && chmod +x $TEMP_DIR/ecsspeed-ping.sh
+        dp)
+            curl -sL -k "${cdn_success_url}https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_${tp_sys}" -o $TEMP_DIR/dp && chmod +x $TEMP_DIR/dp
             ;;
-            *)
-                echo "Invalid file: $file"
-                ;;
+        nf)
+            curl -sL -k "${cdn_success_url}https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_${tp_sys}" -o $TEMP_DIR/nf && chmod +x $TEMP_DIR/nf
+            ;;
+        tubecheck)
+            curl -sL -k "${cdn_success_url}https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_${tp_sys}" -o $TEMP_DIR/tubecheck && chmod +x $TEMP_DIR/tubecheck
+            ;;
+        media_lmc_check)
+            curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh" -o $TEMP_DIR/media_lmc_check.sh && chmod 777 $TEMP_DIR/media_lmc_check.sh
+            ;;
+        besttrace)
+            curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/fscarmen/tools/main/besttrace/${BESTTRACE_FILE}" -o $TEMP_DIR/$BESTTRACE_FILE && chmod +x $TEMP_DIR/$BESTTRACE_FILE
+            ;;
+        nexttrace)
+            NEXTTRACE_VERSION=$(curl -sSL "https://api.github.com/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}') && curl -sL -k "${cdn_success_url}https://github.com/nxtrace/Ntrace-core/releases/download/${NEXTTRACE_VERSION}/${NEXTTRACE_FILE}" -o $TEMP_DIR/$NEXTTRACE_FILE && chmod +x $TEMP_DIR/$NEXTTRACE_FILE
+            ;;
+        backtrace)
+            wget -q -O $TEMP_DIR/backtrace.tar.gz https://github.com/zhanghanyun/backtrace/releases/latest/download/$BACKTRACE_FILE
+            tar -xf $TEMP_DIR/backtrace.tar.gz -C $TEMP_DIR
+            ;;
+        yabsiotest)
+            curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/yabsiotest.sh" -o yabsiotest.sh && chmod +x yabsiotest.sh
+            ;;
+        ecsspeed_ping)
+            curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecsspeed/main/script/ecsspeed-ping.sh" -o $TEMP_DIR/ecsspeed-ping.sh && chmod +x $TEMP_DIR/ecsspeed-ping.sh
+            ;;
+        *)
+            echo "Invalid file: $file"
+            ;;
         esac
     done
 }
@@ -508,11 +506,11 @@ variable_exists() {
     grep -q "^$variable=" "$sysctl_conf"
 }
 
-optimized_kernel(){
+optimized_kernel() {
     _yellow "optimizing resource limits"
     if [ -f /etc/security/limits.conf ]; then
         cp /etc/security/limits.conf /etc/security/limits.conf.backup
-        cat > /etc/security/limits.conf << EOF
+        cat >/etc/security/limits.conf <<EOF
 * soft nofile 512000
 * hard nofile 512000
 * soft nproc 512000
@@ -536,18 +534,18 @@ EOF
                 default_value="${line#*=}"
                 default_values["$variable"]="$default_value"
             done < <($sysctl_path -a)
-            echo "" > "$sysctl_default"
+            echo "" >"$sysctl_default"
             for variable in "${!sysctl_vars[@]}"; do
                 value="${sysctl_vars[$variable]}"
                 if variable_exists "$variable"; then
                     sed -i "s/^$variable=.*/$variable=$value/" "$sysctl_conf"
                 else
-                    echo "$variable=$value" >> "$sysctl_conf"
+                    echo "$variable=$value" >>"$sysctl_conf"
                     default_value="${default_values[$variable]}"
-                    echo "$variable=$default_value" >> "$sysctl_default"
+                    echo "$variable=$default_value" >>"$sysctl_default"
                 fi
             done
-            $sysctl_path -p 2> /dev/null
+            $sysctl_path -p 2>/dev/null
         fi
     fi
 }
@@ -555,7 +553,7 @@ EOF
 check_cdn() {
     local o_url=$1
     for cdn_url in "${cdn_urls[@]}"; do
-        if curl -sL -k "$cdn_url$o_url" --max-time 6 | grep -q "success" > /dev/null 2>&1; then
+        if curl -sL -k "$cdn_url$o_url" --max-time 6 | grep -q "success" >/dev/null 2>&1; then
             export cdn_success_url="$cdn_url"
             return
         fi
@@ -573,9 +571,9 @@ check_cdn_file() {
     fi
 }
 
-check_time_zone(){
+check_time_zone() {
     _yellow "adjusting the time"
-    if command -v ntpd > /dev/null 2>&1; then
+    if command -v ntpd >/dev/null 2>&1; then
         if which systemctl >/dev/null 2>&1; then
             systemctl stop chronyd
             systemctl stop ntpd
@@ -596,8 +594,8 @@ check_time_zone(){
         sleep 0.5
         return
     fi
-    if ! command -v chronyd > /dev/null 2>&1; then
-        ${PACKAGE_INSTALL[int]} chrony > /dev/null 2>&1
+    if ! command -v chronyd >/dev/null 2>&1; then
+        ${PACKAGE_INSTALL[int]} chrony >/dev/null 2>&1
     fi
     if which systemctl >/dev/null 2>&1; then
         systemctl stop chronyd
@@ -611,24 +609,24 @@ check_time_zone(){
     sleep 0.5
 }
 
-check_china(){
+check_china() {
     _yellow "IP area being detected ......"
     if [[ -z "${CN}" ]]; then
         if [[ $(curl -m 6 -s https://ipapi.co/json | grep 'China') != "" ]]; then
             _yellow "根据ipapi.co提供的信息，当前IP可能在中国"
             read -e -r -p "是否选用中国镜像完成相关组件安装? ([y]/n) " input
             case $input in
-                [yY][eE][sS] | [yY])
-                    echo "使用中国镜像"
-                    CN=true
-                    ;;
-                [nN][oO] | [nN])
-                    echo "不使用中国镜像"
-                    ;;
-                *)
-                    echo "使用中国镜像"
-                    CN=true
-                    ;;
+            [yY][eE][sS] | [yY])
+                echo "使用中国镜像"
+                CN=true
+                ;;
+            [nN][oO] | [nN])
+                echo "不使用中国镜像"
+                ;;
+            *)
+                echo "使用中国镜像"
+                CN=true
+                ;;
             esac
         else
             if [[ $? -ne 0 ]]; then
@@ -636,16 +634,16 @@ check_china(){
                     _yellow "根据cip.cc提供的信息，当前IP可能在中国"
                     read -e -r -p "是否选用中国镜像完成相关组件安装? [Y/n] " input
                     case $input in
-                        [yY][eE][sS] | [yY])
-                            echo "使用中国镜像"
-                            CN=true
-                            ;;
-                        [nN][oO] | [nN])
-                            echo "不使用中国镜像"
-                            ;;
-                        *)
-                            echo "不使用中国镜像"
-                            ;;
+                    [yY][eE][sS] | [yY])
+                        echo "使用中国镜像"
+                        CN=true
+                        ;;
+                    [nN][oO] | [nN])
+                        echo "不使用中国镜像"
+                        ;;
+                    *)
+                        echo "不使用中国镜像"
+                        ;;
                     esac
                 fi
             fi
@@ -654,10 +652,11 @@ check_china(){
 }
 
 statistics_of_run-times() {
-COUNT=$(
-  curl -4 -ksm1 "https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FspiritLHLS%2Fecs&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=&edge_flat=true" 2>&1 ||
-  curl -6 -ksm1 "https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FspiritLHLS%2Fecs&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=&edge_flat=true" 2>&1) &&
-  TODAY=$(expr "$COUNT" : '.*\s\([0-9]\{1,\}\)\s/.*') && TOTAL=$(expr "$COUNT" : '.*/\s\([0-9]\{1,\}\)\s.*')
+    COUNT=$(
+        curl -4 -ksm1 "https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FspiritLHLS%2Fecs&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=&edge_flat=true" 2>&1 ||
+            curl -6 -ksm1 "https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FspiritLHLS%2Fecs&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=&edge_flat=true" 2>&1
+    ) &&
+        TODAY=$(expr "$COUNT" : '.*\s\([0-9]\{1,\}\)\s/.*') && TOTAL=$(expr "$COUNT" : '.*/\s\([0-9]\{1,\}\)\s.*')
 }
 
 # =============== 基础系统信息 部分 ===============
@@ -766,26 +765,26 @@ get_system_bit() {
     fi
     # 根据架构信息设置系统位数并下载文件,其余 * 包括了 x86_64
     case "${sysarch}" in
-        "i386" | "i686")
-            LBench_Result_SystemBit_Short="32"
-            LBench_Result_SystemBit_Full="i386"
-            BESTTRACE_FILE=besttracemac
-            NEXTTRACE_FILE=nexttrace_darwin_amd64
-            ;;
-        "armv7l" | "armv8" | "armv8l" | "aarch64")
-            LBench_Result_SystemBit_Short="arm"
-            LBench_Result_SystemBit_Full="arm"
-            BESTTRACE_FILE=besttracearm
-            BACKTRACE_FILE=backtrace-linux-arm64.tar.gz
-            NEXTTRACE_FILE=nexttrace_linux_arm64
-            ;;
-        *)
-            LBench_Result_SystemBit_Short="64"
-            LBench_Result_SystemBit_Full="amd64"
-            BESTTRACE_FILE=besttrace
-            BACKTRACE_FILE=backtrace-linux-amd64.tar.gz
-            NEXTTRACE_FILE=nexttrace_linux_amd64
-            ;;
+    "i386" | "i686")
+        LBench_Result_SystemBit_Short="32"
+        LBench_Result_SystemBit_Full="i386"
+        BESTTRACE_FILE=besttracemac
+        NEXTTRACE_FILE=nexttrace_darwin_amd64
+        ;;
+    "armv7l" | "armv8" | "armv8l" | "aarch64")
+        LBench_Result_SystemBit_Short="arm"
+        LBench_Result_SystemBit_Full="arm"
+        BESTTRACE_FILE=besttracearm
+        BACKTRACE_FILE=backtrace-linux-arm64.tar.gz
+        NEXTTRACE_FILE=nexttrace_linux_arm64
+        ;;
+    *)
+        LBench_Result_SystemBit_Short="64"
+        LBench_Result_SystemBit_Full="amd64"
+        BESTTRACE_FILE=besttrace
+        BACKTRACE_FILE=backtrace-linux-amd64.tar.gz
+        NEXTTRACE_FILE=nexttrace_linux_amd64
+        ;;
     esac
 }
 
@@ -1171,26 +1170,26 @@ function BenchAPI_Systeminfo_GetOSReleaseinfo() {
 
 # =============== sysbench组件检测 部分 ===============
 get_sysbench_os_release() {
-  local OS_TYPE
-  case "${Var_OSRelease}" in
-    centos|rhel|almalinux) OS_TYPE="redhat";;
-    ubuntu) OS_TYPE="ubuntu";;
-    debian|astra) OS_TYPE="debian";;
-    fedora) OS_TYPE="fedora";;
-    alpinelinux) OS_TYPE="alpinelinux";;
-    arch) OS_TYPE="arch";;
-    freebsd) OS_TYPE="freebsd";;
-    *) OS_TYPE="unknown";;
-  esac
-  echo "${OS_TYPE}"
+    local OS_TYPE
+    case "${Var_OSRelease}" in
+    centos | rhel | almalinux) OS_TYPE="redhat" ;;
+    ubuntu) OS_TYPE="ubuntu" ;;
+    debian | astra) OS_TYPE="debian" ;;
+    fedora) OS_TYPE="fedora" ;;
+    alpinelinux) OS_TYPE="alpinelinux" ;;
+    arch) OS_TYPE="arch" ;;
+    freebsd) OS_TYPE="freebsd" ;;
+    *) OS_TYPE="unknown" ;;
+    esac
+    echo "${OS_TYPE}"
 }
 
 InstallSysbench() {
     local os_release=$1
     case "$os_release" in
-        redhat) yum -y install epel-release && yum -y install sysbench ;;
-        ubuntu) ! apt-get install sysbench -y && apt-get --fix-broken install -y && apt-get install sysbench -y ;;
-        debian)
+    redhat) yum -y install epel-release && yum -y install sysbench ;;
+    ubuntu) ! apt-get install sysbench -y && apt-get --fix-broken install -y && apt-get install sysbench -y ;;
+    debian)
         local mirrorbase="https://raindrop.ilemonrain.com/LemonBench"
         local componentname="Sysbench"
         local version="1.0.19-1"
@@ -1208,12 +1207,13 @@ InstallSysbench() {
         popd
         if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
             echo -e "${Msg_Warning}Sysbench Module Install Failed!"
-        fi ;;
-        fedora) dnf -y install sysbench ;;
-        arch) pacman -S --needed --noconfirm sysbench ;;
-        freebsd) pkg install -y sysbench ;;
-        alpinelinux) echo -e "${Msg_Warning}Sysbench Module not found, installing ..." && echo -e "${Msg_Warning}SysBench Current not support Alpine Linux, Skipping..." && Var_Skip_SysBench="1" ;;
-        *) echo "Error: Unknown OS release: $os_release" && exit 1 ;;
+        fi
+        ;;
+    fedora) dnf -y install sysbench ;;
+    arch) pacman -S --needed --noconfirm sysbench ;;
+    freebsd) pkg install -y sysbench ;;
+    alpinelinux) echo -e "${Msg_Warning}Sysbench Module not found, installing ..." && echo -e "${Msg_Warning}SysBench Current not support Alpine Linux, Skipping..." && Var_Skip_SysBench="1" ;;
+    *) echo "Error: Unknown OS release: $os_release" && exit 1 ;;
     esac
 }
 
@@ -1267,7 +1267,7 @@ prepare_compile_env() {
         yum install -y epel-release
         yum install -y wget curl make gcc gcc-c++ make automake libtool pkgconfig libaio-devel
     elif [ "${system}" = "ubuntu" ] || [ "${system}" = "debian" ]; then
-        ! apt-get update &&  apt-get --fix-broken install -y && apt-get update
+        ! apt-get update && apt-get --fix-broken install -y && apt-get update
         ! apt-get -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip && apt-get --fix-broken install -y && apt-get -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip
     elif [ "${system}" = "fedora" ]; then
         dnf install -y wget curl gcc gcc-c++ make automake libtool pkgconfig libaio-devel
@@ -1399,52 +1399,52 @@ install_speedtest() {
     sys_bit=""
     local sysarch="$(uname -m)"
     case "${sysarch}" in
-        "x86_64"|"x86"|"amd64"|"x64") sys_bit="x86_64";;
-        "i386"|"i686") sys_bit="i386";;
-        "aarch64"|"armv7l"|"armv8"|"armv8l") sys_bit="aarch64";;
-        "s390x") sys_bit="s390x";;
-        "riscv64") sys_bit="riscv64";;
-        "ppc64le") sys_bit="ppc64le";;
-        "ppc64") sys_bit="ppc64";;
-        *) sys_bit="x86_64";;
+    "x86_64" | "x86" | "amd64" | "x64") sys_bit="x86_64" ;;
+    "i386" | "i686") sys_bit="i386" ;;
+    "aarch64" | "armv7l" | "armv8" | "armv8l") sys_bit="aarch64" ;;
+    "s390x") sys_bit="s390x" ;;
+    "riscv64") sys_bit="riscv64" ;;
+    "ppc64le") sys_bit="ppc64le" ;;
+    "ppc64") sys_bit="ppc64" ;;
+    *) sys_bit="x86_64" ;;
     esac
     download_speedtest_file "${sys_bit}"
 }
 
 get_string_length() {
-  local nodeName="$1"
-  local length
-  local converted
-  converted=$(echo -n "$nodeName" | iconv -f utf8 -t gb2312 2>/dev/null)
-  if [[ $? -eq 0 && -n "$converted" ]]; then
-    length=$(echo -n "$converted" | wc -c)
+    local nodeName="$1"
+    local length
+    local converted
+    converted=$(echo -n "$nodeName" | iconv -f utf8 -t gb2312 2>/dev/null)
+    if [[ $? -eq 0 && -n "$converted" ]]; then
+        length=$(echo -n "$converted" | wc -c)
+        echo $length
+        return
+    fi
+    converted=$(echo -n "$nodeName" | iconv -f utf8 -t big5 2>/dev/null)
+    if [[ $? -eq 0 && -n "$converted" ]]; then
+        length=$(echo -n "$converted" | wc -c)
+        echo $length
+        return
+    fi
+    length=$(echo -n "$nodeName" | awk '{len=0; for(i=1;i<=length($0);i++){c=substr($0,i,1);if(c~/[^\x00-\x7F]/){len+=2}else{len++}}; print len}')
     echo $length
-    return
-  fi
-  converted=$(echo -n "$nodeName" | iconv -f utf8 -t big5 2>/dev/null)
-  if [[ $? -eq 0 && -n "$converted" ]]; then
-    length=$(echo -n "$converted" | wc -c)
-    echo $length
-    return
-  fi
-  length=$(echo -n "$nodeName" | awk '{len=0; for(i=1;i<=length($0);i++){c=substr($0,i,1);if(c~/[^\x00-\x7F]/){len+=2}else{len++}}; print len}')
-  echo $length
 }
 
 speed_test() {
     local nodeName="$2"
     if [ ! -f "./speedtest-cli/speedtest" ]; then
         if [ -z "$1" ]; then
-            ./speedtest-cli/speedtest-go > ./speedtest-cli/speedtest.log 2>&1
+            ./speedtest-cli/speedtest-go >./speedtest-cli/speedtest.log 2>&1
         else
-            ./speedtest-cli/speedtest-go --server=$1 > ./speedtest-cli/speedtest.log 2>&1
+            ./speedtest-cli/speedtest-go --server=$1 >./speedtest-cli/speedtest.log 2>&1
         fi
         if [ $? -eq 0 ]; then
             local dl_speed=$(grep -oP 'Download: \K[\d\.]+' ./speedtest-cli/speedtest.log)
             local up_speed=$(grep -oP 'Upload: \K[\d\.]+' ./speedtest-cli/speedtest.log)
             local latency=$(grep -oP 'Latency: \K[\d\.]+' ./speedtest-cli/speedtest.log)
             if [[ -n "${latency}" && "${latency}" == *.* ]]; then
-                latency=$(awk '{printf "%.2f", $1}' <<< "${latency}")
+                latency=$(awk '{printf "%.2f", $1}' <<<"${latency}")
             fi
             if [[ -n "${dl_speed}" || -n "${up_speed}" || -n "${latency}" ]]; then
                 if [[ $selection =~ ^[1-5]$ ]]; then
@@ -1452,18 +1452,18 @@ speed_test() {
                 else
                     length=$(get_string_length "$nodeName")
                     if [ $length -ge 8 ]; then
-		    	echo -e "${nodeName}\t ${up_speed}Mbps\t ${dl_speed}Mbps\t ${latency}ms\t"
+                        echo -e "${nodeName}\t ${up_speed}Mbps\t ${dl_speed}Mbps\t ${latency}ms\t"
                     else
-		    	echo -e "${nodeName}\t\t ${up_speed}Mbps\t ${dl_speed}Mbps\t ${latency}ms\t"
+                        echo -e "${nodeName}\t\t ${up_speed}Mbps\t ${dl_speed}Mbps\t ${latency}ms\t"
                     fi
                 fi
             fi
         fi
     else
         if [ -z "$1" ]; then
-            ./speedtest-cli/speedtest --progress=no --accept-license --accept-gdpr > ./speedtest-cli/speedtest.log 2>&1
+            ./speedtest-cli/speedtest --progress=no --accept-license --accept-gdpr >./speedtest-cli/speedtest.log 2>&1
         else
-            ./speedtest-cli/speedtest --progress=no --server-id=$1 --accept-license --accept-gdpr > ./speedtest-cli/speedtest.log 2>&1
+            ./speedtest-cli/speedtest --progress=no --server-id=$1 --accept-license --accept-gdpr >./speedtest-cli/speedtest.log 2>&1
         fi
         if [ $? -eq 0 ]; then
             local dl_speed=$(awk '/Download/{print $3" "$4}' ./speedtest-cli/speedtest.log)
@@ -1482,7 +1482,7 @@ speed_test() {
                     if [ $length -ge 8 ]; then
                         echo -e "${nodeName}\t ${up_speed}\t ${dl_speed}\t ${latency}\t  $packet_loss"
                     else
-			echo -e "${nodeName}\t\t ${up_speed}\t ${dl_speed}\t ${latency}\t  $packet_loss"
+                        echo -e "${nodeName}\t\t ${up_speed}\t ${dl_speed}\t ${latency}\t  $packet_loss"
                     fi
                 fi
             fi
@@ -1494,9 +1494,9 @@ is_ipv4() {
     local ip=$1
     local regex="^([0-9]{1,3}\.){3}[0-9]{1,3}$"
     if [[ $ip =~ $regex ]]; then
-        return 0  # 符合IPv4格式
+        return 0 # 符合IPv4格式
     else
-        return 1  # 不符合IPv4格式
+        return 1 # 不符合IPv4格式
     fi
 }
 
@@ -1506,27 +1506,26 @@ test_list() {
         echo "列表为空，程序退出"
         return
     fi
-    for ((i=0; i<${#list[@]}; i+=1))
-    do
+    for ((i = 0; i < ${#list[@]}; i += 1)); do
         id=$(echo "${list[i]}" | cut -d',' -f1)
         name=$(echo "${list[i]}" | cut -d',' -f2)
         speed_test "$id" "$name"
     done
 }
 
-temp_head(){
+temp_head() {
     echo "--------------------自动更新测速节点列表--本脚本原创--------------------"
     if [[ $selection =~ ^[1-5]$ ]]; then
         if [ -f "./speedtest-cli/speedtest" ]; then
-	        echo -e "位置\t         上传速度\t 下载速度\t 延迟\t  丢包率"
+            echo -e "位置\t         上传速度\t 下载速度\t 延迟\t  丢包率"
         else
-	        echo -e "位置\t         上传速度\t 下载速度\t 延迟"
+            echo -e "位置\t         上传速度\t 下载速度\t 延迟"
         fi
     else
         if [ -f "./speedtest-cli/speedtest" ]; then
-	        echo -e "位置\t\t 上传速度\t 下载速度\t 延迟\t  丢包率"
+            echo -e "位置\t\t 上传速度\t 下载速度\t 延迟\t  丢包率"
         else
-	        echo -e "位置\t\t 上传速度\t 下载速度\t 延迟"
+            echo -e "位置\t\t 上传速度\t 下载速度\t 延迟"
         fi
     fi
 }
@@ -1548,7 +1547,7 @@ get_nearest_data() {
             if [[ $? -eq 0 ]]; then
                 break
             else
-                retries=$((retries+1))
+                retries=$((retries + 1))
                 sleep 1
             fi
         done
@@ -1573,20 +1572,22 @@ get_nearest_data() {
             elif [[ $url == *"Telecom"* ]]; then
                 city="电信${city}"
             elif [[ $url == *"Unicom"* ]]; then
-                city="联通${city}" 
+                city="联通${city}"
             fi
             data+=("$id,$city,$ip")
         fi
-    done <<< "$response"
-    
+    done <<<"$response"
+
     rm -f /tmp/pingtest
     # 并行ping测试所有IP
-    for (( i=0; i<${#data[@]}; i++ )); do
-        { ip=$(echo "${data[$i]}" | awk -F ',' '{print $3}')
-        ping_test "$ip" >> /tmp/pingtest; }&
+    for ((i = 0; i < ${#data[@]}; i++)); do
+        {
+            ip=$(echo "${data[$i]}" | awk -F ',' '{print $3}')
+            ping_test "$ip" >>/tmp/pingtest
+        } &
     done
     wait
-    
+
     # 取IP顺序列表results
     output=$(cat /tmp/pingtest)
     rm -f /tmp/pingtest
@@ -1616,10 +1617,10 @@ get_nearest_data() {
 
 checknslookup() {
     _yellow "checking nslookup"
-	if ! command -v nslookup &> /dev/null; then
+    if ! command -v nslookup &>/dev/null; then
         _yellow "Installing dnsutils"
-	    ${PACKAGE_INSTALL[int]} dnsutils
-	fi
+        ${PACKAGE_INSTALL[int]} dnsutils
+    fi
 }
 
 get_ip_from_url() {
@@ -1637,7 +1638,7 @@ get_nearest_data2() {
             if [[ $? -eq 0 ]]; then
                 break
             else
-                retries=$((retries+1))
+                retries=$((retries + 1))
                 sleep 1
             fi
         done
@@ -1655,7 +1656,8 @@ get_nearest_data2() {
         if [[ -n "$line" ]]; then
             # local id=$(echo "$line" | awk -F ',' '{print $1}')
             local city=$(echo "$line" | sed 's/ //g' | awk -F ',' '{print $9}')
-            city=${city/市/}; city=${city/中国/}
+            city=${city/市/}
+            city=${city/中国/}
             local host=$(echo "$line" | awk -F ',' '{print $6}')
             local host_url=$(echo $host | sed 's/:.*//')
             if [[ "$host,$city" == "host,city" || "$city" == *"香港"* || "$city" == *"台湾"* ]]; then
@@ -1671,7 +1673,7 @@ get_nearest_data2() {
             elif [[ $url == *"telecom"* ]]; then
                 city="电信${city}"
             elif [[ $url == *"unicom"* ]]; then
-                city="联通${city}" 
+                city="联通${city}"
             fi
             if [[ ! " ${ip_list[@]} " =~ " ${ip} " ]] && [[ ! " ${city_list[@]} " =~ " ${city} " ]]; then
                 data+=("$host,$city,$ip")
@@ -1679,15 +1681,17 @@ get_nearest_data2() {
                 city_list+=("$city")
             fi
         fi
-    done <<< "$response"
- 
+    done <<<"$response"
+
     rm -f /tmp/pingtest
-    for (( i=0; i<${#data[@]}; i++ )); do
-        { ip=$(echo "${ip_list[$i]}")
-        ping_test "$ip" >> /tmp/pingtest; }&
+    for ((i = 0; i < ${#data[@]}; i++)); do
+        {
+            ip=$(echo "${ip_list[$i]}")
+            ping_test "$ip" >>/tmp/pingtest
+        } &
     done
     wait
-    
+
     output=$(cat /tmp/pingtest)
     rm -f /tmp/pingtest
     IFS=$'\n' read -rd '' -a lines <<<"$output"
@@ -1701,7 +1705,7 @@ get_nearest_data2() {
     for result in "${results[@]}"; do
         for item in "${data[@]}"; do
             if [[ "$(echo "$item" | cut -d ',' -f 3)" == "$result" ]]; then
-# 	      if [[ "$item" == *"$result"* ]]; then
+                # 	      if [[ "$item" == *"$result"* ]]; then
                 host=$(echo "$item" | cut -d',' -f1)
                 name=$(echo "$item" | cut -d',' -f2)
                 sorted_data+=("$host,$name")
@@ -1717,16 +1721,16 @@ speed_test2() {
     local nodeName="$2"
     if [ ! -f "./speedtest-cli/speedtest" ]; then
         if [ -z "$1" ]; then
-            ./speedtest-cli/speedtest-go > ./speedtest-cli/speedtest.log 2>&1
+            ./speedtest-cli/speedtest-go >./speedtest-cli/speedtest.log 2>&1
         else
-            ./speedtest-cli/speedtest-go --custom-url=http://"$1"/upload.php > ./speedtest-cli/speedtest.log 2>&1
+            ./speedtest-cli/speedtest-go --custom-url=http://"$1"/upload.php >./speedtest-cli/speedtest.log 2>&1
         fi
         if [ $? -eq 0 ]; then
             local dl_speed=$(grep -oP 'Download: \K[\d\.]+' ./speedtest-cli/speedtest.log)
             local up_speed=$(grep -oP 'Upload: \K[\d\.]+' ./speedtest-cli/speedtest.log)
             local latency=$(grep -oP 'Latency: \K[\d\.]+' ./speedtest-cli/speedtest.log)
             if [[ -n "${latency}" && "${latency}" == *.* ]]; then
-                latency=$(awk '{printf "%.2f", $1}' <<< "${latency}")
+                latency=$(awk '{printf "%.2f", $1}' <<<"${latency}")
             fi
             if [[ -n "${dl_speed}" || -n "${up_speed}" || -n "${latency}" ]]; then
                 if [[ $selection =~ ^[1-5]$ ]]; then
@@ -1734,9 +1738,9 @@ speed_test2() {
                 else
                     length=$(get_string_length "$nodeName")
                     if [ $length -ge 8 ]; then
-		    	echo -e "\r${nodeName}\t ${up_speed} Mbps\t ${dl_speed} Mbps\t ${latency}\t"
+                        echo -e "\r${nodeName}\t ${up_speed} Mbps\t ${dl_speed} Mbps\t ${latency}\t"
                     else
-		    	echo -e "\r${nodeName}\t\t ${up_speed} Mbps\t ${dl_speed} Mbps\t ${latency}\t"
+                        echo -e "\r${nodeName}\t\t ${up_speed} Mbps\t ${dl_speed} Mbps\t ${latency}\t"
                     fi
                 fi
             fi
@@ -1760,10 +1764,10 @@ speed() {
         CN=true
         if [ -f "./speedtest-cli/speedtest" ]; then
             rm -rf ./speedtest-cli/speedtest
-            ( install_speedtest > /dev/null 2>&1 )
+            (install_speedtest >/dev/null 2>&1)
         fi
-        checknslookup > /dev/null 2>&1
-        CN_Mobile=($(get_nearest_data2 "${SERVER_BASE_URL2}/mobile.csv")) > /dev/null 2>&1
+        checknslookup >/dev/null 2>&1
+        CN_Mobile=($(get_nearest_data2 "${SERVER_BASE_URL2}/mobile.csv")) >/dev/null 2>&1
         wait
         if [ ${#CN_Mobile[@]} -eq 0 ]; then
             return
@@ -1793,10 +1797,10 @@ speed2() {
         CN=true
         if [ -f "./speedtest-cli/speedtest" ]; then
             rm -rf ./speedtest-cli/speedtest
-            ( install_speedtest > /dev/null 2>&1 )
+            (install_speedtest >/dev/null 2>&1)
         fi
-        checknslookup > /dev/null 2>&1
-        CN_Mobile=($(get_nearest_data2 "${SERVER_BASE_URL2}/mobile.csv")) > /dev/null 2>&1
+        checknslookup >/dev/null 2>&1
+        CN_Mobile=($(get_nearest_data2 "${SERVER_BASE_URL2}/mobile.csv")) >/dev/null 2>&1
         wait
         if [ ${#CN_Mobile[@]} -eq 0 ]; then
             return
@@ -1847,7 +1851,7 @@ Run_DiskTest_DD() {
     sync
     if [ "${Result_Systeminfo_VMMTypeShort}" != "docker" ] && [ "${Result_Systeminfo_VMMTypeShort}" != "wsl" ]; then
         if [ -w /proc/sys/vm/drop_caches ]; then
-            echo 3 >/proc/sys/vm/drop_caches > /dev/null 2>&1
+            echo 3 >/proc/sys/vm/drop_caches >/dev/null 2>&1
         fi
     fi
     sleep 0.5
@@ -1931,7 +1935,7 @@ Run_SysBench_Memory() {
     # 1线程的测试结果写入临时变量，方便与后续的多线程变量做对比
     if [ "$1" = "1" ] && [ "$4" = "read" ]; then
         LBench_Result_MemoryReadSpeedSingle="${ResultSpeed}"
-    elif [ "$1" = "1" ] &&[ "$4" = "write" ]; then
+    elif [ "$1" = "1" ] && [ "$4" = "write" ]; then
         LBench_Result_MemoryWriteSpeedSingle="${ResultSpeed}"
     fi
     if [ "${MultiThread_Flag}" = "1" ]; then
@@ -1959,7 +1963,7 @@ Run_SysBench_Memory() {
         echo -e " $6:\t\t${ResultSpeed} MB/s" >>${WorkDir}/SysBench/Memory/result.txt
     fi
     sleep 0.5
-    
+
 }
 
 Function_SysBench_Memory_Fast() {
@@ -1975,15 +1979,14 @@ Function_SysBench_Memory_Fast() {
 calc_disk() {
     local total_size=0
     local array=$@
-    for size in ${array[@]}
-    do
-        [ "${size}" == "0" ] && size_t=0 || size_t=`echo ${size:0:${#size}-1}`
-        [ "`echo ${size:(-1)}`" == "K" ] && size=0
-        [ "`echo ${size:(-1)}`" == "M" ] && size=$( awk 'BEGIN{printf "%.1f", '$size_t' / 1024}' )
-        [ "`echo ${size:(-1)}`" == "T" ] && size=$( awk 'BEGIN{printf "%.1f", '$size_t' * 1024}' )
-        [ "`echo ${size:(-1)}`" == "G" ] && size=${size_t}
-        [ "`echo ${size:(-1)}`" == "E" ] && size=$( awk 'BEGIN{printf "%.1f", '$size_t' * 1024 * 1024}' )
-        total_size=$( awk 'BEGIN{printf "%.1f", '$total_size' + '$size'}' )
+    for size in ${array[@]}; do
+        [ "${size}" == "0" ] && size_t=0 || size_t=$(echo ${size:0:${#size}-1})
+        [ "$(echo ${size:(-1)})" == "K" ] && size=0
+        [ "$(echo ${size:(-1)})" == "M" ] && size=$(awk 'BEGIN{printf "%.1f", '$size_t' / 1024}')
+        [ "$(echo ${size:(-1)})" == "T" ] && size=$(awk 'BEGIN{printf "%.1f", '$size_t' * 1024}')
+        [ "$(echo ${size:(-1)})" == "G" ] && size=${size_t}
+        [ "$(echo ${size:(-1)})" == "E" ] && size=$(awk 'BEGIN{printf "%.1f", '$size_t' * 1024 * 1024}')
+        total_size=$(awk 'BEGIN{printf "%.1f", '$total_size' + '$size'}')
     done
     echo ${total_size}
 }
@@ -1994,23 +1997,22 @@ is_private_ipv4() {
     if [[ -z $ip_address ]]; then
         return 0 # 输入为空
     fi
-    IFS='.' read -r -a ip_parts <<< "$ip_address"
+    IFS='.' read -r -a ip_parts <<<"$ip_address"
     # 检查IP地址是否符合内网IP地址的范围
     # 去除 回环，REC 1918，多播 地址
     if [[ ${ip_parts[0]} -eq 10 ]] ||
-       [[ ${ip_parts[0]} -eq 172 && ${ip_parts[1]} -ge 16 && ${ip_parts[1]} -le 31 ]] ||
-       [[ ${ip_parts[0]} -eq 192 && ${ip_parts[1]} -eq 168 ]] ||
-       [[ ${ip_parts[0]} -eq 127 ]] ||
-       [[ ${ip_parts[0]} -eq 0 ]] ||
-       [[ ${ip_parts[0]} -ge 224 ]]
-    then
-        return 0  # 是内网IP地址
+        [[ ${ip_parts[0]} -eq 172 && ${ip_parts[1]} -ge 16 && ${ip_parts[1]} -le 31 ]] ||
+        [[ ${ip_parts[0]} -eq 192 && ${ip_parts[1]} -eq 168 ]] ||
+        [[ ${ip_parts[0]} -eq 127 ]] ||
+        [[ ${ip_parts[0]} -eq 0 ]] ||
+        [[ ${ip_parts[0]} -ge 224 ]]; then
+        return 0 # 是内网IP地址
     else
-        return 1  # 不是内网IP地址
+        return 1 # 不是内网IP地址
     fi
 }
 
-check_ipv4(){
+check_ipv4() {
     rm -rf /tmp/ip_quality_ipv4
     IPV4=$(ip -4 addr show | grep global | awk '{print $2}' | cut -d '/' -f1 | head -n 1)
     local response
@@ -2026,7 +2028,7 @@ check_ipv4(){
             fi
         done
     fi
-    echo $IPV4 > /tmp/ip_quality_ipv4
+    echo $IPV4 >/tmp/ip_quality_ipv4
 }
 
 is_private_ipv6() {
@@ -2071,7 +2073,7 @@ is_private_ipv6() {
     return 1
 }
 
-check_ipv6(){
+check_ipv6() {
     rm -rf /tmp/ip_quality_ipv6
     IPV6=$(ip -6 addr show | grep global | awk '{print $2}' | cut -d '/' -f1 | head -n 1)
     local response
@@ -2087,15 +2089,15 @@ check_ipv6(){
             fi
         done
     fi
-    echo $IPV6 > /tmp/ip_quality_ipv6
+    echo $IPV6 >/tmp/ip_quality_ipv6
 }
 
-check_ip_info_by_ipinfo(){
+check_ip_info_by_ipinfo() {
     # ipinfo.io
     rm -rf /tmp/ipinfo
     # 获取IPv4的asn、city、region、country
     local ipv4_asn=$(curl -ksL4m6 -A Mozilla ipinfo.io/org 2>/dev/null)
-    if [ "$?" -ne 0 ] || echo "$ipv4_asn" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL">/dev/null 2>&1; then
+    if [ "$?" -ne 0 ] || echo "$ipv4_asn" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL" >/dev/null 2>&1; then
         local ipv4_asn_info="None"
         local ipv4_location="None"
     else
@@ -2114,17 +2116,17 @@ check_ip_info_by_ipinfo(){
         fi
     fi
     # 返回结果
-    echo "$ipv4_asn_info" >> /tmp/ipinfo
-    echo "$ipv4_location" >> /tmp/ipinfo
+    echo "$ipv4_asn_info" >>/tmp/ipinfo
+    echo "$ipv4_location" >>/tmp/ipinfo
     # 获取IPv6的asn、city和region - 无 - 该站点不支持IPV6网络识别
     local ipv6_asn_info="None"
     local ipv6_location="None"
     # 返回结果
-    echo "$ipv6_asn_info" >> /tmp/ipinfo
-    echo "$ipv6_location" >> /tmp/ipinfo
+    echo "$ipv6_asn_info" >>/tmp/ipinfo
+    echo "$ipv6_location" >>/tmp/ipinfo
 }
 
-check_ip_info_by_cloudflare(){
+check_ip_info_by_cloudflare() {
     # cloudflare.com
     rm -rf /tmp/cloudflare
     # 获取 IPv4 信息
@@ -2149,8 +2151,8 @@ check_ip_info_by_cloudflare(){
         ipv4_location="${ipv4_location//\"/}"
     fi
     # 返回结果
-    echo "$ipv4_asn_info" >> /tmp/cloudflare
-    echo "$ipv4_location" >> /tmp/cloudflare
+    echo "$ipv4_asn_info" >>/tmp/cloudflare
+    echo "$ipv4_location" >>/tmp/cloudflare
     # 获取 IPv6 信息
     sleep 1
     local ipv6_output=$(curl -ksL6m6 -A Mozilla https://speed.cloudflare.com/meta 2>/dev/null)
@@ -2174,15 +2176,15 @@ check_ip_info_by_cloudflare(){
         ipv6_location="${ipv6_location//\"/}"
     fi
     # 返回结果
-    echo "$ipv6_asn_info" >> /tmp/cloudflare
-    echo "$ipv6_location" >> /tmp/cloudflare
+    echo "$ipv6_asn_info" >>/tmp/cloudflare
+    echo "$ipv6_location" >>/tmp/cloudflare
 }
 
-check_ip_info_by_ipsb(){
+check_ip_info_by_ipsb() {
     # ip.sb
     rm -rf /tmp/ipsb
     local result_ipv4=$(curl -ksL4m6 -A Mozilla https://api.ip.sb/geoip 2>/dev/null)
-    if [ "$?" -ne 0 ] || echo "$result_ipv4" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL">/dev/null 2>&1; then
+    if [ "$?" -ne 0 ] || echo "$result_ipv4" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL" >/dev/null 2>&1; then
         local ipv4_asn_info="None"
         local ipv4_location="None"
     else
@@ -2206,12 +2208,12 @@ check_ip_info_by_ipsb(){
         fi
     fi
     # 返回结果
-    echo "$ipv4_asn_info" >> /tmp/ipsb
-    echo "$ipv4_location" >> /tmp/ipsb
+    echo "$ipv4_asn_info" >>/tmp/ipsb
+    echo "$ipv4_location" >>/tmp/ipsb
     # 获取IPv6的asn、city、region、country
     sleep 1
     local result_ipv6=$(curl -ksL6m6 -A Mozilla https://api.ip.sb/geoip 2>/dev/null)
-    if [ "$?" -ne 0 ] || echo "$result_ipv6" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL">/dev/null 2>&1; then
+    if [ "$?" -ne 0 ] || echo "$result_ipv6" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL" >/dev/null 2>&1; then
         local ipv6_asn_info="None"
         local ipv6_location="None"
     else
@@ -2234,11 +2236,11 @@ check_ip_info_by_ipsb(){
         fi
     fi
     # 返回结果
-    echo "$ipv6_asn_info" >> /tmp/ipsb
-    echo "$ipv6_location" >> /tmp/ipsb
+    echo "$ipv6_asn_info" >>/tmp/ipsb
+    echo "$ipv6_location" >>/tmp/ipsb
 }
 
-check_ip_info_by_cheervision(){
+check_ip_info_by_cheervision() {
     # ipdata.cheervision.co
     rm -rf /tmp/cheervision
     local ipv4_result=$(curl -ksL4m6 -A Mozilla ipdata.cheervision.co 2>/dev/null)
@@ -2260,8 +2262,8 @@ check_ip_info_by_cheervision(){
         local ipv4_location="None"
     fi
     # 返回结果
-    echo "$ipv4_asn_info" >> /tmp/cheervision
-    echo "$ipv4_location" >> /tmp/cheervision
+    echo "$ipv4_asn_info" >>/tmp/cheervision
+    echo "$ipv4_location" >>/tmp/cheervision
     # 获取IPv6的asn、city、region
     sleep 1
     local ipv6_result=$(curl -ksL6m6 -A Mozilla ipdata.cheervision.co 2>/dev/null)
@@ -2282,32 +2284,38 @@ check_ip_info_by_cheervision(){
         local ipv6_location="None"
     fi
     # 返回结果
-    echo "$ipv6_asn_info" >> /tmp/cheervision
-    echo "$ipv6_location" >> /tmp/cheervision
+    echo "$ipv6_asn_info" >>/tmp/cheervision
+    echo "$ipv6_location" >>/tmp/cheervision
 }
 
 get_system_info() {
-	arch=$( uname -m )
+    arch=$(uname -m)
     if [ -n "$Result_Systeminfo_Diskinfo" ]; then
         :
     else
-        disk_size1=($( LC_ALL=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|snapd' | awk '{print $2}' ))
-        disk_size2=($( LC_ALL=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|snapd' | awk '{print $3}' ))
-        disk_total_size=$( calc_disk "${disk_size1[@]}" )
-        disk_used_size=$( calc_disk "${disk_size2[@]}" )
+        disk_size1=($(LC_ALL=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|snapd' | awk '{print $2}'))
+        disk_size2=($(LC_ALL=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|snapd' | awk '{print $3}'))
+        disk_total_size=$(calc_disk "${disk_size1[@]}")
+        disk_used_size=$(calc_disk "${disk_size2[@]}")
     fi
     if [ -f "/proc/cpuinfo" ]; then
-        cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
-        cores=$( awk -F: '/processor/ {core++} END {print core}' /proc/cpuinfo )
-        freq=$( awk -F'[ :]' '/cpu MHz/ {print $4;exit}' /proc/cpuinfo )
-        ccache=$( awk -F: '/cache size/ {cache=$2} END {print cache}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
+        cname=$(awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//')
+        cores=$(awk -F: '/processor/ {core++} END {print core}' /proc/cpuinfo)
+        freq=$(awk -F'[ :]' '/cpu MHz/ {print $4;exit}' /proc/cpuinfo)
+        ccache=$(awk -F: '/cache size/ {cache=$2} END {print cache}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//')
         CPU_AES=$(cat /proc/cpuinfo | grep aes)
         CPU_VIRT=$(cat /proc/cpuinfo | grep 'vmx\|svm')
-        up=$( awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60} {printf("%d days, %d hour %d min\n",a,b,c)}' /proc/uptime )
+        up=$(awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60} {printf("%d days, %d hour %d min\n",a,b,c)}' /proc/uptime)
         if _exists "w"; then
-            load=$( LANG=C; w | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
+            load=$(
+                LANG=C
+                w | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//'
+            )
         elif _exists "uptime"; then
-            load=$( LANG=C; uptime | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//' )
+            load=$(
+                LANG=C
+                uptime | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//'
+            )
         fi
     elif [ "${Var_OSRelease}" = "freebsd" ]; then
         cname=$($sysctl_path -n hw.model)
@@ -2318,9 +2326,9 @@ get_system_info() {
         CPU_VIRT=$($sysctl_path -a | grep -E 'hw.vmx|hw.svm' | awk '{print $2}')
         up=$($sysctl_path -n kern.boottime | perl -MPOSIX -nE 'if (/sec = (\d+), usec = (\d+)/) { $boottime = $1; $uptime = time() - $boottime; $days = int($uptime / 86400); $hours = int(($uptime % 86400) / 3600); $minutes = int(($uptime % 3600) / 60); say "$days days, $hours hours, $minutes minutes" }')
         if _exists "w"; then
-            load=$( w | awk '{print $(NF-2), $(NF-1), $NF}' | head -n 1 )
+            load=$(w | awk '{print $(NF-2), $(NF-1), $NF}' | head -n 1)
         elif _exists "uptime"; then
-            load=$( uptime | awk '{print $(NF-2), $(NF-1), $NF}' )
+            load=$(uptime | awk '{print $(NF-2), $(NF-1), $NF}')
         fi
     fi
     if [ -z "$cname" ] || [ ! -e /proc/cpuinfo ]; then
@@ -2334,17 +2342,29 @@ get_system_info() {
         fi
     fi
     cname=$(echo -n "$cname" | tr '\n' ' ' | sed -E 's/ +/ /g')
-    if command -v free > /dev/null 2>&1; then
-        if free -m | grep -q '内存'; then  # 如果输出中包含 "内存" 关键词
+    if command -v free >/dev/null 2>&1; then
+        if free -m | grep -q '内存'; then # 如果输出中包含 "内存" 关键词
             tram=$(free -m | awk '/内存/{print $2}')
             uram=$(free -m | awk '/内存/{print $3}')
             swap=$(free -m | awk '/交换/{print $2}')
             uswap=$(free -m | awk '/交换/{print $3}')
-        else  # 否则，假定输出是英文的
-            tram=$(LANG=C; free -m | awk '/Mem/ {print $2}')
-            uram=$(LANG=C; free -m | awk '/Mem/ {print $3}')
-            swap=$(LANG=C; free -m | awk '/Swap/ {print $2}')
-            uswap=$(LANG=C; free -m | awk '/Swap/ {print $3}')
+        else # 否则，假定输出是英文的
+            tram=$(
+                LANG=C
+                free -m | awk '/Mem/ {print $2}'
+            )
+            uram=$(
+                LANG=C
+                free -m | awk '/Mem/ {print $3}'
+            )
+            swap=$(
+                LANG=C
+                free -m | awk '/Swap/ {print $2}'
+            )
+            uswap=$(
+                LANG=C
+                free -m | awk '/Swap/ {print $3}'
+            )
         fi
     else
         tram=$($sysctl_path -n hw.physmem | awk '{printf "%.0f", $1/1024/1024}')
@@ -2353,30 +2373,30 @@ get_system_info() {
         uswap=$(swapinfo -k | awk 'NR>1{sum+=$4} END{printf "%.0f", sum/1024}')
     fi
     if _exists "getconf"; then
-        lbit=$( getconf LONG_BIT )
+        lbit=$(getconf LONG_BIT)
     else
         echo ${arch} | grep -q "64" && lbit="64" || lbit="32"
     fi
-    kern=$( uname -r )
+    kern=$(uname -r)
     if [ -z "$sysctl_path" ]; then
         tcpctrl="None"
     fi
-    tcpctrl=$($sysctl_path -n net.ipv4.tcp_congestion_control 2> /dev/null)
+    tcpctrl=$($sysctl_path -n net.ipv4.tcp_congestion_control 2>/dev/null)
     if [ $? -ne 0 ]; then
         tcpctrl="未设置TCP拥塞控制算法"
     else
         if [ $tcpctrl == "bbr" ]; then
             :
         else
-            if lsmod | grep bbr > /dev/null; then
+            if lsmod | grep bbr >/dev/null; then
                 reading "是否要开启bbr再进行测试？(回车则默认不开启) [y/n] " confirmbbr
                 echo ""
                 if [ "$confirmbbr" != "y" ]; then
-                    echo "net.core.default_qdisc=fq" >> "$sysctl_conf"
-                    echo "net.ipv4.tcp_congestion_control=bbr" >> "$sysctl_conf"
+                    echo "net.core.default_qdisc=fq" >>"$sysctl_conf"
+                    echo "net.ipv4.tcp_congestion_control=bbr" >>"$sysctl_conf"
                     $sysctl_path -p
                 fi
-                tcpctrl=$($sysctl_path -n net.ipv4.tcp_congestion_control 2> /dev/null)
+                tcpctrl=$($sysctl_path -n net.ipv4.tcp_congestion_control 2>/dev/null)
                 if [ $? -ne 0 ]; then
                     tcpctrl="None"
                 fi
@@ -2384,7 +2404,7 @@ get_system_info() {
         fi
     fi
     check_stun
-    if command -v stun > /dev/null 2>&1; then
+    if command -v stun >/dev/null 2>&1; then
         result=$(stun stun.l.google.com)
         nat_type=$(echo "$result" | grep '^Primary' | awk -F'Primary:' '{print $2}' | tr -d ' ')
         nat_type_r=""
@@ -2395,7 +2415,7 @@ get_system_info() {
             if [ -n "$nat_type_r" ]; then
                 nat_type_r+=","
             fi
-                nat_type_r+="独立过滤"
+            nat_type_r+="独立过滤"
         fi
         if echo "$nat_type" | grep -q "preservesports|preserves ports"; then
             if [ -n "$nat_type_r" ]; then
@@ -2429,13 +2449,13 @@ get_system_info() {
         fi
         if echo "$nat_type" | grep -qE "BlockedorcouldnotreachSTUNserver|Blocked or could not reach STUN server"; then
             checkpystun
-            if command -v pystun3 > /dev/null 2>&1; then
+            if command -v pystun3 >/dev/null 2>&1; then
                 result=$(pystun3 </dev/null)
                 nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
                 if echo "$nat_type_r" | grep -qE "Blocked"; then
                     nat_type_r="无法检测"
                 fi
-            elif command -v pystun > /dev/null 2>&1; then
+            elif command -v pystun >/dev/null 2>&1; then
                 result=$(pystun </dev/null)
                 nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
                 if echo "$nat_type_r" | grep -qE "Blocked"; then
@@ -2453,10 +2473,10 @@ get_system_info() {
         fi
     else
         checkpystun
-        if command -v pystun3 > /dev/null 2>&1; then
+        if command -v pystun3 >/dev/null 2>&1; then
             result=$(pystun3 </dev/null)
             nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
-        elif command -v pystun > /dev/null 2>&1; then
+        elif command -v pystun >/dev/null 2>&1; then
             result=$(pystun </dev/null)
             nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
         fi
@@ -2481,7 +2501,7 @@ get_first_non_empty_element() {
     done
 }
 
-run_ip_info_check(){
+run_ip_info_check() {
     _yellow "run IP information check..."
     # 并行执行并发查询IP信息
     check_ip_info_by_cloudflare &
@@ -2491,7 +2511,7 @@ run_ip_info_check(){
     wait
 }
 
-print_ip_info(){
+print_ip_info() {
     # 存储结果的四个列表
     local ipv4_asn_info_list=()
     local ipv4_location_list=()
@@ -2505,7 +2525,7 @@ print_ip_info(){
             read -r location
             read -r ipv6_asn_info
             read -r ipv6_location
-        } < "$file"
+        } <"$file"
         ipv4_asn_info_list+=("$asn_info")
         ipv4_location_list+=("$location")
         ipv6_asn_info_list+=("$ipv6_asn_info")
@@ -2544,9 +2564,9 @@ print_system_info() {
         echo " CPU 型号          : $(_blue "无法检测到CPU型号")"
     fi
     if [[ -n "$Result_Systeminfo_isPhysical" && "$Result_Systeminfo_isPhysical" = "1" ]] >/dev/null 2>&1; then
-        if [ -n "$Result_Systeminfo_CPUSockets" ] && [ "$Result_Systeminfo_CPUSockets" -ne 0 ] && \
-        [ -n "$Result_Systeminfo_CPUCores" ] && [ "$Result_Systeminfo_CPUCores" -ne 0 ] && \
-        [ -n "$Result_Systeminfo_CPUThreads" ] && [ "$Result_Systeminfo_CPUThreads" -ne 0 ] >/dev/null 2>&1; then
+        if [ -n "$Result_Systeminfo_CPUSockets" ] && [ "$Result_Systeminfo_CPUSockets" -ne 0 ] &&
+            [ -n "$Result_Systeminfo_CPUCores" ] && [ "$Result_Systeminfo_CPUCores" -ne 0 ] &&
+            [ -n "$Result_Systeminfo_CPUThreads" ] && [ "$Result_Systeminfo_CPUThreads" -ne 0 ] >/dev/null 2>&1; then
             echo " CPU 核心数        : $(_blue "${Result_Systeminfo_CPUSockets} 物理核心, ${Result_Systeminfo_CPUCores} 总核心, ${Result_Systeminfo_CPUThreads} 总线程数")"
         elif [ -n "$cores" ]; then
             echo " CPU 核心数        : $(_blue "$cores")"
@@ -2598,9 +2618,9 @@ print_system_info() {
         echo " 系统              : $(_blue "$DISTRO")"
     fi
     [[ -z "$CPU_AES" ]] && CPU_AES="\xE2\x9D\x8C Disabled" || CPU_AES="\xE2\x9C\x94 Enabled"
-    echo " AES-NI指令集      : $(_blue "$CPU_AES")"  
+    echo " AES-NI指令集      : $(_blue "$CPU_AES")"
     [[ -z "$CPU_VIRT" ]] && CPU_VIRT="\xE2\x9D\x8C Disabled" || CPU_VIRT="\xE2\x9C\x94 Enabled"
-    echo " VM-x/AMD-V支持    : $(_blue "$CPU_VIRT")"  
+    echo " VM-x/AMD-V支持    : $(_blue "$CPU_VIRT")"
     echo " 架构              : $(_blue "$arch ($lbit Bit)")"
     echo " 内核              : $(_blue "$kern")"
     echo " TCP加速方式       : $(_yellow "$tcpctrl")"
@@ -2610,7 +2630,7 @@ print_system_info() {
 
 print_end_time() {
     end_time=$(date +%s)
-    time=$(( ${end_time} - ${start_time} ))
+    time=$((${end_time} - ${start_time}))
     if [ ${time} -gt 60 ]; then
         min=$(expr $time / 60)
         sec=$(expr $time % 60)
@@ -2622,7 +2642,7 @@ print_end_time() {
     echo " 时间          : $date_time"
 }
 
-check_lmc_script(){
+check_lmc_script() {
     mv $TEMP_DIR/media_lmc_check.sh ./
 }
 
@@ -2639,7 +2659,7 @@ translate_status() {
 }
 
 # ipinfo数据库 ①
-ipinfo(){
+ipinfo() {
     rm -rf /tmp/ip_quality_ipinfo*
     local ip="$1"
     local output=$(curl -sL -m 10 -v "https://ipinfo.io/widget/demo/${ip}" -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36" -H "Referer: https://ipinfo.io" 2>/dev/null)
@@ -2652,13 +2672,13 @@ ipinfo(){
     local tor=$(echo "$temp_output" | grep -o '"tor": .*,' | cut -d' ' -f2 | tr -d '",')
     local relay=$(echo "$temp_output" | grep -o '"relay": .*,' | cut -d' ' -f2 | tr -d '",')
     local hosting=$(echo "$temp_output" | grep -o '"hosting": .*,' | cut -d' ' -f2 | tr -d '",')
-    echo "$asn_type" > /tmp/ip_quality_ipinfo_usage_type
-    echo "$company_type" > /tmp/ip_quality_ipinfo_company_type
-    echo "$vpn" > /tmp/ip_quality_ipinfo_vpn
-    echo "$proxy" > /tmp/ip_quality_ipinfo_proxy
-    echo "$tor" > /tmp/ip_quality_ipinfo_tor
-    echo "$relay" > /tmp/ip_quality_ipinfo_icloud_relay
-    echo "$hosting" > /tmp/ip_quality_ipinfo_hosting
+    echo "$asn_type" >/tmp/ip_quality_ipinfo_usage_type
+    echo "$company_type" >/tmp/ip_quality_ipinfo_company_type
+    echo "$vpn" >/tmp/ip_quality_ipinfo_vpn
+    echo "$proxy" >/tmp/ip_quality_ipinfo_proxy
+    echo "$tor" >/tmp/ip_quality_ipinfo_tor
+    echo "$relay" >/tmp/ip_quality_ipinfo_icloud_relay
+    echo "$hosting" >/tmp/ip_quality_ipinfo_hosting
 }
 
 # scamalytics数据库 ②
@@ -2672,15 +2692,14 @@ scamalytics_ipv4() {
     local temp1=$(echo "$context" | grep -oP '(?<=>Fraud Score: )[^<]+')
     # 欺诈分数
     if [ -n "$temp1" ]; then
-        echo "$temp1" >> /tmp/ip_quality_scamalytics_ipv4_score
+        echo "$temp1" >>/tmp/ip_quality_scamalytics_ipv4_score
     else
         return
     fi
     local temp2=$(echo "$context" | grep -oP '(?<=<div).*?(?=</div>)' | tail -n 6)
     local nlist=("vpn" "tor" "datacenter" "public_proxy" "web_proxy" "search_engine_robot")
     local status_t2
-    for element in $temp2
-    do
+    for element in $temp2; do
         if echo "$element" | grep -q "score" >/dev/null 2>&1; then
             status_t2=1
             break
@@ -2693,10 +2712,10 @@ scamalytics_ipv4() {
     if ! [ "$status_t2" -eq 1 ]; then
         while read -r temp3; do
             if [[ -n "$temp3" ]]; then
-                echo "${temp3#*>}" >> /tmp/ip_quality_scamalytics_ipv4_${nlist[$i]}
-                i=$((i+1))
+                echo "${temp3#*>}" >>/tmp/ip_quality_scamalytics_ipv4_${nlist[$i]}
+                i=$((i + 1))
             fi
-        done <<< "$(echo "$temp2" | sed 's/<[^>]*>//g' | sed 's/^[[:blank:]]*//g')"
+        done <<<"$(echo "$temp2" | sed 's/<[^>]*>//g' | sed 's/^[[:blank:]]*//g')"
     fi
 }
 
@@ -2711,15 +2730,14 @@ scamalytics_ipv6() {
     local temp1=$(echo "$context" | grep -oP '(?<=>Fraud Score: )[^<]+')
     # 欺诈分数
     if [ -n "$temp1" ]; then
-        echo "$temp1" >> /tmp/ip_quality_scamalytics_ipv6_score
+        echo "$temp1" >>/tmp/ip_quality_scamalytics_ipv6_score
     else
         return
     fi
     local temp2=$(echo "$context" | grep -oP '(?<=<div).*?(?=</div>)' | tail -n 6)
     local nlist=("vpn" "tor" "datacenter" "public_proxy" "web_proxy" "search_engine_robot")
     local status_t2
-    for element in $temp2
-    do
+    for element in $temp2; do
         if echo "$element" | grep -q "score" >/dev/null 2>&1; then
             status_t2=1
             break
@@ -2732,10 +2750,10 @@ scamalytics_ipv6() {
     if ! [ "$status_t2" -eq 1 ]; then
         while read -r temp3; do
             if [[ -n "$temp3" ]]; then
-                echo "${temp3#*>}" >> /tmp/ip_quality_scamalytics_ipv6_${nlist[$i]}
-                i=$((i+1))
+                echo "${temp3#*>}" >>/tmp/ip_quality_scamalytics_ipv6_${nlist[$i]}
+                i=$((i + 1))
             fi
-        done <<< "$(echo "$temp2" | sed 's/<[^>]*>//g' | sed 's/^[[:blank:]]*//g')"
+        done <<<"$(echo "$temp2" | sed 's/<[^>]*>//g' | sed 's/^[[:blank:]]*//g')"
     fi
 }
 
@@ -2744,10 +2762,10 @@ virustotal() {
     local ip="$1"
     rm -rf /tmp/ip_quality_virustotal*
     local api_keys=(
-    "401e74a0a76ff4a5c2462177bfe54d1fb71a86a97031a3a5b461eb9fe06fa9a5"
-    "e6184c04de532cd5a094f3fd6b3ce36cd187e41e671b5336fd69862257d07a9a"
-    "9929218dcd124c19bcee49ecd6d7555213de0e8f27d407cc3e85c92c3fc2508e"
-    "bcc1f94cc4ec1966f43a5552007d6c4fa3461cec7200f8d95053ebeeecc68afa"
+        "401e74a0a76ff4a5c2462177bfe54d1fb71a86a97031a3a5b461eb9fe06fa9a5"
+        "e6184c04de532cd5a094f3fd6b3ce36cd187e41e671b5336fd69862257d07a9a"
+        "9929218dcd124c19bcee49ecd6d7555213de0e8f27d407cc3e85c92c3fc2508e"
+        "bcc1f94cc4ec1966f43a5552007d6c4fa3461cec7200f8d95053ebeeecc68afa"
     )
     local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
     local output=$(curl -s --request GET --url "https://www.virustotal.com/api/v3/ip_addresses/$ip" --header "x-apikey:$api_key")
@@ -2768,10 +2786,10 @@ virustotal() {
     }' | sed 's/\"//g')
     # 黑名单记录统计:(有多少黑名单网站有记录)
     if [[ -n "$result" ]] && [[ -n "$(echo "$result" | awk 'NF')" ]]; then
-        echo "$result" | sed 's/ //g' | awk 'NR==1' > /tmp/ip_quality_virustotal_harmlessness_records
-        echo "$result" | sed 's/ //g' | awk 'NR==2' > /tmp/ip_quality_virustotal_malicious_records
-        echo "$result" | sed 's/ //g' | awk 'NR==3' > /tmp/ip_quality_virustotal_suspicious_records
-        echo "$result" | sed 's/ //g' | awk 'NR==4' > /tmp/ip_quality_virustotal_no_records
+        echo "$result" | sed 's/ //g' | awk 'NR==1' >/tmp/ip_quality_virustotal_harmlessness_records
+        echo "$result" | sed 's/ //g' | awk 'NR==2' >/tmp/ip_quality_virustotal_malicious_records
+        echo "$result" | sed 's/ //g' | awk 'NR==3' >/tmp/ip_quality_virustotal_suspicious_records
+        echo "$result" | sed 's/ //g' | awk 'NR==4' >/tmp/ip_quality_virustotal_no_records
     fi
 }
 
@@ -2779,17 +2797,17 @@ cloudflare() {
     local status=0
     local context1
     rm -rf /tmp/ip_quality_cloudflare_risk
-    for ((i=1; i<=100; i++)); do
+    for ((i = 1; i <= 100; i++)); do
         context1=$(curl -sL -m 10 "https://cf-threat.sukkaw.com/hello.json?threat=$i")
         if [[ "$context1" != *"pong!"* ]]; then
-            echo "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60" >> /tmp/ip_quality_cloudflare_risk
-            echo "Cloudflare威胁得分：$i" >> /tmp/ip_quality_cloudflare_risk
+            echo "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60" >>/tmp/ip_quality_cloudflare_risk
+            echo "Cloudflare威胁得分：$i" >>/tmp/ip_quality_cloudflare_risk
             local status=1
             break
         fi
     done
     if [[ $i == 100 && $status == 0 ]]; then
-        echo "Cloudflare威胁得分(0为低风险): 0" >> /tmp/ip_quality_cloudflare_risk
+        echo "Cloudflare威胁得分(0为低风险): 0" >>/tmp/ip_quality_cloudflare_risk
     fi
 }
 
@@ -2802,12 +2820,12 @@ abuse_ipv4() {
     local context2=$(curl -sL -H "$head" -m 10 "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
     if [[ "$context2" == *"abuseConfidenceScore"* ]]; then
         score=$(echo "$context2" | grep -o '"abuseConfidenceScore":[^,}]*' | sed 's/.*://')
-        echo "$score" > /tmp/ip_quality_abuseipdb_ipv4_score
-        usageType=$(grep -oP '"usageType":\s*"\K[^"]+' <<< "$context2" | sed 's/\\\//\//g')
+        echo "$score" >/tmp/ip_quality_abuseipdb_ipv4_score
+        usageType=$(grep -oP '"usageType":\s*"\K[^"]+' <<<"$context2" | sed 's/\\\//\//g')
         if [ -z "$usageType" ]; then
             usageType="Unknown (Maybe Fixed Line ISP)"
         fi
-        echo "$usageType" > /tmp/ip_quality_ip2location_ipv4_usage_type
+        echo "$usageType" >/tmp/ip_quality_ip2location_ipv4_usage_type
     fi
 }
 
@@ -2820,12 +2838,12 @@ abuse_ipv6() {
     local context2=$(curl -sL -H "$head" -m 10 "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
     if [[ "$context2" == *"abuseConfidenceScore"* ]]; then
         score=$(echo "$context2" | grep -o '"abuseConfidenceScore":[^,}]*' | sed 's/.*://')
-        echo "$score" > /tmp/ip_quality_abuseipdb_ipv6_score
-        usageType=$(grep -oP '"usageType":\s*"\K[^"]+' <<< "$context2" | sed 's/\\\//\//g')
+        echo "$score" >/tmp/ip_quality_abuseipdb_ipv6_score
+        usageType=$(grep -oP '"usageType":\s*"\K[^"]+' <<<"$context2" | sed 's/\\\//\//g')
         if [ -z "$usageType" ]; then
             usageType="Unknown (Maybe Fixed Line ISP)"
         fi
-        echo "$usageType" > /tmp/ip_quality_ip2location_ipv6_usage_type
+        echo "$usageType" >/tmp/ip_quality_ip2location_ipv6_usage_type
     fi
 }
 
@@ -2843,13 +2861,13 @@ ipapi() {
     if [[ "$context4" == *"mobile"* ]]; then
         mobile=$(echo "$context4" | grep -o '"mobile":[^,}]*' | sed 's/.*://;s/"//g')
         tp1=$(translate_status ${mobile})
-        echo "$tp1" >> /tmp/ip_quality_ip_api_mobile
+        echo "$tp1" >>/tmp/ip_quality_ip_api_mobile
         proxy=$(echo "$context4" | grep -o '"proxy":[^,}]*' | sed 's/.*://;s/"//g')
         tp2=$(translate_status ${proxy})
-        echo "$tp2" >> /tmp/ip_quality_ip_api_proxy
+        echo "$tp2" >>/tmp/ip_quality_ip_api_proxy
         hosting=$(echo "$context4" | grep -o '"hosting":[^,}]*' | sed 's/.*://;s/"//g')
         tp3=$(translate_status ${hosting})
-        echo "$tp3" >> /tmp/ip_quality_ip_api_datacenter
+        echo "$tp3" >>/tmp/ip_quality_ip_api_datacenter
     fi
 }
 
@@ -2859,17 +2877,17 @@ ipwhois() {
     rm -rf /tmp/ip_quality_ipwhois*
     local url="https://ipwhois.app/widget.php?ip=${ip}&lang=en"
     local response=$(curl -s -X GET "$url" \
-    -H "Host: ipwhois.app" \
-    -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/116.0" \
-    -H "Accept: */*" \
-    -H "Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2" \
-    -H "Accept-Encoding: gzip, deflate, br" \
-    -H "Origin: https://ipwhois.io" \
-    -H "Connection: keep-alive" \
-    -H "Referer: https://ipwhois.io/" \
-    -H "Sec-Fetch-Dest: empty" \
-    -H "Sec-Fetch-Mode: cors" \
-    -H "Sec-Fetch-Site: cross-site")
+        -H "Host: ipwhois.app" \
+        -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/116.0" \
+        -H "Accept: */*" \
+        -H "Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2" \
+        -H "Accept-Encoding: gzip, deflate, br" \
+        -H "Origin: https://ipwhois.io" \
+        -H "Connection: keep-alive" \
+        -H "Referer: https://ipwhois.io/" \
+        -H "Sec-Fetch-Dest: empty" \
+        -H "Sec-Fetch-Mode: cors" \
+        -H "Sec-Fetch-Site: cross-site")
     if [[ "$?" -ne 0 ]]; then
         return
     fi
@@ -2879,11 +2897,11 @@ ipwhois() {
     vpn=$(echo "$security_section" | awk -F'"vpn":' '{print $2}' | cut -d',' -f1)
     tor=$(echo "$security_section" | awk -F'"tor":' '{print $2}' | cut -d',' -f1)
     hosting=$(echo "$security_section" | awk -F'"hosting":' '{print $2}' | cut -d',' -f1 | sed 's/}//')
-    echo "$anonymous" >> /tmp/ip_quality_ipwhois_anonymous
-    echo "$proxy" >> /tmp/ip_quality_ipwhois_proxy
-    echo "$vpn" >> /tmp/ip_quality_ipwhois_vpn
-    echo "$tor" >> /tmp/ip_quality_ipwhois_tor
-    echo "$hosting" >> /tmp/ip_quality_ipwhois_hosting
+    echo "$anonymous" >>/tmp/ip_quality_ipwhois_anonymous
+    echo "$proxy" >>/tmp/ip_quality_ipwhois_proxy
+    echo "$vpn" >>/tmp/ip_quality_ipwhois_vpn
+    echo "$tor" >>/tmp/ip_quality_ipwhois_tor
+    echo "$hosting" >>/tmp/ip_quality_ipwhois_hosting
 }
 
 # ipregistry数据库 ⑧
@@ -2891,14 +2909,14 @@ ipregistry() {
     rm -rf /tmp/ip_quality_ipregistry*
     local ip="$1"
     local api_keys=(
-    "ing7l12cxp6jaahw"
-    "r208izz0q0icseks"
-    "szh9vdbsf64ez2bk"
-    "vum97powo0pxshko"
-    "m7irmmf8ey12rx7o"
-    "nd2chql8jm9f7gxa"
-    "9mbbr52gsds5xtyb"
-    "0xjh6xmh6j0jwsy6"
+        "ing7l12cxp6jaahw"
+        "r208izz0q0icseks"
+        "szh9vdbsf64ez2bk"
+        "vum97powo0pxshko"
+        "m7irmmf8ey12rx7o"
+        "nd2chql8jm9f7gxa"
+        "9mbbr52gsds5xtyb"
+        "0xjh6xmh6j0jwsy6"
     )
     local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
     local response
@@ -2919,19 +2937,19 @@ ipregistry() {
     local vpn=$(echo "$response" | grep -o '"is_vpn":[a-zA-Z]*' | awk -F':' '{print $2}')
     local anonymous=$(echo "$response" | grep -o '"is_anonymous":[a-zA-Z]*' | awk -F':' '{print $2}')
     local threat=$(echo "$response" | grep -o '"is_threat":[a-zA-Z]*' | awk -F':' '{print $2}')
-    echo "$company_type" > /tmp/ip_quality_ipregistry_company_type
-    echo "$connection_type" > /tmp/ip_quality_ipregistry_usage_type
-    echo "$abuser" > /tmp/ip_quality_ipregistry_abuser
-    echo "$attacker" > /tmp/ip_quality_ipregistry_attacker
-    echo "$bogon" > /tmp/ip_quality_ipregistry_bogon
-    echo "$cloud_provider" > /tmp/ip_quality_ipregistry_cloud_provider
-    echo "$proxy" > /tmp/ip_quality_ipregistry_proxy
-    echo "$relay" > /tmp/ip_quality_ipregistry_icloud_relay
-    echo "$tor" > /tmp/ip_quality_ipregistry_tor
-    echo "$tor_exit" > /tmp/ip_quality_ipregistry_tor_exit
-    echo "$vpn" > /tmp/ip_quality_ipregistry_vpn
-    echo "$anonymous" > /tmp/ip_quality_ipregistry_anonymous
-    echo "$threat" > /tmp/ip_quality_ipregistry_threat
+    echo "$company_type" >/tmp/ip_quality_ipregistry_company_type
+    echo "$connection_type" >/tmp/ip_quality_ipregistry_usage_type
+    echo "$abuser" >/tmp/ip_quality_ipregistry_abuser
+    echo "$attacker" >/tmp/ip_quality_ipregistry_attacker
+    echo "$bogon" >/tmp/ip_quality_ipregistry_bogon
+    echo "$cloud_provider" >/tmp/ip_quality_ipregistry_cloud_provider
+    echo "$proxy" >/tmp/ip_quality_ipregistry_proxy
+    echo "$relay" >/tmp/ip_quality_ipregistry_icloud_relay
+    echo "$tor" >/tmp/ip_quality_ipregistry_tor
+    echo "$tor_exit" >/tmp/ip_quality_ipregistry_tor_exit
+    echo "$vpn" >/tmp/ip_quality_ipregistry_vpn
+    echo "$anonymous" >/tmp/ip_quality_ipregistry_anonymous
+    echo "$threat" >/tmp/ip_quality_ipregistry_threat
 }
 
 # ipdata数据库 ⑨
@@ -2939,59 +2957,59 @@ ipdata() {
     rm -rf /tmp/ip_quality_ipdata*
     local ip="$1"
     local api_keys=(
-    "47c090ef820c47af56b382bb08ba863dbd84a0b10b80acd0dd8deb48"
-    "c6d4d04d5f11f2cd0839ee03c47c58621d74e361c945b5c1b4f668f3"
+        "47c090ef820c47af56b382bb08ba863dbd84a0b10b80acd0dd8deb48"
+        "c6d4d04d5f11f2cd0839ee03c47c58621d74e361c945b5c1b4f668f3"
     )
     local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
     response=$(curl -sL -m 10 "https://api.ipdata.co/${ip}?api-key=${api_key}" 2>/dev/null)
     local usage_type=$(echo "$response" | grep -o '"type": "[^"]*' | cut -d'"' -f4)
-    local tor=$(grep -o '"is_tor": \w\+' <<< "$response" | cut -d ' ' -f 2)
-    local icloud_relay=$(grep -o '"is_icloud_relay": \w\+' <<< "$response" | cut -d ' ' -f 2)
-    local proxy=$(grep -o '"is_proxy": \w\+' <<< "$response" | cut -d ' ' -f 2)
-    local datacenter=$(grep -o '"is_datacenter": \w\+' <<< "$response" | cut -d ' ' -f 2)
-    local anonymous=$(grep -o '"is_anonymous": \w\+' <<< "$response" | cut -d ' ' -f 2)
-    local attacker=$(grep -o '"is_known_attacker": \w\+' <<< "$response" | cut -d ' ' -f 2)
-    local abuser=$(grep -o '"is_known_abuser": \w\+' <<< "$response" | cut -d ' ' -f 2)
-    local threat=$(grep -o '"is_threat": \w\+' <<< "$response" | cut -d ' ' -f 2)
-    local bogon=$(grep -o '"is_bogon": \w\+' <<< "$response" | cut -d ' ' -f 2)
-    echo "$usage_type" > /tmp/ip_quality_ipdata_usage_type
-    echo "$tor" > /tmp/ip_quality_ipdata_tor
-    echo "$icloud_relay" > /tmp/ip_quality_ipdata_icloud_relay
-    echo "$proxy" > /tmp/ip_quality_ipdata_proxy
-    echo "$datacenter" > /tmp/ip_quality_ipdata_datacenter
-    echo "$anonymous" > /tmp/ip_quality_ipdata_anonymous
-    echo "$attacker" > /tmp/ip_quality_ipdata_attacker
-    echo "$abuser" > /tmp/ip_quality_ipdata_abuser
-    echo "$threat" > /tmp/ip_quality_ipdata_threat
-    echo "$bogon" > /tmp/ip_quality_ipdata_bogon
+    local tor=$(grep -o '"is_tor": \w\+' <<<"$response" | cut -d ' ' -f 2)
+    local icloud_relay=$(grep -o '"is_icloud_relay": \w\+' <<<"$response" | cut -d ' ' -f 2)
+    local proxy=$(grep -o '"is_proxy": \w\+' <<<"$response" | cut -d ' ' -f 2)
+    local datacenter=$(grep -o '"is_datacenter": \w\+' <<<"$response" | cut -d ' ' -f 2)
+    local anonymous=$(grep -o '"is_anonymous": \w\+' <<<"$response" | cut -d ' ' -f 2)
+    local attacker=$(grep -o '"is_known_attacker": \w\+' <<<"$response" | cut -d ' ' -f 2)
+    local abuser=$(grep -o '"is_known_abuser": \w\+' <<<"$response" | cut -d ' ' -f 2)
+    local threat=$(grep -o '"is_threat": \w\+' <<<"$response" | cut -d ' ' -f 2)
+    local bogon=$(grep -o '"is_bogon": \w\+' <<<"$response" | cut -d ' ' -f 2)
+    echo "$usage_type" >/tmp/ip_quality_ipdata_usage_type
+    echo "$tor" >/tmp/ip_quality_ipdata_tor
+    echo "$icloud_relay" >/tmp/ip_quality_ipdata_icloud_relay
+    echo "$proxy" >/tmp/ip_quality_ipdata_proxy
+    echo "$datacenter" >/tmp/ip_quality_ipdata_datacenter
+    echo "$anonymous" >/tmp/ip_quality_ipdata_anonymous
+    echo "$attacker" >/tmp/ip_quality_ipdata_attacker
+    echo "$abuser" >/tmp/ip_quality_ipdata_abuser
+    echo "$threat" >/tmp/ip_quality_ipdata_threat
+    echo "$bogon" >/tmp/ip_quality_ipdata_bogon
 }
 
 # ipgeolocation数据库 ⑩
-ipgeolocation(){
+ipgeolocation() {
     rm -rf /tmp/ip_quality_ipgeolocation*
     local ip="$1"
     local api_keys=(
-    "0d4f60641cd9b95ff5ac9b4d866a0655"
-    "7C5384E65E3B5B520A588FB8F9281719"
-    "4E191A613023EA66D24E35E41C870D3B"
-    "3D07E2EAAF55940AF44734C3F2AC7C1A"
-    "32D24DBFB5C3BFFDEF5FE9331F93BA5B"
-    "28cc35ee8608480fa7087be0e435320c"
+        "0d4f60641cd9b95ff5ac9b4d866a0655"
+        "7C5384E65E3B5B520A588FB8F9281719"
+        "4E191A613023EA66D24E35E41C870D3B"
+        "3D07E2EAAF55940AF44734C3F2AC7C1A"
+        "32D24DBFB5C3BFFDEF5FE9331F93BA5B"
+        "28cc35ee8608480fa7087be0e435320c"
     )
     local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
     local response=$(curl -sL -m 10 "https://api.ip2location.io/?key=${api_key}&ip=${ip}" 2>/dev/null)
     local is_proxy=$(echo "$response" | grep -o '"is_proxy":\s*false\|true' | cut -d ":" -f2)
     is_proxy=$(echo "$is_proxy" | tr -d '"')
-    echo "$is_proxy" > /tmp/ip_quality_ipgeolocation_proxy
+    echo "$is_proxy" >/tmp/ip_quality_ipgeolocation_proxy
 }
 
 google() {
     local curl_result=$(curl -sL -m 10 "https://www.google.com/search?q=www.spiritysdx.top" -H "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0")
     rm -rf /tmp/ip_quality_google
     if echo "$curl_result" | grep -q "二叉树的博客"; then
-        echo "Google搜索可行性：YES" >> /tmp/ip_quality_google
+        echo "Google搜索可行性：YES" >>/tmp/ip_quality_google
     else
-        echo "Google搜索可行性：NO" >> /tmp/ip_quality_google
+        echo "Google搜索可行性：NO" >>/tmp/ip_quality_google
     fi
 }
 
@@ -2999,11 +3017,11 @@ local_port_25() {
     local host=$1
     local port=$2
     rm -rf /tmp/ip_quality_local_port_25
-    nc -z -w5 $host $port > /dev/null 2>&1
+    nc -z -w5 $host $port >/dev/null 2>&1
     if [ $? -eq 0 ]; then
-        echo "  本地: Yes" >> /tmp/ip_quality_local_port_25
+        echo "  本地: Yes" >>/tmp/ip_quality_local_port_25
     else
-        echo "  本地: No" >> /tmp/ip_quality_local_port_25
+        echo "  本地: No" >>/tmp/ip_quality_local_port_25
     fi
 }
 
@@ -3013,88 +3031,88 @@ check_email_service() {
     local port=25
     local expected_response="220"
     case $service in
-        "gmail邮箱")
-            host="smtp.gmail.com"
-            ;;
-        "163邮箱")
-            host="smtp.163.com"
-            ;;
-        "yandex邮箱")
-            host="smtp.yandex.com"
-            ;;
-        "outlook邮箱")
-            host="smtp.office365.com"
-            ;;
-        "qq邮箱")
-            host="smtp.qq.com"
-            ;;
-        *)
-            echo "不支持的邮箱服务: $service"
-            return
-            ;;
+    "gmail邮箱")
+        host="smtp.gmail.com"
+        ;;
+    "163邮箱")
+        host="smtp.163.com"
+        ;;
+    "yandex邮箱")
+        host="smtp.yandex.com"
+        ;;
+    "outlook邮箱")
+        host="smtp.office365.com"
+        ;;
+    "qq邮箱")
+        host="smtp.qq.com"
+        ;;
+    *)
+        echo "不支持的邮箱服务: $service"
+        return
+        ;;
     esac
     local response=$(echo -e "QUIT\r\n" | nc -w6 $host $port 2>/dev/null)
     if [[ $response == *"$expected_response"* ]]; then
-        echo "  $service: Yes" >> /tmp/ip_quality_check_email_service
+        echo "  $service: Yes" >>/tmp/ip_quality_check_email_service
     else
-        echo "  $service：No" >> /tmp/ip_quality_check_email_service
+        echo "  $service：No" >>/tmp/ip_quality_check_email_service
     fi
 }
 
-combine_result_of_ip_quality(){
-    check_and_cat_file /tmp/ip_quality_local_port_25 >> /tmp/ip_quality_check_port_25
-    check_and_cat_file /tmp/ip_quality_check_email_service >> /tmp/ip_quality_check_port_25
+combine_result_of_ip_quality() {
+    check_and_cat_file /tmp/ip_quality_local_port_25 >>/tmp/ip_quality_check_port_25
+    check_and_cat_file /tmp/ip_quality_check_email_service >>/tmp/ip_quality_check_port_25
 }
 
 check_port_25() {
     rm -rf /tmp/ip_quality_check_port_25
     rm -rf /tmp/ip_quality_check_email_service
     rm -rf /tmp/ip_quality_local_port_25
-    echo "端口25检测:" >> /tmp/ip_quality_check_port_25
-    { local_port_25 "localhost" 25; }&
-    check_email_service "163邮箱";
+    echo "端口25检测:" >>/tmp/ip_quality_check_port_25
+    { local_port_25 "localhost" 25; } &
+    check_email_service "163邮箱"
     if [[ $(cat /tmp/ip_quality_check_email_service) == *"No"* ]]; then
         wait
         combine_result_of_ip_quality
         return
     else
-        check_email_service "gmail邮箱";
+        check_email_service "gmail邮箱"
         if [[ $(cat /tmp/ip_quality_check_email_service) == *"No"* ]]; then
             wait
             combine_result_of_ip_quality
             return
         else
-            { check_email_service "outlook邮箱"; }&
-            { check_email_service "yandex邮箱"; }&
-            { check_email_service "qq邮箱"; }&
+            { check_email_service "outlook邮箱"; } &
+            { check_email_service "yandex邮箱"; } &
+            { check_email_service "qq邮箱"; } &
         fi
     fi
     wait
     combine_result_of_ip_quality
 }
 
-ipcheck(){
+ipcheck() {
     _blue "以下为各数据库编号，输出结果后将自带数据库来源对应的编号"
     _blue "ipinfo数据库 ①  | scamalytics数据库 ②  | virustotal数据库 ③  | abuseipdb数据库 ④  | ip2location数据库   ⑤"
     _blue "ip-api数据库 ⑥  | ipwhois数据库     ⑦  | ipregistry数据库 ⑧  | ipdata数据库    ⑨  | ipgeolocation数据库 ⑩"
     local ip4=$(echo "$IPV4" | tr -d '\n')
     local ip6=$(echo "$IPV6" | tr -d '\n')
-    { ipinfo "$ip4"; }&
-    { scamalytics_ipv4 "$ip4"; }&
-    { virustotal "$ip4"; }&
-    { abuse_ipv4 "$ip4"; }&
-    { ipapi "$ip4"; }&
-    { ipwhois "$ip4"; }&
-    { ipregistry "$ip4"; }&
-    { ipdata "$ip4"; }&
-    { ipgeolocation "$ip4"; }&
-    { google; }&
+    { ipinfo "$ip4"; } &
+    { scamalytics_ipv4 "$ip4"; } &
+    { virustotal "$ip4"; } &
+    { abuse_ipv4 "$ip4"; } &
+    { ipapi "$ip4"; } &
+    { ipwhois "$ip4"; } &
+    { ipregistry "$ip4"; } &
+    { ipdata "$ip4"; } &
+    { ipgeolocation "$ip4"; } &
+    { google; } &
     if command -v nc >/dev/null; then
-        { check_port_25; }&
+        { check_port_25; } &
     fi
     if [[ -n "$ip6" ]]; then
-        { scamalytics_ipv6 "$ip6"; }&
-        { abuse_ipv6 "$ip6"; }&
+        { scamalytics_ipv6 "$ip6"; } &
+        { abuse_ipv6 "$ip6"; } &
     fi
     wait
     # 预处理部分类型
@@ -3103,9 +3121,9 @@ ipcheck(){
     local web_proxy_4=$(check_and_cat_file '/tmp/ip_quality_scamalytics_ipv4_web_proxy')
     if [ -n "$public_proxy_4" ] && [ -n "$web_proxy_4" ]; then
         if [ "$public_proxy_4" = "Yes" ] || [ "$web_proxy_4" = "Yes" ]; then
-            echo "Yes" > /tmp/ip_quality_scamalytics_ipv4_proxy
+            echo "Yes" >/tmp/ip_quality_scamalytics_ipv4_proxy
         else
-            echo "No" > /tmp/ip_quality_scamalytics_ipv4_proxy
+            echo "No" >/tmp/ip_quality_scamalytics_ipv4_proxy
         fi
     fi
     local score_2_4=$(check_and_cat_file '/tmp/ip_quality_scamalytics_ipv4_score')
@@ -3193,7 +3211,7 @@ speedtest_ver="1.2.0"
 SERVER_BASE_URL="https://raw.githubusercontent.com/spiritLHLS/speedtest.net-CN-ID/main"
 SERVER_BASE_URL2="https://raw.githubusercontent.com/spiritLHLS/speedtest.cn-CN-ID/main"
 
-pre_check(){
+pre_check() {
     check_update
     check_curl
     optimized_kernel
@@ -3222,7 +3240,7 @@ pre_check(){
     IPV6=$(check_and_cat_file /tmp/ip_quality_ipv6)
 }
 
-sjlleo_script(){
+sjlleo_script() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
     cd $myvar >/dev/null 2>&1
     mv $TEMP_DIR/{dp,nf,tubecheck} ./
@@ -3240,7 +3258,7 @@ sjlleo_script(){
     _yellow "解锁Youtube，Netflix，DisneyPlus上面和下面进行比较，不同之处自行判断"
 }
 
-basic_script(){
+basic_script() {
     echo "---------------------基础信息查询--感谢所有开源项目---------------------"
     print_system_info
     print_ip_info
@@ -3254,14 +3272,14 @@ basic_script(){
     Function_SysBench_Memory_Fast
 }
 
-io1_script(){
+io1_script() {
     cd $myvar >/dev/null 2>&1
     sleep 1
     echo "------------------磁盘dd读写测试--感谢lemonbench开源--------------------"
     Function_DiskTest_Fast
 }
 
-io2_script(){
+io2_script() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
     cd $myvar >/dev/null 2>&1
     echo "---------------------磁盘fio读写测试--感谢yabs开源----------------------"
@@ -3269,7 +3287,7 @@ io2_script(){
     rm -rf yabsiotest.sh
 }
 
-RegionRestrictionCheck_script(){
+RegionRestrictionCheck_script() {
     echo -e "----------------流媒体解锁--感谢RegionRestrictionCheck开源--------------"
     _yellow " 以下为IPV4网络测试，若无IPV4网络则无输出"
     echo 0 | bash media_lmc_check.sh -M 4 2>/dev/null | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
@@ -3277,7 +3295,7 @@ RegionRestrictionCheck_script(){
     echo 0 | bash media_lmc_check.sh -M 6 2>/dev/null | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
 }
 
-lmc999_script(){
+lmc999_script() {
     cd $myvar >/dev/null 2>&1
     echo -e "---------------TikTok解锁--感谢lmc999的源脚本及fscarmen PR--------------"
     local Ftmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -sL --max-time 10 "https://www.tiktok.com/")
@@ -3304,7 +3322,7 @@ lmc999_script(){
     fi
 }
 
-spiritlhl_script(){
+spiritlhl_script() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
     cd $myvar >/dev/null 2>&1
     echo -e "-------------------欺诈分数以及IP质量检测--本脚本原创-------------------"
@@ -3312,7 +3330,7 @@ spiritlhl_script(){
     ipcheck
 }
 
-backtrace_script(){
+backtrace_script() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
     cd $myvar >/dev/null 2>&1
     if [ -f "${TEMP_DIR}/backtrace" ]; then
@@ -3322,41 +3340,41 @@ backtrace_script(){
         return
     fi
     echo -e "----------------三网回程--感谢zhanghanyun/backtrace开源-----------------"
-    grep -sq 'sendto: network is unreachable' <<< $curl_output && _yellow "纯IPV6网络无法查询" || echo "${curl_output}" | grep -v 'github.com/zhanghanyun/backtrace' | grep -v '正在测试'
+    grep -sq 'sendto: network is unreachable' <<<$curl_output && _yellow "纯IPV6网络无法查询" || echo "${curl_output}" | grep -v 'github.com/zhanghanyun/backtrace' | grep -v '正在测试'
 }
 
-fscarmen_route_script(){
+fscarmen_route_script() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
     cd $myvar >/dev/null 2>&1
     echo -e "---------------------回程路由--感谢fscarmen开源及PR---------------------"
     rm -f /tmp/ecs/ip.test
-    _green "依次测试电信/联通/移动经过的地区及线路，核心程序来自ipip.net或nexttrace，请知悉!" > /tmp/ecs/ip.test
+    _green "依次测试电信/联通/移动经过的地区及线路，核心程序来自ipip.net或nexttrace，请知悉!" >/tmp/ecs/ip.test
     local test_area=("${!1}")
     local test_ip=("${!2}")
-    for ((a=0;a<${#test_area[@]};a++)); do
-        "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >> /tmp/ip_temp
+    for ((a = 0; a < ${#test_area[@]}; a++)); do
+        "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >>/tmp/ip_temp
         if [ ! -s "/tmp/ip_temp" ] || grep -q "http: 403" /tmp/ip_temp 2>/dev/null; then
             rm -rf /tmp/ip_temp
             RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null)
             PART_1=$(echo "$RESULT" | grep '^[0-9]\{1,2\}[ ]\+[0-9a-f]' | awk '{$1="";$2="";print}' | sed "s@^[ ]\+@@g")
             PART_2=$(echo "$RESULT" | grep '\(.*ms\)\{3\}' | sed 's/.* \([0-9*].*ms\).*ms.*ms/\1/g')
             SPACE=' '
-            for ((i=1; i<=$(echo "$PART_1" | wc -l); i++)); do
+            for ((i = 1; i <= $(echo "$PART_1" | wc -l); i++)); do
                 [ "$i" -eq 10 ] && unset SPACE
                 p_1=$(echo "$PART_2" | sed -n "${i}p") 2>/dev/null
                 p_2=$(echo "$PART_1" | sed -n "${i}p") 2>/dev/null
-                echo -e "$p_1 \t$p_2" >> /tmp/ip_temp
+                echo -e "$p_1 \t$p_2" >>/tmp/ip_temp
             done
         fi
-        _yellow "${test_area[a]} ${test_ip[a]}" >> /tmp/ecs/ip.test
-        cat /tmp/ip_temp >> /tmp/ecs/ip.test
+        _yellow "${test_area[a]} ${test_ip[a]}" >>/tmp/ecs/ip.test
+        cat /tmp/ip_temp >>/tmp/ecs/ip.test
         rm -rf /tmp/ip_temp
     done
     check_and_cat_file /tmp/ecs/ip.test
     rm -f /tmp/ecs/ip.test
 }
 
-ecs_ping(){
+ecs_ping() {
     cd $myvar >/dev/null 2>&1
     echo -e "-----------------------全国延迟检测--本脚本原创-------------------------"
     if [ -f "${TEMP_DIR}/ecsspeed-ping.sh" ]; then
@@ -3367,58 +3385,55 @@ ecs_ping(){
     echo "${ping_output}" | grep "|"
 }
 
-ecs_net_all_script(){
+ecs_net_all_script() {
     cd $myvar >/dev/null 2>&1
     s_time=$(date +%s)
     rm -rf ./speedtest-cli/speedlog.txt
 
     speed | tee ./speedtest-cli/speedlog.txt
     e_time=$(date +%s)
-    time=$(( ${e_time} - ${s_time} ))
-    if ! grep -qE "(Speedtest.net|洛杉矶|新加坡|香港|联通|电信|移动|日本|中国)" ./speedtest-cli/speedlog.txt;
-    then
+    time=$((${e_time} - ${s_time}))
+    if ! grep -qE "(Speedtest.net|洛杉矶|新加坡|香港|联通|电信|移动|日本|中国)" ./speedtest-cli/speedlog.txt; then
         export speedtest_ver="1.0.0"
         rm -rf ./speedtest-cli/speedlog.txt
         rm -rf ./speedtest-cli*
-        ( install_speedtest > /dev/null 2>&1 )
+        (install_speedtest >/dev/null 2>&1)
         speed
     fi
     rm -fr speedtest-cli
 }
 
-ecs_net_minal_script(){
+ecs_net_minal_script() {
     cd $myvar >/dev/null 2>&1
     s_time=$(date +%s)
     rm -rf ./speedtest-cli/speedlog.txt
     speed2 | tee ./speedtest-cli/speedlog.txt
     e_time=$(date +%s)
-    time=$(( ${e_time} - ${s_time} ))
-    if ! grep -qE "(Speedtest.net|洛杉矶|新加坡|香港|联通|电信|移动|日本|中国)" ./speedtest-cli/speedlog.txt;
-    then
+    time=$((${e_time} - ${s_time}))
+    if ! grep -qE "(Speedtest.net|洛杉矶|新加坡|香港|联通|电信|移动|日本|中国)" ./speedtest-cli/speedlog.txt; then
         export speedtest_ver="1.0.0"
         rm -rf ./speedtest-cli/speedlog.txt
         rm -rf ./speedtest-cli*
-        ( install_speedtest > /dev/null 2>&1 )
+        (install_speedtest >/dev/null 2>&1)
         speed2
     fi
     rm -fr speedtest-cli
 }
 
-end_script(){
+end_script() {
     next
     print_end_time
     next
 }
 
 # =============== 分区选择 部分 ===============
-all_script(){
+all_script() {
     pre_check
     if [ "$1" = "B" ]; then
         if [[ -z "${CN}" || "${CN}" != true ]]; then
             dfiles=(yabsiotest dp nf tubecheck media_lmc_check besttrace nexttrace backtrace)
-            for dfile in "${dfiles[@]}"
-            do
-                { pre_download ${dfile};} &
+            for dfile in "${dfiles[@]}"; do
+                { pre_download ${dfile}; } &
             done
             get_system_info
             check_dnsutils
@@ -3434,16 +3449,16 @@ all_script(){
             print_intro
             basic_script
             wait
-            ecs_net_all_script > ${TEMP_DIR}/ecs_net_output.txt &
+            ecs_net_all_script >${TEMP_DIR}/ecs_net_output.txt &
             io1_script
             sleep 0.5
             io2_script
-            sjlleo_script > ${TEMP_DIR}/sjlleo_output.txt &
-            RegionRestrictionCheck_script > ${TEMP_DIR}/RegionRestrictionCheck_output.txt &
-            lmc999_script > ${TEMP_DIR}/lmc999_output.txt &
-            spiritlhl_script > ${TEMP_DIR}/spiritlhl_output.txt &
-            backtrace_script > ${TEMP_DIR}/backtrace_output.txt &
-            fscarmen_route_script test_area_g[@] test_ip_g[@] > ${TEMP_DIR}/fscarmen_route_output.txt &
+            sjlleo_script >${TEMP_DIR}/sjlleo_output.txt &
+            RegionRestrictionCheck_script >${TEMP_DIR}/RegionRestrictionCheck_output.txt &
+            lmc999_script >${TEMP_DIR}/lmc999_output.txt &
+            spiritlhl_script >${TEMP_DIR}/spiritlhl_output.txt &
+            backtrace_script >${TEMP_DIR}/backtrace_output.txt &
+            fscarmen_route_script test_area_g[@] test_ip_g[@] >${TEMP_DIR}/fscarmen_route_output.txt &
             echo "正在并发测试中，大概2~3分钟无输出，请耐心等待。。。"
             wait
             check_and_cat_file ${TEMP_DIR}/sjlleo_output.txt
@@ -3455,9 +3470,8 @@ all_script(){
             check_and_cat_file ${TEMP_DIR}/ecs_net_output.txt
         else
             dfiles=(ecsspeed_ping)
-            for dfile in "${dfiles[@]}"
-            do
-                { pre_download ${dfile};} &
+            for dfile in "${dfiles[@]}"; do
+                { pre_download ${dfile}; } &
             done
             get_system_info
             check_dnsutils
@@ -3473,11 +3487,11 @@ all_script(){
             print_intro
             basic_script
             wait
-            ecs_net_all_script > ${TEMP_DIR}/ecs_net_output.txt &
+            ecs_net_all_script >${TEMP_DIR}/ecs_net_output.txt &
             io1_script
             sleep 0.5
-            spiritlhl_script > ${TEMP_DIR}/spiritlhl_output.txt &
-            ecs_ping > ${TEMP_DIR}/ecs_ping.txt &
+            spiritlhl_script >${TEMP_DIR}/spiritlhl_output.txt &
+            ecs_ping >${TEMP_DIR}/ecs_ping.txt &
             echo "正在并发测试中，大概2~3分钟无输出，请耐心等待。。。"
             wait
             check_and_cat_file ${TEMP_DIR}/spiritlhl_output.txt
@@ -3539,7 +3553,7 @@ all_script(){
     end_script
 }
 
-minal_script(){
+minal_script() {
     pre_check
     get_system_info
     pre_download yabsiotest
@@ -3557,7 +3571,7 @@ minal_script(){
     end_script
 }
 
-minal_plus(){
+minal_plus() {
     pre_check
     pre_download yabsiotest dp nf tubecheck media_lmc_check besttrace nexttrace backtrace
     get_system_info
@@ -3582,7 +3596,7 @@ minal_plus(){
     end_script
 }
 
-minal_plus_network(){
+minal_plus_network() {
     pre_check
     pre_download yabsiotest besttrace nexttrace backtrace
     get_system_info
@@ -3602,7 +3616,7 @@ minal_plus_network(){
     end_script
 }
 
-minal_plus_media(){
+minal_plus_media() {
     pre_check
     pre_download yabsiotest dp nf tubecheck media_lmc_check
     get_system_info
@@ -3625,7 +3639,7 @@ minal_plus_media(){
     end_script
 }
 
-network_script(){
+network_script() {
     pre_check
     pre_download besttrace nexttrace backtrace
     check_ping
@@ -3645,7 +3659,7 @@ network_script(){
     end_script
 }
 
-media_script(){
+media_script() {
     pre_check
     pre_download dp nf tubecheck media_lmc_check
     check_dnsutils
@@ -3659,7 +3673,7 @@ media_script(){
     end_script
 }
 
-hardware_script(){
+hardware_script() {
     pre_check
     pre_download yabsiotest
     get_system_info
@@ -3672,7 +3686,7 @@ hardware_script(){
     end_script
 }
 
-port_script(){
+port_script() {
     pre_check
     pre_download XXXX
     get_system_info
@@ -3683,7 +3697,7 @@ port_script(){
     end_script
 }
 
-sw_script(){
+sw_script() {
     pre_check
     pre_download besttrace nexttrace backtrace ecsspeed_ping
     check_ping
@@ -3717,7 +3731,7 @@ network_script_select() {
     end_script
 }
 
-rm_script(){
+rm_script() {
     cd $myvar >/dev/null 2>&1
     rm -rf speedtest.tgz*
     rm -rf wget-log*
@@ -3736,7 +3750,7 @@ rm_script(){
     rm -rf speedtest-cli*
 }
 
-build_text(){
+build_text() {
     cd $myvar >/dev/null 2>&1
     if { [ -n "${StartInput}" ] && [ "${StartInput}" -eq 1 ]; } || { [ -n "${StartInput}" ] && [ "${StartInput}" -eq 2 ]; } || { [ -n "${StartInput1}" ] && [ "${StartInput1}" -ge 1 ] && [ "${StartInput1}" -le 4 ]; }; then
         sed -i -e '1,/-------------------- A Bench Script By spiritlhl ---------------------/d' \
@@ -3748,19 +3762,10 @@ build_text(){
             -e '/Running fio random mixed R+W disk test with 64k block size.../d' \
             -e '/Running fio random mixed R+W disk test with 512k block size.../d' \
             -e '/Running fio random mixed R+W disk test with 1m block size.../d' test_result.txt
-        tr '\r' '\n' < test_result.txt > test_result1.txt && mv test_result1.txt test_result.txt
+        tr '\r' '\n' <test_result.txt >test_result1.txt && mv test_result1.txt test_result.txt
         sed -i -e '/^$/d' -e '/1\/1/d' -e '/Block\s*->/d' -e '/s)\s*->/d' -e '/^该运营商\|^测速中/d' test_result.txt
         if [ -s test_result.txt ]; then
             shorturl=$(curl --ipv4 -sL -m 10 -X POST -H "Authorization: $ST" \
-            -H "Format: RANDOM" \
-            -H "Max-Views: 0" \
-            -H "UploadText: true" \
-            -H "Content-Type: multipart/form-data" \
-            -H "No-JSON: true" \
-            -F "file=@${myvar}/test_result.txt" \
-            "https://paste.spiritlhl.net/api/upload")
-            if [ $? -ne 0 ]; then
-                shorturl=$(curl --ipv6 -sL -m 10 -X POST -H "Authorization: $ST" \
                 -H "Format: RANDOM" \
                 -H "Max-Views: 0" \
                 -H "UploadText: true" \
@@ -3768,12 +3773,21 @@ build_text(){
                 -H "No-JSON: true" \
                 -F "file=@${myvar}/test_result.txt" \
                 "https://paste.spiritlhl.net/api/upload")
+            if [ $? -ne 0 ]; then
+                shorturl=$(curl --ipv6 -sL -m 10 -X POST -H "Authorization: $ST" \
+                    -H "Format: RANDOM" \
+                    -H "Max-Views: 0" \
+                    -H "UploadText: true" \
+                    -H "Content-Type: multipart/form-data" \
+                    -H "No-JSON: true" \
+                    -F "file=@${myvar}/test_result.txt" \
+                    "https://paste.spiritlhl.net/api/upload")
             fi
         fi
     fi
 }
 
-comprehensive_test_script(){
+comprehensive_test_script() {
     head_script
     _yellow "具备综合性测试的脚本如下"
     echo -e "${GREEN}1.${PLAIN} superbench VPS测试脚本-基于teddysun的二开"
@@ -3787,25 +3801,51 @@ comprehensive_test_script(){
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
     echo ""
-    while true
-    do
+    while true; do
         read -rp "请输入选项:" StartInputc
         case $StartInputc in
-            1) wget -qO- --no-check-certificate https://raw.githubusercontent.com/oooldking/script/master/superbench.sh | bash ; break ;;
-            2) curl -fsL https://ilemonra.in/LemonBenchIntl | bash -s fast ; break ;;
-            3) bash <(curl -L -Lso- https://cdn.jsdelivr.net/gh/misaka-gh/misakabench@master/misakabench.sh) ; break ;;
-            4) curl -sL yabs.sh | bash ; break ;;
-            5) wget -qO- bench.sh | bash ; break ;;
-            6) bash <(wget -qO- git.io/ceshi) ; break ;;
-            7) wget -N --no-check-certificate https://raw.githubusercontent.com/FunctionClub/ZBench/master/ZBench-CN.sh && bash ZBench-CN.sh ; break ;;
-            8) wget --no-check-certificate https://raw.githubusercontent.com/teddysun/across/master/unixbench.sh && chmod +x unixbench.sh && ./unixbench.sh ; break ;;
-            0) original_script ; break ;;
-            *) echo "输入错误，请重新输入" ;;
+        1)
+            wget -qO- --no-check-certificate https://raw.githubusercontent.com/oooldking/script/master/superbench.sh | bash
+            break
+            ;;
+        2)
+            curl -fsL https://ilemonra.in/LemonBenchIntl | bash -s fast
+            break
+            ;;
+        3)
+            bash <(curl -L -Lso- https://cdn.jsdelivr.net/gh/misaka-gh/misakabench@master/misakabench.sh)
+            break
+            ;;
+        4)
+            curl -sL yabs.sh | bash
+            break
+            ;;
+        5)
+            wget -qO- bench.sh | bash
+            break
+            ;;
+        6)
+            bash <(wget -qO- git.io/ceshi)
+            break
+            ;;
+        7)
+            wget -N --no-check-certificate https://raw.githubusercontent.com/FunctionClub/ZBench/master/ZBench-CN.sh && bash ZBench-CN.sh
+            break
+            ;;
+        8)
+            wget --no-check-certificate https://raw.githubusercontent.com/teddysun/across/master/unixbench.sh && chmod +x unixbench.sh && ./unixbench.sh
+            break
+            ;;
+        0)
+            original_script
+            break
+            ;;
+        *) echo "输入错误，请重新输入" ;;
         esac
     done
 }
 
-media_test_script(){
+media_test_script() {
     head_script
     _yellow "流媒体测试相关的脚本如下"
     echo -e "${GREEN}1.${PLAIN} sjlleo的NetFlix解锁检测脚本 "
@@ -3820,27 +3860,55 @@ media_test_script(){
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
     echo ""
-    while true
-    do
+    while true; do
         read -rp "请输入选项:" StartInputm
         case $StartInputm in
-            1) wget -O nf https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 && chmod +x nf && ./nf ; break ;;
-            2) wget -O tubecheck https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck/CDN/tubecheck_1.0beta_linux_amd64 && chmod +x tubecheck && clear && ./tubecheck ; break ;;
-            3) wget -O dp https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 && chmod +x dp && clear && ./dp ; break ;;
-            4) lmc999_script ; break ;;
-            5) bash <(curl -s https://raw.githubusercontent.com/lmc999/TikTokCheck/main/tiktok.sh) ; break ;;
-            6) bash <(curl -L -s check.unlock.media) ; break ;;
-            7) bash <(curl -Ls unlock.moe) ; break ;;
-            8) bash <(curl -Ls https://cpp.li/openai) ; break ;;
-            9) bash <(curl -Ls https://bash.spiritlhl.net/openai-checker) ; break ;;
-            0) original_script ; break ;;
-            *) echo "输入错误，请重新输入" ;;
+        1)
+            wget -O nf https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 && chmod +x nf && ./nf
+            break
+            ;;
+        2)
+            wget -O tubecheck https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck/CDN/tubecheck_1.0beta_linux_amd64 && chmod +x tubecheck && clear && ./tubecheck
+            break
+            ;;
+        3)
+            wget -O dp https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 && chmod +x dp && clear && ./dp
+            break
+            ;;
+        4)
+            lmc999_script
+            break
+            ;;
+        5)
+            bash <(curl -s https://raw.githubusercontent.com/lmc999/TikTokCheck/main/tiktok.sh)
+            break
+            ;;
+        6)
+            bash <(curl -L -s check.unlock.media)
+            break
+            ;;
+        7)
+            bash <(curl -Ls unlock.moe)
+            break
+            ;;
+        8)
+            bash <(curl -Ls https://cpp.li/openai)
+            break
+            ;;
+        9)
+            bash <(curl -Ls https://bash.spiritlhl.net/openai-checker)
+            break
+            ;;
+        0)
+            original_script
+            break
+            ;;
+        *) echo "输入错误，请重新输入" ;;
         esac
     done
 }
 
-
-network_test_script(){
+network_test_script() {
     head_script
     _yellow "网络测试相关的脚本如下"
     echo -e "${GREEN}1.${PLAIN} zhanghanyun的backtrace三网回程线路检测脚本"
@@ -3860,31 +3928,75 @@ network_test_script(){
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
     echo ""
-    while true
-    do
+    while true; do
         read -rp "请输入选项:" StartInputn
         case $StartInputn in
-            1) curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh ; break ;;
-            2) curl https://raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh|bash ; break ;;
-            3) wget -qO- git.io/besttrace | bash ; break ;;
-            4) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/return.sh) ; break ;;
-            5) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/nexttrace.sh) ; break ;;
-            6) wget -O jcnf.sh https://raw.githubusercontent.com/Netflixxp/jcnfbesttrace/main/jcnf.sh && bash jcnf.sh ; break ;;
-            7) bash <(curl -L -Lso- https://git.io/superspeed.sh) ; break ;;
-            8) bash <(curl -Lso- https://git.io/superspeed_uxh) ; break ;;
-            9) bash <(curl -Lso- https://git.io/J1SEh) ; break ;;
-            10) bash <(curl -L -Lso- https://bench.im/hyperspeed) ; break ;;
-            11) curl -sL network-speed.xyz | bash ; break ;;
-            12) bash <(wget -qO- bash.spiritlhl.net/ecs-net) ; break ;;
-            13) bash <(wget -qO- bash.spiritlhl.net/ecs-cn) ; break ;;
-            14) bash <(wget -qO- bash.spiritlhl.net/ecs-ping) ; break ;;
-            0) original_script ; break ;;
-            *) echo "输入错误，请重新输入" ;;
+        1)
+            curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
+            break
+            ;;
+        2)
+            curl https://raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh | bash
+            break
+            ;;
+        3)
+            wget -qO- git.io/besttrace | bash
+            break
+            ;;
+        4)
+            bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/return.sh)
+            break
+            ;;
+        5)
+            bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/nexttrace.sh)
+            break
+            ;;
+        6)
+            wget -O jcnf.sh https://raw.githubusercontent.com/Netflixxp/jcnfbesttrace/main/jcnf.sh && bash jcnf.sh
+            break
+            ;;
+        7)
+            bash <(curl -L -Lso- https://git.io/superspeed.sh)
+            break
+            ;;
+        8)
+            bash <(curl -Lso- https://git.io/superspeed_uxh)
+            break
+            ;;
+        9)
+            bash <(curl -Lso- https://git.io/J1SEh)
+            break
+            ;;
+        10)
+            bash <(curl -L -Lso- https://bench.im/hyperspeed)
+            break
+            ;;
+        11)
+            curl -sL network-speed.xyz | bash
+            break
+            ;;
+        12)
+            bash <(wget -qO- bash.spiritlhl.net/ecs-net)
+            break
+            ;;
+        13)
+            bash <(wget -qO- bash.spiritlhl.net/ecs-cn)
+            break
+            ;;
+        14)
+            bash <(wget -qO- bash.spiritlhl.net/ecs-ping)
+            break
+            ;;
+        0)
+            original_script
+            break
+            ;;
+        *) echo "输入错误，请重新输入" ;;
         esac
     done
 }
 
-hardware_test_script(){
+hardware_test_script() {
     head_script
     _yellow "硬件测试合集如下"
     echo " -------------"
@@ -3896,22 +4008,39 @@ hardware_test_script(){
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
     echo ""
-    while true
-    do
+    while true; do
         read -rp "请输入选项:" StartInputh
         case $StartInputh in
-            1) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/disk_info.sh) ; break ;;
-            2) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench4.sh) ; break ;;
-            3) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench5.sh) ; break ;;
-            4) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench6.sh) ; break ;;
-            5) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/multi_disk_io_test.sh) ; break ;;
-            0) original_script ; break ;;
-            *) echo "输入错误，请重新输入" ;;
+        1)
+            bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/disk_info.sh)
+            break
+            ;;
+        2)
+            bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench4.sh)
+            break
+            ;;
+        3)
+            bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench5.sh)
+            break
+            ;;
+        4)
+            bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench6.sh)
+            break
+            ;;
+        5)
+            bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/multi_disk_io_test.sh)
+            break
+            ;;
+        0)
+            original_script
+            break
+            ;;
+        *) echo "输入错误，请重新输入" ;;
         esac
     done
 }
 
-original_script(){
+original_script() {
     head_script
     _yellow "融合怪借鉴的脚本以及部分竞品脚本合集如下"
     echo -e "${GREEN}1.${PLAIN} 综合性测试脚本合集(比如yabs，superbench等)"
@@ -3921,21 +4050,35 @@ original_script(){
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
-    while true
-    do
+    while true; do
         read -rp "请输入选项:" StartInput3
         case $StartInput3 in
-            1) comprehensive_test_script ; break ;;
-            2) media_test_script ; break ;;
-            3) network_test_script ; break ;;
-            4) hardware_test_script ; break ;;
-            0) start_script ; break ;;
-            *) echo "输入错误，请重新输入" ;;
+        1)
+            comprehensive_test_script
+            break
+            ;;
+        2)
+            media_test_script
+            break
+            ;;
+        3)
+            network_test_script
+            break
+            ;;
+        4)
+            hardware_test_script
+            break
+            ;;
+        0)
+            start_script
+            break
+            ;;
+        *) echo "输入错误，请重新输入" ;;
         esac
     done
 }
 
-simplify_script(){
+simplify_script() {
     head_script
     _yellow "融合怪的精简脚本如下"
     echo -e "${GREEN}1.${PLAIN} 极简版(系统信息+CPU+内存+磁盘IO+测速节点4个)(平均运行3分钟)"
@@ -3945,21 +4088,35 @@ simplify_script(){
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
-    while true
-    do
+    while true; do
         read -rp "请输入选项:" StartInput1
         case $StartInput1 in
-            1) minal_script | tee -i test_result.txt; break ;;
-            2) minal_plus | tee -i test_result.txt; break ;;
-            3) minal_plus_network | tee -i test_result.txt; break ;;
-            4) minal_plus_media | tee -i test_result.txt; break ;;
-            0) start_script ; break ;;
-            *) echo "输入错误，请重新输入" ;;
+        1)
+            minal_script | tee -i test_result.txt
+            break
+            ;;
+        2)
+            minal_plus | tee -i test_result.txt
+            break
+            ;;
+        3)
+            minal_plus_network | tee -i test_result.txt
+            break
+            ;;
+        4)
+            minal_plus_media | tee -i test_result.txt
+            break
+            ;;
+        0)
+            start_script
+            break
+            ;;
+        *) echo "输入错误，请重新输入" ;;
         esac
     done
 }
 
-single_item_script(){
+single_item_script() {
     head_script
     _yellow "融合怪拆分的单项测试脚本如下"
     echo -e "${GREEN}1.${PLAIN} 网络方面(简化的IP质量检测+三网回程+三网路由与延迟+测速节点11个)(平均运行6分钟左右)"
@@ -3971,23 +4128,43 @@ single_item_script(){
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
-    while true
-    do
+    while true; do
         read -rp "请输入选项:" StartInput2
         case $StartInput2 in
-            1) network_script; break ;;
-            2) media_script; break ;;
-            3) hardware_script; break ;;
-            4) bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh); break ;;
-            5) port_script ; break ;;
-            6) sw_script ; break ;;
-            0) start_script ; break ;;
-            *) echo "输入错误，请重新输入" ;;
+        1)
+            network_script
+            break
+            ;;
+        2)
+            media_script
+            break
+            ;;
+        3)
+            hardware_script
+            break
+            ;;
+        4)
+            bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh)
+            break
+            ;;
+        5)
+            port_script
+            break
+            ;;
+        6)
+            sw_script
+            break
+            ;;
+        0)
+            start_script
+            break
+            ;;
+        *) echo "输入错误，请重新输入" ;;
         esac
     done
 }
 
-my_original_script(){
+my_original_script() {
     head_script
     _yellow "本作者有原创成分的脚本如下"
     echo -e "${GREEN}1.${PLAIN} 完整的本机IP的IP质量检测(平均运行10~20秒)"
@@ -4009,33 +4186,83 @@ my_original_script(){
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 回到主菜单"
     echo ""
-    while true
-    do
+    while true; do
         read -rp "请输入选项:" StartInput4
         case $StartInput4 in
-            1) bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh); break ;;
-            2) network_script_select 'g' ; break ;;
-            3) network_script_select 's' ; break ;;
-            4) network_script_select 'b' ; break ;;
-            5) network_script_select 'c' ; break ;;
-            6) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/return.sh) ; break ;;
-            7) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/nexttrace.sh) ; break ;;
-            8) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/customizeqzcheck.sh) ; break ;;
-            9) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/disk_info.sh) ; break ;;
-            10) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench4.sh) ; break ;;
-            11) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench5.sh) ; break ;;
-            12) bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench6.sh) ; break ;;
-            13) bash <(wget -qO- bash.spiritlhl.net/ecs-net) ; break ;;
-            14) bash <(wget -qO- bash.spiritlhl.net/ecs-cn) ; break ;;
-            15) bash <(wget -qO- bash.spiritlhl.net/ecs-ping) ; break ;;
-            16) bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/multi_disk_io_test.sh) ; break ;;
-            0) start_script ; break ;;
-            *) echo "输入错误，请重新输入" ;;
+        1)
+            bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh)
+            break
+            ;;
+        2)
+            network_script_select 'g'
+            break
+            ;;
+        3)
+            network_script_select 's'
+            break
+            ;;
+        4)
+            network_script_select 'b'
+            break
+            ;;
+        5)
+            network_script_select 'c'
+            break
+            ;;
+        6)
+            bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/return.sh)
+            break
+            ;;
+        7)
+            bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/nexttrace.sh)
+            break
+            ;;
+        8)
+            bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/customizeqzcheck.sh)
+            break
+            ;;
+        9)
+            bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/disk_info.sh)
+            break
+            ;;
+        10)
+            bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench4.sh)
+            break
+            ;;
+        11)
+            bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench5.sh)
+            break
+            ;;
+        12)
+            bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench6.sh)
+            break
+            ;;
+        13)
+            bash <(wget -qO- bash.spiritlhl.net/ecs-net)
+            break
+            ;;
+        14)
+            bash <(wget -qO- bash.spiritlhl.net/ecs-cn)
+            break
+            ;;
+        15)
+            bash <(wget -qO- bash.spiritlhl.net/ecs-ping)
+            break
+            ;;
+        16)
+            bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/multi_disk_io_test.sh)
+            break
+            ;;
+        0)
+            start_script
+            break
+            ;;
+        *) echo "输入错误，请重新输入" ;;
         esac
     done
 }
 
-head_script(){
+head_script() {
     clear
     echo "#############################################################"
     echo -e "#                     ${YELLOW}融合怪测评脚本${PLAIN}                        #"
@@ -4051,7 +4278,7 @@ head_script(){
     _green "请选择你接下来要使用的脚本"
 }
 
-start_script(){
+start_script() {
     head_script
     echo -e "${GREEN}1.${PLAIN} 顺序测试--融合怪完全体(所有项目都测试)(平均运行7分钟)(机器普通推荐使用)"
     echo -e "${GREEN}2.${PLAIN} 并行测试--融合怪完全体(所有项目都测试)(平均运行5分钟)(仅机器强劲可使用，机器普通勿要使用)"
@@ -4063,19 +4290,42 @@ start_script(){
     echo " -------------"
     echo -e "${GREEN}0.${PLAIN} 退出"
     echo ""
-    while true
-    do
+    while true; do
         read -rp "请输入选项:" StartInput
         case $StartInput in
-            1) all_script "S" | tee -i test_result.txt ; break ;;
-            2) all_script "B" | tee -i test_result.txt ; break ;;
-            3) simplify_script ; break ;;
-            4) single_item_script ; break ;;
-            5) original_script ; break ;;
-            6) my_original_script ; break ;;
-            7) checkver ; break ;;
-            0) exit 1 ; break ;;
-            *) echo "输入错误，请重新输入" ;;
+        1)
+            all_script "S" | tee -i test_result.txt
+            break
+            ;;
+        2)
+            all_script "B" | tee -i test_result.txt
+            break
+            ;;
+        3)
+            simplify_script
+            break
+            ;;
+        4)
+            single_item_script
+            break
+            ;;
+        5)
+            original_script
+            break
+            ;;
+        6)
+            my_original_script
+            break
+            ;;
+        7)
+            checkver
+            break
+            ;;
+        0)
+            exit 1
+            break
+            ;;
+        *) echo "输入错误，请重新输入" ;;
         esac
     done
 }

@@ -2,7 +2,6 @@
 #by spiritlhl
 #from https://github.com/spiritLHLS/ecs
 
-
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
 ver="2023.08.15"
@@ -16,12 +15,12 @@ PACKAGE_INSTALL=("apt -y install" "apt -y install" "yum -y install" "yum -y inst
 CMD=("$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(hostnamectl 2>/dev/null | grep -i system | cut -d : -f2)" "$(lsb_release -sd 2>/dev/null)" "$(grep -i description /etc/lsb-release 2>/dev/null | cut -d \" -f2)" "$(grep . /etc/redhat-release 2>/dev/null)" "$(grep . /etc/issue 2>/dev/null | cut -d \\ -f1 | sed '/^[ ]*$/d')")
 utf8_locale=$(locale -a 2>/dev/null | grep -i -m 1 -E "UTF-8|utf8")
 if [[ -z "$utf8_locale" ]]; then
-  echo "No UTF-8 locale found"
+    echo "No UTF-8 locale found"
 else
-  export LC_ALL="$utf8_locale"
-  export LANG="$utf8_locale"
-  export LANGUAGE="$utf8_locale"
-  echo "Locale set to $utf8_locale"
+    export LC_ALL="$utf8_locale"
+    export LANG="$utf8_locale"
+    export LANGUAGE="$utf8_locale"
+    echo "Locale set to $utf8_locale"
 fi
 for i in "${CMD[@]}"; do
     SYS="$i" && [[ -n $SYS ]] && break
@@ -35,13 +34,13 @@ if [ ! -d "/tmp" ]; then
     mkdir /tmp
 fi
 
-red(){
+red() {
     echo -e "\033[31m\033[01m$1\033[0m"
 }
-green(){
+green() {
     echo -e "\033[32m\033[01m$1\033[0m"
 }
-yellow(){
+yellow() {
     echo -e "\033[33m\033[01m$1\033[0m"
 }
 _red() { echo -e "\033[31m\033[01m$@\033[0m"; }
@@ -52,12 +51,12 @@ _blue() { echo -e "\033[36m\033[01m$@\033[0m"; }
 trap _exit INT QUIT TERM
 _exists() {
     local cmd="$1"
-    if eval type type > /dev/null 2>&1; then
-        eval type "$cmd" > /dev/null 2>&1
-    elif command > /dev/null 2>&1; then
-        command -v "$cmd" > /dev/null 2>&1
+    if eval type type >/dev/null 2>&1; then
+        eval type "$cmd" >/dev/null 2>&1
+    elif command >/dev/null 2>&1; then
+        command -v "$cmd" >/dev/null 2>&1
     else
-        which "$cmd" > /dev/null 2>&1
+        which "$cmd" >/dev/null 2>&1
     fi
     local rt=$?
     return ${rt}
@@ -70,71 +69,71 @@ _exit() {
     exit 1
 }
 
-checkroot(){
-	[[ $EUID -ne 0 ]] && echo -e "${RED}请使用 root 用户运行本脚本！${PLAIN}" && exit 1
+checkroot() {
+    [[ $EUID -ne 0 ]] && echo -e "${RED}请使用 root 用户运行本脚本！${PLAIN}" && exit 1
 }
 
-checkupdate(){
-	    _yellow "Updating package management sources"
-        if command -v apt-get > /dev/null 2>&1; then
-            apt_update_output=$(apt-get update 2>&1)
-            echo "$apt_update_output" > "$temp_file_apt_fix"
-            if grep -q 'NO_PUBKEY' "$temp_file_apt_fix"; then
-                public_keys=$(grep -oE 'NO_PUBKEY [0-9A-F]+' "$temp_file_apt_fix" | awk '{ print $2 }')
-                joined_keys=$(echo "$public_keys" | paste -sd " ")
-                _yellow "No Public Keys: ${joined_keys}"
-                apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ${joined_keys}
-                apt-get update
-                if [ $? -eq 0 ]; then
-                    _green "Fixed"
-                fi
+checkupdate() {
+    _yellow "Updating package management sources"
+    if command -v apt-get >/dev/null 2>&1; then
+        apt_update_output=$(apt-get update 2>&1)
+        echo "$apt_update_output" >"$temp_file_apt_fix"
+        if grep -q 'NO_PUBKEY' "$temp_file_apt_fix"; then
+            public_keys=$(grep -oE 'NO_PUBKEY [0-9A-F]+' "$temp_file_apt_fix" | awk '{ print $2 }')
+            joined_keys=$(echo "$public_keys" | paste -sd " ")
+            _yellow "No Public Keys: ${joined_keys}"
+            apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ${joined_keys}
+            apt-get update
+            if [ $? -eq 0 ]; then
+                _green "Fixed"
             fi
-            rm "$temp_file_apt_fix"
-        else
-            ${PACKAGE_UPDATE[int]}
-        fi 
+        fi
+        rm "$temp_file_apt_fix"
+    else
+        ${PACKAGE_UPDATE[int]}
+    fi
 }
 
 checkdnsutils() {
     _yellow "Installing dnsutils"
     if [ "${release}" == "centos" ]; then
-        yum -y install dnsutils > /dev/null 2>&1
-        yum -y install bind-utils > /dev/null 2>&1
+        yum -y install dnsutils >/dev/null 2>&1
+        yum -y install bind-utils >/dev/null 2>&1
     elif [ "${release}" == "arch" ]; then
-        pacman -S --noconfirm --needed bind > /dev/null 2>&1
+        pacman -S --noconfirm --needed bind >/dev/null 2>&1
     else
-        ${PACKAGE_INSTALL[int]} dnsutils > /dev/null 2>&1
+        ${PACKAGE_INSTALL[int]} dnsutils >/dev/null 2>&1
     fi
 }
 
 checkcurl() {
-	if ! which curl >/dev/null; then
+    if ! which curl >/dev/null; then
         _yellow "Installing curl"
         ${PACKAGE_INSTALL[int]} curl
-	fi
+    fi
     if [ $? -ne 0 ]; then
-        apt-get -f install > /dev/null 2>&1
+        apt-get -f install >/dev/null 2>&1
         ${PACKAGE_INSTALL[int]} curl
     fi
 }
 
 checkwget() {
-	if ! which wget >/dev/null; then
+    if ! which wget >/dev/null; then
         _yellow "Installing wget"
         ${PACKAGE_INSTALL[int]} wget
-	fi
+    fi
 }
 
 checknc() {
     _yellow "checking nc"
-	if ! command -v nc >/dev/null; then
+    if ! command -v nc >/dev/null; then
         _yellow "Installing nc"
         if command -v apt >/dev/null; then
-	        ${PACKAGE_INSTALL[int]} netcat > /dev/null 2>&1
+            ${PACKAGE_INSTALL[int]} netcat >/dev/null 2>&1
         else
-	        ${PACKAGE_INSTALL[int]} nc > /dev/null 2>&1
+            ${PACKAGE_INSTALL[int]} nc >/dev/null 2>&1
         fi
-	fi
+    fi
 }
 
 print_intro() {
@@ -152,7 +151,7 @@ next() {
 
 print_end_time() {
     end_time=$(date +%s)
-    time=$(( ${end_time} - ${start_time} ))
+    time=$((${end_time} - ${start_time}))
     if [ ${time} -gt 60 ]; then
         min=$(expr $time / 60)
         sec=$(expr $time % 60)
@@ -170,23 +169,22 @@ is_private_ipv4() {
     if [[ -z $ip_address ]]; then
         return 0 # 输入为空
     fi
-    IFS='.' read -r -a ip_parts <<< "$ip_address"
+    IFS='.' read -r -a ip_parts <<<"$ip_address"
     # 检查IP地址是否符合内网IP地址的范围
     # 去除 回环，REC 1918，多播 地址
     if [[ ${ip_parts[0]} -eq 10 ]] ||
-       [[ ${ip_parts[0]} -eq 172 && ${ip_parts[1]} -ge 16 && ${ip_parts[1]} -le 31 ]] ||
-       [[ ${ip_parts[0]} -eq 192 && ${ip_parts[1]} -eq 168 ]] ||
-       [[ ${ip_parts[0]} -eq 127 ]] ||
-       [[ ${ip_parts[0]} -eq 0 ]] ||
-       [[ ${ip_parts[0]} -ge 224 ]]
-    then
-        return 0  # 是内网IP地址
+        [[ ${ip_parts[0]} -eq 172 && ${ip_parts[1]} -ge 16 && ${ip_parts[1]} -le 31 ]] ||
+        [[ ${ip_parts[0]} -eq 192 && ${ip_parts[1]} -eq 168 ]] ||
+        [[ ${ip_parts[0]} -eq 127 ]] ||
+        [[ ${ip_parts[0]} -eq 0 ]] ||
+        [[ ${ip_parts[0]} -ge 224 ]]; then
+        return 0 # 是内网IP地址
     else
-        return 1  # 不是内网IP地址
+        return 1 # 不是内网IP地址
     fi
 }
 
-check_ipv4(){
+check_ipv4() {
     rm -rf /tmp/ip_quality_ipv4
     IPV4=$(ip -4 addr show | grep global | awk '{print $2}' | cut -d '/' -f1 | head -n 1)
     local response
@@ -202,7 +200,7 @@ check_ipv4(){
             fi
         done
     fi
-    echo $IPV4 > /tmp/ip_quality_ipv4
+    echo $IPV4 >/tmp/ip_quality_ipv4
 }
 
 is_private_ipv6() {
@@ -247,7 +245,7 @@ is_private_ipv6() {
     return 1
 }
 
-check_ipv6(){
+check_ipv6() {
     rm -rf /tmp/ip_quality_ipv6
     IPV6=$(ip -6 addr show | grep global | awk '{print $2}' | cut -d '/' -f1 | head -n 1)
     local response
@@ -263,15 +261,15 @@ check_ipv6(){
             fi
         done
     fi
-    echo $IPV6 > /tmp/ip_quality_ipv6
+    echo $IPV6 >/tmp/ip_quality_ipv6
 }
 
-check_ip_info_by_ipinfo(){
+check_ip_info_by_ipinfo() {
     # ipinfo.io
     rm -rf /tmp/ipinfo
     # 获取IPv4的asn、city、region、country
     local ipv4_asn=$(curl -ksL4m6 -A Mozilla ipinfo.io/org 2>/dev/null)
-    if [ "$?" -ne 0 ] || echo "$ipv4_asn" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL">/dev/null 2>&1; then
+    if [ "$?" -ne 0 ] || echo "$ipv4_asn" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL" >/dev/null 2>&1; then
         local ipv4_asn_info="None"
         local ipv4_location="None"
     else
@@ -290,17 +288,17 @@ check_ip_info_by_ipinfo(){
         fi
     fi
     # 返回结果
-    echo "$ipv4_asn_info" >> /tmp/ipinfo
-    echo "$ipv4_location" >> /tmp/ipinfo
+    echo "$ipv4_asn_info" >>/tmp/ipinfo
+    echo "$ipv4_location" >>/tmp/ipinfo
     # 获取IPv6的asn、city和region - 无 - 该站点不支持IPV6网络识别
     local ipv6_asn_info="None"
     local ipv6_location="None"
     # 返回结果
-    echo "$ipv6_asn_info" >> /tmp/ipinfo
-    echo "$ipv6_location" >> /tmp/ipinfo
+    echo "$ipv6_asn_info" >>/tmp/ipinfo
+    echo "$ipv6_location" >>/tmp/ipinfo
 }
 
-check_ip_info_by_cloudflare(){
+check_ip_info_by_cloudflare() {
     # cloudflare.com
     rm -rf /tmp/cloudflare
     # 获取 IPv4 信息
@@ -325,8 +323,8 @@ check_ip_info_by_cloudflare(){
         ipv4_location="${ipv4_location//\"/}"
     fi
     # 返回结果
-    echo "$ipv4_asn_info" >> /tmp/cloudflare
-    echo "$ipv4_location" >> /tmp/cloudflare
+    echo "$ipv4_asn_info" >>/tmp/cloudflare
+    echo "$ipv4_location" >>/tmp/cloudflare
     # 获取 IPv6 信息
     sleep 1
     local ipv6_output=$(curl -ksL6m6 -A Mozilla https://speed.cloudflare.com/meta 2>/dev/null)
@@ -350,15 +348,15 @@ check_ip_info_by_cloudflare(){
         ipv6_location="${ipv6_location//\"/}"
     fi
     # 返回结果
-    echo "$ipv6_asn_info" >> /tmp/cloudflare
-    echo "$ipv6_location" >> /tmp/cloudflare
+    echo "$ipv6_asn_info" >>/tmp/cloudflare
+    echo "$ipv6_location" >>/tmp/cloudflare
 }
 
-check_ip_info_by_ipsb(){
+check_ip_info_by_ipsb() {
     # ip.sb
     rm -rf /tmp/ipsb
     local result_ipv4=$(curl -ksL4m6 -A Mozilla https://api.ip.sb/geoip 2>/dev/null)
-    if [ "$?" -ne 0 ] || echo "$result_ipv4" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL">/dev/null 2>&1; then
+    if [ "$?" -ne 0 ] || echo "$result_ipv4" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL" >/dev/null 2>&1; then
         local ipv4_asn_info="None"
         local ipv4_location="None"
     else
@@ -382,12 +380,12 @@ check_ip_info_by_ipsb(){
         fi
     fi
     # 返回结果
-    echo "$ipv4_asn_info" >> /tmp/ipsb
-    echo "$ipv4_location" >> /tmp/ipsb
+    echo "$ipv4_asn_info" >>/tmp/ipsb
+    echo "$ipv4_location" >>/tmp/ipsb
     # 获取IPv6的asn、city、region、country
     sleep 1
     local result_ipv6=$(curl -ksL6m6 -A Mozilla https://api.ip.sb/geoip 2>/dev/null)
-    if [ "$?" -ne 0 ] || echo "$result_ipv6" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL">/dev/null 2>&1; then
+    if [ "$?" -ne 0 ] || echo "$result_ipv6" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL" >/dev/null 2>&1; then
         local ipv6_asn_info="None"
         local ipv6_location="None"
     else
@@ -410,11 +408,11 @@ check_ip_info_by_ipsb(){
         fi
     fi
     # 返回结果
-    echo "$ipv6_asn_info" >> /tmp/ipsb
-    echo "$ipv6_location" >> /tmp/ipsb
+    echo "$ipv6_asn_info" >>/tmp/ipsb
+    echo "$ipv6_location" >>/tmp/ipsb
 }
 
-check_ip_info_by_cheervision(){
+check_ip_info_by_cheervision() {
     # ipdata.cheervision.co
     rm -rf /tmp/cheervision
     local ipv4_result=$(curl -ksL4m6 -A Mozilla ipdata.cheervision.co 2>/dev/null)
@@ -436,8 +434,8 @@ check_ip_info_by_cheervision(){
         local ipv4_location="None"
     fi
     # 返回结果
-    echo "$ipv4_asn_info" >> /tmp/cheervision
-    echo "$ipv4_location" >> /tmp/cheervision
+    echo "$ipv4_asn_info" >>/tmp/cheervision
+    echo "$ipv4_location" >>/tmp/cheervision
     # 获取IPv6的asn、city、region
     sleep 1
     local ipv6_result=$(curl -ksL6m6 -A Mozilla ipdata.cheervision.co 2>/dev/null)
@@ -458,8 +456,8 @@ check_ip_info_by_cheervision(){
         local ipv6_location="None"
     fi
     # 返回结果
-    echo "$ipv6_asn_info" >> /tmp/cheervision
-    echo "$ipv6_location" >> /tmp/cheervision
+    echo "$ipv6_asn_info" >>/tmp/cheervision
+    echo "$ipv6_location" >>/tmp/cheervision
 }
 
 get_first_non_empty_element() {
@@ -472,7 +470,7 @@ get_first_non_empty_element() {
     done
 }
 
-run_ip_info_check(){
+run_ip_info_check() {
     _yellow "run IP information check..."
     # 并行执行并发查询IP信息
     check_ip_info_by_cloudflare &
@@ -482,7 +480,7 @@ run_ip_info_check(){
     wait
 }
 
-print_ip_info(){
+print_ip_info() {
     # 存储结果的四个列表
     local ipv4_asn_info_list=()
     local ipv4_location_list=()
@@ -496,7 +494,7 @@ print_ip_info(){
             read -r location
             read -r ipv6_asn_info
             read -r ipv6_location
-        } < "$file"
+        } <"$file"
         ipv4_asn_info_list+=("$asn_info")
         ipv4_location_list+=("$location")
         ipv6_asn_info_list+=("$ipv6_asn_info")
@@ -548,7 +546,7 @@ translate_status() {
 }
 
 # ipinfo数据库 ①
-ipinfo(){
+ipinfo() {
     rm -rf /tmp/ip_quality_ipinfo*
     local ip="$1"
     local output=$(curl -sL -m 10 -v "https://ipinfo.io/widget/demo/${ip}" -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36" -H "Referer: https://ipinfo.io" 2>/dev/null)
@@ -561,13 +559,13 @@ ipinfo(){
     local tor=$(echo "$temp_output" | grep -o '"tor": .*,' | cut -d' ' -f2 | tr -d '",')
     local relay=$(echo "$temp_output" | grep -o '"relay": .*,' | cut -d' ' -f2 | tr -d '",')
     local hosting=$(echo "$temp_output" | grep -o '"hosting": .*,' | cut -d' ' -f2 | tr -d '",')
-    echo "$asn_type" > /tmp/ip_quality_ipinfo_usage_type
-    echo "$company_type" > /tmp/ip_quality_ipinfo_company_type
-    echo "$vpn" > /tmp/ip_quality_ipinfo_vpn
-    echo "$proxy" > /tmp/ip_quality_ipinfo_proxy
-    echo "$tor" > /tmp/ip_quality_ipinfo_tor
-    echo "$relay" > /tmp/ip_quality_ipinfo_icloud_relay
-    echo "$hosting" > /tmp/ip_quality_ipinfo_hosting
+    echo "$asn_type" >/tmp/ip_quality_ipinfo_usage_type
+    echo "$company_type" >/tmp/ip_quality_ipinfo_company_type
+    echo "$vpn" >/tmp/ip_quality_ipinfo_vpn
+    echo "$proxy" >/tmp/ip_quality_ipinfo_proxy
+    echo "$tor" >/tmp/ip_quality_ipinfo_tor
+    echo "$relay" >/tmp/ip_quality_ipinfo_icloud_relay
+    echo "$hosting" >/tmp/ip_quality_ipinfo_hosting
 }
 
 # scamalytics数据库 ②
@@ -581,15 +579,14 @@ scamalytics_ipv4() {
     local temp1=$(echo "$context" | grep -oP '(?<=>Fraud Score: )[^<]+')
     # 欺诈分数
     if [ -n "$temp1" ]; then
-        echo "$temp1" >> /tmp/ip_quality_scamalytics_ipv4_score
+        echo "$temp1" >>/tmp/ip_quality_scamalytics_ipv4_score
     else
         return
     fi
     local temp2=$(echo "$context" | grep -oP '(?<=<div).*?(?=</div>)' | tail -n 6)
     local nlist=("vpn" "tor" "datacenter" "public_proxy" "web_proxy" "search_engine_robot")
     local status_t2
-    for element in $temp2
-    do
+    for element in $temp2; do
         if echo "$element" | grep -q "score" >/dev/null 2>&1; then
             status_t2=1
             break
@@ -602,10 +599,10 @@ scamalytics_ipv4() {
     if ! [ "$status_t2" -eq 1 ]; then
         while read -r temp3; do
             if [[ -n "$temp3" ]]; then
-                echo "${temp3#*>}" >> /tmp/ip_quality_scamalytics_ipv4_${nlist[$i]}
-                i=$((i+1))
+                echo "${temp3#*>}" >>/tmp/ip_quality_scamalytics_ipv4_${nlist[$i]}
+                i=$((i + 1))
             fi
-        done <<< "$(echo "$temp2" | sed 's/<[^>]*>//g' | sed 's/^[[:blank:]]*//g')"
+        done <<<"$(echo "$temp2" | sed 's/<[^>]*>//g' | sed 's/^[[:blank:]]*//g')"
     fi
 }
 
@@ -620,15 +617,14 @@ scamalytics_ipv6() {
     local temp1=$(echo "$context" | grep -oP '(?<=>Fraud Score: )[^<]+')
     # 欺诈分数
     if [ -n "$temp1" ]; then
-        echo "$temp1" >> /tmp/ip_quality_scamalytics_ipv6_score
+        echo "$temp1" >>/tmp/ip_quality_scamalytics_ipv6_score
     else
         return
     fi
     local temp2=$(echo "$context" | grep -oP '(?<=<div).*?(?=</div>)' | tail -n 6)
     local nlist=("vpn" "tor" "datacenter" "public_proxy" "web_proxy" "search_engine_robot")
     local status_t2
-    for element in $temp2
-    do
+    for element in $temp2; do
         if echo "$element" | grep -q "score" >/dev/null 2>&1; then
             status_t2=1
             break
@@ -641,10 +637,10 @@ scamalytics_ipv6() {
     if ! [ "$status_t2" -eq 1 ]; then
         while read -r temp3; do
             if [[ -n "$temp3" ]]; then
-                echo "${temp3#*>}" >> /tmp/ip_quality_scamalytics_ipv6_${nlist[$i]}
-                i=$((i+1))
+                echo "${temp3#*>}" >>/tmp/ip_quality_scamalytics_ipv6_${nlist[$i]}
+                i=$((i + 1))
             fi
-        done <<< "$(echo "$temp2" | sed 's/<[^>]*>//g' | sed 's/^[[:blank:]]*//g')"
+        done <<<"$(echo "$temp2" | sed 's/<[^>]*>//g' | sed 's/^[[:blank:]]*//g')"
     fi
 }
 
@@ -653,10 +649,10 @@ virustotal() {
     local ip="$1"
     rm -rf /tmp/ip_quality_virustotal*
     local api_keys=(
-    "401e74a0a76ff4a5c2462177bfe54d1fb71a86a97031a3a5b461eb9fe06fa9a5"
-    "e6184c04de532cd5a094f3fd6b3ce36cd187e41e671b5336fd69862257d07a9a"
-    "9929218dcd124c19bcee49ecd6d7555213de0e8f27d407cc3e85c92c3fc2508e"
-    "bcc1f94cc4ec1966f43a5552007d6c4fa3461cec7200f8d95053ebeeecc68afa"
+        "401e74a0a76ff4a5c2462177bfe54d1fb71a86a97031a3a5b461eb9fe06fa9a5"
+        "e6184c04de532cd5a094f3fd6b3ce36cd187e41e671b5336fd69862257d07a9a"
+        "9929218dcd124c19bcee49ecd6d7555213de0e8f27d407cc3e85c92c3fc2508e"
+        "bcc1f94cc4ec1966f43a5552007d6c4fa3461cec7200f8d95053ebeeecc68afa"
     )
     local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
     local output=$(curl -s --request GET --url "https://www.virustotal.com/api/v3/ip_addresses/$ip" --header "x-apikey:$api_key")
@@ -677,10 +673,10 @@ virustotal() {
     }' | sed 's/\"//g')
     # 黑名单记录统计:(有多少黑名单网站有记录)
     if [[ -n "$result" ]] && [[ -n "$(echo "$result" | awk 'NF')" ]]; then
-        echo "$result" | sed 's/ //g' | awk 'NR==1' > /tmp/ip_quality_virustotal_harmlessness_records
-        echo "$result" | sed 's/ //g' | awk 'NR==2' > /tmp/ip_quality_virustotal_malicious_records
-        echo "$result" | sed 's/ //g' | awk 'NR==3' > /tmp/ip_quality_virustotal_suspicious_records
-        echo "$result" | sed 's/ //g' | awk 'NR==4' > /tmp/ip_quality_virustotal_no_records
+        echo "$result" | sed 's/ //g' | awk 'NR==1' >/tmp/ip_quality_virustotal_harmlessness_records
+        echo "$result" | sed 's/ //g' | awk 'NR==2' >/tmp/ip_quality_virustotal_malicious_records
+        echo "$result" | sed 's/ //g' | awk 'NR==3' >/tmp/ip_quality_virustotal_suspicious_records
+        echo "$result" | sed 's/ //g' | awk 'NR==4' >/tmp/ip_quality_virustotal_no_records
     fi
 }
 
@@ -688,17 +684,17 @@ cloudflare() {
     local status=0
     local context1
     rm -rf /tmp/ip_quality_cloudflare_risk
-    for ((i=1; i<=100; i++)); do
+    for ((i = 1; i <= 100; i++)); do
         context1=$(curl -sL -m 10 "https://cf-threat.sukkaw.com/hello.json?threat=$i")
         if [[ "$context1" != *"pong!"* ]]; then
-            echo "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60" >> /tmp/ip_quality_cloudflare_risk
-            echo "Cloudflare威胁得分：$i" >> /tmp/ip_quality_cloudflare_risk
+            echo "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60" >>/tmp/ip_quality_cloudflare_risk
+            echo "Cloudflare威胁得分：$i" >>/tmp/ip_quality_cloudflare_risk
             local status=1
             break
         fi
     done
     if [[ $i == 100 && $status == 0 ]]; then
-        echo "Cloudflare威胁得分(0为低风险): 0" >> /tmp/ip_quality_cloudflare_risk
+        echo "Cloudflare威胁得分(0为低风险): 0" >>/tmp/ip_quality_cloudflare_risk
     fi
 }
 
@@ -711,12 +707,12 @@ abuse_ipv4() {
     local context2=$(curl -sL -H "$head" -m 10 "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
     if [[ "$context2" == *"abuseConfidenceScore"* ]]; then
         score=$(echo "$context2" | grep -o '"abuseConfidenceScore":[^,}]*' | sed 's/.*://')
-        echo "$score" > /tmp/ip_quality_abuseipdb_ipv4_score
-        usageType=$(grep -oP '"usageType":\s*"\K[^"]+' <<< "$context2" | sed 's/\\\//\//g')
+        echo "$score" >/tmp/ip_quality_abuseipdb_ipv4_score
+        usageType=$(grep -oP '"usageType":\s*"\K[^"]+' <<<"$context2" | sed 's/\\\//\//g')
         if [ -z "$usageType" ]; then
             usageType="Unknown (Maybe Fixed Line ISP)"
         fi
-        echo "$usageType" > /tmp/ip_quality_ip2location_ipv4_usage_type
+        echo "$usageType" >/tmp/ip_quality_ip2location_ipv4_usage_type
     fi
 }
 
@@ -729,12 +725,12 @@ abuse_ipv6() {
     local context2=$(curl -sL -H "$head" -m 10 "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
     if [[ "$context2" == *"abuseConfidenceScore"* ]]; then
         score=$(echo "$context2" | grep -o '"abuseConfidenceScore":[^,}]*' | sed 's/.*://')
-        echo "$score" > /tmp/ip_quality_abuseipdb_ipv6_score
-        usageType=$(grep -oP '"usageType":\s*"\K[^"]+' <<< "$context2" | sed 's/\\\//\//g')
+        echo "$score" >/tmp/ip_quality_abuseipdb_ipv6_score
+        usageType=$(grep -oP '"usageType":\s*"\K[^"]+' <<<"$context2" | sed 's/\\\//\//g')
         if [ -z "$usageType" ]; then
             usageType="Unknown (Maybe Fixed Line ISP)"
         fi
-        echo "$usageType" > /tmp/ip_quality_ip2location_ipv6_usage_type
+        echo "$usageType" >/tmp/ip_quality_ip2location_ipv6_usage_type
     fi
 }
 
@@ -752,13 +748,13 @@ ipapi() {
     if [[ "$context4" == *"mobile"* ]]; then
         mobile=$(echo "$context4" | grep -o '"mobile":[^,}]*' | sed 's/.*://;s/"//g')
         tp1=$(translate_status ${mobile})
-        echo "$tp1" >> /tmp/ip_quality_ip_api_mobile
+        echo "$tp1" >>/tmp/ip_quality_ip_api_mobile
         proxy=$(echo "$context4" | grep -o '"proxy":[^,}]*' | sed 's/.*://;s/"//g')
         tp2=$(translate_status ${proxy})
-        echo "$tp2" >> /tmp/ip_quality_ip_api_proxy
+        echo "$tp2" >>/tmp/ip_quality_ip_api_proxy
         hosting=$(echo "$context4" | grep -o '"hosting":[^,}]*' | sed 's/.*://;s/"//g')
         tp3=$(translate_status ${hosting})
-        echo "$tp3" >> /tmp/ip_quality_ip_api_datacenter
+        echo "$tp3" >>/tmp/ip_quality_ip_api_datacenter
     fi
 }
 
@@ -768,17 +764,17 @@ ipwhois() {
     rm -rf /tmp/ip_quality_ipwhois*
     local url="https://ipwhois.app/widget.php?ip=${ip}&lang=en"
     local response=$(curl -s -X GET "$url" \
-    -H "Host: ipwhois.app" \
-    -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/116.0" \
-    -H "Accept: */*" \
-    -H "Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2" \
-    -H "Accept-Encoding: gzip, deflate, br" \
-    -H "Origin: https://ipwhois.io" \
-    -H "Connection: keep-alive" \
-    -H "Referer: https://ipwhois.io/" \
-    -H "Sec-Fetch-Dest: empty" \
-    -H "Sec-Fetch-Mode: cors" \
-    -H "Sec-Fetch-Site: cross-site")
+        -H "Host: ipwhois.app" \
+        -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/116.0" \
+        -H "Accept: */*" \
+        -H "Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2" \
+        -H "Accept-Encoding: gzip, deflate, br" \
+        -H "Origin: https://ipwhois.io" \
+        -H "Connection: keep-alive" \
+        -H "Referer: https://ipwhois.io/" \
+        -H "Sec-Fetch-Dest: empty" \
+        -H "Sec-Fetch-Mode: cors" \
+        -H "Sec-Fetch-Site: cross-site")
     if [[ "$?" -ne 0 ]]; then
         return
     fi
@@ -788,27 +784,26 @@ ipwhois() {
     vpn=$(echo "$security_section" | awk -F'"vpn":' '{print $2}' | cut -d',' -f1)
     tor=$(echo "$security_section" | awk -F'"tor":' '{print $2}' | cut -d',' -f1)
     hosting=$(echo "$security_section" | awk -F'"hosting":' '{print $2}' | cut -d',' -f1 | sed 's/}//')
-    echo "$anonymous" >> /tmp/ip_quality_ipwhois_anonymous
-    echo "$proxy" >> /tmp/ip_quality_ipwhois_proxy
-    echo "$vpn" >> /tmp/ip_quality_ipwhois_vpn
-    echo "$tor" >> /tmp/ip_quality_ipwhois_tor
-    echo "$hosting" >> /tmp/ip_quality_ipwhois_hosting
+    echo "$anonymous" >>/tmp/ip_quality_ipwhois_anonymous
+    echo "$proxy" >>/tmp/ip_quality_ipwhois_proxy
+    echo "$vpn" >>/tmp/ip_quality_ipwhois_vpn
+    echo "$tor" >>/tmp/ip_quality_ipwhois_tor
+    echo "$hosting" >>/tmp/ip_quality_ipwhois_hosting
 }
-
 
 # ipregistry数据库 ⑧
 ipregistry() {
     rm -rf /tmp/ip_quality_ipregistry*
     local ip="$1"
     local api_keys=(
-    "ing7l12cxp6jaahw"
-    "r208izz0q0icseks"
-    "szh9vdbsf64ez2bk"
-    "vum97powo0pxshko"
-    "m7irmmf8ey12rx7o"
-    "nd2chql8jm9f7gxa"
-    "9mbbr52gsds5xtyb"
-    "0xjh6xmh6j0jwsy6"
+        "ing7l12cxp6jaahw"
+        "r208izz0q0icseks"
+        "szh9vdbsf64ez2bk"
+        "vum97powo0pxshko"
+        "m7irmmf8ey12rx7o"
+        "nd2chql8jm9f7gxa"
+        "9mbbr52gsds5xtyb"
+        "0xjh6xmh6j0jwsy6"
     )
     local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
     local response
@@ -829,19 +824,19 @@ ipregistry() {
     local vpn=$(echo "$response" | grep -o '"is_vpn":[a-zA-Z]*' | awk -F':' '{print $2}')
     local anonymous=$(echo "$response" | grep -o '"is_anonymous":[a-zA-Z]*' | awk -F':' '{print $2}')
     local threat=$(echo "$response" | grep -o '"is_threat":[a-zA-Z]*' | awk -F':' '{print $2}')
-    echo "$company_type" > /tmp/ip_quality_ipregistry_company_type
-    echo "$connection_type" > /tmp/ip_quality_ipregistry_usage_type
-    echo "$abuser" > /tmp/ip_quality_ipregistry_abuser
-    echo "$attacker" > /tmp/ip_quality_ipregistry_attacker
-    echo "$bogon" > /tmp/ip_quality_ipregistry_bogon
-    echo "$cloud_provider" > /tmp/ip_quality_ipregistry_cloud_provider
-    echo "$proxy" > /tmp/ip_quality_ipregistry_proxy
-    echo "$relay" > /tmp/ip_quality_ipregistry_icloud_relay
-    echo "$tor" > /tmp/ip_quality_ipregistry_tor
-    echo "$tor_exit" > /tmp/ip_quality_ipregistry_tor_exit
-    echo "$vpn" > /tmp/ip_quality_ipregistry_vpn
-    echo "$anonymous" > /tmp/ip_quality_ipregistry_anonymous
-    echo "$threat" > /tmp/ip_quality_ipregistry_threat
+    echo "$company_type" >/tmp/ip_quality_ipregistry_company_type
+    echo "$connection_type" >/tmp/ip_quality_ipregistry_usage_type
+    echo "$abuser" >/tmp/ip_quality_ipregistry_abuser
+    echo "$attacker" >/tmp/ip_quality_ipregistry_attacker
+    echo "$bogon" >/tmp/ip_quality_ipregistry_bogon
+    echo "$cloud_provider" >/tmp/ip_quality_ipregistry_cloud_provider
+    echo "$proxy" >/tmp/ip_quality_ipregistry_proxy
+    echo "$relay" >/tmp/ip_quality_ipregistry_icloud_relay
+    echo "$tor" >/tmp/ip_quality_ipregistry_tor
+    echo "$tor_exit" >/tmp/ip_quality_ipregistry_tor_exit
+    echo "$vpn" >/tmp/ip_quality_ipregistry_vpn
+    echo "$anonymous" >/tmp/ip_quality_ipregistry_anonymous
+    echo "$threat" >/tmp/ip_quality_ipregistry_threat
 }
 
 # ipdata数据库 ⑨
@@ -849,59 +844,59 @@ ipdata() {
     rm -rf /tmp/ip_quality_ipdata*
     local ip="$1"
     local api_keys=(
-    "47c090ef820c47af56b382bb08ba863dbd84a0b10b80acd0dd8deb48"
-    "c6d4d04d5f11f2cd0839ee03c47c58621d74e361c945b5c1b4f668f3"
+        "47c090ef820c47af56b382bb08ba863dbd84a0b10b80acd0dd8deb48"
+        "c6d4d04d5f11f2cd0839ee03c47c58621d74e361c945b5c1b4f668f3"
     )
     local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
     response=$(curl -sL -m 10 "https://api.ipdata.co/${ip}?api-key=${api_key}" 2>/dev/null)
     local usage_type=$(echo "$response" | grep -o '"type": "[^"]*' | cut -d'"' -f4)
-    local tor=$(grep -o '"is_tor": \w\+' <<< "$response" | cut -d ' ' -f 2)
-    local icloud_relay=$(grep -o '"is_icloud_relay": \w\+' <<< "$response" | cut -d ' ' -f 2)
-    local proxy=$(grep -o '"is_proxy": \w\+' <<< "$response" | cut -d ' ' -f 2)
-    local datacenter=$(grep -o '"is_datacenter": \w\+' <<< "$response" | cut -d ' ' -f 2)
-    local anonymous=$(grep -o '"is_anonymous": \w\+' <<< "$response" | cut -d ' ' -f 2)
-    local attacker=$(grep -o '"is_known_attacker": \w\+' <<< "$response" | cut -d ' ' -f 2)
-    local abuser=$(grep -o '"is_known_abuser": \w\+' <<< "$response" | cut -d ' ' -f 2)
-    local threat=$(grep -o '"is_threat": \w\+' <<< "$response" | cut -d ' ' -f 2)
-    local bogon=$(grep -o '"is_bogon": \w\+' <<< "$response" | cut -d ' ' -f 2)
-    echo "$usage_type" > /tmp/ip_quality_ipdata_usage_type
-    echo "$tor" > /tmp/ip_quality_ipdata_tor
-    echo "$icloud_relay" > /tmp/ip_quality_ipdata_icloud_relay
-    echo "$proxy" > /tmp/ip_quality_ipdata_proxy
-    echo "$datacenter" > /tmp/ip_quality_ipdata_datacenter
-    echo "$anonymous" > /tmp/ip_quality_ipdata_anonymous
-    echo "$attacker" > /tmp/ip_quality_ipdata_attacker
-    echo "$abuser" > /tmp/ip_quality_ipdata_abuser
-    echo "$threat" > /tmp/ip_quality_ipdata_threat
-    echo "$bogon" > /tmp/ip_quality_ipdata_bogon
+    local tor=$(grep -o '"is_tor": \w\+' <<<"$response" | cut -d ' ' -f 2)
+    local icloud_relay=$(grep -o '"is_icloud_relay": \w\+' <<<"$response" | cut -d ' ' -f 2)
+    local proxy=$(grep -o '"is_proxy": \w\+' <<<"$response" | cut -d ' ' -f 2)
+    local datacenter=$(grep -o '"is_datacenter": \w\+' <<<"$response" | cut -d ' ' -f 2)
+    local anonymous=$(grep -o '"is_anonymous": \w\+' <<<"$response" | cut -d ' ' -f 2)
+    local attacker=$(grep -o '"is_known_attacker": \w\+' <<<"$response" | cut -d ' ' -f 2)
+    local abuser=$(grep -o '"is_known_abuser": \w\+' <<<"$response" | cut -d ' ' -f 2)
+    local threat=$(grep -o '"is_threat": \w\+' <<<"$response" | cut -d ' ' -f 2)
+    local bogon=$(grep -o '"is_bogon": \w\+' <<<"$response" | cut -d ' ' -f 2)
+    echo "$usage_type" >/tmp/ip_quality_ipdata_usage_type
+    echo "$tor" >/tmp/ip_quality_ipdata_tor
+    echo "$icloud_relay" >/tmp/ip_quality_ipdata_icloud_relay
+    echo "$proxy" >/tmp/ip_quality_ipdata_proxy
+    echo "$datacenter" >/tmp/ip_quality_ipdata_datacenter
+    echo "$anonymous" >/tmp/ip_quality_ipdata_anonymous
+    echo "$attacker" >/tmp/ip_quality_ipdata_attacker
+    echo "$abuser" >/tmp/ip_quality_ipdata_abuser
+    echo "$threat" >/tmp/ip_quality_ipdata_threat
+    echo "$bogon" >/tmp/ip_quality_ipdata_bogon
 }
 
 # ipgeolocation数据库 ⑩
-ipgeolocation(){
+ipgeolocation() {
     rm -rf /tmp/ip_quality_ipgeolocation*
     local ip="$1"
     local api_keys=(
-    "0d4f60641cd9b95ff5ac9b4d866a0655"
-    "7C5384E65E3B5B520A588FB8F9281719"
-    "4E191A613023EA66D24E35E41C870D3B"
-    "3D07E2EAAF55940AF44734C3F2AC7C1A"
-    "32D24DBFB5C3BFFDEF5FE9331F93BA5B"
-    "28cc35ee8608480fa7087be0e435320c"
+        "0d4f60641cd9b95ff5ac9b4d866a0655"
+        "7C5384E65E3B5B520A588FB8F9281719"
+        "4E191A613023EA66D24E35E41C870D3B"
+        "3D07E2EAAF55940AF44734C3F2AC7C1A"
+        "32D24DBFB5C3BFFDEF5FE9331F93BA5B"
+        "28cc35ee8608480fa7087be0e435320c"
     )
     local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
     local response=$(curl -sL -m 10 "https://api.ip2location.io/?key=${api_key}&ip=${ip}" 2>/dev/null)
     local is_proxy=$(echo "$response" | grep -o '"is_proxy":\s*false\|true' | cut -d ":" -f2)
     is_proxy=$(echo "$is_proxy" | tr -d '"')
-    echo "$is_proxy" > /tmp/ip_quality_ipgeolocation_proxy
+    echo "$is_proxy" >/tmp/ip_quality_ipgeolocation_proxy
 }
 
 google() {
     local curl_result=$(curl -sL -m 10 "https://www.google.com/search?q=www.spiritysdx.top" -H "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0")
     rm -rf /tmp/ip_quality_google
     if echo "$curl_result" | grep -q "二叉树的博客"; then
-        echo "Google搜索可行性：YES" >> /tmp/ip_quality_google
+        echo "Google搜索可行性：YES" >>/tmp/ip_quality_google
     else
-        echo "Google搜索可行性：NO" >> /tmp/ip_quality_google
+        echo "Google搜索可行性：NO" >>/tmp/ip_quality_google
     fi
 }
 
@@ -909,11 +904,11 @@ local_port_25() {
     local host=$1
     local port=$2
     rm -rf /tmp/ip_quality_local_port_25
-    nc -z -w5 $host $port > /dev/null 2>&1
+    nc -z -w5 $host $port >/dev/null 2>&1
     if [ $? -eq 0 ]; then
-        echo "  本地: Yes" >> /tmp/ip_quality_local_port_25
+        echo "  本地: Yes" >>/tmp/ip_quality_local_port_25
     else
-        echo "  本地: No" >> /tmp/ip_quality_local_port_25
+        echo "  本地: No" >>/tmp/ip_quality_local_port_25
     fi
 }
 
@@ -923,85 +918,85 @@ check_email_service() {
     local port=25
     local expected_response="220"
     case $service in
-        "gmail邮箱")
-            host="smtp.gmail.com"
-            ;;
-        "163邮箱")
-            host="smtp.163.com"
-            ;;
-        "yandex邮箱")
-            host="smtp.yandex.com"
-            ;;
-        "outlook邮箱")
-            host="smtp.office365.com"
-            ;;
-        "qq邮箱")
-            host="smtp.qq.com"
-            ;;
-        *)
-            echo "不支持的邮箱服务: $service"
-            return
-            ;;
+    "gmail邮箱")
+        host="smtp.gmail.com"
+        ;;
+    "163邮箱")
+        host="smtp.163.com"
+        ;;
+    "yandex邮箱")
+        host="smtp.yandex.com"
+        ;;
+    "outlook邮箱")
+        host="smtp.office365.com"
+        ;;
+    "qq邮箱")
+        host="smtp.qq.com"
+        ;;
+    *)
+        echo "不支持的邮箱服务: $service"
+        return
+        ;;
     esac
     local response=$(echo -e "QUIT\r\n" | nc -w6 $host $port 2>/dev/null)
     if [[ $response == *"$expected_response"* ]]; then
-        echo "  $service: Yes" >> /tmp/ip_quality_check_email_service
+        echo "  $service: Yes" >>/tmp/ip_quality_check_email_service
     else
-        echo "  $service：No" >> /tmp/ip_quality_check_email_service
+        echo "  $service：No" >>/tmp/ip_quality_check_email_service
     fi
 }
 
-combine_result_of_ip_quality(){
-    check_and_cat_file /tmp/ip_quality_local_port_25 >> /tmp/ip_quality_check_port_25
-    check_and_cat_file /tmp/ip_quality_check_email_service >> /tmp/ip_quality_check_port_25
+combine_result_of_ip_quality() {
+    check_and_cat_file /tmp/ip_quality_local_port_25 >>/tmp/ip_quality_check_port_25
+    check_and_cat_file /tmp/ip_quality_check_email_service >>/tmp/ip_quality_check_port_25
 }
 
 check_port_25() {
     rm -rf /tmp/ip_quality_check_port_25
     rm -rf /tmp/ip_quality_check_email_service
     rm -rf /tmp/ip_quality_local_port_25
-    echo "端口25检测:" >> /tmp/ip_quality_check_port_25
-    { local_port_25 "localhost" 25; }&
-    check_email_service "163邮箱";
+    echo "端口25检测:" >>/tmp/ip_quality_check_port_25
+    { local_port_25 "localhost" 25; } &
+    check_email_service "163邮箱"
     if [[ $(cat /tmp/ip_quality_check_email_service) == *"No"* ]]; then
         wait
         combine_result_of_ip_quality
         return
     else
-        check_email_service "gmail邮箱";
+        check_email_service "gmail邮箱"
         if [[ $(cat /tmp/ip_quality_check_email_service) == *"No"* ]]; then
             wait
             combine_result_of_ip_quality
             return
         else
-            { check_email_service "outlook邮箱"; }&
-            { check_email_service "yandex邮箱"; }&
-            { check_email_service "qq邮箱"; }&
+            { check_email_service "outlook邮箱"; } &
+            { check_email_service "yandex邮箱"; } &
+            { check_email_service "qq邮箱"; } &
         fi
     fi
     wait
     combine_result_of_ip_quality
 }
 
-ipcheck(){
+ipcheck() {
     local ip4=$(echo "$IPV4" | tr -d '\n')
     local ip6=$(echo "$IPV6" | tr -d '\n')
-    { ipinfo "$ip4"; }&
-    { scamalytics_ipv4 "$ip4"; }&
-    { virustotal "$ip4"; }&
-    { abuse_ipv4 "$ip4"; }&
-    { ipapi "$ip4"; }&
-    { ipwhois "$ip4"; }&
-    { ipregistry "$ip4"; }&
-    { ipdata "$ip4"; }&
-    { ipgeolocation "$ip4"; }&
-    { google; }&
+    { ipinfo "$ip4"; } &
+    { scamalytics_ipv4 "$ip4"; } &
+    { virustotal "$ip4"; } &
+    { abuse_ipv4 "$ip4"; } &
+    { ipapi "$ip4"; } &
+    { ipwhois "$ip4"; } &
+    { ipregistry "$ip4"; } &
+    { ipdata "$ip4"; } &
+    { ipgeolocation "$ip4"; } &
+    { google; } &
     if command -v nc >/dev/null; then
-        { check_port_25; }&
+        { check_port_25; } &
     fi
     if [[ -n "$ip6" ]]; then
-        { scamalytics_ipv6 "$ip6"; }&
-        { abuse_ipv6 "$ip6"; }&
+        { scamalytics_ipv6 "$ip6"; } &
+        { abuse_ipv6 "$ip6"; } &
     fi
     wait
     # 预处理部分类型
@@ -1010,9 +1005,9 @@ ipcheck(){
     local web_proxy_4=$(check_and_cat_file '/tmp/ip_quality_scamalytics_ipv4_web_proxy')
     if [ -n "$public_proxy_4" ] && [ -n "$web_proxy_4" ]; then
         if [ "$public_proxy_4" = "Yes" ] || [ "$web_proxy_4" = "Yes" ]; then
-            echo "Yes" > /tmp/ip_quality_scamalytics_ipv4_proxy
+            echo "Yes" >/tmp/ip_quality_scamalytics_ipv4_proxy
         else
-            echo "No" > /tmp/ip_quality_scamalytics_ipv4_proxy
+            echo "No" >/tmp/ip_quality_scamalytics_ipv4_proxy
         fi
     fi
     local score_2_4=$(check_and_cat_file '/tmp/ip_quality_scamalytics_ipv4_score')
@@ -1096,22 +1091,13 @@ ipcheck(){
     rm -rf /tmp/ip_quality_*
 }
 
-build_text(){
+build_text() {
     cd $myvar >/dev/null 2>&1
-    awk '/-------------------- A Bench Script By spiritlhl ---------------------/{flag=1} flag; /^$/{flag=0}' qzcheck_result.txt > temp.txt && mv temp.txt qzcheck_result.txt
+    awk '/-------------------- A Bench Script By spiritlhl ---------------------/{flag=1} flag; /^$/{flag=0}' qzcheck_result.txt >temp.txt && mv temp.txt qzcheck_result.txt
     sed -i -e 's/\x1B\[[0-9;]\+[a-zA-Z]//g' qzcheck_result.txt
     sed -i -e '/^$/d' qzcheck_result.txt
     if [ -s qzcheck_result.txt ]; then
         shorturl=$(curl --ipv4 -sL -m 10 -X POST -H "Authorization: $ST" \
-        -H "Format: RANDOM" \
-        -H "Max-Views: 0" \
-        -H "UploadText: true" \
-        -H "Content-Type: multipart/form-data" \
-        -H "No-JSON: true" \
-        -F "file=@${myvar}/qzcheck_result.txt" \
-        "https://paste.spiritlhl.net/api/upload")
-        if [ $? -ne 0 ]; then
-            shorturl=$(curl --ipv6 -sL -m 10 -X POST -H "Authorization: $ST" \
             -H "Format: RANDOM" \
             -H "Max-Views: 0" \
             -H "UploadText: true" \
@@ -1119,11 +1105,20 @@ build_text(){
             -H "No-JSON: true" \
             -F "file=@${myvar}/qzcheck_result.txt" \
             "https://paste.spiritlhl.net/api/upload")
+        if [ $? -ne 0 ]; then
+            shorturl=$(curl --ipv6 -sL -m 10 -X POST -H "Authorization: $ST" \
+                -H "Format: RANDOM" \
+                -H "Max-Views: 0" \
+                -H "UploadText: true" \
+                -H "Content-Type: multipart/form-data" \
+                -H "No-JSON: true" \
+                -F "file=@${myvar}/qzcheck_result.txt" \
+                "https://paste.spiritlhl.net/api/upload")
         fi
     fi
 }
 
-main(){
+main() {
     IPV4=$(check_and_cat_file /tmp/ip_quality_ipv4)
     IPV6=$(check_and_cat_file /tmp/ip_quality_ipv6)
     clear
@@ -1153,10 +1148,9 @@ rm -rf qzcheck_result.txt
 run_ip_info_check
 ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
 ! _exists "free" && _red "Error: free command not found.\n" && exit 1
-main | tee -i qzcheck_result.txt;
+main | tee -i qzcheck_result.txt
 build_text
-if [ -n "$shorturl" ]
-then
+if [ -n "$shorturl" ]; then
     _green "  短链:"
     _blue "    $shorturl"
 fi
