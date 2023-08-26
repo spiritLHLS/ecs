@@ -1126,7 +1126,7 @@ function BenchAPI_Systeminfo_GetOSReleaseinfo() {
     if [ -f "/etc/centos-release" ] || [ -f "/etc/redhat-release" ]; then
         Result_Systeminfo_OSReleaseNameShort="centos"
         local r_prettyname && r_prettyname="$(grep -oP '(?<=\bPRETTY_NAME=").*(?=")' /etc/os-release)"
-        local r_elrepo_version && r_elrepo_version="$(rpm -qa | grep -oP "el[0-9]+" | sort -u)"
+        local r_elrepo_version && r_elrepo_version="$(rpm -qa | grep -oP "el[0-9]+" | sort -ur | head -n1)"
         case "$r_elrepo_version" in
         9 | el9)
             Result_Systeminfo_OSReleaseVersionShort="9"
@@ -1150,6 +1150,7 @@ function BenchAPI_Systeminfo_GetOSReleaseinfo() {
             ;;
         *)
             echo -e "${Msg_Error} BenchAPI_Systeminfo_GetOSReleaseinfo(): invalid result (CentOS/Redhat-$r_prettyname ($r_arch)), please check parameter!"
+            exit 1
             ;;
         esac
     elif [ -f "/etc/lsb-release" ]; then # Ubuntu
@@ -1168,6 +1169,7 @@ function BenchAPI_Systeminfo_GetOSReleaseinfo() {
         return 0
     else
         echo -e "${Msg_Error} BenchAPI_Systeminfo_GetOSReleaseinfo(): invalid result ($r_prettyname ($r_arch)), please check parameter!"
+        exit 1
     fi
 }
 #
