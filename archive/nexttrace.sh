@@ -88,7 +88,7 @@ for ((i = 1; i <= $(echo "$PART_1" | wc -l); i++)); do
   [ "$i" -eq 10 ] && unset SPACE
   p_1=$(echo "$PART_2" | sed -n "${i}p") 2>/dev/null
   p_2=$(echo "$PART_1" | sed -n "${i}p") 2>/dev/null
-  _green "$p_1 \t$p_2"
+  echo -e "$p_1 \t$p_2"
 done
 
 # 执行完成，删除 nexttrace 主程序
