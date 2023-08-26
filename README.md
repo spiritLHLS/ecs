@@ -61,8 +61,6 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 待解决事项
 
-针对纯IPV6服务器，使用v6的目标地址进行路由测试 - 待添加
-
 ARMV7l的机器测IO时会失效，yabs和lemonbench的测试可能失效 - 待修复
 
 个别(可能0.1%)的机器下载文件遇到CDN下载超时的问题，文件未下载完全就使用了，需要添加文件完整性校验 - 待添加
@@ -73,9 +71,12 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试可能失效 - 待�
 
 ## 更新
 
-2023.08.20
+2023.08.26
 
-- besttrace的API由于平台可能时不时存在403问题，遇到403或查询失败将应自动替换为备用的nexttrace测试，即使精度有下降
+- 针对纯IPV6服务器，使用v6的目标地址进行路由测试
+- 修复IPV4的地址检测判断，识别 RFC 6598 地址避免误判
+- 优化自动替换Besttrace为Nexttrace的判断条件，自动替换兼容的情况更多了
+- 优化路由检测的v6部分的判断
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

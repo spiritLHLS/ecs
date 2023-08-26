@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.08.20"
+ver="2023.08.26"
 changeLog="VPS融合怪测试(集百家之长)"
 
 # =============== 默认输入设置 ===============
@@ -40,6 +40,8 @@ test_area_b=("北京电信" "北京联通" "北京移动")
 test_ip_b=("219.141.136.12" "202.106.50.1" "221.179.155.161")
 test_area_c=("成都电信" "成都联通" "成都移动")
 test_ip_c=("61.139.2.69" "119.6.6.6" "211.137.96.205")
+test_area_6=("广东电信" "广东联通" "广东移动")
+test_ip_6=("2401:1d40:3100::1" "2408:8001:3000::1" "2409:8054:306c::1")
 BrowserUA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36"
 
 # =============== 基础信息设置 ===============
@@ -398,11 +400,19 @@ checkpystun() {
 }
 
 check_and_cat_file() {
-    # 检测到文件存在再输出
     local file="$1"
+    # 检测文件是否存在
     if [[ -f "$file" ]]; then
-        cat "$file"
+        # 判断文件内容是否为空或只包含空行
+        if [[ -s "$file" ]] && [[ "$(grep -vE '^\s*$' "$file")" ]]; then
+            :
+        else
+            truncate -s 0 "$file"
+        fi
+    else
+        truncate -s 0 "$file"
     fi
+    cat "$file"
 }
 
 # 后台静默预下载文件并解压
@@ -1999,12 +2009,13 @@ is_private_ipv4() {
     fi
     IFS='.' read -r -a ip_parts <<<"$ip_address"
     # 检查IP地址是否符合内网IP地址的范围
-    # 去除 回环，REC 1918，多播 地址
+    # 去除 回环，RFC 1918，多播，RFC 6598 地址
     if [[ ${ip_parts[0]} -eq 10 ]] ||
         [[ ${ip_parts[0]} -eq 172 && ${ip_parts[1]} -ge 16 && ${ip_parts[1]} -le 31 ]] ||
         [[ ${ip_parts[0]} -eq 192 && ${ip_parts[1]} -eq 168 ]] ||
         [[ ${ip_parts[0]} -eq 127 ]] ||
         [[ ${ip_parts[0]} -eq 0 ]] ||
+        [[ ${ip_parts[0]} -eq 100 && ${ip_parts[1]} -ge 64 && ${ip_parts[1]} -le 127 ]] ||
         [[ ${ip_parts[0]} -ge 224 ]]; then
         return 0 # 是内网IP地址
     else
@@ -2289,6 +2300,7 @@ check_ip_info_by_cheervision() {
 }
 
 get_system_info() {
+    local ip4=$(echo "$IPV4" | tr -d '\n')
     arch=$(uname -m)
     if [ -n "$Result_Systeminfo_Diskinfo" ]; then
         :
@@ -2403,83 +2415,90 @@ get_system_info() {
             fi
         fi
     fi
-    check_stun
-    if command -v stun >/dev/null 2>&1; then
-        result=$(stun stun.l.google.com)
-        nat_type=$(echo "$result" | grep '^Primary' | awk -F'Primary:' '{print $2}' | tr -d ' ')
-        nat_type_r=""
-        if echo "$nat_type" | grep -qE "IndependentMapping|Independent Mapping"; then
-            nat_type_r+="独立映射"
-        fi
-        if echo "$nat_type" | grep -qE "IndependentFilter|Independent Filter"; then
-            if [ -n "$nat_type_r" ]; then
-                nat_type_r+=","
+    if [[ ! -z "${ip4}" ]]; then
+        check_stun
+        if command -v stun >/dev/null 2>&1; then
+            result=$(stun stun.l.google.com)
+            nat_type=$(echo "$result" | grep '^Primary' | awk -F'Primary:' '{print $2}' | tr -d ' ')
+            nat_type_r=""
+            if echo "$nat_type" | grep -qE "IndependentMapping|Independent Mapping"; then
+                nat_type_r+="独立映射"
             fi
-            nat_type_r+="独立过滤"
-        fi
-        if echo "$nat_type" | grep -q "preservesports|preserves ports"; then
-            if [ -n "$nat_type_r" ]; then
-                nat_type_r+=","
+            if echo "$nat_type" | grep -qE "IndependentFilter|Independent Filter"; then
+                if [ -n "$nat_type_r" ]; then
+                    nat_type_r+=","
+                fi
+                nat_type_r+="独立过滤"
             fi
-            nat_type_r+="保留端口"
-        fi
-        if echo "$nat_type" | grep -q "randomport|random port"; then
-            if [ -n "$nat_type_r" ]; then
-                nat_type_r+=","
+            if echo "$nat_type" | grep -q "preservesports|preserves ports"; then
+                if [ -n "$nat_type_r" ]; then
+                    nat_type_r+=","
+                fi
+                nat_type_r+="保留端口"
             fi
-            nat_type_r+="随机端口"
-        fi
-        if echo "$nat_type" | grep -qE "nohairpin|no hairpin"; then
-            if [ -n "$nat_type_r" ]; then
-                nat_type_r+=","
+            if echo "$nat_type" | grep -q "randomport|random port"; then
+                if [ -n "$nat_type_r" ]; then
+                    nat_type_r+=","
+                fi
+                nat_type_r+="随机端口"
             fi
-            nat_type_r+="不支持回环"
-        fi
-        if echo "$nat_type" | grep -qE "willhairpin|will hairpin"; then
-            if [ -n "$nat_type_r" ]; then
-                nat_type_r+=","
+            if echo "$nat_type" | grep -qE "nohairpin|no hairpin"; then
+                if [ -n "$nat_type_r" ]; then
+                    nat_type_r+=","
+                fi
+                nat_type_r+="不支持回环"
             fi
-            nat_type_r+="支持回环"
-        fi
-        if echo "$nat_type" | grep -q "Open"; then
-            if [ -n "$nat_type_r" ]; then
-                nat_type_r+=","
+            if echo "$nat_type" | grep -qE "willhairpin|will hairpin"; then
+                if [ -n "$nat_type_r" ]; then
+                    nat_type_r+=","
+                fi
+                nat_type_r+="支持回环"
             fi
-            nat_type_r+="开放型"
-        fi
-        if echo "$nat_type" | grep -qE "BlockedorcouldnotreachSTUNserver|Blocked or could not reach STUN server"; then
+            if echo "$nat_type" | grep -q "Open"; then
+                if [ -n "$nat_type_r" ]; then
+                    nat_type_r+=","
+                fi
+                nat_type_r+="开放型"
+            fi
+            if echo "$nat_type" | grep -qE "BlockedorcouldnotreachSTUNserver|Blocked or could not reach STUN server"; then
+                checkpystun
+                if command -v pystun3 >/dev/null 2>&1; then
+                    result=$(pystun3 </dev/null)
+                    nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
+                    if echo "$nat_type_r" | grep -qE "Blocked"; then
+                        nat_type_r="无法检测"
+                    fi
+                elif command -v pystun >/dev/null 2>&1; then
+                    result=$(pystun </dev/null)
+                    nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
+                    if echo "$nat_type_r" | grep -qE "Blocked"; then
+                        nat_type_r="无法检测"
+                    fi
+                else
+                    if [ -n "$nat_type_r" ]; then
+                        nat_type_r+=","
+                    fi
+                    nat_type_r+="无法检测"
+                fi
+            fi
+            if [ -z "$nat_type_r" ]; then
+                nat_type_r="$nat_type"
+            fi
+        else
             checkpystun
             if command -v pystun3 >/dev/null 2>&1; then
                 result=$(pystun3 </dev/null)
                 nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
-                if echo "$nat_type_r" | grep -qE "Blocked"; then
-                    nat_type_r="无法检测"
-                fi
             elif command -v pystun >/dev/null 2>&1; then
                 result=$(pystun </dev/null)
                 nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
-                if echo "$nat_type_r" | grep -qE "Blocked"; then
-                    nat_type_r="无法检测"
-                fi
-            else
-                if [ -n "$nat_type_r" ]; then
-                    nat_type_r+=","
-                fi
-                nat_type_r+="无法检测"
             fi
         fi
-        if [ -z "$nat_type_r" ]; then
-            nat_type_r="$nat_type"
+        if echo "$nat_type_r" | grep -qE "BlockedorcouldnotreachSTUNserver|Blocked or could not reach STUN server"; then
+            nat_type_r="无法检测"
         fi
     else
-        checkpystun
-        if command -v pystun3 >/dev/null 2>&1; then
-            result=$(pystun3 </dev/null)
-            nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
-        elif command -v pystun >/dev/null 2>&1; then
-            result=$(pystun </dev/null)
-            nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
-        fi
+        nat_type_r="无法检测"
     fi
 }
 
@@ -3097,6 +3116,9 @@ ipcheck() {
     _blue "ip-api数据库 ⑥  | ipwhois数据库     ⑦  | ipregistry数据库 ⑧  | ipdata数据库    ⑨  | ipgeolocation数据库 ⑩"
     local ip4=$(echo "$IPV4" | tr -d '\n')
     local ip6=$(echo "$IPV6" | tr -d '\n')
+    if [[ -z "${ip4}" ]] && [[ ! -z "${ip6}" ]]; then
+        echo "以下为IPV6检测"
+    fi
     { ipinfo "$ip4"; } &
     { scamalytics_ipv4 "$ip4"; } &
     { virustotal "$ip4"; } &
@@ -3186,8 +3208,10 @@ ipcheck() {
     fi
     check_and_cat_file "/tmp/ip_quality_google"
     check_and_cat_file "/tmp/ip_quality_check_port_25"
-    if [[ -n "$ip6" ]]; then
-        echo "------以下为IPV6检测------"
+    if [[ ! -z "${ip6}" ]]; then
+        if [[ ! -z "${ip4}" ]] && [[ ! -z "${ip6}" ]]; then
+            echo "------以下为IPV6检测------"
+        fi
         local score_2_6=$(check_and_cat_file '/tmp/ip_quality_scamalytics_ipv6_score')
         if [[ -n "$score_2_6" ]]; then
             echo "欺诈分数(越低越好): $score_2_6②"
@@ -3348,14 +3372,36 @@ fscarmen_route_script() {
     cd $myvar >/dev/null 2>&1
     echo -e "---------------------回程路由--感谢fscarmen开源及PR---------------------"
     rm -f /tmp/ecs/ip.test
-    _green "依次测试电信/联通/移动经过的地区及线路，核心程序来自ipip.net或nexttrace，请知悉!" >/tmp/ecs/ip.test
     local test_area=("${!1}")
     local test_ip=("${!2}")
-    for ((a = 0; a < ${#test_area[@]}; a++)); do
-        "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >>/tmp/ip_temp
-        if [ ! -s "/tmp/ip_temp" ] || grep -q "http: 403" /tmp/ip_temp 2>/dev/null; then
+    local ip4=$(echo "$IPV4" | tr -d '\n')
+    local ip6=$(echo "$IPV6" | tr -d '\n')
+    if [[ ! -z "${ip4}" ]]; then
+        _green "依次测试电信/联通/移动经过的地区及线路，核心程序来自ipip.net或nexttrace，请知悉!" >/tmp/ecs/ip.test
+        for ((a = 0; a < ${#test_area[@]}; a++)); do
+            "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >>/tmp/ip_temp
+            if [ ! -s "/tmp/ip_temp" ] || grep -q "http: 403" /tmp/ip_temp || grep -q "error" /tmp/ip_temp 2>/dev/null; then
+                rm -rf /tmp/ip_temp
+                RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null)
+                PART_1=$(echo "$RESULT" | grep '^[0-9]\{1,2\}[ ]\+[0-9a-f]' | awk '{$1="";$2="";print}' | sed "s@^[ ]\+@@g")
+                PART_2=$(echo "$RESULT" | grep '\(.*ms\)\{3\}' | sed 's/.* \([0-9*].*ms\).*ms.*ms/\1/g')
+                SPACE=' '
+                for ((i = 1; i <= $(echo "$PART_1" | wc -l); i++)); do
+                    [ "$i" -eq 10 ] && unset SPACE
+                    p_1=$(echo "$PART_2" | sed -n "${i}p") 2>/dev/null
+                    p_2=$(echo "$PART_1" | sed -n "${i}p") 2>/dev/null
+                    echo -e "$p_1 \t$p_2" >>/tmp/ip_temp
+                done
+            fi
+            _yellow "${test_area[a]} ${test_ip[a]}" >>/tmp/ecs/ip.test
+            cat /tmp/ip_temp >>/tmp/ecs/ip.test
             rm -rf /tmp/ip_temp
-            RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null)
+        done
+    elif [[ -n "$ip6" ]]; then
+        _green "依次测试电信/联通/移动经过的地区及线路，核心程序来自nexttrace，请知悉!" >/tmp/ecs/ip.test
+        for ((a = 0; a < ${#test_area_6[@]}; a++)); do
+            rm -rf /tmp/ip_temp
+            RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip_6[a]}" -g cn 2>/dev/null)
             PART_1=$(echo "$RESULT" | grep '^[0-9]\{1,2\}[ ]\+[0-9a-f]' | awk '{$1="";$2="";print}' | sed "s@^[ ]\+@@g")
             PART_2=$(echo "$RESULT" | grep '\(.*ms\)\{3\}' | sed 's/.* \([0-9*].*ms\).*ms.*ms/\1/g')
             SPACE=' '
@@ -3365,12 +3411,17 @@ fscarmen_route_script() {
                 p_2=$(echo "$PART_1" | sed -n "${i}p") 2>/dev/null
                 echo -e "$p_1 \t$p_2" >>/tmp/ip_temp
             done
-        fi
-        _yellow "${test_area[a]} ${test_ip[a]}" >>/tmp/ecs/ip.test
-        cat /tmp/ip_temp >>/tmp/ecs/ip.test
-        rm -rf /tmp/ip_temp
-    done
-    check_and_cat_file /tmp/ecs/ip.test
+            _yellow "${test_area_6[a]} ${test_ip_6[a]}" >>/tmp/ecs/ip.test
+            cat /tmp/ip_temp >>/tmp/ecs/ip.test
+            rm -rf /tmp/ip_temp
+        done
+    fi
+    output=$(check_and_cat_file /tmp/ecs/ip.test)
+    if [ -z "${output// /}" ]; then
+        echo "Hop limit"
+    else
+        echo "$output"
+    fi
     rm -f /tmp/ecs/ip.test
 }
 
