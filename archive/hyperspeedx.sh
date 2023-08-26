@@ -8,19 +8,19 @@ CYAN='\033[0;36m'
 ENDC='\033[0m'
 
 check_wget() {
-    if  [ ! -e '/usr/bin/wget' ]; then
+    if [ ! -e '/usr/bin/wget' ]; then
         echo "请先安装 wget" && exit 1
     fi
 }
 
 check_bimc() {
-    if  [ ! -e './bimc' ]; then
+    if [ ! -e './bimc' ]; then
         echo "正在获取组件"
         arch=$(uname -m)
         if [ "${arch}" == "i686" ]; then
             arch="i586"
         fi
-        wget --no-check-certificate -qO bimc https://bench.im/bimc > /dev/null 2>&1
+        wget --no-check-certificate -qO bimc https://bench.im/bimc >/dev/null 2>&1
         chmod +x bimc
     fi
 }
@@ -29,51 +29,50 @@ print_info() {
     echo "——————————————————————————————————————————————————————————————————————"
 }
 
-
-
 get_options() {
     echo -e "  测速类型:    ${GREEN}1.${ENDC} 全国三网测速    ${GREEN}2.${ENDC} 东南西北中      ${GREEN}0.${ENDC} 北上广"
     echo -e "               ${GREEN}3.${ENDC} 全国电信节点    ${GREEN}4.${ENDC} 全国联通节点    ${GREEN}5.${ENDC} 全国移动节点"
     echo -e "               ${GREEN}6.${ENDC} 区域电信节点    ${GREEN}7.${ENDC} 区域联通节点    ${GREEN}8.${ENDC} 区域移动节点"
-    while :; do read -p "  请选择测速类型(默认: 1): " selection
+    while :; do
+        read -p "  请选择测速类型(默认: 1): " selection
         if [[ "$selection" == "" ]]; then
             selection=1
             break
         elif [[ ! $selection =~ ^[0-8]$ ]]; then
             echo -e "  ${RED}输入错误${ENDC}, 请输入正确的数字!"
         else
-            break   
+            break
         fi
     done
-    while :; do read -p "  启用八线程测速(留空禁用): " multi
+    while :; do
+        read -p "  启用八线程测速(留空禁用): " multi
         if [[ "$multi" != "" ]]; then
             thread=" -m"
             break
         else
             thread=""
-            break 
+            break
         fi
     done
 }
 
-
-speed_test(){
+speed_test() {
     local nodeType=$1
     local nodeLocation=$2
     local nodeISP=$3
     local extra=$4
-    local server=$(echo "$5"| base64 -d)
+    local server=$(echo "$5" | base64 -d)
     local name=$(./bimc "$nodeLocation" -n)
 
-    printf "\r${GREEN}%-7s${YELLOW}%s%s${GREEN}%s${CYAN}%s%-11s${CYAN}%s%-11s${GREEN}%-9s${PURPLE}%-7s${ENDC}" "${nodeType}"  "${nodeISP}" "|" "${name}" "↑ " "..." "↓ " "..." "..." "..."
+    printf "\r${GREEN}%-7s${YELLOW}%s%s${GREEN}%s${CYAN}%s%-11s${CYAN}%s%-11s${GREEN}%-9s${PURPLE}%-7s${ENDC}" "${nodeType}" "${nodeISP}" "|" "${name}" "↑ " "..." "↓ " "..." "..." "..."
 
     output=$(./bimc $server $ul$thread $extra)
     local upload="$(echo "$output" | cut -n -d ',' -f1)"
     local download="$(echo "$output" | cut -n -d ',' -f2)"
     local latency="$(echo "$output" | cut -n -d ',' -f3)"
     local jitter="$(echo "$output" | cut -n -d ',' -f4)"
-            
-    printf "\r${GREEN}%-7s${YELLOW}%s%s${GREEN}%s${CYAN}%s%s${CYAN}%s%s${GREEN}%s${PURPLE}%s${ENDC}\n" "${nodeType}"  "${nodeISP}" "|" "${name}" "↑ " "${upload}" "↓ " "${download}" "${latency}" "${jitter}"
+
+    printf "\r${GREEN}%-7s${YELLOW}%s%s${GREEN}%s${CYAN}%s%s${CYAN}%s%s${GREEN}%s${PURPLE}%s${ENDC}\n" "${nodeType}" "${nodeISP}" "|" "${name}" "↑ " "${upload}" "↓ " "${download}" "${latency}" "${jitter}"
 }
 
 run_test() {
@@ -81,7 +80,7 @@ run_test() {
 
     echo "——————————————————————————————————————————————————————————————————————"
     echo "协议   测速服务器信息       上传/Mbps    下载/Mbps    延迟/ms  抖动/ms"
-    start=$(date +%s) 
+    start=$(date +%s)
 
     if [[ ${selection} == 0 ]]; then
         speed_test 'HTTP' '北京' '电信' '' 'MjE5LjE0MS4xNTAuMTY2OjgwOTI='
@@ -274,7 +273,7 @@ run_test() {
         echo -ne "  多线程"
     fi
 
-    time=$(( $end - $start ))
+    time=$(($end - $start))
     if [[ $time -gt 60 ]]; then
         min=$(expr $time / 60)
         sec=$(expr $time % 60)
@@ -287,12 +286,12 @@ run_test() {
 }
 
 run_all() {
-    check_wget;
-    check_bimc;
+    check_wget
+    check_bimc
     clear
-    print_info;
-    get_options;
-    run_test;
+    print_info
+    get_options
+    run_test
     rm -rf bimc
 }
 

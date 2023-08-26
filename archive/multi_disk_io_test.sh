@@ -11,14 +11,14 @@ PACKAGE_UPDATE=("! apt-get update && apt-get --fix-broken install -y && apt-get 
 PACKAGE_INSTALL=("apt-get -y install" "apt-get -y install" "yum -y install" "yum -y install" "yum -y install" "pacman -Sy --noconfirm --needed")
 PACKAGE_REMOVE=("apt-get -y remove" "apt-get -y remove" "yum -y remove" "yum -y remove" "yum -y remove" "pacman -Rsc --noconfirm")
 PACKAGE_UNINSTALL=("apt-get -y autoremove" "apt-get -y autoremove" "yum -y autoremove" "yum -y autoremove" "yum -y autoremove" "")
-CMD=("$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(hostnamectl 2>/dev/null | grep -i system | cut -d : -f2)" "$(lsb_release -sd 2>/dev/null)" "$(grep -i description /etc/lsb-release 2>/dev/null | cut -d \" -f2)" "$(grep . /etc/redhat-release 2>/dev/null)" "$(grep . /etc/issue 2>/dev/null | cut -d \\ -f1 | sed '/^[ ]*$/d')" "$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)") 
+CMD=("$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(hostnamectl 2>/dev/null | grep -i system | cut -d : -f2)" "$(lsb_release -sd 2>/dev/null)" "$(grep -i description /etc/lsb-release 2>/dev/null | cut -d \" -f2)" "$(grep . /etc/redhat-release 2>/dev/null)" "$(grep . /etc/issue 2>/dev/null | cut -d \\ -f1 | sed '/^[ ]*$/d')" "$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)")
 SYS="${CMD[0]}"
 [[ -n $SYS ]] || exit 1
 for ((int = 0; int < ${#REGEX[@]}; int++)); do
-    if [[ $(echo "$SYS" | tr '[:upper:]' '[:lower:]') =~ ${REGEX[int]} ]]; then
-        SYSTEM="${RELEASE[int]}"
-        [[ -n $SYSTEM ]] && break
-    fi
+  if [[ $(echo "$SYS" | tr '[:upper:]' '[:lower:]') =~ ${REGEX[int]} ]]; then
+    SYSTEM="${RELEASE[int]}"
+    [[ -n $SYSTEM ]] && break
+  fi
 done
 utf8_locale=$(locale -a 2>/dev/null | grep -i -m 1 -E "UTF-8|utf8")
 if [[ -z "$utf8_locale" ]]; then
@@ -29,13 +29,13 @@ else
   export LANGUAGE="$utf8_locale"
   echo "Locale set to $utf8_locale"
 fi
-apt-get --fix-broken install -y > /dev/null 2>&1
+apt-get --fix-broken install -y >/dev/null 2>&1
 
-if  [ ! -e '/usr/bin/curl' ]; then
+if [ ! -e '/usr/bin/curl' ]; then
   ${PACKAGE_INSTALL[int]} curl
 fi
 if [ $? -ne 0 ]; then
-  apt-get -f install > /dev/null 2>&1
+  apt-get -f install >/dev/null 2>&1
   ${PACKAGE_INSTALL[int]} curl
 fi
 # [[ $EUID -ne 0 ]] && echo -e "请使用 root 用户运行本脚本！" && exit 1
@@ -43,7 +43,7 @@ fi
 check_cdn() {
   local o_url=$1
   for cdn_url in "${cdn_urls[@]}"; do
-    if curl -sL -k "$cdn_url$o_url" --max-time 6 | grep -q "success" > /dev/null 2>&1; then
+    if curl -sL -k "$cdn_url$o_url" --max-time 6 | grep -q "success" >/dev/null 2>&1; then
       export cdn_success_url="$cdn_url"
       return
     fi
@@ -53,19 +53,19 @@ check_cdn() {
 }
 
 check_cdn_file() {
-    check_cdn "https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test"
-    if [ -n "$cdn_success_url" ]; then
-        echo "CDN available, using CDN"
-    else
-        echo "No CDN available, no use CDN"
-    fi
+  check_cdn "https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test"
+  if [ -n "$cdn_success_url" ]; then
+    echo "CDN available, using CDN"
+  else
+    echo "No CDN available, no use CDN"
+  fi
 }
 
 cdn_urls=("https://cdn.spiritlhl.workers.dev/" "https://cdn3.spiritlhl.net/" "https://cdn1.spiritlhl.net/" "https://ghproxy.com/" "https://cdn2.spiritlhl.net/")
 check_cdn_file
 
 # 当前路径下下载测试脚本
-rm -rf yabsiotest.sh > /dev/null 2>&1
+rm -rf yabsiotest.sh >/dev/null 2>&1
 curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/yabsiotest.sh" -o yabsiotest.sh && chmod +x yabsiotest.sh
 
 # 获取非以vda开头的盘名称
@@ -76,34 +76,34 @@ declare -a disk_paths
 
 # 遍历每个盘名称并检索对应的盘路径，并将名称和路径存储到数组中
 for disk_name in $disk_names; do
-    disk_path=$(df -h | awk -v disk_name="$disk_name" '$0 ~ disk_name { print $NF }')
-    if [ -n "$disk_path" ]; then
-        disk_paths+=("$disk_name:$disk_path")
-    fi
+  disk_path=$(df -h | awk -v disk_name="$disk_name" '$0 ~ disk_name { print $NF }')
+  if [ -n "$disk_path" ]; then
+    disk_paths+=("$disk_name:$disk_path")
+  fi
 done
 
 # 遍历数组，打开对应盘路径并检测IO
 if [ ${#disk_paths[@]} -gt 0 ]; then
-    for disk_path in "${disk_paths[@]}"; do
-        disk_name=$(echo "$disk_path" | cut -d ":" -f 1)
-        path=$(echo "$disk_path" | cut -d ":" -f 2)
-        if [ -n "$path" ]; then
-            cd "$path" >/dev/null 2>&1
-            if [ $? -ne 0 ]; then
-                continue
-            fi
-            echo -e "---------------------------------"
-            echo "Current disk: ${disk_name}"
-            echo "Current path: ${path}"
-            if [ ! -f "yabsiotest.sh" ]; then
-                cp ${myvar}/yabsiotest.sh ./
-            fi
-            bash yabsiotest.sh
-        fi
-        cd $myvar >/dev/null 2>&1
-    done
-    echo -e "---------------------------------"
+  for disk_path in "${disk_paths[@]}"; do
+    disk_name=$(echo "$disk_path" | cut -d ":" -f 1)
+    path=$(echo "$disk_path" | cut -d ":" -f 2)
+    if [ -n "$path" ]; then
+      cd "$path" >/dev/null 2>&1
+      if [ $? -ne 0 ]; then
+        continue
+      fi
+      echo -e "---------------------------------"
+      echo "Current disk: ${disk_name}"
+      echo "Current path: ${path}"
+      if [ ! -f "yabsiotest.sh" ]; then
+        cp ${myvar}/yabsiotest.sh ./
+      fi
+      bash yabsiotest.sh
+    fi
+    cd $myvar >/dev/null 2>&1
+  done
+  echo -e "---------------------------------"
 else
-    echo "No extra disk"
+  echo "No extra disk"
 fi
 rm -rf cp yabsiotest.sh

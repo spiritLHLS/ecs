@@ -69,7 +69,6 @@ function usage {
 	exit "$returnCode"
 }
 
-
 #####################################################################
 # MAIN
 #####################################################################
@@ -77,9 +76,9 @@ function usage {
 # echo_equals() outputs a line with =
 function echo_equals() {
 	COUNTER=0
-	while [  $COUNTER -lt "$1" ]; do
+	while [ $COUNTER -lt "$1" ]; do
 		printf '='
-		((COUNTER=COUNTER+1)) 
+		((COUNTER = COUNTER + 1))
 	done
 }
 
@@ -100,19 +99,19 @@ function exit_with_failure() {
 # echo_title() outputs a title to stdout and MY_OUTPUT
 function echo_title() {
 	echo "> $1"
-	echo "<h1>$1</h1>" >> "$MY_OUTPUT"
+	echo "<h1>$1</h1>" >>"$MY_OUTPUT"
 }
 
 # echo_step() outputs a step to stdout and MY_OUTPUT
 function echo_step() {
 	echo "    > $1"
-	echo "<h2>$1</h2>" >> "$MY_OUTPUT"
+	echo "<h2>$1</h2>" >>"$MY_OUTPUT"
 }
 
 # echo_sub_step() outputs a step to stdout and MY_OUTPUT
 function echo_sub_step() {
 	echo "      > $1"
-	echo "<h3>$1</h3>" >> "$MY_OUTPUT"
+	echo "<h3>$1</h3>" >>"$MY_OUTPUT"
 }
 
 echo_line
@@ -136,8 +135,8 @@ done
 
 # Download Geekbench 6
 echo "    > Download Geekbench 6"
-if curl -L -k "$MY_GEEKBENCH_DOWNLOAD_URL" -o geekbench.tar.gz 2>/dev/null && chmod +x geekbench.tar.gz ; then
-	if tar xvfz geekbench.tar.gz -C "$MY_DIR" --strip-components=1 > /dev/null 2>&1; then
+if curl -L -k "$MY_GEEKBENCH_DOWNLOAD_URL" -o geekbench.tar.gz 2>/dev/null && chmod +x geekbench.tar.gz; then
+	if tar xvfz geekbench.tar.gz -C "$MY_DIR" --strip-components=1 >/dev/null 2>&1; then
 		if [[ -x "$MY_DIR/geekbench6" ]]; then
 			echo "        > Geekbench successfully downloaded"
 		else
@@ -152,7 +151,7 @@ fi
 
 # Unlock Geekbench 6
 if [[ $MY_GEEKBENCH_EMAIL && $MY_GEEKBENCH_KEY ]]; then
-	if "$MY_DIR/geekbench6" --unlock "$MY_GEEKBENCH_EMAIL" "$MY_GEEKBENCH_KEY" > /dev/null 2>&1; then
+	if "$MY_DIR/geekbench6" --unlock "$MY_GEEKBENCH_EMAIL" "$MY_GEEKBENCH_KEY" >/dev/null 2>&1; then
 		echo "        > Geekbench successfully unlocked"
 	else
 		exit_with_failure "Could not unlock Geekbench"
@@ -171,15 +170,15 @@ echo_line
 
 echo_title "Geekbench 6"
 if [[ $MY_GEEKBENCH_NO_UPLOAD ]]; then
-	"$MY_DIR/geekbench6" --no-upload >> "$MY_OUTPUT" 2>&1
+	"$MY_DIR/geekbench6" --no-upload >>"$MY_OUTPUT" 2>&1
 else
-	"$MY_DIR/geekbench6" --upload >> "$MY_OUTPUT" 2>&1
+	"$MY_DIR/geekbench6" --upload >>"$MY_OUTPUT" 2>&1
 fi
 # cat "$MY_OUTPUT"
 GEEKBENCH_URL=$(cat "$MY_OUTPUT" | grep -o 'https://browser.geekbench.com/v6/cpu/[0-9]\+' | head -n1)
 [[ ! -z $LOCAL_CURL ]] && DL_CMD="curl -s" || DL_CMD="wget -qO-"
 GEEKBENCH_SCORES=$($DL_CMD $GEEKBENCH_URL | grep "div class='score'") ||
-GEEKBENCH_SCORES=$($DL_CMD $GEEKBENCH_URL | grep "span class='score'")
+	GEEKBENCH_SCORES=$($DL_CMD $GEEKBENCH_URL | grep "span class='score'")
 GEEKBENCH_SCORES_SINGLE=$(echo $GEEKBENCH_SCORES | awk -v FS="(>|<)" '{ print $3 }')
 GEEKBENCH_SCORES_MULTI=$(echo $GEEKBENCH_SCORES | awk -v FS="(>|<)" '{ print $7 }')
 echo -en "\r\033[0K"

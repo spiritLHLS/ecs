@@ -6,17 +6,17 @@ next() {
     echo "-------------------"
 }
 # 翻译
-translate_type(){
-  if [[ $1 == "Pre-fail" ]]; then
-      echo "正常"
-  elif [[ $1 == "Old_age" ]]; then
-      echo "老化"
-  else
-      echo "其他"
-  fi
+translate_type() {
+    if [[ $1 == "Pre-fail" ]]; then
+        echo "正常"
+    elif [[ $1 == "Old_age" ]]; then
+        echo "老化"
+    else
+        echo "其他"
+    fi
 }
-check_smart_info(){
-    if echo "$smart_info" | grep -q "$1" ; then
+check_smart_info() {
+    if echo "$smart_info" | grep -q "$1"; then
         value=$(echo "$smart_info" | grep "$1" | awk '{print $10}')
         type=$(echo "$smart_info" | grep "$1" | awk '{print $7}')
         type=$(translate_type $type)
@@ -25,24 +25,23 @@ check_smart_info(){
 }
 # 检测所有硬盘
 disk_list=""
-if ls -d /dev/sd* > /dev/null 2>&1; then
+if ls -d /dev/sd* >/dev/null 2>&1; then
     disk_list="$disk_list $(ls /dev/sd*)"
 fi
-if ls -d /dev/hd* > /dev/null 2>&1; then
+if ls -d /dev/hd* >/dev/null 2>&1; then
     disk_list="$disk_list $(ls /dev/nvme*)"
 fi
-if ls -d /dev/hd* > /dev/null 2>&1; then
+if ls -d /dev/hd* >/dev/null 2>&1; then
     disk_list="$disk_list $(ls /dev/hd*)"
 fi
-if ls -d /dev/vd* > /dev/null 2>&1; then
+if ls -d /dev/vd* >/dev/null 2>&1; then
     disk_list="$disk_list $(ls /dev/mmcblk*)"
 fi
 # if ls -d /dev/vd* > /dev/null 2>&1; then
 #     disk_list="$disk_list $(ls /dev/vd*)"
 # fi
 #检测smartctl是否安装
-if ! command -v smartctl &> /dev/null
-then
+if ! command -v smartctl &>/dev/null; then
     echo "smartctl not found, installing smartctl..."
     if [ -f /etc/redhat-release ] || [ -f /etc/centos-release ]; then
         yum install smartmontools -y
@@ -64,8 +63,7 @@ echo "标注老化的属性的数值过大或过小很可能是硬盘出问题�
 echo "当然是正常还是老化只是参考，一切基于smartctl的判断结果"
 next
 # echo $disk_list
-for disk_dev in $disk_list
-do
+for disk_dev in $disk_list; do
     smart_info=$(smartctl -i $disk_dev)
     vendor=$(echo "$smart_info" | grep "Vendor" | awk '{print $2}')
     if [[ -z "$vendor" ]]; then
