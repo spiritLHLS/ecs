@@ -77,7 +77,7 @@ ARMV7l的机器测IO时会失效，yabs和lemonbench的测试可能失效 - 待�
 - 修复IPV4的地址检测判断，识别 RFC 6598 地址避免误判，特殊处理在纯IPV6的情况下无法检测IP类型的情况
 - 优化自动替换Besttrace为Nexttrace的判断条件，自动替换兼容的情况更多了
 - 优化路由检测的v6部分的判断
-- 同步信息检测的上游更新
+- 同步系统基础信息检测的lemonbench的上游更新，优化上游更新中依然存在的bug
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
