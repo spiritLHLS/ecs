@@ -1169,7 +1169,6 @@ function BenchAPI_Systeminfo_GetOSReleaseinfo() {
         return 0
     else
         echo -e "${Msg_Error} BenchAPI_Systeminfo_GetOSReleaseinfo(): invalid result ($r_prettyname ($r_arch)), please check parameter!"
-        exit 1
     fi
 }
 #
