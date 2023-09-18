@@ -63,17 +63,11 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 脚本同时兼容附带参数执行的模式和菜单栏选项模式 - 待添加
 
-自动裁剪的函数存在部分问题，有的东西未裁剪丢弃有的裁剪多了 - 待修复
-
 ## 更新
 
-2023.08.26
+2023.09.18
 
-- 针对纯IPV6服务器，使用v6的目标地址进行路由测试
-- 修复IPV4的地址检测判断，识别 RFC 6598 地址避免误判，特殊处理在纯IPV6的情况下无法检测IP类型的情况
-- 优化自动替换Besttrace为Nexttrace的判断条件，自动替换兼容的情况更多了
-- 优化路由检测的v6部分的判断
-- 同步系统基础信息检测的lemonbench的上游更新，优化上游更新中依然存在的bug
+- 自动裁剪的函数存在部分问题，有的东西未裁剪丢弃有的裁剪多了，目前已修复
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.08.26"
+ver="2023.09.19"
 changeLog="VPS融合怪测试(集百家之长)"
 
 # =============== 默认输入设置 ===============
@@ -3365,7 +3365,7 @@ backtrace_script() {
         return
     fi
     echo -e "----------------三网回程--感谢zhanghanyun/backtrace开源-----------------"
-    grep -sq 'sendto: network is unreachable' <<<$curl_output && _yellow "纯IPV6网络无法查询" || echo "${curl_output}" | grep -v 'github.com/zhanghanyun/backtrace' | grep -v '正在测试'
+    grep -sq 'sendto: network is unreachable' <<<$curl_output && _yellow "纯IPV6网络无法查询" || echo "${curl_output}" | grep -v 'github.com/zhanghanyun/backtrace' | grep -v '正在测试' | grep -v '测试完成'
 }
 
 fscarmen_route_script() {
@@ -3817,6 +3817,9 @@ build_text() {
         tr '\r' '\n' <test_result.txt >test_result1.txt && mv test_result1.txt test_result.txt
         sed -i -e '/^$/d' -e '/1\/1/d' -e '/Block\s*->/d' -e '/s)\s*->/d' -e '/^该运营商\|^测速中/d' test_result.txt
         if [ -s test_result.txt ]; then
+            if grep -q -- "---------------------磁盘fio读写测试--感谢yabs开源----------------------" "test_result.txt"; then
+                sed -i '/---------------------磁盘fio读写测试--感谢yabs开源----------------------/a Block Size | 4k            (IOPS) | 64k           (IOPS)' "test_result.txt"
+            fi
             shorturl=$(curl --ipv4 -sL -m 10 -X POST -H "Authorization: $ST" \
                 -H "Format: RANDOM" \
                 -H "Max-Views: 0" \

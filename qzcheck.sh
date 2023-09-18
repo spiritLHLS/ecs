@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.08.15"
+ver="2023.09.18"
 changeLog="IP质量测试，由频道 https://t.me/vps_reviews 原创"
 temp_file_apt_fix="/tmp/apt_fix.txt"
 shorturl=""
@@ -1096,6 +1096,7 @@ build_text() {
     awk '/-------------------- A Bench Script By spiritlhl ---------------------/{flag=1} flag; /^$/{flag=0}' qzcheck_result.txt >temp.txt && mv temp.txt qzcheck_result.txt
     sed -i -e 's/\x1B\[[0-9;]\+[a-zA-Z]//g' qzcheck_result.txt
     sed -i -e '/^$/d' qzcheck_result.txt
+    sed -i 's/\r//' qzcheck_result.txt
     if [ -s qzcheck_result.txt ]; then
         shorturl=$(curl --ipv4 -sL -m 10 -X POST -H "Authorization: $ST" \
             -H "Format: RANDOM" \
