@@ -61,13 +61,15 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 待解决事项
 
-脚本同时兼容附带参数执行的模式和菜单栏选项模式 - 待添加
+脚本同时兼容附带参数执行的模式和使用菜单栏的选项模式 - 待添加
+
+参数支持传入本地IPV4使得三网回程路由检测设置为自定义的本地IPV4地址查询 - 待添加
 
 ## 更新
 
-2023.09.18
+2023.09.21
 
-- 自动裁剪的函数存在部分问题，有的东西未裁剪丢弃有的裁剪多了，目前已修复
+- 修复部分组件可能存在的报错显示问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
