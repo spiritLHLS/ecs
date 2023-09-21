@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.09.21"
+ver="2023.09.22"
 changeLog="VPS融合怪测试(集百家之长)"
 
 # =============== 默认输入设置 ===============
@@ -25,6 +25,13 @@ else
     export LANG="$utf8_locale"
     export LANGUAGE="$utf8_locale"
     _green "Locale set to $utf8_locale"
+fi
+menu_mode=true
+if [ $# -gt 0 ]; then
+    main_menu_option="$1"
+    sub_menu_option="$2"
+    sub_of_sub_menu_option="$3"
+    menu_mode=false
 fi
 
 # =============== 自定义基础参数 ==============
@@ -3842,479 +3849,551 @@ build_text() {
     fi
 }
 
+comprehensive_test_script_options() {
+    case $StartInputc in
+    1)
+        wget -qO- --no-check-certificate https://raw.githubusercontent.com/oooldking/script/master/superbench.sh | bash
+        break >/dev/null 2>&1
+        ;;
+    2)
+        curl -fsL https://ilemonra.in/LemonBenchIntl | bash -s fast
+        break >/dev/null 2>&1
+        ;;
+    3)
+        bash <(curl -L -Lso- https://cdn.jsdelivr.net/gh/misaka-gh/misakabench@master/misakabench.sh)
+        break >/dev/null 2>&1
+        ;;
+    4)
+        curl -sL yabs.sh | bash
+        break >/dev/null 2>&1
+        ;;
+    5)
+        wget -qO- bench.sh | bash
+        break >/dev/null 2>&1
+        ;;
+    6)
+        bash <(wget -qO- git.io/ceshi)
+        break >/dev/null 2>&1
+        ;;
+    7)
+        wget -N --no-check-certificate https://raw.githubusercontent.com/FunctionClub/ZBench/master/ZBench-CN.sh && bash ZBench-CN.sh
+        break >/dev/null 2>&1
+        ;;
+    8)
+        wget --no-check-certificate https://raw.githubusercontent.com/teddysun/across/master/unixbench.sh && chmod +x unixbench.sh && ./unixbench.sh
+        break >/dev/null 2>&1
+        ;;
+    0)
+        original_script
+        break >/dev/null 2>&1
+        ;;
+    *) echo "输入错误，请重新输入" ;;
+    esac
+}
+
 comprehensive_test_script() {
     head_script
-    _yellow "具备综合性测试的脚本如下"
-    echo -e "${GREEN}1.${PLAIN} superbench VPS测试脚本-基于teddysun的二开"
-    echo -e "${GREEN}2.${PLAIN} lemonbench VPS测试脚本"
-    echo -e "${GREEN}3.${PLAIN} misakabench VPS测试脚本-基于superbench的二开"
-    echo -e "${GREEN}4.${PLAIN} YABS VPS测试脚本-英文论坛常用"
-    echo -e "${GREEN}5.${PLAIN} teddysun的bench.sh VPS测试脚本"
-    echo -e "${GREEN}6.${PLAIN} Aniverse的a.sh VPS测试脚本-特殊适配独服"
-    echo -e "${GREEN}7.${PLAIN} Zbench VPS测试脚本-国内测试"
-    echo -e "${GREEN}8.${PLAIN} UnixBench VPS测试脚本-特殊适配unix系统"
-    echo " -------------"
-    echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
-    echo ""
-    while true; do
-        read -rp "请输入选项:" StartInputc
-        case $StartInputc in
-        1)
-            wget -qO- --no-check-certificate https://raw.githubusercontent.com/oooldking/script/master/superbench.sh | bash
-            break
-            ;;
-        2)
-            curl -fsL https://ilemonra.in/LemonBenchIntl | bash -s fast
-            break
-            ;;
-        3)
-            bash <(curl -L -Lso- https://cdn.jsdelivr.net/gh/misaka-gh/misakabench@master/misakabench.sh)
-            break
-            ;;
-        4)
-            curl -sL yabs.sh | bash
-            break
-            ;;
-        5)
-            wget -qO- bench.sh | bash
-            break
-            ;;
-        6)
-            bash <(wget -qO- git.io/ceshi)
-            break
-            ;;
-        7)
-            wget -N --no-check-certificate https://raw.githubusercontent.com/FunctionClub/ZBench/master/ZBench-CN.sh && bash ZBench-CN.sh
-            break
-            ;;
-        8)
-            wget --no-check-certificate https://raw.githubusercontent.com/teddysun/across/master/unixbench.sh && chmod +x unixbench.sh && ./unixbench.sh
-            break
-            ;;
-        0)
-            original_script
-            break
-            ;;
-        *) echo "输入错误，请重新输入" ;;
-        esac
-    done
+    if $menu_mode; then
+        _yellow "具备综合性测试的脚本如下"
+        echo -e "${GREEN}1.${PLAIN} superbench VPS测试脚本-基于teddysun的二开"
+        echo -e "${GREEN}2.${PLAIN} lemonbench VPS测试脚本"
+        echo -e "${GREEN}3.${PLAIN} misakabench VPS测试脚本-基于superbench的二开"
+        echo -e "${GREEN}4.${PLAIN} YABS VPS测试脚本-英文论坛常用"
+        echo -e "${GREEN}5.${PLAIN} teddysun的bench.sh VPS测试脚本"
+        echo -e "${GREEN}6.${PLAIN} Aniverse的a.sh VPS测试脚本-特殊适配独服"
+        echo -e "${GREEN}7.${PLAIN} Zbench VPS测试脚本-国内测试"
+        echo -e "${GREEN}8.${PLAIN} UnixBench VPS测试脚本-特殊适配unix系统"
+        echo " -------------"
+        echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
+        echo ""
+        while true; do
+            read -rp "请输入选项:" StartInputc
+            comprehensive_test_script_options
+        done
+    else
+        StartInputc="$sub_of_sub_menu_option"
+        comprehensive_test_script_options
+    fi
+}
+
+media_test_script_options() {
+    case $StartInputm in
+    1)
+        wget -O nf https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 && chmod +x nf && ./nf
+        break >/dev/null 2>&1
+        ;;
+    2)
+        wget -O tubecheck https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck/CDN/tubecheck_1.0beta_linux_amd64 && chmod +x tubecheck && clear && ./tubecheck
+        break >/dev/null 2>&1
+        ;;
+    3)
+        wget -O dp https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 && chmod +x dp && clear && ./dp
+        break >/dev/null 2>&1
+        ;;
+    4)
+        lmc999_script
+        break >/dev/null 2>&1
+        ;;
+    5)
+        bash <(curl -s https://raw.githubusercontent.com/lmc999/TikTokCheck/main/tiktok.sh)
+        break >/dev/null 2>&1
+        ;;
+    6)
+        bash <(curl -L -s check.unlock.media)
+        break >/dev/null 2>&1
+        ;;
+    7)
+        bash <(curl -Ls unlock.moe)
+        break >/dev/null 2>&1
+        ;;
+    8)
+        bash <(curl -Ls https://cpp.li/openai)
+        break >/dev/null 2>&1
+        ;;
+    9)
+        bash <(curl -Ls https://bash.spiritlhl.net/openai-checker)
+        break >/dev/null 2>&1
+        ;;
+    0)
+        original_script
+        break >/dev/null 2>&1
+        ;;
+    *) echo "输入错误，请重新输入" ;;
+    esac
 }
 
 media_test_script() {
     head_script
-    _yellow "流媒体测试相关的脚本如下"
-    echo -e "${GREEN}1.${PLAIN} sjlleo的NetFlix解锁检测脚本 "
-    echo -e "${GREEN}2.${PLAIN} sjlleo的Youtube地域信息检测脚本"
-    echo -e "${GREEN}3.${PLAIN} sjlleo的DisneyPlus解锁区域检测脚本"
-    echo -e "${GREEN}4.${PLAIN} lmc999的TikTok解锁区域检测脚本-本作者优化版本"
-    echo -e "${GREEN}5.${PLAIN} lmc999的TikTok解锁区域检测脚本-原版脚本"
-    echo -e "${GREEN}6.${PLAIN} lmc999的流媒体检测脚本-综合性地域流媒体全测的"
-    echo -e "${GREEN}7.${PLAIN} nkeonkeo的流媒体检测脚本-基于上者的GO重构版本"
-    echo -e "${GREEN}8.${PLAIN} missuo的OpenAI-Checker检测脚本(可能卡住)"
-    echo -e "${GREEN}9.${PLAIN} 本人修改优化的OpenAI-Checker检测脚本(重构优化)"
-    echo " -------------"
-    echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
-    echo ""
-    while true; do
-        read -rp "请输入选项:" StartInputm
-        case $StartInputm in
-        1)
-            wget -O nf https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 && chmod +x nf && ./nf
-            break
-            ;;
-        2)
-            wget -O tubecheck https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck/CDN/tubecheck_1.0beta_linux_amd64 && chmod +x tubecheck && clear && ./tubecheck
-            break
-            ;;
-        3)
-            wget -O dp https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 && chmod +x dp && clear && ./dp
-            break
-            ;;
-        4)
-            lmc999_script
-            break
-            ;;
-        5)
-            bash <(curl -s https://raw.githubusercontent.com/lmc999/TikTokCheck/main/tiktok.sh)
-            break
-            ;;
-        6)
-            bash <(curl -L -s check.unlock.media)
-            break
-            ;;
-        7)
-            bash <(curl -Ls unlock.moe)
-            break
-            ;;
-        8)
-            bash <(curl -Ls https://cpp.li/openai)
-            break
-            ;;
-        9)
-            bash <(curl -Ls https://bash.spiritlhl.net/openai-checker)
-            break
-            ;;
-        0)
-            original_script
-            break
-            ;;
-        *) echo "输入错误，请重新输入" ;;
-        esac
-    done
+    if $menu_mode; then
+        _yellow "流媒体测试相关的脚本如下"
+        echo -e "${GREEN}1.${PLAIN} sjlleo的NetFlix解锁检测脚本 "
+        echo -e "${GREEN}2.${PLAIN} sjlleo的Youtube地域信息检测脚本"
+        echo -e "${GREEN}3.${PLAIN} sjlleo的DisneyPlus解锁区域检测脚本"
+        echo -e "${GREEN}4.${PLAIN} lmc999的TikTok解锁区域检测脚本-本作者优化版本"
+        echo -e "${GREEN}5.${PLAIN} lmc999的TikTok解锁区域检测脚本-原版脚本"
+        echo -e "${GREEN}6.${PLAIN} lmc999的流媒体检测脚本-综合性地域流媒体全测的"
+        echo -e "${GREEN}7.${PLAIN} nkeonkeo的流媒体检测脚本-基于上者的GO重构版本"
+        echo -e "${GREEN}8.${PLAIN} missuo的OpenAI-Checker检测脚本(可能卡住)"
+        echo -e "${GREEN}9.${PLAIN} 本人修改优化的OpenAI-Checker检测脚本(重构优化)"
+        echo " -------------"
+        echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
+        echo ""
+        while true; do
+            read -rp "请输入选项:" StartInputm
+            media_test_script_options
+        done
+    else
+        StartInputm="$sub_of_sub_menu_option"
+        media_test_script_options
+    fi
+}
+
+network_test_script_options() {
+    case $StartInputn in
+    1)
+        curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
+        break >/dev/null 2>&1
+        ;;
+    2)
+        curl https://raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh | bash
+        break >/dev/null 2>&1
+        ;;
+    3)
+        wget -qO- git.io/besttrace | bash
+        break >/dev/null 2>&1
+        ;;
+    4)
+        bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/return.sh)
+        break >/dev/null 2>&1
+        ;;
+    5)
+        bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/nexttrace.sh)
+        break >/dev/null 2>&1
+        ;;
+    6)
+        wget -O jcnf.sh https://raw.githubusercontent.com/Netflixxp/jcnfbesttrace/main/jcnf.sh && bash jcnf.sh
+        break >/dev/null 2>&1
+        ;;
+    7)
+        bash <(curl -L -Lso- https://git.io/superspeed.sh)
+        break >/dev/null 2>&1
+        ;;
+    8)
+        bash <(curl -Lso- https://git.io/superspeed_uxh)
+        break >/dev/null 2>&1
+        ;;
+    9)
+        bash <(curl -Lso- https://git.io/J1SEh)
+        break >/dev/null 2>&1
+        ;;
+    10)
+        bash <(curl -L -Lso- https://bench.im/hyperspeed)
+        break >/dev/null 2>&1
+        ;;
+    11)
+        curl -sL network-speed.xyz | bash
+        break >/dev/null 2>&1
+        ;;
+    12)
+        bash <(wget -qO- bash.spiritlhl.net/ecs-net)
+        break >/dev/null 2>&1
+        ;;
+    13)
+        bash <(wget -qO- bash.spiritlhl.net/ecs-cn)
+        break >/dev/null 2>&1
+        ;;
+    14)
+        bash <(wget -qO- bash.spiritlhl.net/ecs-ping)
+        break >/dev/null 2>&1
+        ;;
+    0)
+        original_script
+        break >/dev/null 2>&1
+        ;;
+    *) echo "输入错误，请重新输入" ;;
+    esac
 }
 
 network_test_script() {
     head_script
-    _yellow "网络测试相关的脚本如下"
-    echo -e "${GREEN}1.${PLAIN} zhanghanyun的backtrace三网回程线路检测脚本"
-    echo -e "${GREEN}2.${PLAIN} zhucaidan的mtr_trace三网回程线路测脚本"
-    echo -e "${GREEN}3.${PLAIN} 基于besttrace回程路由测试脚本(带详情信息)"
-    echo -e "${GREEN}4.${PLAIN} 基于besttrace回程路由测试脚本(二开整合输出)"
-    echo -e "${GREEN}5.${PLAIN} 基于nexttrace回程路由测试脚本(第三方IP库)"
-    echo -e "${GREEN}6.${PLAIN} 由Netflixxp维护的四网路由测试脚本"
-    echo -e "${GREEN}7.${PLAIN} 原始作者维护的superspeed的三网测速脚本"
-    echo -e "${GREEN}8.${PLAIN} 未知作者修复的superspeed的三网测速脚本"
-    echo -e "${GREEN}9.${PLAIN} 由sunpma维护的superspeed的三网测速脚本"
-    echo -e "${GREEN}10.${PLAIN} 原始作者维护的hyperspeed的三网测速脚本(测速内核不开源)"
-    echo -e "${GREEN}11.${PLAIN} 综合速度测试脚本(全球的测速节点)"
-    echo -e "${GREEN}12.${PLAIN} 本人的ecs-net三网测速脚本(自动更新测速节点，对应 speedtest.net)"
-    echo -e "${GREEN}13.${PLAIN} 本人的ecs-cn三网测速脚本(自动更新测速节点，对应 speedtest.cn)"
-    echo -e "${GREEN}14.${PLAIN} 本人的ecs-ping三网测ping脚本(自动更新测试节点)"
-    echo " -------------"
-    echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
-    echo ""
-    while true; do
-        read -rp "请输入选项:" StartInputn
-        case $StartInputn in
-        1)
-            curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
-            break
-            ;;
-        2)
-            curl https://raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh | bash
-            break
-            ;;
-        3)
-            wget -qO- git.io/besttrace | bash
-            break
-            ;;
-        4)
-            bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/return.sh)
-            break
-            ;;
-        5)
-            bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/nexttrace.sh)
-            break
-            ;;
-        6)
-            wget -O jcnf.sh https://raw.githubusercontent.com/Netflixxp/jcnfbesttrace/main/jcnf.sh && bash jcnf.sh
-            break
-            ;;
-        7)
-            bash <(curl -L -Lso- https://git.io/superspeed.sh)
-            break
-            ;;
-        8)
-            bash <(curl -Lso- https://git.io/superspeed_uxh)
-            break
-            ;;
-        9)
-            bash <(curl -Lso- https://git.io/J1SEh)
-            break
-            ;;
-        10)
-            bash <(curl -L -Lso- https://bench.im/hyperspeed)
-            break
-            ;;
-        11)
-            curl -sL network-speed.xyz | bash
-            break
-            ;;
-        12)
-            bash <(wget -qO- bash.spiritlhl.net/ecs-net)
-            break
-            ;;
-        13)
-            bash <(wget -qO- bash.spiritlhl.net/ecs-cn)
-            break
-            ;;
-        14)
-            bash <(wget -qO- bash.spiritlhl.net/ecs-ping)
-            break
-            ;;
-        0)
-            original_script
-            break
-            ;;
-        *) echo "输入错误，请重新输入" ;;
-        esac
-    done
+    if $menu_mode; then
+        _yellow "网络测试相关的脚本如下"
+        echo -e "${GREEN}1.${PLAIN} zhanghanyun的backtrace三网回程线路检测脚本"
+        echo -e "${GREEN}2.${PLAIN} zhucaidan的mtr_trace三网回程线路测脚本"
+        echo -e "${GREEN}3.${PLAIN} 基于besttrace回程路由测试脚本(带详情信息)"
+        echo -e "${GREEN}4.${PLAIN} 基于besttrace回程路由测试脚本(二开整合输出)"
+        echo -e "${GREEN}5.${PLAIN} 基于nexttrace回程路由测试脚本(第三方IP库)"
+        echo -e "${GREEN}6.${PLAIN} 由Netflixxp维护的四网路由测试脚本"
+        echo -e "${GREEN}7.${PLAIN} 原始作者维护的superspeed的三网测速脚本"
+        echo -e "${GREEN}8.${PLAIN} 未知作者修复的superspeed的三网测速脚本"
+        echo -e "${GREEN}9.${PLAIN} 由sunpma维护的superspeed的三网测速脚本"
+        echo -e "${GREEN}10.${PLAIN} 原始作者维护的hyperspeed的三网测速脚本(测速内核不开源)"
+        echo -e "${GREEN}11.${PLAIN} 综合速度测试脚本(全球的测速节点)"
+        echo -e "${GREEN}12.${PLAIN} 本人的ecs-net三网测速脚本(自动更新测速节点，对应 speedtest.net)"
+        echo -e "${GREEN}13.${PLAIN} 本人的ecs-cn三网测速脚本(自动更新测速节点，对应 speedtest.cn)"
+        echo -e "${GREEN}14.${PLAIN} 本人的ecs-ping三网测ping脚本(自动更新测试节点)"
+        echo " -------------"
+        echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
+        echo ""
+        while true; do
+            read -rp "请输入选项:" StartInputn
+            network_test_script_options
+        done
+    else
+        StartInputn="$sub_of_sub_menu_option"
+        network_test_script_options
+    fi
+}
+
+hardware_test_script_options() {
+    case $StartInputh in
+    1)
+        bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/disk_info.sh)
+        break >/dev/null 2>&1
+        ;;
+    2)
+        bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench4.sh)
+        break >/dev/null 2>&1
+        ;;
+    3)
+        bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench5.sh)
+        break >/dev/null 2>&1
+        ;;
+    4)
+        bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench6.sh)
+        break >/dev/null 2>&1
+        ;;
+    5)
+        bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/multi_disk_io_test.sh)
+        break >/dev/null 2>&1
+        ;;
+    0)
+        original_script
+        break >/dev/null 2>&1
+        ;;
+    *) echo "输入错误，请重新输入" ;;
+    esac
 }
 
 hardware_test_script() {
     head_script
-    _yellow "硬件测试合集如下"
-    echo " -------------"
-    echo -e "${GREEN}1.${PLAIN} 检测本机硬盘(含通电时长)-一般是独服才有用"
-    echo -e "${GREEN}2.${PLAIN} Geekbench4测试"
-    echo -e "${GREEN}3.${PLAIN} Geekbench5测试"
-    echo -e "${GREEN}4.${PLAIN} Geekbench6测试"
-    echo -e "${GREEN}5.${PLAIN} 测试挂载的多个磁盘的IO(仅测试挂载盘)"
-    echo " -------------"
-    echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
-    echo ""
-    while true; do
-        read -rp "请输入选项:" StartInputh
-        case $StartInputh in
-        1)
-            bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/disk_info.sh)
-            break
-            ;;
-        2)
-            bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench4.sh)
-            break
-            ;;
-        3)
-            bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench5.sh)
-            break
-            ;;
-        4)
-            bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench6.sh)
-            break
-            ;;
-        5)
-            bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/multi_disk_io_test.sh)
-            break
-            ;;
-        0)
-            original_script
-            break
-            ;;
-        *) echo "输入错误，请重新输入" ;;
-        esac
-    done
+    if $menu_mode; then
+        _yellow "硬件测试合集如下"
+        echo " -------------"
+        echo -e "${GREEN}1.${PLAIN} 检测本机硬盘(含通电时长)-一般是独服才有用"
+        echo -e "${GREEN}2.${PLAIN} Geekbench4测试"
+        echo -e "${GREEN}3.${PLAIN} Geekbench5测试"
+        echo -e "${GREEN}4.${PLAIN} Geekbench6测试"
+        echo -e "${GREEN}5.${PLAIN} 测试挂载的多个磁盘的IO(仅测试挂载盘)"
+        echo " -------------"
+        echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
+        echo ""
+        while true; do
+            read -rp "请输入选项:" StartInputh
+            hardware_test_script_options
+        done
+    else
+        StartInputh="$sub_of_sub_menu_option"
+        hardware_test_script_options
+    fi
+}
+
+original_script_options() {
+    case $StartInput3 in
+    1)
+        comprehensive_test_script
+        break >/dev/null 2>&1
+        ;;
+    2)
+        media_test_script
+        break >/dev/null 2>&1
+        ;;
+    3)
+        network_test_script
+        break >/dev/null 2>&1
+        ;;
+    4)
+        hardware_test_script
+        break >/dev/null 2>&1
+        ;;
+    0)
+        start_script
+        break >/dev/null 2>&1
+        ;;
+    *) echo "输入错误，请重新输入" ;;
+    esac
 }
 
 original_script() {
     head_script
-    _yellow "融合怪借鉴的脚本以及部分竞品脚本合集如下"
-    echo -e "${GREEN}1.${PLAIN} 综合性测试脚本合集(比如yabs，superbench等)"
-    echo -e "${GREEN}2.${PLAIN} 流媒体测试脚本合集(各种流媒体解锁相关)"
-    echo -e "${GREEN}3.${PLAIN} 网络测试脚本合集(如三网回程和三网测速等)"
-    echo -e "${GREEN}4.${PLAIN} 硬件测试脚本合集(如gb5，硬盘通电时长等)"
-    echo " -------------"
-    echo -e "${GREEN}0.${PLAIN} 回到主菜单"
-    echo ""
-    while true; do
-        read -rp "请输入选项:" StartInput3
-        case $StartInput3 in
-        1)
-            comprehensive_test_script
-            break
-            ;;
-        2)
-            media_test_script
-            break
-            ;;
-        3)
-            network_test_script
-            break
-            ;;
-        4)
-            hardware_test_script
-            break
-            ;;
-        0)
-            start_script
-            break
-            ;;
-        *) echo "输入错误，请重新输入" ;;
-        esac
-    done
+    if $menu_mode; then
+        _yellow "融合怪借鉴的脚本以及部分竞品脚本合集如下"
+        echo -e "${GREEN}1.${PLAIN} 综合性测试脚本合集(比如yabs，superbench等)"
+        echo -e "${GREEN}2.${PLAIN} 流媒体测试脚本合集(各种流媒体解锁相关)"
+        echo -e "${GREEN}3.${PLAIN} 网络测试脚本合集(如三网回程和三网测速等)"
+        echo -e "${GREEN}4.${PLAIN} 硬件测试脚本合集(如gb5，硬盘通电时长等)"
+        echo " -------------"
+        echo -e "${GREEN}0.${PLAIN} 回到主菜单"
+        echo ""
+        while true; do
+            read -rp "请输入选项:" StartInput3
+            original_script_options
+        done
+    else
+        StartInput3="$sub_menu_option"
+        original_script_options
+    fi
+}
+
+simplify_script_options() {
+    case $StartInput1 in
+    1)
+        minal_script | tee -i test_result.txt
+        break >/dev/null 2>&1
+        ;;
+    2)
+        minal_plus | tee -i test_result.txt
+        break >/dev/null 2>&1
+        ;;
+    3)
+        minal_plus_network | tee -i test_result.txt
+        break >/dev/null 2>&1
+        ;;
+    4)
+        minal_plus_media | tee -i test_result.txt
+        break >/dev/null 2>&1
+        ;;
+    0)
+        start_script
+        break >/dev/null 2>&1
+        ;;
+    *) echo "输入错误，请重新输入" ;;
+    esac
 }
 
 simplify_script() {
     head_script
-    _yellow "融合怪的精简脚本如下"
-    echo -e "${GREEN}1.${PLAIN} 极简版(系统信息+CPU+内存+磁盘IO+测速节点4个)(平均运行3分钟)"
-    echo -e "${GREEN}2.${PLAIN} 精简版(系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体+TikTok+回程+路由+测速节点4个)(平均运行4分钟)"
-    echo -e "${GREEN}3.${PLAIN} 精简网络版(系统信息+CPU+内存+磁盘IO+回程+路由+测速节点4个)(平均运行4分钟)"
-    echo -e "${GREEN}4.${PLAIN} 精简解锁版(系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体+TikTok+测速节点4个)(平均运行4分钟)"
-    echo " -------------"
-    echo -e "${GREEN}0.${PLAIN} 回到主菜单"
-    echo ""
-    while true; do
-        read -rp "请输入选项:" StartInput1
-        case $StartInput1 in
-        1)
-            minal_script | tee -i test_result.txt
-            break
-            ;;
-        2)
-            minal_plus | tee -i test_result.txt
-            break
-            ;;
-        3)
-            minal_plus_network | tee -i test_result.txt
-            break
-            ;;
-        4)
-            minal_plus_media | tee -i test_result.txt
-            break
-            ;;
-        0)
-            start_script
-            break
-            ;;
-        *) echo "输入错误，请重新输入" ;;
-        esac
-    done
+    if $menu_mode; then
+        _yellow "融合怪的精简脚本如下"
+        echo -e "${GREEN}1.${PLAIN} 极简版(系统信息+CPU+内存+磁盘IO+测速节点4个)(平均运行3分钟)"
+        echo -e "${GREEN}2.${PLAIN} 精简版(系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体+TikTok+回程+路由+测速节点4个)(平均运行4分钟)"
+        echo -e "${GREEN}3.${PLAIN} 精简网络版(系统信息+CPU+内存+磁盘IO+回程+路由+测速节点4个)(平均运行4分钟)"
+        echo -e "${GREEN}4.${PLAIN} 精简解锁版(系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体+TikTok+测速节点4个)(平均运行4分钟)"
+        echo " -------------"
+        echo -e "${GREEN}0.${PLAIN} 回到主菜单"
+        echo ""
+        while true; do
+            read -rp "请输入选项:" StartInput1
+            simplify_script_options
+        done
+    else
+        StartInput1="$sub_menu_option"
+        simplify_script_options
+    fi
+}
+
+single_item_script_options() {
+    case $StartInput2 in
+    1)
+        network_script
+        break >/dev/null 2>&1
+        ;;
+    2)
+        media_script
+        break >/dev/null 2>&1
+        ;;
+    3)
+        hardware_script
+        break >/dev/null 2>&1
+        ;;
+    4)
+        bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh)
+        break >/dev/null 2>&1
+        ;;
+    5)
+        port_script
+        break >/dev/null 2>&1
+        ;;
+    6)
+        sw_script
+        break >/dev/null 2>&1
+        ;;
+    0)
+        start_script
+        break >/dev/null 2>&1
+        ;;
+    *) echo "输入错误，请重新输入" ;;
+    esac
 }
 
 single_item_script() {
     head_script
-    _yellow "融合怪拆分的单项测试脚本如下"
-    echo -e "${GREEN}1.${PLAIN} 网络方面(简化的IP质量检测+三网回程+三网路由与延迟+测速节点11个)(平均运行6分钟左右)"
-    echo -e "${GREEN}2.${PLAIN} 解锁方面(御三家解锁+常用流媒体解锁+TikTok解锁)(平均运行30~60秒)"
-    echo -e "${GREEN}3.${PLAIN} 硬件方面(基础系统信息+CPU+内存+双重磁盘IO测试)(平均运行1分半钟)"
-    echo -e "${GREEN}4.${PLAIN} 完整的IP质量检测(平均运行10~20秒)"
-    echo -e "${GREEN}5.${PLAIN} 常用端口开通情况(是否有阻断)(平均运行1分钟左右)(暂时有bug未修复)"
-    echo -e "${GREEN}6.${PLAIN} 三网回程线路+广州三网路由+全国三网延迟(平均运行1分20秒)"
-    echo " -------------"
-    echo -e "${GREEN}0.${PLAIN} 回到主菜单"
-    echo ""
-    while true; do
-        read -rp "请输入选项:" StartInput2
-        case $StartInput2 in
-        1)
-            network_script
-            break
-            ;;
-        2)
-            media_script
-            break
-            ;;
-        3)
-            hardware_script
-            break
-            ;;
-        4)
-            bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh)
-            break
-            ;;
-        5)
-            port_script
-            break
-            ;;
-        6)
-            sw_script
-            break
-            ;;
-        0)
-            start_script
-            break
-            ;;
-        *) echo "输入错误，请重新输入" ;;
-        esac
-    done
+    if $menu_mode; then
+        _yellow "融合怪拆分的单项测试脚本如下"
+        echo -e "${GREEN}1.${PLAIN} 网络方面(简化的IP质量检测+三网回程+三网路由与延迟+测速节点11个)(平均运行6分钟左右)"
+        echo -e "${GREEN}2.${PLAIN} 解锁方面(御三家解锁+常用流媒体解锁+TikTok解锁)(平均运行30~60秒)"
+        echo -e "${GREEN}3.${PLAIN} 硬件方面(基础系统信息+CPU+内存+双重磁盘IO测试)(平均运行1分半钟)"
+        echo -e "${GREEN}4.${PLAIN} 完整的IP质量检测(平均运行10~20秒)"
+        echo -e "${GREEN}5.${PLAIN} 常用端口开通情况(是否有阻断)(平均运行1分钟左右)(暂时有bug未修复)"
+        echo -e "${GREEN}6.${PLAIN} 三网回程线路+广州三网路由+全国三网延迟(平均运行1分20秒)"
+        echo " -------------"
+        echo -e "${GREEN}0.${PLAIN} 回到主菜单"
+        echo ""
+        while true; do
+            read -rp "请输入选项:" StartInput2
+            single_item_script_options
+        done
+    else
+        StartInput2="$sub_menu_option"
+        single_item_script_options
+    fi
+}
+
+my_original_script_options() {
+    case $StartInput4 in
+    1)
+        bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh)
+        break >/dev/null 2>&1
+        ;;
+    2)
+        network_script_select 'g'
+        break >/dev/null 2>&1
+        ;;
+    3)
+        network_script_select 's'
+        break >/dev/null 2>&1
+        ;;
+    4)
+        network_script_select 'b'
+        break >/dev/null 2>&1
+        ;;
+    5)
+        network_script_select 'c'
+        break >/dev/null 2>&1
+        ;;
+    6)
+        bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/return.sh)
+        break >/dev/null 2>&1
+        ;;
+    7)
+        bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/nexttrace.sh)
+        break >/dev/null 2>&1
+        ;;
+    8)
+        bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/customizeqzcheck.sh)
+        break >/dev/null 2>&1
+        ;;
+    9)
+        bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/disk_info.sh)
+        break >/dev/null 2>&1
+        ;;
+    10)
+        bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench4.sh)
+        break >/dev/null 2>&1
+        ;;
+    11)
+        bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench5.sh)
+        break >/dev/null 2>&1
+        ;;
+    12)
+        bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench6.sh)
+        break >/dev/null 2>&1
+        ;;
+    13)
+        bash <(wget -qO- bash.spiritlhl.net/ecs-net)
+        break >/dev/null 2>&1
+        ;;
+    14)
+        bash <(wget -qO- bash.spiritlhl.net/ecs-cn)
+        break >/dev/null 2>&1
+        ;;
+    15)
+        bash <(wget -qO- bash.spiritlhl.net/ecs-ping)
+        break >/dev/null 2>&1
+        ;;
+    16)
+        bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/multi_disk_io_test.sh)
+        break >/dev/null 2>&1
+        ;;
+    0)
+        start_script
+        break >/dev/null 2>&1
+        ;;
+    *) echo "输入错误，请重新输入" ;;
+    esac
 }
 
 my_original_script() {
     head_script
-    _yellow "本作者有原创成分的脚本如下"
-    echo -e "${GREEN}1.${PLAIN} 完整的本机IP的IP质量检测(平均运行10~20秒)"
-    echo -e "${GREEN}2.${PLAIN} 三网回程路由测试(预设广州)(平均运行1分钟)"
-    echo -e "${GREEN}3.${PLAIN} 三网回程路由测试(预设上海)(平均运行1分钟)"
-    echo -e "${GREEN}4.${PLAIN} 三网回程路由测试(预设北京)(平均运行1分钟)"
-    echo -e "${GREEN}5.${PLAIN} 三网回程路由测试(预设成都)(平均运行1分钟)"
-    echo -e "${GREEN}6.${PLAIN} 自定义IP的回程路由测试(基于besttrace)(准确率高)"
-    echo -e "${GREEN}7.${PLAIN} 自定义IP的回程路由测试(基于nexttrace)(第三方IP库)"
-    echo -e "${GREEN}8.${PLAIN} 自定义IP的IP质量检测(平均运行10~20秒)"
-    echo -e "${GREEN}9.${PLAIN} 检测本机硬盘(含通电时长)(一般是独服才有用)"
-    echo -e "${GREEN}10.${PLAIN} Geekbench4测试(最常见的CPU基准测试)"
-    echo -e "${GREEN}11.${PLAIN} Geekbench5测试(测不动gb6可以试试这个)"
-    echo -e "${GREEN}12.${PLAIN} Geekbench6测试(测的极其缓慢)"
-    echo -e "${GREEN}13.${PLAIN} ecs-net三网测速脚本(自动更新测速节点，对应 speedtest.net)"
-    echo -e "${GREEN}14.${PLAIN} ecs-cn三网测速脚本(自动更新测速节点，对应 speedtest.cn)"
-    echo -e "${GREEN}15.${PLAIN} ecs-ping三网测ping脚本(自动更新测试节点)"
-    echo -e "${GREEN}16.${PLAIN} 测试挂载的多个磁盘的IO(仅测试挂载盘)"
-    echo " -------------"
-    echo -e "${GREEN}0.${PLAIN} 回到主菜单"
-    echo ""
-    while true; do
-        read -rp "请输入选项:" StartInput4
-        case $StartInput4 in
-        1)
-            bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh)
-            break
-            ;;
-        2)
-            network_script_select 'g'
-            break
-            ;;
-        3)
-            network_script_select 's'
-            break
-            ;;
-        4)
-            network_script_select 'b'
-            break
-            ;;
-        5)
-            network_script_select 'c'
-            break
-            ;;
-        6)
-            bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/return.sh)
-            break
-            ;;
-        7)
-            bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/nexttrace.sh)
-            break
-            ;;
-        8)
-            bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/customizeqzcheck.sh)
-            break
-            ;;
-        9)
-            bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/disk_info.sh)
-            break
-            ;;
-        10)
-            bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench4.sh)
-            break
-            ;;
-        11)
-            bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench5.sh)
-            break
-            ;;
-        12)
-            bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench6.sh)
-            break
-            ;;
-        13)
-            bash <(wget -qO- bash.spiritlhl.net/ecs-net)
-            break
-            ;;
-        14)
-            bash <(wget -qO- bash.spiritlhl.net/ecs-cn)
-            break
-            ;;
-        15)
-            bash <(wget -qO- bash.spiritlhl.net/ecs-ping)
-            break
-            ;;
-        16)
-            bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/multi_disk_io_test.sh)
-            break
-            ;;
-        0)
-            start_script
-            break
-            ;;
-        *) echo "输入错误，请重新输入" ;;
-        esac
-    done
+    if $menu_mode; then
+        _yellow "本作者有原创成分的脚本如下"
+        echo -e "${GREEN}1.${PLAIN} 完整的本机IP的IP质量检测(平均运行10~20秒)"
+        echo -e "${GREEN}2.${PLAIN} 三网回程路由测试(预设广州)(平均运行1分钟)"
+        echo -e "${GREEN}3.${PLAIN} 三网回程路由测试(预设上海)(平均运行1分钟)"
+        echo -e "${GREEN}4.${PLAIN} 三网回程路由测试(预设北京)(平均运行1分钟)"
+        echo -e "${GREEN}5.${PLAIN} 三网回程路由测试(预设成都)(平均运行1分钟)"
+        echo -e "${GREEN}6.${PLAIN} 自定义IP的回程路由测试(基于besttrace)(准确率高)"
+        echo -e "${GREEN}7.${PLAIN} 自定义IP的回程路由测试(基于nexttrace)(第三方IP库)"
+        echo -e "${GREEN}8.${PLAIN} 自定义IP的IP质量检测(平均运行10~20秒)"
+        echo -e "${GREEN}9.${PLAIN} 检测本机硬盘(含通电时长)(一般是独服才有用)"
+        echo -e "${GREEN}10.${PLAIN} Geekbench4测试(最常见的CPU基准测试)"
+        echo -e "${GREEN}11.${PLAIN} Geekbench5测试(测不动gb6可以试试这个)"
+        echo -e "${GREEN}12.${PLAIN} Geekbench6测试(测的极其缓慢)"
+        echo -e "${GREEN}13.${PLAIN} ecs-net三网测速脚本(自动更新测速节点，对应 speedtest.net)"
+        echo -e "${GREEN}14.${PLAIN} ecs-cn三网测速脚本(自动更新测速节点，对应 speedtest.cn)"
+        echo -e "${GREEN}15.${PLAIN} ecs-ping三网测ping脚本(自动更新测试节点)"
+        echo -e "${GREEN}16.${PLAIN} 测试挂载的多个磁盘的IO(仅测试挂载盘)"
+        echo " -------------"
+        echo -e "${GREEN}0.${PLAIN} 回到主菜单"
+        echo ""
+        while true; do
+            read -rp "请输入选项:" StartInput4
+            my_original_script_options
+        done
+    else
+        StartInput4="$sub_menu_option"
+        my_original_script_options
+    fi
 }
 
 head_script() {
@@ -4333,56 +4412,65 @@ head_script() {
     _green "请选择你接下来要使用的脚本"
 }
 
+start_script_options() {
+    case $StartInput in
+    1)
+        all_script "S" | tee -i test_result.txt
+        break >/dev/null 2>&1
+        ;;
+    2)
+        all_script "B" | tee -i test_result.txt
+        break >/dev/null 2>&1
+        ;;
+    3)
+        simplify_script
+        break >/dev/null 2>&1
+        ;;
+    4)
+        single_item_script
+        break >/dev/null 2>&1
+        ;;
+    5)
+        original_script
+        break >/dev/null 2>&1
+        ;;
+    6)
+        my_original_script
+        break >/dev/null 2>&1
+        ;;
+    7)
+        checkver
+        break >/dev/null 2>&1
+        ;;
+    0)
+        exit 1
+        break >/dev/null 2>&1
+        ;;
+    *) echo "输入错误，请重新输入" ;;
+    esac
+}
+
 start_script() {
     head_script
-    echo -e "${GREEN}1.${PLAIN} 顺序测试--融合怪完全体(所有项目都测试)(平均运行7分钟)(机器普通推荐使用)"
-    echo -e "${GREEN}2.${PLAIN} 并行测试--融合怪完全体(所有项目都测试)(平均运行5分钟)(仅机器强劲可使用，机器普通勿要使用)"
-    echo -e "${GREEN}3.${PLAIN} 融合怪精简区(融合怪的精简版或单项测试精简版)"
-    echo -e "${GREEN}4.${PLAIN} 融合怪单项区(融合怪的单项测试完整版)"
-    echo -e "${GREEN}5.${PLAIN} 第三方脚本区(同类作者的各种测试脚本)"
-    echo -e "${GREEN}6.${PLAIN} 原创区(本脚本独有的一些测试脚本)"
-    echo -e "${GREEN}7.${PLAIN} 更新本脚本"
-    echo " -------------"
-    echo -e "${GREEN}0.${PLAIN} 退出"
-    echo ""
-    while true; do
-        read -rp "请输入选项:" StartInput
-        case $StartInput in
-        1)
-            all_script "S" | tee -i test_result.txt
-            break
-            ;;
-        2)
-            all_script "B" | tee -i test_result.txt
-            break
-            ;;
-        3)
-            simplify_script
-            break
-            ;;
-        4)
-            single_item_script
-            break
-            ;;
-        5)
-            original_script
-            break
-            ;;
-        6)
-            my_original_script
-            break
-            ;;
-        7)
-            checkver
-            break
-            ;;
-        0)
-            exit 1
-            break
-            ;;
-        *) echo "输入错误，请重新输入" ;;
-        esac
-    done
+    if $menu_mode; then
+        echo -e "${GREEN}1.${PLAIN} 顺序测试--融合怪完全体(所有项目都测试)(平均运行7分钟)(机器普通推荐使用)"
+        echo -e "${GREEN}2.${PLAIN} 并行测试--融合怪完全体(所有项目都测试)(平均运行5分钟)(仅机器强劲可使用，机器普通勿要使用)"
+        echo -e "${GREEN}3.${PLAIN} 融合怪精简区(融合怪的精简版或单项测试精简版)"
+        echo -e "${GREEN}4.${PLAIN} 融合怪单项区(融合怪的单项测试完整版)"
+        echo -e "${GREEN}5.${PLAIN} 第三方脚本区(同类作者的各种测试脚本)"
+        echo -e "${GREEN}6.${PLAIN} 原创区(本脚本独有的一些测试脚本)"
+        echo -e "${GREEN}7.${PLAIN} 更新本脚本"
+        echo " -------------"
+        echo -e "${GREEN}0.${PLAIN} 退出"
+        echo ""
+        while true; do
+            read -rp "请输入选项:" StartInput
+            start_script_options
+        done
+    else
+        StartInput="$main_menu_option"
+        start_script_options
+    fi
 }
 
 # =============== 正式执行 部分 ===============

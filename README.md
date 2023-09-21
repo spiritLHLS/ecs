@@ -67,9 +67,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2023.09.21
+2023.09.22
 
-- 修复部分组件可能存在的报错显示问题
+- 支持使用参数预设需要执行的指令
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -99,20 +99,24 @@ bash <(wget -qO- bash.spiritlhl.net/ecs)
 ### 无交互形式
 
 ```bash
-echo 1 | bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/ecs.sh)
+curl -L https://gitlab.com/spiritysdx/za/-/raw/main/ecs.sh -o ecs.sh && chmod +x ecs.sh && bash ecs.sh 1 0 0
 ```
 
 或
 
 ```bash
-echo 1 | bash <(wget -qO- --no-check-certificate https://github.com/spiritLHLS/ecs/raw/main/ecs.sh)
+curl -L https://github.com/spiritLHLS/ecs/raw/main/ecs.sh -o ecs.sh && chmod +x ecs.sh && bash ecs.sh 1 0 0
 ```
 
 或
 
+```bash
+bash ecs.sh 1 0 0
 ```
-echo 1 | bash <(wget -qO- bash.spiritlhl.net/ecs)
-```
+
+上述命令默认执行融合怪全体，输入的三个参数数字是对应的选项序号.
+
+```参数1 参数2 参数3```对应有交互模式中你依次输入的选项序号，如果有参数没用到留空或者写0即可.
 
 ## IP质量检测
 
