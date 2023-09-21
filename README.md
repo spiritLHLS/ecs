@@ -61,8 +61,6 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 待解决事项
 
-脚本同时兼容附带参数执行的模式和使用菜单栏的选项模式 - 待添加
-
 参数支持传入本地IPV4使得三网回程路由检测设置为自定义的本地IPV4地址查询 - 待添加
 
 ## 更新
