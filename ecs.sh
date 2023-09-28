@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.09.22"
+ver="2023.09.28"
 changeLog="VPS融合怪测试(集百家之长)"
 
 # =============== 默认输入设置 ===============
@@ -3908,7 +3908,7 @@ comprehensive_test_script() {
         echo ""
         while true; do
             read -rp "请输入选项:" StartInputc
-            comprehensive_test_script_options
+            comprehensive_test_script_options && break
         done
     else
         StartInputc="$sub_of_sub_menu_option"
@@ -3980,7 +3980,7 @@ media_test_script() {
         echo ""
         while true; do
             read -rp "请输入选项:" StartInputm
-            media_test_script_options
+            media_test_script_options && break
         done
     else
         StartInputm="$sub_of_sub_menu_option"
@@ -4077,7 +4077,7 @@ network_test_script() {
         echo ""
         while true; do
             read -rp "请输入选项:" StartInputn
-            network_test_script_options
+            network_test_script_options && break
         done
     else
         StartInputn="$sub_of_sub_menu_option"
@@ -4130,7 +4130,7 @@ hardware_test_script() {
         echo ""
         while true; do
             read -rp "请输入选项:" StartInputh
-            hardware_test_script_options
+            hardware_test_script_options && break
         done
     else
         StartInputh="$sub_of_sub_menu_option"
@@ -4177,7 +4177,7 @@ original_script() {
         echo ""
         while true; do
             read -rp "请输入选项:" StartInput3
-            original_script_options
+            original_script_options && break
         done
     else
         StartInput3="$sub_menu_option"
@@ -4224,7 +4224,7 @@ simplify_script() {
         echo ""
         while true; do
             read -rp "请输入选项:" StartInput1
-            simplify_script_options
+            simplify_script_options && break
         done
     else
         StartInput1="$sub_menu_option"
@@ -4281,7 +4281,7 @@ single_item_script() {
         echo ""
         while true; do
             read -rp "请输入选项:" StartInput2
-            single_item_script_options
+            single_item_script_options && break
         done
     else
         StartInput2="$sub_menu_option"
@@ -4388,7 +4388,7 @@ my_original_script() {
         echo ""
         while true; do
             read -rp "请输入选项:" StartInput4
-            my_original_script_options
+            my_original_script_options && break
         done
     else
         StartInput4="$sub_menu_option"
@@ -4465,7 +4465,7 @@ start_script() {
         echo ""
         while true; do
             read -rp "请输入选项:" StartInput
-            start_script_options
+            start_script_options && break
         done
     else
         StartInput="$main_menu_option"
