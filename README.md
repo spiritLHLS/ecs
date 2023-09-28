@@ -65,9 +65,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2023.09.22
+2023.09.28
 
-- 支持使用参数预设需要执行的指令
+- 修复不生成分享链接的BUG
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
