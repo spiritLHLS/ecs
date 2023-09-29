@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.09.28"
+ver="2023.09.29"
 changeLog="VPS融合怪测试(集百家之长)"
 
 # =============== 默认输入设置 ===============
@@ -27,12 +27,36 @@ else
     _green "Locale set to $utf8_locale"
 fi
 menu_mode=true
-if [ $# -gt 0 ]; then
+swhc_mode=true
+if [ $# -eq 3 ]; then
     main_menu_option="$1"
     sub_menu_option="$2"
     sub_of_sub_menu_option="$3"
+    # 使用正则表达式检查参数格式
+    if [[ $main_menu_option =~ ^[0-9]+(\.[0-9]{1,4})?$ || \
+      $sub_menu_option =~ ^[0-9]+(\.[0-9]{1,4})?$ || \
+      $sub_of_sub_menu_option =~ ^[0-9]+(\.[0-9]{1,4})?$ ]]; then
+        swhc_mode=false
+    else
+        echo "参数格式不符合要求，必须是纯数字或数字和小数点的组合，小数点只能有4个或没有。"
+        exit 1
+    fi
+    if [[ $main_menu_option == *.* ]]; then
+        target_ipv4="$main_menu_option"
+    fi
+    if [[ $sub_menu_option == *.* ]]; then
+        target_ipv4="$sub_menu_option"
+    fi
+    if [[ $sub_of_sub_menu_option == *.* ]]; then
+        target_ipv4="$sub_of_sub_menu_option"
+    fi
+    if [ -n "$target_ipv4" ]; then
+        test_area_local=("你本地的IPV4地址")
+        test_ip_local=("$target_ipv4")
+    fi
     menu_mode=false
 fi
+
 
 # =============== 自定义基础参数 ==============
 shorturl=""
@@ -3380,8 +3404,13 @@ fscarmen_route_script() {
     cd $myvar >/dev/null 2>&1
     echo -e "---------------------回程路由--感谢fscarmen开源及PR---------------------"
     rm -f /tmp/ecs/ip.test
-    local test_area=("${!1}")
-    local test_ip=("${!2}")
+    if [ "$swhc_mode" = false ]; then
+        local test_area=("${test_area_local[@]}")
+        local test_ip=("${test_ip_local[@]}")
+    else
+        local test_area=("${!1}")
+        local test_ip=("${!2}")
+    fi
     local ip4=$(echo "$IPV4" | tr -d '\n')
     local ip6=$(echo "$IPV6" | tr -d '\n')
     if [[ ! -z "${ip4}" ]]; then
@@ -3401,7 +3430,20 @@ fscarmen_route_script() {
                     echo -e "$p_1 \t$p_2" >>/tmp/ip_temp
                 done
             fi
-            _yellow "${test_area[a]} ${test_ip[a]}" >>/tmp/ecs/ip.test
+            if [ "$swhc_mode" = false ]; then
+                ori_ipv4="${test_ip[a]}"
+                IFS='.' read -ra parts <<< "$ori_ipv4"
+                if [ "${#parts[@]}" -ge 2 ]; then
+                    parts[2]="xxx"
+                    parts[3]="xxx"
+                    new_ipv4="${parts[0]}.${parts[1]}.${parts[2]}.${parts[3]}"
+                    _yellow "${test_area[a]} $new_ipv4" >>/tmp/ecs/ip.test
+                else
+                    _yellow "${test_area[a]} xxx.xxx.xxx.xxx" >>/tmp/ecs/ip.test
+                fi
+            else
+                _yellow "${test_area[a]} ${test_ip[a]}" >>/tmp/ecs/ip.test
+            fi
             cat /tmp/ip_temp >>/tmp/ecs/ip.test
             rm -rf /tmp/ip_temp
         done
