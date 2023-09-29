@@ -59,10 +59,6 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 如若还有系统bug请到上面仓库的issues反映，脚本原生BUG该仓库issues反映
 
-## 待解决事项
-
-参数支持传入本地IPV4使得三网回程路由检测设置为自定义的本地IPV4地址查询 - 待添加
-
 ## 更新
 
 2023.09.29
