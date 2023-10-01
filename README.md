@@ -114,6 +114,8 @@ bash ecs.sh 1 0 0
 
 ```参数2```可传入你本地的IPV4地址，将使用你本地IPV4作为回程路由测试的目标地址。
 
+本地的IPV4地址可使用 ip.sb ipinfo.io nstool.netease.com cip.cc 之类的网站查询
+
 ## IP质量检测
 
 - IP质量检测，含多家数据库查询，含黑名单查询
