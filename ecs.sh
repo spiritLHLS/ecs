@@ -3414,7 +3414,11 @@ fscarmen_route_script() {
     local ip4=$(echo "$IPV4" | tr -d '\n')
     local ip6=$(echo "$IPV6" | tr -d '\n')
     if [[ ! -z "${ip4}" ]]; then
-        _green "依次测试电信/联通/移动经过的地区及线路，核心程序来自ipip.net或nexttrace，请知悉!" >/tmp/ecs/ip.test
+        if [ "$swhc_mode" = false ]; then
+            _green "核心程序来自ipip.net或nexttrace，请知悉!" >/tmp/ecs/ip.test
+        else
+            _green "依次测试电信/联通/移动经过的地区及线路，核心程序来自ipip.net或nexttrace，请知悉!" >/tmp/ecs/ip.test
+        fi
         for ((a = 0; a < ${#test_area[@]}; a++)); do
             "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >>/tmp/ip_temp
             if [ ! -s "/tmp/ip_temp" ] || grep -q "http: 403" /tmp/ip_temp || grep -q "error" /tmp/ip_temp 2>/dev/null; then
