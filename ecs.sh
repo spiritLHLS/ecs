@@ -56,6 +56,7 @@ if [ $# -eq 3 ]; then
     fi
     menu_mode=false
 fi
+break_status=true
 
 # =============== 自定义基础参数 ==============
 shorturl=""
@@ -3878,41 +3879,44 @@ comprehensive_test_script_options() {
     case $StartInputc in
     1)
         wget -qO- --no-check-certificate https://raw.githubusercontent.com/oooldking/script/master/superbench.sh | bash
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     2)
         curl -fsL https://ilemonra.in/LemonBenchIntl | bash -s fast
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     3)
         bash <(curl -L -Lso- https://cdn.jsdelivr.net/gh/misaka-gh/misakabench@master/misakabench.sh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     4)
         curl -sL yabs.sh | bash
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     5)
         wget -qO- bench.sh | bash
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     6)
         bash <(wget -qO- git.io/ceshi)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     7)
         wget -N --no-check-certificate https://raw.githubusercontent.com/FunctionClub/ZBench/master/ZBench-CN.sh && bash ZBench-CN.sh
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     8)
         wget --no-check-certificate https://raw.githubusercontent.com/teddysun/across/master/unixbench.sh && chmod +x unixbench.sh && ./unixbench.sh
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     0)
         original_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
-    *) echo "输入错误，请重新输入" ;;
+    *) 
+        echo "输入错误，请重新输入" ;;
+        break_status=false
+        ;;
     esac
 }
 
@@ -3933,7 +3937,10 @@ comprehensive_test_script() {
         echo ""
         while true; do
             read -rp "请输入选项:" StartInputc
-            comprehensive_test_script_options && break
+            comprehensive_test_script_options
+            if [ "$break_status" = true ] || [ "$menu_mode" = false ]; then
+                break
+            fi
         done
     else
         StartInputc="$sub_of_sub_menu_option"
@@ -3945,45 +3952,48 @@ media_test_script_options() {
     case $StartInputm in
     1)
         wget -O nf https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_amd64 && chmod +x nf && ./nf
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     2)
         wget -O tubecheck https://cdn.jsdelivr.net/gh/sjlleo/TubeCheck/CDN/tubecheck_1.0beta_linux_amd64 && chmod +x tubecheck && clear && ./tubecheck
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     3)
         wget -O dp https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_amd64 && chmod +x dp && clear && ./dp
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     4)
         lmc999_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     5)
         bash <(curl -s https://raw.githubusercontent.com/lmc999/TikTokCheck/main/tiktok.sh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     6)
         bash <(curl -L -s check.unlock.media)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     7)
         bash <(curl -Ls unlock.moe)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     8)
         bash <(curl -Ls https://cpp.li/openai)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     9)
         bash <(curl -Ls https://bash.spiritlhl.net/openai-checker)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     0)
         original_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
-    *) echo "输入错误，请重新输入" ;;
+    *) 
+        echo "输入错误，请重新输入" ;;
+        break_status=false
+        ;;
     esac
 }
 
@@ -4005,7 +4015,10 @@ media_test_script() {
         echo ""
         while true; do
             read -rp "请输入选项:" StartInputm
-            media_test_script_options && break
+            media_test_script_options
+            if [ "$break_status" = true ] || [ "$menu_mode" = false ]; then
+                break
+            fi
         done
     else
         StartInputm="$sub_of_sub_menu_option"
@@ -4017,65 +4030,68 @@ network_test_script_options() {
     case $StartInputn in
     1)
         curl https://raw.githubusercontent.com/zhanghanyun/backtrace/main/install.sh -sSf | sh
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     2)
         curl https://raw.githubusercontent.com/zhucaidan/mtr_trace/main/mtr_trace.sh | bash
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     3)
         wget -qO- git.io/besttrace | bash
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     4)
         bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/return.sh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     5)
         bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/nexttrace.sh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     6)
         wget -O jcnf.sh https://raw.githubusercontent.com/Netflixxp/jcnfbesttrace/main/jcnf.sh && bash jcnf.sh
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     7)
         bash <(curl -L -Lso- https://git.io/superspeed.sh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     8)
         bash <(curl -Lso- https://git.io/superspeed_uxh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     9)
         bash <(curl -Lso- https://git.io/J1SEh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     10)
         bash <(curl -L -Lso- https://bench.im/hyperspeed)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     11)
         curl -sL network-speed.xyz | bash
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     12)
         bash <(wget -qO- bash.spiritlhl.net/ecs-net)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     13)
         bash <(wget -qO- bash.spiritlhl.net/ecs-cn)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     14)
         bash <(wget -qO- bash.spiritlhl.net/ecs-ping)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     0)
         original_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
-    *) echo "输入错误，请重新输入" ;;
+    *) 
+        echo "输入错误，请重新输入" ;;
+        break_status=false
+        ;;
     esac
 }
 
@@ -4102,7 +4118,10 @@ network_test_script() {
         echo ""
         while true; do
             read -rp "请输入选项:" StartInputn
-            network_test_script_options && break
+            network_test_script_options
+            if [ "$break_status" = true ] || [ "$menu_mode" = false ]; then
+                break
+            fi
         done
     else
         StartInputn="$sub_of_sub_menu_option"
@@ -4114,29 +4133,32 @@ hardware_test_script_options() {
     case $StartInputh in
     1)
         bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/disk_info.sh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     2)
         bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench4.sh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     3)
         bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench5.sh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     4)
         bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/geekbench6.sh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     5)
         bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/multi_disk_io_test.sh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     0)
         original_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
-    *) echo "输入错误，请重新输入" ;;
+    *) 
+        echo "输入错误，请重新输入" ;;
+        break_status=false
+        ;;
     esac
 }
 
@@ -4155,7 +4177,10 @@ hardware_test_script() {
         echo ""
         while true; do
             read -rp "请输入选项:" StartInputh
-            hardware_test_script_options && break
+            hardware_test_script_options
+            if [ "$break_status" = true ] || [ "$menu_mode" = false ]; then
+                break
+            fi
         done
     else
         StartInputh="$sub_of_sub_menu_option"
@@ -4167,25 +4192,28 @@ original_script_options() {
     case $StartInput3 in
     1)
         comprehensive_test_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     2)
         media_test_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     3)
         network_test_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     4)
         hardware_test_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     0)
         start_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
-    *) echo "输入错误，请重新输入" ;;
+    *) 
+        echo "输入错误，请重新输入" ;;
+        break_status=false
+        ;;
     esac
 }
 
@@ -4202,7 +4230,10 @@ original_script() {
         echo ""
         while true; do
             read -rp "请输入选项:" StartInput3
-            original_script_options && break
+            original_script_options
+            if [ "$break_status" = true ] || [ "$menu_mode" = false ]; then
+                break
+            fi
         done
     else
         StartInput3="$sub_menu_option"
@@ -4214,25 +4245,28 @@ simplify_script_options() {
     case $StartInput1 in
     1)
         minal_script | tee -i test_result.txt
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     2)
         minal_plus | tee -i test_result.txt
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     3)
         minal_plus_network | tee -i test_result.txt
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     4)
         minal_plus_media | tee -i test_result.txt
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     0)
         start_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
-    *) echo "输入错误，请重新输入" ;;
+    *) 
+        echo "输入错误，请重新输入" ;;
+        break_status=false
+        ;;
     esac
 }
 
@@ -4249,7 +4283,10 @@ simplify_script() {
         echo ""
         while true; do
             read -rp "请输入选项:" StartInput1
-            simplify_script_options && break
+            simplify_script_options
+            if [ "$break_status" = true ] || [ "$menu_mode" = false ]; then
+                break
+            fi
         done
     else
         StartInput1="$sub_menu_option"
@@ -4261,33 +4298,36 @@ single_item_script_options() {
     case $StartInput2 in
     1)
         network_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     2)
         media_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     3)
         hardware_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     4)
         bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     5)
         port_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     6)
         sw_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     0)
         start_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
-    *) echo "输入错误，请重新输入" ;;
+    *) 
+        echo "输入错误，请重新输入" ;;
+        break_status=false
+        ;;
     esac
 }
 
@@ -4306,7 +4346,10 @@ single_item_script() {
         echo ""
         while true; do
             read -rp "请输入选项:" StartInput2
-            single_item_script_options && break
+            single_item_script_options
+            if [ "$break_status" = true ] || [ "$menu_mode" = false ]; then
+                break
+            fi
         done
     else
         StartInput2="$sub_menu_option"
@@ -4318,73 +4361,76 @@ my_original_script_options() {
     case $StartInput4 in
     1)
         bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     2)
         network_script_select 'g'
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     3)
         network_script_select 's'
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     4)
         network_script_select 'b'
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     5)
         network_script_select 'c'
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     6)
         bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/return.sh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     7)
         bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/nexttrace.sh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     8)
         bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/customizeqzcheck.sh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     9)
         bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/disk_info.sh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     10)
         bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench4.sh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     11)
         bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench5.sh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     12)
         bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/geekbench6.sh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     13)
         bash <(wget -qO- bash.spiritlhl.net/ecs-net)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     14)
         bash <(wget -qO- bash.spiritlhl.net/ecs-cn)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     15)
         bash <(wget -qO- bash.spiritlhl.net/ecs-ping)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     16)
         bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/multi_disk_io_test.sh)
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     0)
         start_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
-    *) echo "输入错误，请重新输入" ;;
+    *) 
+        echo "输入错误，请重新输入" ;;
+        break_status=false
+        ;;
     esac
 }
 
@@ -4413,7 +4459,10 @@ my_original_script() {
         echo ""
         while true; do
             read -rp "请输入选项:" StartInput4
-            my_original_script_options && break
+            my_original_script_options
+            if [ "$break_status" = true ] || [ "$menu_mode" = false ]; then
+                break
+            fi
         done
     else
         StartInput4="$sub_menu_option"
@@ -4441,37 +4490,40 @@ start_script_options() {
     case $StartInput in
     1)
         all_script "S" | tee -i test_result.txt
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     2)
         all_script "B" | tee -i test_result.txt
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     3)
         simplify_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     4)
         single_item_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     5)
         original_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     6)
         my_original_script
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     7)
         checkver
-        break >/dev/null 2>&1
+        break_status=true
         ;;
     0)
         exit 1
-        break >/dev/null 2>&1
+        break_status=true
         ;;
-    *) echo "输入错误，请重新输入" ;;
+    *) 
+        echo "输入错误，请重新输入" ;;
+        break_status=false
+        ;;
     esac
 }
 
@@ -4490,7 +4542,10 @@ start_script() {
         echo ""
         while true; do
             read -rp "请输入选项:" StartInput
-            start_script_options && break
+            start_script_options
+            if [ "$break_status" = true ] || [ "$menu_mode" = false ]; then
+                break
+            fi
         done
     else
         StartInput="$main_menu_option"

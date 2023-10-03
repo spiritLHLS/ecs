@@ -71,6 +71,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 - 修复sysbench安装过程中，原有镜像已失效的问题
 - 优化sysbench安装过程，centos和redhat系先尝试使用yum安装然后尝试使用dnf安装，确保二者都尝试过
+- 修复输入错误提示重新输入在之前插入参数模式后失效的问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
