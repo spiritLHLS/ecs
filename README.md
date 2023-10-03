@@ -61,9 +61,10 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2023.09.29
+2023.10.03
 
-- 参数模式下支持自定义路由回程的IP设置
+- 修复sysbench安装过程中，原有镜像已失效的问题
+- 优化sysbench安装过程，centos和redhat系先尝试使用yum安装然后尝试使用dnf安装，确保二者都尝试过
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

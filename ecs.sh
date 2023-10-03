@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.09.29"
+ver="2023.10.03"
 changeLog="VPS融合怪测试(集百家之长)"
 
 # =============== 默认输入设置 ===============
@@ -1229,28 +1229,8 @@ get_sysbench_os_release() {
 InstallSysbench() {
     local os_release=$1
     case "$os_release" in
-    redhat) yum -y install epel-release && yum -y install sysbench ;;
-    ubuntu) ! apt-get install sysbench -y && apt-get --fix-broken install -y && apt-get install sysbench -y ;;
-    debian)
-        local mirrorbase="https://raindrop.ilemonrain.com/LemonBench"
-        local componentname="Sysbench"
-        local version="1.0.19-1"
-        local arch="debian"
-        local codename="${Var_OSReleaseVersion_Codename}"
-        local bit="${LBench_Result_SystemBit_Full}"
-        local filenamebase="sysbench"
-        local filename="${filenamebase}_${version}_${bit}.deb"
-        local downurl="${mirrorbase}/include/${componentname}/${version}/${arch}/${codename}/${filename}"
-        mkdir -p ${WorkDir}/download/
-        pushd ${WorkDir}/download/ >/dev/null
-        wget -U "${UA_LemonBench}" -O ${filenamebase}_${version}_${bit}.deb ${downurl}
-        dpkg -i ./${filename}
-        ! apt-get install sysbench -y && apt-get --fix-broken install -y && apt-get install sysbench -y
-        popd
-        if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
-            echo -e "${Msg_Warning}Sysbench Module Install Failed!"
-        fi
-        ;;
+    ubuntu|debian) ! apt-get install -y sysbench && apt-get --fix-broken install -y && apt-get install --no-install-recommends -y sysbench ;;
+    redhat|centos) ( yum -y install epel-release && yum -y install sysbench ) || ( dnf install epel-release -y && dnf install sysbench -y ) ;;
     fedora) dnf -y install sysbench ;;
     arch) pacman -S --needed --noconfirm sysbench ;;
     freebsd) pkg install -y sysbench ;;
