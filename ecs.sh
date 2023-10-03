@@ -3914,7 +3914,7 @@ comprehensive_test_script_options() {
         break_status=true
         ;;
     *) 
-        echo "输入错误，请重新输入" ;;
+        echo "输入错误，请重新输入"
         break_status=false
         ;;
     esac
@@ -3991,7 +3991,7 @@ media_test_script_options() {
         break_status=true
         ;;
     *) 
-        echo "输入错误，请重新输入" ;;
+        echo "输入错误，请重新输入"
         break_status=false
         ;;
     esac
@@ -4089,7 +4089,7 @@ network_test_script_options() {
         break_status=true
         ;;
     *) 
-        echo "输入错误，请重新输入" ;;
+        echo "输入错误，请重新输入"
         break_status=false
         ;;
     esac
@@ -4156,7 +4156,7 @@ hardware_test_script_options() {
         break_status=true
         ;;
     *) 
-        echo "输入错误，请重新输入" ;;
+        echo "输入错误，请重新输入"
         break_status=false
         ;;
     esac
@@ -4211,7 +4211,7 @@ original_script_options() {
         break_status=true
         ;;
     *) 
-        echo "输入错误，请重新输入" ;;
+        echo "输入错误，请重新输入"
         break_status=false
         ;;
     esac
@@ -4264,7 +4264,7 @@ simplify_script_options() {
         break_status=true
         ;;
     *) 
-        echo "输入错误，请重新输入" ;;
+        echo "输入错误，请重新输入"
         break_status=false
         ;;
     esac
@@ -4325,7 +4325,7 @@ single_item_script_options() {
         break_status=true
         ;;
     *) 
-        echo "输入错误，请重新输入" ;;
+        echo "输入错误，请重新输入"
         break_status=false
         ;;
     esac
@@ -4428,7 +4428,7 @@ my_original_script_options() {
         break_status=true
         ;;
     *) 
-        echo "输入错误，请重新输入" ;;
+        echo "输入错误，请重新输入"
         break_status=false
         ;;
     esac
@@ -4521,7 +4521,7 @@ start_script_options() {
         break_status=true
         ;;
     *) 
-        echo "输入错误，请重新输入" ;;
+        echo "输入错误，请重新输入"
         break_status=false
         ;;
     esac
