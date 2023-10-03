@@ -33,9 +33,9 @@ if [ $# -eq 3 ]; then
     sub_menu_option="$2"
     sub_of_sub_menu_option="$3"
     # 使用正则表达式检查参数格式
-    if [[ $main_menu_option =~ ^[0-9]+(\.[0-9]{1,4})?$ || \
-      $sub_menu_option =~ ^[0-9]+(\.[0-9]{1,4})?$ || \
-      $sub_of_sub_menu_option =~ ^[0-9]+(\.[0-9]{1,4})?$ ]]; then
+    if [[ $main_menu_option =~ ^[0-9]+(\.[0-9]{1,4})?$ ||
+        $sub_menu_option =~ ^[0-9]+(\.[0-9]{1,4})?$ ||
+        $sub_of_sub_menu_option =~ ^[0-9]+(\.[0-9]{1,4})?$ ]]; then
         swhc_mode=false
     else
         echo "参数格式不符合要求，必须是纯数字或数字和小数点的组合，小数点只能有4个或没有。"
@@ -56,7 +56,6 @@ if [ $# -eq 3 ]; then
     fi
     menu_mode=false
 fi
-
 
 # =============== 自定义基础参数 ==============
 shorturl=""
@@ -1229,8 +1228,8 @@ get_sysbench_os_release() {
 InstallSysbench() {
     local os_release=$1
     case "$os_release" in
-    ubuntu|debian) ! apt-get install -y sysbench && apt-get --fix-broken install -y && apt-get install --no-install-recommends -y sysbench ;;
-    redhat|centos) ( yum -y install epel-release && yum -y install sysbench ) || ( dnf install epel-release -y && dnf install sysbench -y ) ;;
+    ubuntu | debian) ! apt-get install -y sysbench && apt-get --fix-broken install -y && apt-get install --no-install-recommends -y sysbench ;;
+    redhat | centos) (yum -y install epel-release && yum -y install sysbench) || (dnf install epel-release -y && dnf install sysbench -y) ;;
     fedora) dnf -y install sysbench ;;
     arch) pacman -S --needed --noconfirm sysbench ;;
     freebsd) pkg install -y sysbench ;;
@@ -3416,7 +3415,7 @@ fscarmen_route_script() {
             fi
             if [ "$swhc_mode" = false ]; then
                 ori_ipv4="${test_ip[a]}"
-                IFS='.' read -ra parts <<< "$ori_ipv4"
+                IFS='.' read -ra parts <<<"$ori_ipv4"
                 if [ "${#parts[@]}" -ge 2 ]; then
                     parts[2]="xxx"
                     parts[3]="xxx"

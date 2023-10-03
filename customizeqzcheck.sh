@@ -2,22 +2,21 @@
 #by spiritlhl
 #from https://github.com/spiritLHLS/ecs
 
-
 ver="2023.06.27"
 changeLog="IP质量测试，由频道 https://t.me/vps_reviews 原创"
 
-red(){
+red() {
     echo -e "\033[31m\033[01m$1\033[0m"
 }
 
-green(){
+green() {
     echo -e "\033[32m\033[01m$1\033[0m"
 }
 
-yellow(){
+yellow() {
     echo -e "\033[33m\033[01m$1\033[0m"
 }
-reading(){ read -rp "$(green "$1")" "$2"; }
+reading() { read -rp "$(green "$1")" "$2"; }
 REGEX=("debian" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "alpine")
 RELEASE=("Debian" "Ubuntu" "CentOS" "CentOS" "Alpine")
 PACKAGE_UPDATE=("apt -y update" "apt -y update" "yum -y update" "yum -y update" "apk update -f")
@@ -25,12 +24,12 @@ PACKAGE_INSTALL=("apt -y install" "apt -y install" "yum -y install" "yum -y inst
 CMD=("$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(hostnamectl 2>/dev/null | grep -i system | cut -d : -f2)" "$(lsb_release -sd 2>/dev/null)" "$(grep -i description /etc/lsb-release 2>/dev/null | cut -d \" -f2)" "$(grep . /etc/redhat-release 2>/dev/null)" "$(grep . /etc/issue 2>/dev/null | cut -d \\ -f1 | sed '/^[ ]*$/d')")
 utf8_locale=$(locale -a 2>/dev/null | grep -i -m 1 -E "UTF-8|utf8")
 if [[ -z "$utf8_locale" ]]; then
-  echo "No UTF-8 locale found"
+    echo "No UTF-8 locale found"
 else
-  export LC_ALL="$utf8_locale"
-  export LANG="$utf8_locale"
-  export LANGUAGE="$utf8_locale"
-  echo "Locale set to $utf8_locale"
+    export LC_ALL="$utf8_locale"
+    export LANG="$utf8_locale"
+    export LANGUAGE="$utf8_locale"
+    echo "Locale set to $utf8_locale"
 fi
 for i in "${CMD[@]}"; do
     SYS="$i" && [[ -n $SYS ]] && break
@@ -54,12 +53,12 @@ _blue() { echo -e "\033[36m\033[01m$@\033[0m"; }
 
 _exists() {
     local cmd="$1"
-    if eval type type > /dev/null 2>&1; then
-        eval type "$cmd" > /dev/null 2>&1
-    elif command > /dev/null 2>&1; then
-        command -v "$cmd" > /dev/null 2>&1
+    if eval type type >/dev/null 2>&1; then
+        eval type "$cmd" >/dev/null 2>&1
+    elif command >/dev/null 2>&1; then
+        command -v "$cmd" >/dev/null 2>&1
     else
-        which "$cmd" > /dev/null 2>&1
+        which "$cmd" >/dev/null 2>&1
     fi
     local rt=$?
     return ${rt}
@@ -72,73 +71,71 @@ _exit() {
     exit 1
 }
 
-checkroot(){
-	[[ $EUID -ne 0 ]] && echo -e "${RED}请使用 root 用户运行本脚本！${PLAIN}" && exit 1
+checkroot() {
+    [[ $EUID -ne 0 ]] && echo -e "${RED}请使用 root 用户运行本脚本！${PLAIN}" && exit 1
 }
 
-checkupdate(){
-	    echo "正在更新包管理源"
-	    if [ "${release}" == "centos" ]; then
-		    yum update > /dev/null 2>&1
-		else
-		    apt-get update > /dev/null 2>&1
-		fi
-
-}
-
-checkupdate(){
-	    echo "正在更新包管理源"
-	    if [ "${release}" == "centos" ]; then
-		    yum update > /dev/null 2>&1
-			yum install dos2unix -y
-		else
-		    apt-get update > /dev/null 2>&1
-			apt install dos2unix -y
-		fi
+checkupdate() {
+    echo "正在更新包管理源"
+    if [ "${release}" == "centos" ]; then
+        yum update >/dev/null 2>&1
+    else
+        apt-get update >/dev/null 2>&1
+    fi
 
 }
 
+checkupdate() {
+    echo "正在更新包管理源"
+    if [ "${release}" == "centos" ]; then
+        yum update >/dev/null 2>&1
+        yum install dos2unix -y
+    else
+        apt-get update >/dev/null 2>&1
+        apt install dos2unix -y
+    fi
+
+}
 
 checkdnsutils() {
-	if  [ ! -e '/usr/bin/dnsutils' ]; then
-	        echo "正在安装 dnsutils"
-	            if [ "${release}" == "centos" ]; then
-# 	                    yum update > /dev/null 2>&1
-	                    yum -y install dnsutils > /dev/null 2>&1
-	                else
-# 	                    apt-get update > /dev/null 2>&1
-	                    apt-get -y install dnsutils > /dev/null 2>&1
-	                fi
+    if [ ! -e '/usr/bin/dnsutils' ]; then
+        echo "正在安装 dnsutils"
+        if [ "${release}" == "centos" ]; then
+            # 	                    yum update > /dev/null 2>&1
+            yum -y install dnsutils >/dev/null 2>&1
+        else
+            # 	                    apt-get update > /dev/null 2>&1
+            apt-get -y install dnsutils >/dev/null 2>&1
+        fi
 
-	fi
+    fi
 }
 
 checkcurl() {
-	if  [ ! -e '/usr/bin/curl' ]; then
-	        echo "正在安装 Curl"
-	            if [ "${release}" == "centos" ]; then
-# 	                yum update > /dev/null 2>&1
-	                yum -y install curl > /dev/null 2>&1
-	            else
-# 	                apt-get update > /dev/null 2>&1
-	                apt-get -y install curl > /dev/null 2>&1
-	            fi
-	fi
+    if [ ! -e '/usr/bin/curl' ]; then
+        echo "正在安装 Curl"
+        if [ "${release}" == "centos" ]; then
+            # 	                yum update > /dev/null 2>&1
+            yum -y install curl >/dev/null 2>&1
+        else
+            # 	                apt-get update > /dev/null 2>&1
+            apt-get -y install curl >/dev/null 2>&1
+        fi
+    fi
 }
 
 checkwget() {
-	if  [ ! -e '/usr/bin/wget' ]; then
-	        echo "正在安装 Wget"
-	            if [ "${release}" == "centos" ]; then
-# 	                yum update > /dev/null 2>&1
-	                yum -y install wget > /dev/null 2>&1
-	            else
-# 	                apt-get update > /dev/null 2>&1
-	                apt-get -y install wget > /dev/null 2>&1
-	            fi
-	fi
+    if [ ! -e '/usr/bin/wget' ]; then
+        echo "正在安装 Wget"
+        if [ "${release}" == "centos" ]; then
+            # 	                yum update > /dev/null 2>&1
+            yum -y install wget >/dev/null 2>&1
+        else
+            # 	                apt-get update > /dev/null 2>&1
+            apt-get -y install wget >/dev/null 2>&1
+        fi
+    fi
 }
-
 
 next() {
     printf "%-70s\n" "-" | sed 's/\s/-/g'
@@ -146,7 +143,7 @@ next() {
 
 print_end_time() {
     end_time=$(date +%s)
-    time=$(( ${end_time} - ${start_time} ))
+    time=$((${end_time} - ${start_time}))
     if [ ${time} -gt 60 ]; then
         min=$(expr $time / 60)
         sec=$(expr $time % 60)
@@ -185,8 +182,7 @@ scamalytics() {
     fi
     temp2=$(echo "$context" | grep -oP '(?<=<div).*?(?=</div>)' | tail -n 6)
     nlist=("匿名代理" "Tor出口节点" "服务器IP" "公共代理" "网络代理" "搜索引擎机器人")
-    for element in $temp2
-    do
+    for element in $temp2; do
         if echo "$element" | grep -q "score" >/dev/null 2>&1; then
             status_t2=1
             break
@@ -200,19 +196,19 @@ scamalytics() {
         while read -r temp3; do
             if [[ -n "$temp3" ]]; then
                 echo "  ${nlist[$i]}: ${temp3#*>}"
-                i=$((i+1))
+                i=$((i + 1))
             fi
-        done <<< "$(echo "$temp2" | sed 's/<[^>]*>//g' | sed 's/^[[:blank:]]*//g')"
+        done <<<"$(echo "$temp2" | sed 's/<[^>]*>//g' | sed 's/^[[:blank:]]*//g')"
     fi
 }
 
 virustotal() {
     local ip="$1"
     local api_keys=(
-    "401e74a0a76ff4a5c2462177bfe54d1fb71a86a97031a3a5b461eb9fe06fa9a5"
-    "e6184c04de532cd5a094f3fd6b3ce36cd187e41e671b5336fd69862257d07a9a"
-    "9929218dcd124c19bcee49ecd6d7555213de0e8f27d407cc3e85c92c3fc2508e"
-    "bcc1f94cc4ec1966f43a5552007d6c4fa3461cec7200f8d95053ebeeecc68afa"
+        "401e74a0a76ff4a5c2462177bfe54d1fb71a86a97031a3a5b461eb9fe06fa9a5"
+        "e6184c04de532cd5a094f3fd6b3ce36cd187e41e671b5336fd69862257d07a9a"
+        "9929218dcd124c19bcee49ecd6d7555213de0e8f27d407cc3e85c92c3fc2508e"
+        "bcc1f94cc4ec1966f43a5552007d6c4fa3461cec7200f8d95053ebeeecc68afa"
     )
     local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
     local output=$(curl -s --request GET --url "https://www.virustotal.com/api/v3/ip_addresses/$ip" --header "x-apikey:$api_key")
@@ -244,7 +240,7 @@ abuse() {
         score=$(echo "$context2" | grep -o '"abuseConfidenceScore":[^,}]*' | sed 's/.*://')
         echo "abuseipdb数据库-abuse得分：$score"
         echo "IP类型:"
-        usageType=$(grep -oP '"usageType":\s*"\K[^"]+' <<< "$context2" | sed 's/\\\//\//g')
+        usageType=$(grep -oP '"usageType":\s*"\K[^"]+' <<<"$context2" | sed 's/\\\//\//g')
         if [ -z "$usageType" ]; then
             usageType="Unknown (Maybe Fixed Line ISP)"
         fi
@@ -275,7 +271,7 @@ ip234() {
     if [[ "$?" -ne 0 ]]; then
         return
     fi
-    risk=$(grep -oP '(?<="score":)[^,}]+' <<< "$context5")
+    risk=$(grep -oP '(?<="score":)[^,}]+' <<<"$context5")
     if [[ -n "$risk" ]]; then
         echo "ip234数据库："
         echo "  欺诈分数(越低越好)：$risk"
@@ -285,27 +281,27 @@ ip234() {
 }
 
 google() {
-  curl_result=$(curl -sL "https://www.google.com/search?q=www.spiritysdx.top" -H "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0")
-  if echo "$curl_result" | grep -q "二叉树的博客"; then
-    echo "Google搜索可行性：YES"
-  else
-    echo "Google搜索可行性：NO"
-  fi
+    curl_result=$(curl -sL "https://www.google.com/search?q=www.spiritysdx.top" -H "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0")
+    if echo "$curl_result" | grep -q "二叉树的博客"; then
+        echo "Google搜索可行性：YES"
+    else
+        echo "Google搜索可行性：NO"
+    fi
 }
 
 main() {
-  reading "\n 请输入需要查询的 IP: " ip4
-  yellow "\n 检测中，请稍等片刻。\n"
-  echo "-----------------欺诈分数以及IP质量检测--本频道独创-------------------"
-  echo "                   测评频道: https://t.me/vps_reviews                    "
-  next
-  yellow "数据仅作参考，不代表100%准确，IP类型如果不一致请手动查询多个数据库比对"
-  scamalytics "$ip4"
-  virustotal "$ip4"
-  ip234 "$ip4"
-  ipapi "$ip4"
-  abuse "$ip4"
-  next
+    reading "\n 请输入需要查询的 IP: " ip4
+    yellow "\n 检测中，请稍等片刻。\n"
+    echo "-----------------欺诈分数以及IP质量检测--本频道独创-------------------"
+    echo "                   测评频道: https://t.me/vps_reviews                    "
+    next
+    yellow "数据仅作参考，不代表100%准确，IP类型如果不一致请手动查询多个数据库比对"
+    scamalytics "$ip4"
+    virustotal "$ip4"
+    ip234 "$ip4"
+    ipapi "$ip4"
+    abuse "$ip4"
+    next
 }
 
 checkupdate
