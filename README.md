@@ -64,6 +64,10 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 如若还有系统bug请到上面仓库的issues反映，脚本原生BUG该仓库issues反映
 
+## 待修复的问题
+
+脚本运行时间计算可能会受到运行的宿主机的时区产生计时错误的问题，待修复
+
 ## 更新
 
 2023.10.03
