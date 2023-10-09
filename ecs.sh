@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.10.03"
+ver="2023.10.09"
 changeLog="VPS融合怪测试(集百家之长)"
 
 # =============== 默认输入设置 ===============
@@ -2661,7 +2661,10 @@ print_system_info() {
 
 print_end_time() {
     end_time=$(date +%s)
-    time=$((${end_time} - ${start_time}))
+    start_time_abs=$(echo $start_time | tr -d -)
+    end_time_abs=$(echo $end_time | tr -d -)
+    time_abs_diff=$((${end_time_abs} - ${start_time_abs}))
+    time=$(echo $time_abs_diff | tr -d -)
     if [ ${time} -gt 60 ]; then
         min=$(expr $time / 60)
         sec=$(expr $time % 60)
