@@ -61,7 +61,7 @@ check_cdn_file() {
   fi
 }
 
-cdn_urls=("https://cdn0.spiritlhl.top/" "https://cdn3.spiritlhl.net/" "https://cdn1.spiritlhl.net/" "https://ghproxy.com/" "https://cdn2.spiritlhl.net/")
+cdn_urls=("https://cdn0.spiritlhl.top/" "http://cdn3.spiritlhl.net/" "http://cdn1.spiritlhl.net/" "https://ghproxy.com/" "http://cdn2.spiritlhl.net/")
 check_cdn_file
 
 # 当前路径下下载测试脚本
