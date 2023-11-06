@@ -13,10 +13,15 @@ Ubuntu 18+, Debian 8+, Centos 7+, Fedora 33+, Almalinux 8.5+, OracleLinux 8+, Ro
 FreeBSD(前提已执行```pkg install -y curl bash```)，Armbian
 
 <details>
+
 部分问题：
+  
 Armbian系统部分检测和测试暂不支持，部分会编码错误
+
 FreeBSD系统的CPU测试目前是残废的，有些东西显示有问题
+
 FreeBSD系统的sed命令类似alpine而不是debian，很多命令的sed需要修改，有大问题
+
 </details>
 
 支持架构：
@@ -69,6 +74,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 - 修复脚本在archlinux上运行时sysbench可能缺少一个内核补丁的问题，同时加入sysbench的版本判断，对应版本用对应版本的指令
 - 修复脚本在FreeBSD上运行硬盘检测识别不出具体的事件处理数量的问题
 - 优化 ipinfo.io 的信息查询，尽量减少请求的次数
+- 优化解决脚本在时间对准过程中可能因为轮询节点耗时过长的问题，限时对准时间这个步骤最多耗时60秒
 - 修复脚本在FreeBSD上运行上sed命令可能存在的部分问题，但只修复了很小的一部分，仍旧有大部分sed命令待修复(感觉修复了这个alpine也能测了)
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
