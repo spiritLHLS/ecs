@@ -13,11 +13,10 @@ Ubuntu 18+, Debian 8+, Centos 7+, Fedora 33+, Almalinux 8.5+, OracleLinux 8+, Ro
 FreeBSD(前提已执行```pkg install -y curl bash```)，Armbian
 
 <details>
+部分问题：
 Armbian系统部分检测和测试暂不支持，部分会编码错误
-
-FreeBSD系统的硬盘测试和CPU测试目前是半残的，有些东西显示有问题
-
-FreeBSD系统的分享链接的预处理部分sed命令存在问题未删除部分无效内容
+FreeBSD系统的CPU测试目前是残废的，有些东西显示有问题
+FreeBSD系统的sed命令类似alpine而不是debian，很多命令的sed需要修改，有大问题
 </details>
 
 支持架构：
@@ -29,8 +28,7 @@ FreeBSD系统的分享链接的预处理部分sed命令存在问题未删除部�
 能连得上网都支持
 
 # 目录
-- [ecs](#ecs)
-    - [前言](#前言)
+- [前言](#前言)
 - [目录](#目录)
 - [融合怪测评脚本](#融合怪测评脚本)
   - [部分服务器运行测试有各类bug一键修复后再测试](#部分服务器运行测试有各类bug一键修复后再测试)
@@ -62,13 +60,16 @@ FreeBSD系统的分享链接的预处理部分sed命令存在问题未删除部�
 
 https://github.com/spiritLHLS/one-click-installation-script
 
-如若还有系统bug请到上面仓库的issues反映，脚本原生BUG该仓库issues反映
+如若还有系统bug请到上面仓库的issues反馈，脚本原生BUG该仓库issues反馈
 
 ## 更新
 
-2023.10.09
+2023.11.07
 
-- 修复脚本运行时间计算可能会受到运行的宿主机的时区产生计时错误的问题
+- 修复脚本在archlinux上运行时sysbench可能缺少一个内核补丁的问题，同时加入sysbench的版本判断，对应版本用对应版本的指令
+- 修复脚本在FreeBSD上运行硬盘检测识别不出具体的事件处理数量的问题
+- 优化 ipinfo.io 的信息查询，尽量减少请求的次数
+- 修复脚本在FreeBSD上运行上sed命令可能存在的部分问题，但只修复了很小的一部分，仍旧有大部分sed命令待修复(感觉修复了这个alpine也能测了)
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -198,7 +199,7 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 ## 融合怪功能
 
-- [x] 自由组合测试方向和单项测试以及合集收录第三方脚本
+- [x] 自由组合测试方向和单项测试以及合集收录第三方脚本，融合怪各项测试均自优化修复过，与原始脚本均不同
 - [x] 基础信息查询--感谢[bench.sh](https://github.com/teddysun/across/blob/master/bench.sh)、[superbench.sh](https://www.oldking.net/350.html)、[yabs](https://github.com/masonr/yet-another-bench-script)、[lemonbench](https://github.com/LemonBench/LemonBench)开源，本人整理修改优化，同原版均不一致
 - [x] CPU测试--感谢[lemonbench](https://github.com/LemonBench/LemonBench)开源，本人整理修改优化
 - [x] 内存测试--感谢[lemonbench](https://github.com/LemonBench/LemonBench)开源，本人整理修改优化

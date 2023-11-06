@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.10.09"
+ver="2023.11.07"
 changeLog="VPS融合怪测试(集百家之长)"
 
 # =============== 默认输入设置 ===============
@@ -625,7 +625,8 @@ check_time_zone() {
         if lsof -i:123 | grep -q "ntpd"; then
             echo "Port 123 is already in use. Skipping ntpd command."
         else
-            ntpd -gq
+            # 最多对准时长进行60秒，避免对准时间这个过程耗时过长
+            timeout 60 ntpd -gq
             if which systemctl >/dev/null 2>&1; then
                 systemctl start ntpd
             else
@@ -696,8 +697,9 @@ statistics_of_run-times() {
     COUNT=$(
         curl -4 -ksm1 "https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FspiritLHLS%2Fecs&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=&edge_flat=true" 2>&1 ||
             curl -6 -ksm1 "https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FspiritLHLS%2Fecs&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=&edge_flat=true" 2>&1
-    ) &&
-        TODAY=$(expr "$COUNT" : '.*\s\([0-9]\{1,\}\)\s/.*') && TOTAL=$(expr "$COUNT" : '.*/\s\([0-9]\{1,\}\)\s.*')
+    )
+    TODAY=$(expr "$COUNT" : '.*\s\([0-9]\{1,\}\)\s/.*')
+    TOTAL=$(expr "$COUNT" : '.*/\s\([0-9]\{1,\}\)\s.*')
 }
 
 # =============== 基础系统信息 部分 ===============
@@ -789,7 +791,7 @@ systemInfo_get_os_release() {
         Var_OSReleaseVersion="$(cat /etc/almalinux-release | awk '{print $3,$4,$5,$6,$7}')"
     elif [ -f "/etc/arch-release" ]; then # archlinux
         Var_OSRelease="arch"
-    elif [ -f "/etc/freebsd-update.conf" ] && [ -d "/usr/src" ]; then # freebsd
+    elif [ -f "/etc/freebsd-update.conf" ]; then # freebsd
         Var_OSRelease="freebsd"
     else
         Var_OSRelease="unknown" # 未知系统分支
@@ -1232,7 +1234,7 @@ InstallSysbench() {
     ubuntu | debian) ! apt-get install -y sysbench && apt-get --fix-broken install -y && apt-get install --no-install-recommends -y sysbench ;;
     redhat | centos) (yum -y install epel-release && yum -y install sysbench) || (dnf install epel-release -y && dnf install sysbench -y) ;;
     fedora) dnf -y install sysbench ;;
-    arch) pacman -S --needed --noconfirm sysbench ;;
+    arch) pacman -S --needed --noconfirm sysbench && pacman -S --needed --noconfirm libaio && ldconfig ;;
     freebsd) pkg install -y sysbench ;;
     alpinelinux) echo -e "${Msg_Warning}Sysbench Module not found, installing ..." && echo -e "${Msg_Warning}SysBench Current not support Alpine Linux, Skipping..." && Var_Skip_SysBench="1" ;;
     *) echo "Error: Unknown OS release: $os_release" && exit 1 ;;
@@ -1312,7 +1314,18 @@ Run_SysBench_CPU() {
     # 运行测试
     while [ $count -le $maxtestcount ]; do
         echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t$count/$maxtestcount \c"
-        local TestResult="$(sysbench --test=cpu --num-threads=$1 --cpu-max-prime=10000 --max-requests=1000000 --max-time=$2 run 2>&1)"
+        sysbench_version=$(sysbench --version 2>&1 | awk '{print $2}')
+        local target_version="1.0.20"
+        if [ "${Var_OSRelease}" == "freebsd" ]; then
+            # freebsd系统下测不准待官方修复，故而设置为0
+            local TestResult="events per second: 0"
+        # elif [ "$sysbench_version" == "$target_version" ]; then
+        elif [ "$(printf '%s\n' "$sysbench_version" "$target_version" | sort -V | head -n 1)" == "$target_version" ]; then 
+            # 版本号大于或等于1.0.20使用新命令检测否则使用旧命令检测
+            local TestResult="$(sysbench cpu --threads=$1 --cpu-max-prime=10000 --events=1000000 --time=$2 run 2>&1)"
+        else
+            local TestResult="$(sysbench --test=cpu --num-threads=$1 --cpu-max-prime=10000 --max-requests=1000000 --max-time=$2 run 2>&1)"
+        fi
         local TestScore="$(echo ${TestResult} | grep -oE "events per second: [0-9]+" | grep -oE "[0-9]+")"
         if [ -z "$TestScore" ]; then
             TestScore=$(echo "${TestResult}" | grep -oE "total number of events:\s+[0-9]+" | awk '{print $NF}' | awk -v time="$(echo "${TestResult}" | grep -oE "total time:\s+[0-9.]+[a-z]*" | awk '{print $NF}')" '{printf "%.2f\n", $0 / time}')
@@ -1855,7 +1868,7 @@ Run_DiskTest_DD() {
     sleep 1
     # 正式写测试
     dd if=/dev/zero of=/.tmp_LBench/DiskTest/$1 bs=$2 count=$3 oflag=direct 2>${Var_DiskTestResultFile}
-    local DiskTest_WriteSpeed_ResultRAW="$(cat ${Var_DiskTestResultFile} | grep -oE "[0-9]{1,4} kB/s|[0-9]{1,4}.[0-9]{1,2} kB/s|[0-9]{1,4} KB/s|[0-9]{1,4}.[0-9]{1,2} KB/s|[0-9]{1,4} MB/s|[0-9]{1,4}.[0-9]{1,2} MB/s|[0-9]{1,4} GB/s|[0-9]{1,4}.[0-9]{1,2} GB/s|[0-9]{1,4} TB/s|[0-9]{1,4}.[0-9]{1,2} TB/s|[0-9]{1,4} kB/秒|[0-9]{1,4}.[0-9]{1,2} kB/秒|[0-9]{1,4} KB/秒|[0-9]{1,4}.[0-9]{1,2} KB/秒|[0-9]{1,4} MB/秒|[0-9]{1,4}.[0-9]{1,2} MB/秒|[0-9]{1,4} GB/秒|[0-9]{1,4}.[0-9]{1,2} GB/秒|[0-9]{1,4} TB/秒|[0-9]{1,4}.[0-9]{1,2} TB/秒")"
+    local DiskTest_WriteSpeed_ResultRAW="$(cat ${Var_DiskTestResultFile} | grep -oE "[0-9]{1,4} kB/s|[0-9]{1,4}.[0-9]{1,2} kB/s|[0-9]{1,4} KB/s|[0-9]{1,4}.[0-9]{1,2} KB/s|[0-9]{1,4} MB/s|[0-9]{1,4}.[0-9]{1,2} MB/s|[0-9]{1,4} GB/s|[0-9]{1,4}.[0-9]{1,2} GB/s|[0-9]{1,4} TB/s|[0-9]{1,4}.[0-9]{1,2} TB/s|[0-9]{1,4} kB/秒|[0-9]{1,4}.[0-9]{1,2} kB/秒|[0-9]{1,4} KB/秒|[0-9]{1,4}.[0-9]{1,2} KB/秒|[0-9]{1,4} MB/秒|[0-9]{1,4}.[0-9]{1,2} MB/秒|[0-9]{1,4} GB/秒|[0-9]{1,4}.[0-9]{1,2} GB/秒|[0-9]{1,4} TB/秒|[0-9]{1,4}.[0-9]{1,2} TB/秒|[0-9]{1,4} bytes/sec")"
     DiskTest_WriteSpeed="$(echo "${DiskTest_WriteSpeed_ResultRAW}" | sed "s/秒/s/")"
     local DiskTest_WriteTime_ResultRAW="$(cat ${Var_DiskTestResultFile} | grep -oE "[0-9]{1,}.[0-9]{1,} s|[0-9]{1,}.[0-9]{1,} s|[0-9]{1,}.[0-9]{1,} 秒|[0-9]{1,}.[0-9]{1,} 秒")"
     DiskTest_WriteTime="$(echo ${DiskTest_WriteTime_ResultRAW} | awk '{print $1}')"
@@ -1879,7 +1892,7 @@ Run_DiskTest_DD() {
     sleep 0.5
     # 正式读测试
     dd if=/.tmp_LBench/DiskTest/$1 of=/dev/null bs=$2 count=$3 iflag=direct 2>${Var_DiskTestResultFile}
-    local DiskTest_ReadSpeed_ResultRAW="$(cat ${Var_DiskTestResultFile} | grep -oE "[0-9]{1,4} kB/s|[0-9]{1,4}.[0-9]{1,2} kB/s|[0-9]{1,4} KB/s|[0-9]{1,4}.[0-9]{1,2} KB/s|[0-9]{1,4} MB/s|[0-9]{1,4}.[0-9]{1,2} MB/s|[0-9]{1,4} GB/s|[0-9]{1,4}.[0-9]{1,2} GB/s|[0-9]{1,4} TB/s|[0-9]{1,4}.[0-9]{1,2} TB/s|[0-9]{1,4} kB/秒|[0-9]{1,4}.[0-9]{1,2} kB/秒|[0-9]{1,4} KB/秒|[0-9]{1,4}.[0-9]{1,2} KB/秒|[0-9]{1,4} MB/秒|[0-9]{1,4}.[0-9]{1,2} MB/秒|[0-9]{1,4} GB/秒|[0-9]{1,4}.[0-9]{1,2} GB/秒|[0-9]{1,4} TB/秒|[0-9]{1,4}.[0-9]{1,2} TB/秒")"
+    local DiskTest_ReadSpeed_ResultRAW="$(cat ${Var_DiskTestResultFile} | grep -oE "[0-9]{1,4} kB/s|[0-9]{1,4}.[0-9]{1,2} kB/s|[0-9]{1,4} KB/s|[0-9]{1,4}.[0-9]{1,2} KB/s|[0-9]{1,4} MB/s|[0-9]{1,4}.[0-9]{1,2} MB/s|[0-9]{1,4} GB/s|[0-9]{1,4}.[0-9]{1,2} GB/s|[0-9]{1,4} TB/s|[0-9]{1,4}.[0-9]{1,2} TB/s|[0-9]{1,4} kB/秒|[0-9]{1,4}.[0-9]{1,2} kB/秒|[0-9]{1,4} KB/秒|[0-9]{1,4}.[0-9]{1,2} KB/秒|[0-9]{1,4} MB/秒|[0-9]{1,4}.[0-9]{1,2} MB/秒|[0-9]{1,4} GB/秒|[0-9]{1,4}.[0-9]{1,2} GB/秒|[0-9]{1,4} TB/秒|[0-9]{1,4}.[0-9]{1,2} TB/秒|[0-9]{1,4} bytes/sec")"
     DiskTest_ReadSpeed="$(echo "${DiskTest_ReadSpeed_ResultRAW}" | sed "s/s/s/")"
     local DiskTest_ReadTime_ResultRAW="$(cat ${Var_DiskTestResultFile} | grep -oE "[0-9]{1,}.[0-9]{1,} s|[0-9]{1,}.[0-9]{1,} s|[0-9]{1,}.[0-9]{1,} 秒|[0-9]{1,}.[0-9]{1,} 秒")"
     DiskTest_ReadTime="$(echo ${DiskTest_ReadTime_ResultRAW} | awk '{print $1}')"
@@ -2119,23 +2132,58 @@ check_ip_info_by_ipinfo() {
     # ipinfo.io
     rm -rf /tmp/ipinfo
     # 获取IPv4的asn、city、region、country
-    local ipv4_asn=$(curl -ksL4m6 -A Mozilla ipinfo.io/org 2>/dev/null)
-    if [ "$?" -ne 0 ] || echo "$ipv4_asn" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL" >/dev/null 2>&1; then
-        local ipv4_asn_info="None"
-        local ipv4_location="None"
-    else
-        local ipv4_city=$(curl -ksL4m6 -A Mozilla ipinfo.io/city 2>/dev/null)
-        local ipv4_region=$(curl -ksL4m6 -A Mozilla ipinfo.io/region 2>/dev/null)
-        local ipv4_country=$(curl -ksL4m6 -A Mozilla ipinfo.io/country 2>/dev/null)
-        if [ -n "$ipv4_asn" ] && [ -n "$ipv4_city" ] && [ -n "$ipv4_country" ]; then
-            local ipv4_asn_info="${ipv4_asn}"
-            local ipv4_location="${ipv4_city} / ${ipv4_region} / ${ipv4_country}"
-        elif [[ -n $ipv4_asn && -n $ipv4_city && -n $ipv4_region ]]; then
-            local ipv4_asn_info="${ipv4_asn}"
-            local ipv4_location="${ipv4_city} / ${ipv4_region}"
-        else
+    # 通过纯curl获取
+    local ip_info=$(curl -s http://ipinfo.io 2>/dev/null)
+    if [ $? -eq 0 ]; then
+        local ip=$(echo "$ip_info" | grep -o '"ip": "[^"]*' | cut -d'"' -f4)
+        local city=$(echo "$ip_info" | grep -o '"city": "[^"]*' | cut -d'"' -f4)
+        local region=$(echo "$ip_info" | grep -o '"region": "[^"]*' | cut -d'"' -f4)
+        local country=$(echo "$ip_info" | grep -o '"country": "[^"]*' | cut -d'"' -f4)
+        local asn=$(echo "$ip_info" | grep -o '"org": "[^"]*' | cut -d'"' -f4)
+        if [ -z "$asn" ] || echo "$asn" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL" >/dev/null 2>&1; then
             local ipv4_asn_info="None"
             local ipv4_location="None"
+        else
+            local ipv4_city=$(echo "$city")
+            local ipv4_region=$(echo "$region")
+            local ipv4_country=$(echo "$country")
+            if [ -n "$asn" ] && [ -n "$ipv4_city" ] && [ -n "$ipv4_country" ]; then
+                local ipv4_asn_info="${asn}"
+                local ipv4_location="${ipv4_city} / ${ipv4_region} / ${ipv4_country}"
+            elif [ -n "$asn" ] && [ -n "$ipv4_city" ] && [ -z "$ipv4_region" ]; then
+                local ipv4_asn_info="${asn}"
+                local ipv4_location="${ipv4_city} / ${ipv4_region}"
+            elif [[ -n $ipv4_asn && -n $ipv4_city ]]; then
+                local ipv4_asn_info="${ipv4_asn}"
+                local ipv4_location="${ipv4_city}"
+            else
+                local ipv4_asn_info="None"
+                local ipv4_location="None"
+            fi
+        fi
+    else
+        # 通过模拟浏览器请求获取
+        local ipv4_asn=$(curl -ksL4m6 -A Mozilla ipinfo.io/org 2>/dev/null)
+        if [ "$?" -ne 0 ] || echo "$ipv4_asn" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL" >/dev/null 2>&1; then
+            local ipv4_asn_info="None"
+            local ipv4_location="None"
+        else
+            local ipv4_city=$(curl -ksL4m6 -A Mozilla ipinfo.io/city 2>/dev/null)
+            local ipv4_region=$(curl -ksL4m6 -A Mozilla ipinfo.io/region 2>/dev/null)
+            local ipv4_country=$(curl -ksL4m6 -A Mozilla ipinfo.io/country 2>/dev/null)
+            if [ -n "$ipv4_asn" ] && [ -n "$ipv4_city" ] && [ -n "$ipv4_country" ]; then
+                local ipv4_asn_info="${ipv4_asn}"
+                local ipv4_location="${ipv4_city} / ${ipv4_region} / ${ipv4_country}"
+            elif [[ -n $ipv4_asn && -n $ipv4_city && -n $ipv4_region ]]; then
+                local ipv4_asn_info="${ipv4_asn}"
+                local ipv4_location="${ipv4_city} / ${ipv4_region}"
+            elif [[ -n $ipv4_asn && -n $ipv4_city ]]; then
+                local ipv4_asn_info="${ipv4_asn}"
+                local ipv4_location="${ipv4_city}"
+            else
+                local ipv4_asn_info="None"
+                local ipv4_location="None"
+            fi
         fi
     fi
     # 返回结果
@@ -2341,7 +2389,7 @@ get_system_info() {
                 uptime | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//'
             )
         fi
-    elif [ "${Var_OSRelease}" = "freebsd" ]; then
+    elif [ "${Var_OSRelease}" == "freebsd" ]; then
         cname=$($sysctl_path -n hw.model)
         cores=$($sysctl_path -n hw.ncpu)
         freq=$($sysctl_path -n dev.cpu.0.freq 2>/dev/null || echo "")
@@ -3243,7 +3291,7 @@ ipcheck() {
     rm -rf /tmp/ip_quality_*
 }
 
-cdn_urls=("https://cdn0.spiritlhl.top/" "http://cdn3.spiritlhl.net/" "http://cdn1.spiritlhl.net/" "https://ghproxy.com/" "http://cdn2.spiritlhl.net/")
+cdn_urls=("https://cdn.spiritlhl.workers.dev/" "https://cdn3.spiritlhl.net/" "https://cdn1.spiritlhl.net/" "https://ghproxy.com/" "https://cdn2.spiritlhl.net/")
 ST="kIhnZkwPN4zq5K0C6fO9WOLY.MTY5MDQxOTg2MDUyNw"
 head='key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c'
 speedtest_ver="1.2.0"
@@ -3841,17 +3889,23 @@ rm_script() {
 build_text() {
     cd $myvar >/dev/null 2>&1
     if { [ -n "${StartInput}" ] && [ "${StartInput}" -eq 1 ]; } || { [ -n "${StartInput}" ] && [ "${StartInput}" -eq 2 ]; } || { [ -n "${StartInput1}" ] && [ "${StartInput1}" -ge 1 ] && [ "${StartInput1}" -le 4 ]; }; then
-        sed -i -e '1,/-------------------- A Bench Script By spiritlhl ---------------------/d' \
-            -e 's/\x1B\[[0-9;]\+[a-zA-Z]//g' \
-            -e '/^$/d' test_result.txt
-        sed -i -e '/Preparing system for disk tests.../d' \
-            -e '/Generating fio test file.../d' \
-            -e '/Running fio random mixed R+W disk test with 4k block size.../d' \
-            -e '/Running fio random mixed R+W disk test with 64k block size.../d' \
-            -e '/Running fio random mixed R+W disk test with 512k block size.../d' \
-            -e '/Running fio random mixed R+W disk test with 1m block size.../d' test_result.txt
-        tr '\r' '\n' <test_result.txt >test_result1.txt && mv test_result1.txt test_result.txt
-        sed -i -e '/^$/d' -e '/1\/1/d' -e '/Block\s*->/d' -e '/s)\s*->/d' -e '/^该运营商\|^测速中/d' test_result.txt
+        sed -i -e '1,/-------------------- A Bench Script By spiritlhl ---------------------/d' test_result.txt
+        # 下面这个删除在FreeBSD中也删的不干净
+        sed -i -e 's/\x1B\[[0-9;]\+[a-zA-Z]//g' test_result.txt
+        sed -i -e '/^$/d' test_result.txt
+        sed -i -e '/Preparing system for disk tests.../d' test_result.txt
+        sed -i -e '/Generating fio test file.../d' test_result.txt
+        sed -i -e '/Running fio random mixed R+W disk test with 4k block size.../d' test_result.txt
+        sed -i -e '/Running fio random mixed R+W disk test with 64k block size.../d' test_result.txt
+        sed -i -e '/Running fio random mixed R+W disk test with 512k block size.../d' test_result.txt
+        sed -i -e '/Running fio random mixed R+W disk test with 1m block size.../d' test_result.txt
+        tr '\r' '\n' <test_result.txt >test_result1.txt
+        mv test_result1.txt test_result.txt
+        sed -i -e '/^$/d' test_result.txt
+        sed -i -e '/1\/1/d' test_result.txt
+        sed -i -e '/Block\s*->/d' test_result.txt
+        sed -i -e '/s)\s*->/d' test_result.txt
+        sed -i -e '/^该运营商\|^测速中/d' test_result.txt
         if [ -s test_result.txt ]; then
             if grep -q -- "---------------------磁盘fio读写测试--感谢yabs开源----------------------" "test_result.txt"; then
                 sed -i '/---------------------磁盘fio读写测试--感谢yabs开源----------------------/a Block Size | 4k            (IOPS) | 64k           (IOPS)' "test_result.txt"
