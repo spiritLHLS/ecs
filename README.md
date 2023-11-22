@@ -69,13 +69,10 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2023.11.07
+2023.11.22
 
-- 修复脚本在archlinux上运行时sysbench可能缺少一个内核补丁的问题，同时加入sysbench的版本判断，对应版本用对应版本的指令
-- 修复脚本在FreeBSD上运行硬盘检测识别不出具体的事件处理数量的问题
-- 优化 ipinfo.io 的信息查询，尽量减少请求的次数
-- 优化解决脚本在时间对准过程中可能因为轮询节点耗时过长的问题，限时对准时间这个步骤最多耗时60秒
-- 修复脚本在FreeBSD上运行上sed命令可能存在的部分问题，但只修复了很小的一部分，仍旧有大部分sed命令待修复(感觉修复了这个alpine也能测了)
+- 修复可能检测私网IPV6失灵的情况，完善检测逻辑
+- 修复可能宿主机内可能绑定不止一个IPV6地址的情况，只测试地址最长的公网IPV6地址
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
