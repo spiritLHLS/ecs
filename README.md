@@ -69,10 +69,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2023.11.22
+2023.11.24
 
-- 修复可能检测私网IPV6失灵的情况，完善检测逻辑
-- 修复可能宿主机内可能绑定不止一个IPV6地址的情况，只测试地址最长的公网IPV6地址
+- 修复pip和pip3安装pystun3或pystun中可能出现的问题，增加修复安装的命令
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

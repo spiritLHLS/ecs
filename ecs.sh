@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.11.22"
+ver="2023.11.24"
 changeLog="VPS融合怪测试(集百家之长)"
 
 # =============== 默认输入设置 ===============
@@ -416,6 +416,9 @@ checkpystun() {
             _yellow "Installing pystun3"
             if ! "$pip_command" install -q pystun3 >/dev/null 2>&1; then
                 "$pip_command" install -q pystun3
+                if [ $? -ne 0 ]; then
+                    "$pip_command" install -q pystun3 --break-system-packages
+                fi
             fi
         fi
     fi
@@ -425,6 +428,9 @@ checkpystun() {
             _yellow "Installing pystun"
             if ! "$pip_command" install -q pystun >/dev/null 2>&1; then
                 "$pip_command" install -q pystun
+                if [ $? -ne 0 ]; then
+                    "$pip_command" install -q pystun --break-system-packages
+                fi
             fi
         fi
     fi
