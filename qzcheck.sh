@@ -540,7 +540,7 @@ check_and_cat_file() {
 }
 
 head='key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c'
-ST="kIhnZkwPN4zq5K0C6fO9WOLY.MTY5MDQxOTg2MDUyNw"
+ST="OvwKx5qgJtf7PZgCKbtyojSU.MTcwMTUxNzY1MTgwMw"
 
 translate_status() {
     if [[ "$1" == "false" ]]; then
