@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.11.24"
+ver="2023.12.02"
 changeLog="VPS融合怪测试(集百家之长)"
 
 # =============== 默认输入设置 ===============
@@ -464,7 +464,10 @@ pre_download() {
     for file in "$@"; do
         case $file in
         sysbench)
-            wget -O $TEMP_DIR/sysbench.zip "${cdn_success_url}https://github.com/akopytov/sysbench/archive/1.0.20.zip"
+            if ! wget -O $TEMP_DIR/sysbench.zip "${cdn_success_url}https://github.com/akopytov/sysbench/archive/1.0.20.zip"; then
+                echo "wget failed, trying with curl"
+                curl -Lk -o $TEMP_DIR/sysbench.zip "${cdn_success_url}https://github.com/akopytov/sysbench/archive/1.0.20.zip"
+            fi
             unzip $TEMP_DIR/sysbench.zip -d ${TEMP_DIR}
             ;;
         dp)

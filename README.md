@@ -69,9 +69,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2023.11.24
+2023.12.02
 
-- 修复pip和pip3安装pystun3或pystun中可能出现的问题，增加修复安装的命令
+- 增加sysbench编译安装中可能出现的证书校验异常问题，若首次证书请求失败，则尝试忽略证书进行请求
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
