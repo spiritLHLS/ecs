@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.12.02"
+ver="2023.12.03"
 changeLog="VPS融合怪测试(集百家之长)"
 
 # =============== 默认输入设置 ===============
@@ -26,37 +26,107 @@ else
     export LANGUAGE="$utf8_locale"
     _green "Locale set to $utf8_locale"
 fi
+# menu_mode=true
+# swhc_mode=true
+# if [ $# -eq 3 ]; then
+#     main_menu_option="$1"
+#     sub_menu_option="$2"
+#     sub_of_sub_menu_option="$3"
+#     # 使用正则表达式检查参数格式
+#     if [[ $main_menu_option =~ ^[0-9]+(\.[0-9]{1,4})?$ ||
+#         $sub_menu_option =~ ^[0-9]+(\.[0-9]{1,4})?$ ||
+#         $sub_of_sub_menu_option =~ ^[0-9]+(\.[0-9]{1,4})?$ ]]; then
+#         swhc_mode=false
+#     else
+#         echo "参数格式不符合要求，必须是纯数字或数字和小数点的组合，小数点只能有4个或没有。"
+#         exit 1
+#     fi
+#     if [[ $main_menu_option == *.* ]]; then
+#         target_ipv4="$main_menu_option"
+#     fi
+#     if [[ $sub_menu_option == *.* ]]; then
+#         target_ipv4="$sub_menu_option"
+#     fi
+#     if [[ $sub_of_sub_menu_option == *.* ]]; then
+#         target_ipv4="$sub_of_sub_menu_option"
+#     fi
+#     if [ -n "$target_ipv4" ]; then
+#         test_area_local=("你本地的IPV4地址")
+#         test_ip_local=("$target_ipv4")
+#     fi
+#     menu_mode=false
+# fi
+# break_status=true
 menu_mode=true
 swhc_mode=true
-if [ $# -eq 3 ]; then
-    main_menu_option="$1"
-    sub_menu_option="$2"
-    sub_of_sub_menu_option="$3"
-    # 使用正则表达式检查参数格式
-    if [[ $main_menu_option =~ ^[0-9]+(\.[0-9]{1,4})?$ ||
-        $sub_menu_option =~ ^[0-9]+(\.[0-9]{1,4})?$ ||
-        $sub_of_sub_menu_option =~ ^[0-9]+(\.[0-9]{1,4})?$ ]]; then
-        swhc_mode=false
-    else
-        echo "参数格式不符合要求，必须是纯数字或数字和小数点的组合，小数点只能有4个或没有。"
-        exit 1
-    fi
-    if [[ $main_menu_option == *.* ]]; then
-        target_ipv4="$main_menu_option"
-    fi
-    if [[ $sub_menu_option == *.* ]]; then
-        target_ipv4="$sub_menu_option"
-    fi
-    if [[ $sub_of_sub_menu_option == *.* ]]; then
-        target_ipv4="$sub_of_sub_menu_option"
-    fi
-    if [ -n "$target_ipv4" ]; then
-        test_area_local=("你本地的IPV4地址")
-        test_ip_local=("$target_ipv4")
-    fi
-    menu_mode=false
-fi
+target_ipv4=""
+route_location=""
+main_menu_option=0
+sub_menu_option=0
+sub_of_sub_menu_option=0
 break_status=true
+m_params=()
+# 解析命令行选项
+while getopts ":i:m:r:h" opt; do
+    case $opt in
+        i)
+            # 处理 -i 选项，获取IPv4地址
+            target_ipv4="$OPTARG"
+        ;;
+        m)
+            # 处理 -m 选项，关闭菜单模式
+            menu_mode=false
+            # 保存 -m 选项后的参数
+            m_params=("$OPTARG")
+            # 设置最大参数数量
+            max_params=3
+            param_count=1
+            while [ $# -gt 0 ] && [[ "$1" != -* ]] && [ "$param_count" -lt "$max_params" ]; do
+                m_params+=("$1")
+                shift
+                param_count=$((param_count + 1))
+            done
+        ;;
+        r)
+            # 处理 -r 选项，选择测试回程路由的出口地址
+            route_location="$OPTARG"
+        ;;
+        h)
+            echo "-m 可指定原本menu中的对应选项，最多支持三层选择，例如执行 bash ecs.sh 5 1 1 将选择主菜单第5选项下的第1选项下的子选项1的脚本执行"
+            echo "   (可缺省仅指定一个参数，如 -m 1 仅指定执行融合怪完全体，执行 -m 1 0 以及 -m 1 0 0 都是指定执行融合怪完全体)"
+            echo "-i 可指定回程路由测试中的目标IPV4地址，可通过 ip.sb ipinfo.io 等网站获取本地IPV4地址后指定"
+            echo "-r 可指定回程路由测试中的目标IPV4地址，可选 b g s c 分别对应 北京、广州、上海、成都，如 -r g 指定测试广州回程"
+            # 更多选项待添加
+        ;;
+        \?)
+            echo "无效的选项: -$OPTARG"
+            exit 1
+        ;;
+        :)
+            echo "选项 -$OPTARG 需要参数."
+            exit 1
+        ;;
+    esac
+done
+if [ -n "$target_ipv4" ]; then
+    test_area_local=("你本地的IPV4地址")
+    test_ip_local=("$target_ipv4")
+fi
+# 在menu_mode为false时才打印信息
+if [ "$menu_mode" = false ]; then
+    echo "target_ipv4: $target_ipv4"
+    echo "menu_mode: $menu_mode"
+    echo "route_location: $route_location"
+    # 读取 -m 选项后的参数
+    main_menu_option=${m_params[0]:-0}
+    sub_menu_option=${m_params[1]:-0}
+    sub_of_sub_menu_option=${m_params[2]:-0}
+    echo "main_menu_option: $main_menu_option"
+    echo "sub_menu_option: $sub_menu_option"
+    echo "sub_of_sub_menu_option: $sub_of_sub_menu_option"
+    sleep 3
+fi
+
 
 # =============== 自定义基础参数 ==============
 shorturl=""
@@ -3453,10 +3523,14 @@ fscarmen_route_script() {
     if [ "$swhc_mode" = false ]; then
         local test_area=("${test_area_local[@]}")
         local test_ip=("${test_ip_local[@]}")
+    elif [ -n "$route_location" ]; then
+        eval "local test_area=(\"\${test_area_$route_location[@]}\")"
+        eval "local test_ip=(\"\${test_ip_$route_location[@]}\")"
     else
         local test_area=("${!1}")
         local test_ip=("${!2}")
     fi
+    echo "$test_area $test_ip" > /root/log
     local ip4=$(echo "$IPV4" | tr -d '\n')
     local ip6=$(echo "$IPV6" | tr -d '\n')
     if [[ ! -z "${ip4}" ]]; then
@@ -3469,7 +3543,7 @@ fscarmen_route_script() {
             "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >>/tmp/ip_temp
             if [ ! -s "/tmp/ip_temp" ] || grep -q "http: 403" /tmp/ip_temp || grep -q "error" /tmp/ip_temp 2>/dev/null; then
                 rm -rf /tmp/ip_temp
-                RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null)
+                RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip[a]}" 2>/dev/null)
                 PART_1=$(echo "$RESULT" | grep '^[0-9]\{1,2\}[ ]\+[0-9a-f]' | awk '{$1="";$2="";print}' | sed "s@^[ ]\+@@g")
                 PART_2=$(echo "$RESULT" | grep '\(.*ms\)\{3\}' | sed 's/.* \([0-9*].*ms\).*ms.*ms/\1/g')
                 SPACE=' '
@@ -4555,7 +4629,9 @@ head_script() {
     echo "#############################################################"
     echo ""
     _green "脚本当天运行次数:${TODAY}，累计运行次数:${TOTAL}"
-    _green "请选择你接下来要使用的脚本"
+    if [ "$menu_mode" = true ]; then
+        _green "请选择你接下来要使用的脚本"
+    fi
 }
 
 start_script_options() {

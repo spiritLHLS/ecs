@@ -69,10 +69,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2023.12.02
+2023.12.03
 
-- 增加sysbench编译安装中可能出现的证书校验异常问题，若首次证书请求失败，则尝试忽略证书进行请求
-- 更换分享链接保存的宿主机
+- 更新参数模式
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -102,26 +101,30 @@ bash <(wget -qO- bash.spiritlhl.net/ecs)
 ### 无交互形式-参数模式
 
 ```bash
-curl -L https://gitlab.com/spiritysdx/za/-/raw/main/ecs.sh -o ecs.sh && chmod +x ecs.sh && bash ecs.sh 1 0 0
+curl -L https://gitlab.com/spiritysdx/za/-/raw/main/ecs.sh -o ecs.sh && chmod +x ecs.sh && bash ecs.sh -m 1
 ```
 
 或
 
 ```bash
-curl -L https://github.com/spiritLHLS/ecs/raw/main/ecs.sh -o ecs.sh && chmod +x ecs.sh && bash ecs.sh 1 0 0
+curl -L https://github.com/spiritLHLS/ecs/raw/main/ecs.sh -o ecs.sh && chmod +x ecs.sh && bash ecs.sh -m 1
 ```
 
 或
 
 ```bash
-bash ecs.sh 1 0 0
+bash ecs.sh -m 1
 ```
 
-上述命令默认执行融合怪全体，输入的三个参数数字是对应的选项序号。
+以下为参数说明：
 
-```参数1 参数2 参数3```对应有交互模式中你依次输入的选项序号，如果有参数没用到留空或者写0即可。
+```-m```可指定原本menu中的对应选项，最多支持三层选择，例如执行```bash ecs.sh 5 1 1```将选择主菜单第5选项下的第1选项下的子选项1的脚本执行
 
-```参数2```可传入你本地的IPV4地址，将使用你本地IPV4作为回程路由测试的目标地址。
+   (可缺省仅指定一个参数，如```-m 1```仅指定执行融合怪完全体，执行```-m 1 0```以及```-m 1 0 0```都是指定执行融合怪完全体)
+
+```-i```可指定回程路由测试中的目标IPV4地址，可通过 ip.sb ipinfo.io 等网站获取本地IPV4地址后指定
+
+```-r```可指定回程路由测试中的目标IPV4地址，可选```b``` ```g``` ```s``` ```c``` 分别对应```北京、广州、上海、成都```，如```-r b```指定测试北京回程(三网)
 
 本地的IPV4地址可使用 ip.sb ipinfo.io nstool.netease.com cip.cc 之类的网站查询
 
