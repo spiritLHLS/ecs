@@ -26,37 +26,6 @@ else
     export LANGUAGE="$utf8_locale"
     _green "Locale set to $utf8_locale"
 fi
-# menu_mode=true
-# swhc_mode=true
-# if [ $# -eq 3 ]; then
-#     main_menu_option="$1"
-#     sub_menu_option="$2"
-#     sub_of_sub_menu_option="$3"
-#     # 使用正则表达式检查参数格式
-#     if [[ $main_menu_option =~ ^[0-9]+(\.[0-9]{1,4})?$ ||
-#         $sub_menu_option =~ ^[0-9]+(\.[0-9]{1,4})?$ ||
-#         $sub_of_sub_menu_option =~ ^[0-9]+(\.[0-9]{1,4})?$ ]]; then
-#         swhc_mode=false
-#     else
-#         echo "参数格式不符合要求，必须是纯数字或数字和小数点的组合，小数点只能有4个或没有。"
-#         exit 1
-#     fi
-#     if [[ $main_menu_option == *.* ]]; then
-#         target_ipv4="$main_menu_option"
-#     fi
-#     if [[ $sub_menu_option == *.* ]]; then
-#         target_ipv4="$sub_menu_option"
-#     fi
-#     if [[ $sub_of_sub_menu_option == *.* ]]; then
-#         target_ipv4="$sub_of_sub_menu_option"
-#     fi
-#     if [ -n "$target_ipv4" ]; then
-#         test_area_local=("你本地的IPV4地址")
-#         test_ip_local=("$target_ipv4")
-#     fi
-#     menu_mode=false
-# fi
-# break_status=true
 menu_mode=true
 swhc_mode=true
 target_ipv4=""
@@ -553,7 +522,7 @@ pre_download() {
             curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh" -o $TEMP_DIR/media_lmc_check.sh && chmod 777 $TEMP_DIR/media_lmc_check.sh
             ;;
         besttrace)
-            curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/fscarmen/tools/main/besttrace/${BESTTRACE_FILE}" -o $TEMP_DIR/$BESTTRACE_FILE && chmod +x $TEMP_DIR/$BESTTRACE_FILE
+            curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/besttrace/2021/${BESTTRACE_FILE}" -o $TEMP_DIR/$BESTTRACE_FILE && chmod +x $TEMP_DIR/$BESTTRACE_FILE
             ;;
         nexttrace)
             NEXTTRACE_VERSION=$(curl -sSL "https://api.github.com/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}') && curl -sL -k "${cdn_success_url}https://github.com/nxtrace/Ntrace-core/releases/download/${NEXTTRACE_VERSION}/${NEXTTRACE_FILE}" -o $TEMP_DIR/$NEXTTRACE_FILE && chmod +x $TEMP_DIR/$NEXTTRACE_FILE
@@ -3524,13 +3493,14 @@ fscarmen_route_script() {
         local test_area=("${test_area_local[@]}")
         local test_ip=("${test_ip_local[@]}")
     elif [ -n "$route_location" ]; then
-        eval "local test_area=(\"\${test_area_$route_location[@]}\")"
-        eval "local test_ip=(\"\${test_ip_$route_location[@]}\")"
+        local test_area
+        local test_ip
+        declare -n test_area="test_area_$route_location"
+        declare -n test_ip="test_ip_$route_location"
     else
         local test_area=("${!1}")
         local test_ip=("${!2}")
     fi
-    echo "$test_area $test_ip" > /root/log
     local ip4=$(echo "$IPV4" | tr -d '\n')
     local ip6=$(echo "$IPV6" | tr -d '\n')
     if [[ ! -z "${ip4}" ]]; then
@@ -3543,7 +3513,8 @@ fscarmen_route_script() {
             "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >>/tmp/ip_temp
             if [ ! -s "/tmp/ip_temp" ] || grep -q "http: 403" /tmp/ip_temp || grep -q "error" /tmp/ip_temp 2>/dev/null; then
                 rm -rf /tmp/ip_temp
-                RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip[a]}" 2>/dev/null)
+                RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip[a]}" --color 2>/dev/null)
+                RESULT=$(echo "$RESULT" | grep '^[0-9 ]')
                 PART_1=$(echo "$RESULT" | grep '^[0-9]\{1,2\}[ ]\+[0-9a-f]' | awk '{$1="";$2="";print}' | sed "s@^[ ]\+@@g")
                 PART_2=$(echo "$RESULT" | grep '\(.*ms\)\{3\}' | sed 's/.* \([0-9*].*ms\).*ms.*ms/\1/g')
                 SPACE=' '
@@ -3575,7 +3546,8 @@ fscarmen_route_script() {
         _green "依次测试电信/联通/移动经过的地区及线路，核心程序来自nexttrace，请知悉!" >/tmp/ecs/ip.test
         for ((a = 0; a < ${#test_area_6[@]}; a++)); do
             rm -rf /tmp/ip_temp
-            RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip_6[a]}" -g cn 2>/dev/null)
+            RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip_6[a]}" --color 2>/dev/null)
+            RESULT=$(echo "$RESULT" | grep '^[0-9 ]')
             PART_1=$(echo "$RESULT" | grep '^[0-9]\{1,2\}[ ]\+[0-9a-f]' | awk '{$1="";$2="";print}' | sed "s@^[ ]\+@@g")
             PART_2=$(echo "$RESULT" | grep '\(.*ms\)\{3\}' | sed 's/.* \([0-9*].*ms\).*ms.*ms/\1/g')
             SPACE=' '
