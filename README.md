@@ -112,17 +112,25 @@ curl -L https://gitlab.com/spiritysdx/za/-/raw/main/ecs.sh -o ecs.sh && chmod +x
 curl -L https://github.com/spiritLHLS/ecs/raw/main/ecs.sh -o ecs.sh && chmod +x ecs.sh && bash ecs.sh -m 1
 ```
 
-或
+或通过
+
+```
+curl -L https://gitlab.com/spiritysdx/za/-/raw/main/ecs.sh -o ecs.sh && chmod +x ecs.sh
+```
+
+下载文件后使用类似
 
 ```bash
 bash ecs.sh -m 1
 ```
 
+这样的参数命令指定选项执行
+
 以下为参数说明：
 
 ```-m```可指定原本menu中的对应选项，最多支持三层选择，例如执行```bash ecs.sh 5 1 1```将选择主菜单第5选项下的第1选项下的子选项1的脚本执行
 
-   (可缺省仅指定一个参数，如```-m 1```仅指定执行融合怪完全体，执行```-m 1 0```以及```-m 1 0 0```都是指定执行融合怪完全体)
+(可缺省仅指定一个参数，如```-m 1```仅指定执行融合怪完全体，执行```-m 1 0```以及```-m 1 0 0```都是指定执行融合怪完全体)
 
 ```-i```可指定回程路由测试中的目标IPV4地址，可通过 ip.sb ipinfo.io 等网站获取本地IPV4地址后指定
 
