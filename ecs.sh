@@ -66,6 +66,7 @@ while getopts ":i:m:r:h" opt; do
             echo "-i 可指定回程路由测试中的目标IPV4地址，可通过 ip.sb ipinfo.io 等网站获取本地IPV4地址后指定"
             echo "-r 可指定回程路由测试中的目标IPV4地址，可选 b g s c 分别对应 北京、广州、上海、成都，如 -r g 指定测试广州回程"
             # 更多选项待添加
+            exit 1
         ;;
         \?)
             echo "无效的选项: -$OPTARG"
