@@ -21,7 +21,7 @@ current_ipv6=$(curl -s -6 -m 6 ipv6.ip.sb)
 echo ${current_ipv6}
 new_ipv6="${current_ipv6%:*}:3"
 ip addr add ${new_ipv6}/128 dev ${interface}
-sleep 1
+sleep 5
 updated_ipv6=$(curl -s -6 -m 6 ipv6.ip.sb)
 echo ${updated_ipv6}
 ip addr del ${new_ipv6}/128 dev ${interface}
