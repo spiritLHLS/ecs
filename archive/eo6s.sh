@@ -25,6 +25,7 @@ sleep 5
 updated_ipv6=$(curl -s -6 -m 6 ipv6.ip.sb)
 echo ${updated_ipv6}
 ip addr del ${new_ipv6}/128 dev ${interface}
+sleep 5
 final_ipv6=$(curl -s -6 -m 6 ipv6.ip.sb)
 echo ${final_ipv6}
 ipv6_prefixlen=""
@@ -35,7 +36,7 @@ if [ $num_lines -ge 2 ]; then
 else
     ipv6_prefixlen=$(echo "$output" | head -n 1)
 fi
-if [ "$updated_ipv6" == "$current_ipv6" ]; then
+if [ "$updated_ipv6" == "$current_ipv6" ] || [ -n "$updated_ipv6" ]; then
     echo "IPV6 子网掩码: 128"
 else
     echo "IPV6 子网掩码: $ipv6_prefixlen"
