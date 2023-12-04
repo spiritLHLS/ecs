@@ -69,11 +69,10 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2023.12.03
+2023.12.04
 
-- 更新参数模式的指令形式
-- 更新nexttrace的正则匹配
-- 更新besttrace的老版本存档，优先使用besttrace以确保精确度
+- 更新参数模式的部分指令的解析
+- 说明界面增加提供支持的平台的logo和链接
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.12.03"
+ver="2023.12.04"
 changeLog="VPS融合怪测试(集百家之长)"
 
 # =============== 默认输入设置 ===============
@@ -28,8 +28,13 @@ else
 fi
 menu_mode=true
 swhc_mode=true
+test_base=false
+build_text_status=true
+multidisk_status=false
 target_ipv4=""
 route_location=""
+cpu_test_type=""
+disk_test_type=""
 main_menu_option=0
 sub_menu_option=0
 sub_of_sub_menu_option=0
@@ -38,10 +43,6 @@ m_params=()
 # 解析命令行选项
 while getopts ":i:m:r:h" opt; do
     case $opt in
-        i)
-            # 处理 -i 选项，获取IPv4地址
-            target_ipv4="$OPTARG"
-        ;;
         m)
             # 处理 -m 选项，关闭菜单模式
             menu_mode=false
@@ -56,16 +57,46 @@ while getopts ":i:m:r:h" opt; do
                 param_count=$((param_count + 1))
             done
         ;;
+        i)
+            # 处理 -i 选项，获取IPv4地址
+            target_ipv4="$OPTARG"
+            swhc_mode=false
+        ;;
         r)
             # 处理 -r 选项，选择测试回程路由的出口地址
             route_location="$OPTARG"
         ;;
+        # base)
+        #     # 处理 -base 选项，选择仅测试系统信息
+        #     test_base=true
+        # ;;
+        # banup)
+        #     # 处理 -banup 选项，选择不生成分享链接
+        #     build_text_status=flase
+        # ;;
+        # ctype)
+        #     # 处理 -ctype 选项，选择测试使用何种CPU测试程序
+        #     cpu_test_type="$OPTARG"
+        # ;;
+        # dtype)
+        #     # 处理 -dtype 选项，选择测试使用何种硬盘测试程序
+        #     disk_test_type="$OPTARG"
+        # ;;
+        # multidisk)
+        #     # 处理 -multidisk 选项，指定测试多个挂载盘的IO
+        #     multidisk_status=true
+        # ;;
         h)
-            echo "-m 可指定原本menu中的对应选项，最多支持三层选择，例如执行 bash ecs.sh 5 1 1 将选择主菜单第5选项下的第1选项下的子选项1的脚本执行"
-            echo "   (可缺省仅指定一个参数，如 -m 1 仅指定执行融合怪完全体，执行 -m 1 0 以及 -m 1 0 0 都是指定执行融合怪完全体)"
-            echo "-i 可指定回程路由测试中的目标IPV4地址，可通过 ip.sb ipinfo.io 等网站获取本地IPV4地址后指定"
-            echo "-r 可指定回程路由测试中的目标IPV4地址，可选 b g s c 分别对应 北京、广州、上海、成都，如 -r g 指定测试广州回程"
+            echo "-m     可指定原本menu中的选项，最多支持三层选择，例如执行 bash ecs.sh -m 5 1 1 将选择主菜单第5选项下的第1选项下的子选项1的脚本执行"
+            echo "       (可缺省仅指定一个参数，如 -m 1 仅指定执行融合怪完全体，执行 -m 1 0 以及 -m 1 0 0 都是指定执行融合怪完全体)"
+            echo "-i     可指定回程路由测试中的目标IPV4地址，可通过 ip.sb ipinfo.io 等网站获取本地IPV4地址后指定"
+            echo "-r     可指定回程路由测试中的目标IPV4地址，可选 b g s c 分别对应 北京、广州、上海、成都，如 -r g 指定测试广州回程"
             # 更多选项待添加
+            # echo "-base  仅测试基础的系统信息，不测试CPU、硬盘、流媒体、回程路由等"
+            # echo "-banup 强制不生成分享链接，默是生成分享链接"
+            # echo "-ctype 默认使用sysbench测试cpu得分，这里可指定通过何种方式测试cpu，可选 gb4 gb5 gb6 分别对应geekbench的4、5、6版本"
+            # echo "-dtype 指定测试硬盘IO的程序，默认为都使用进行测试，可选 dd fio "
+            # echo "-multidisk 可指定测试多个挂载盘的IO，注意这不会测试系统盘"
             exit 1
         ;;
         \?)
@@ -3491,8 +3522,8 @@ fscarmen_route_script() {
     echo -e "---------------------回程路由--感谢fscarmen开源及PR---------------------"
     rm -f /tmp/ecs/ip.test
     if [ "$swhc_mode" = false ]; then
-        local test_area=("${test_area_local[@]}")
-        local test_ip=("${test_ip_local[@]}")
+        local test_area=("你本地的IPV4地址")
+        local test_ip=("$target_ipv4")
     elif [ -n "$route_location" ]; then
         local test_area
         local test_ip
