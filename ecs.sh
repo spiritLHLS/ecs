@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.12.04"
+ver="2023.12.07"
 changeLog="VPS融合怪测试(集百家之长)"
 
 # =============== 默认输入设置 ===============
@@ -41,7 +41,7 @@ sub_of_sub_menu_option=0
 break_status=true
 m_params=()
 # 解析命令行选项
-while getopts ":i:m:r:h" opt; do
+while getopts ":m:i:r:bh" opt; do
     case $opt in
         m)
             # 处理 -m 选项，关闭菜单模式
@@ -66,10 +66,10 @@ while getopts ":i:m:r:h" opt; do
             # 处理 -r 选项，选择测试回程路由的出口地址
             route_location="$OPTARG"
         ;;
-        # base)
-        #     # 处理 -base 选项，选择仅测试系统信息
-        #     test_base=true
-        # ;;
+        b)
+            # 处理 -b 选项，选择仅测试系统信息
+            test_base=true
+        ;;
         # banup)
         #     # 处理 -banup 选项，选择不生成分享链接
         #     build_text_status=flase
@@ -91,8 +91,8 @@ while getopts ":i:m:r:h" opt; do
             echo "       (可缺省仅指定一个参数，如 -m 1 仅指定执行融合怪完全体，执行 -m 1 0 以及 -m 1 0 0 都是指定执行融合怪完全体)"
             echo "-i     可指定回程路由测试中的目标IPV4地址，可通过 ip.sb ipinfo.io 等网站获取本地IPV4地址后指定"
             echo "-r     可指定回程路由测试中的目标IPV4地址，可选 b g s c 分别对应 北京、广州、上海、成都，如 -r g 指定测试广州回程"
+            echo "-b     仅测试基础的系统信息，不测试CPU、硬盘、流媒体、回程路由等"
             # 更多选项待添加
-            # echo "-base  仅测试基础的系统信息，不测试CPU、硬盘、流媒体、回程路由等"
             # echo "-banup 强制不生成分享链接，默是生成分享链接"
             # echo "-ctype 默认使用sysbench测试cpu得分，这里可指定通过何种方式测试cpu，可选 gb4 gb5 gb6 分别对应geekbench的4、5、6版本"
             # echo "-dtype 指定测试硬盘IO的程序，默认为都使用进行测试，可选 dd fio "
@@ -3437,12 +3437,14 @@ basic_script() {
     print_ip_info
     cd $myvar >/dev/null 2>&1
     sleep 1
-    echo "---------------------CPU测试--感谢lemonbench开源------------------------"
-    Function_SysBench_CPU_Fast
-    cd $myvar >/dev/null 2>&1
-    sleep 1
-    echo "---------------------内存测试--感谢lemonbench开源-----------------------"
-    Function_SysBench_Memory_Fast
+    if [ "$test_base" = false ]; then
+        echo "---------------------CPU测试--感谢lemonbench开源------------------------"
+        Function_SysBench_CPU_Fast
+        cd $myvar >/dev/null 2>&1
+        sleep 1
+        echo "---------------------内存测试--感谢lemonbench开源-----------------------"
+        Function_SysBench_Memory_Fast
+    fi
 }
 
 io1_script() {
@@ -3910,8 +3912,10 @@ hardware_script() {
     clear
     print_intro
     basic_script
-    io1_script
-    io2_script
+    if [ "$test_base" = false ]; then
+        io1_script
+        io2_script
+    fi
     end_script
 }
 
@@ -4681,7 +4685,9 @@ start_script_options() {
 
 start_script() {
     head_script
-    if $menu_mode; then
+    if $test_base; then
+        hardware_script
+    elif $menu_mode; then
         echo -e "${GREEN}1.${PLAIN} 顺序测试--融合怪完全体(所有项目都测试)(平均运行7分钟)(机器普通推荐使用)"
         echo -e "${GREEN}2.${PLAIN} 并行测试--融合怪完全体(所有项目都测试)(平均运行5分钟)(仅机器强劲可使用，机器普通勿要使用)"
         echo -e "${GREEN}3.${PLAIN} 融合怪精简区(融合怪的精简版或单项测试精简版)"

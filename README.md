@@ -69,10 +69,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2023.12.04
+2023.12.07
 
-- 更新参数模式的部分指令的解析
-- 说明界面增加提供支持的平台的logo和链接
+- 更新参数模式的部分指令的解析，增加-b指令
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -134,6 +133,8 @@ bash ecs.sh -m 1
 ```-i```可指定回程路由测试中的目标IPV4地址，可通过 ip.sb ipinfo.io 等网站获取本地IPV4地址后指定
 
 ```-r```可指定回程路由测试中的目标IPV4地址，可选```b``` ```g``` ```s``` ```c``` 分别对应```北京、广州、上海、成都```，如```-r b```指定测试北京回程(三网)
+
+```-b```可指定仅测试基础的系统信息
 
 本地的IPV4地址可使用 ip.sb ipinfo.io nstool.netease.com cip.cc 之类的网站查询
 
