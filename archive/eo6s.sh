@@ -1,4 +1,7 @@
-#!/usr/bin/env bash
+##!/usr/bin/env bash
+#by spiritlhl
+#from https://github.com/spiritLHLS/ecs
+# curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/eo6s.sh -o eo6s.sh && chmod +x eo6s.sh && bash eo6s.sh
 
 REGEX=("debian|astra" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora" "arch" "freebsd")
 RELEASE=("Debian" "Ubuntu" "CentOS" "CentOS" "Fedora" "Arch" "FreeBSD")
@@ -36,7 +39,7 @@ if [ $num_lines -ge 2 ]; then
 else
     ipv6_prefixlen=$(echo "$output" | head -n 1)
 fi
-if [ "$updated_ipv6" == "$current_ipv6" ] || [ -n "$updated_ipv6" ]; then
+if [ "$updated_ipv6" == "$current_ipv6" ] || [ -z "$updated_ipv6" ]; then
     echo "IPV6 子网掩码: 128"
 else
     echo "IPV6 子网掩码: $ipv6_prefixlen"
