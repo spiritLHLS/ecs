@@ -4,8 +4,9 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.12.07"
+ver="2023.12.08"
 changeLog="VPS融合怪测试(集百家之长)"
+start_time=$(date +%s)
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -28,83 +29,75 @@ else
 fi
 menu_mode=true
 swhc_mode=true
-test_base=false
+test_base_status=false
+test_disk_type=""
 build_text_status=true
 multidisk_status=false
 target_ipv4=""
 route_location=""
-cpu_test_type=""
-disk_test_type=""
 main_menu_option=0
 sub_menu_option=0
 sub_of_sub_menu_option=0
 break_status=true
 m_params=()
 # 解析命令行选项
-while getopts ":m:i:r:bh" opt; do
-    case $opt in
-        m)
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -m)
             # 处理 -m 选项，关闭菜单模式
             menu_mode=false
-            # 保存 -m 选项后的参数
-            m_params=("$OPTARG")
-            # 设置最大参数数量
-            max_params=3
-            param_count=1
-            while [ $# -gt 0 ] && [[ "$1" != -* ]] && [ "$param_count" -lt "$max_params" ]; do
+            shift  # 移动到下一个参数
+            while [ "$#" -gt 0 ] && [[ "$1" != -* ]]; do
                 m_params+=("$1")
                 shift
-                param_count=$((param_count + 1))
             done
         ;;
-        i)
+        -i)
             # 处理 -i 选项，获取IPv4地址
-            target_ipv4="$OPTARG"
+            menu_mode=false
+            target_ipv4="$2"
             swhc_mode=false
+            shift 2
         ;;
-        r)
+        -r)
             # 处理 -r 选项，选择测试回程路由的出口地址
-            route_location="$OPTARG"
+            menu_mode=false
+            route_location="$2"
+            shift 2
         ;;
-        b)
-            # 处理 -b 选项，选择仅测试系统信息
-            test_base=true
+        -base)
+            # 处理 -base 选项，选择仅测试系统信息
+            menu_mode=false
+            test_base_status=true
+            shift
         ;;
-        # banup)
-        #     # 处理 -banup 选项，选择不生成分享链接
-        #     build_text_status=flase
-        # ;;
-        # ctype)
-        #     # 处理 -ctype 选项，选择测试使用何种CPU测试程序
-        #     cpu_test_type="$OPTARG"
-        # ;;
-        # dtype)
-        #     # 处理 -dtype 选项，选择测试使用何种硬盘测试程序
-        #     disk_test_type="$OPTARG"
-        # ;;
-        # multidisk)
-        #     # 处理 -multidisk 选项，指定测试多个挂载盘的IO
-        #     multidisk_status=true
-        # ;;
-        h)
+        -dtype)
+            # 处理 -dtype 选项，选择测试磁盘使用的方式
+            menu_mode=false
+            test_disk_type="$2"
+            shift 2
+        ;;
+        -banup)
+            # 处理 -banup 选项，选择测试磁盘使用的方式
+            menu_mode=false
+            build_text_status=false
+            shift
+        ;;
+        -h)
             echo "-m     可指定原本menu中的选项，最多支持三层选择，例如执行 bash ecs.sh -m 5 1 1 将选择主菜单第5选项下的第1选项下的子选项1的脚本执行"
             echo "       (可缺省仅指定一个参数，如 -m 1 仅指定执行融合怪完全体，执行 -m 1 0 以及 -m 1 0 0 都是指定执行融合怪完全体)"
             echo "-i     可指定回程路由测试中的目标IPV4地址，可通过 ip.sb ipinfo.io 等网站获取本地IPV4地址后指定"
-            echo "-r     可指定回程路由测试中的目标IPV4地址，可选 b g s c 分别对应 北京、广州、上海、成都，如 -r g 指定测试广州回程"
-            echo "-b     仅测试基础的系统信息，不测试CPU、硬盘、流媒体、回程路由等"
+            echo "-r     可指定回程路由测试中的三网目标地址，可选 b g s c 分别对应 北京、广州、上海、成都 的三网地址，如 -r g 指定测试广州回程"
+            echo "-base  仅测试基础的系统信息，不测试CPU、硬盘、流媒体、回程路由等内容"
+            echo "-dtype 指定测试硬盘IO的程序，默认为都使用进行测试，可选 dd 或 fio 前者测试快后者测试慢"
+            echo "-banup 强制不生成分享链接，默是生成分享链接"
             # 更多选项待添加
-            # echo "-banup 强制不生成分享链接，默是生成分享链接"
             # echo "-ctype 默认使用sysbench测试cpu得分，这里可指定通过何种方式测试cpu，可选 gb4 gb5 gb6 分别对应geekbench的4、5、6版本"
-            # echo "-dtype 指定测试硬盘IO的程序，默认为都使用进行测试，可选 dd fio "
             # echo "-multidisk 可指定测试多个挂载盘的IO，注意这不会测试系统盘"
             exit 1
         ;;
-        \?)
-            echo "无效的选项: -$OPTARG"
-            exit 1
-        ;;
-        :)
-            echo "选项 -$OPTARG 需要参数."
+        *)
+            echo "未知的选项: $1"
             exit 1
         ;;
     esac
@@ -115,9 +108,13 @@ if [ -n "$target_ipv4" ]; then
 fi
 # 在menu_mode为false时才打印信息
 if [ "$menu_mode" = false ]; then
-    echo "target_ipv4: $target_ipv4"
+    _blue "检测到参数，使用参数模式，读取参数如下，显示4秒"
     echo "menu_mode: $menu_mode"
+    echo "test_base_status: $test_base_status"
+    echo "target_ipv4: $target_ipv4"
     echo "route_location: $route_location"
+    echo "test_disk_type: $test_disk_type"
+    echo "build_text_status: $build_text_status"
     # 读取 -m 选项后的参数
     main_menu_option=${m_params[0]:-0}
     sub_menu_option=${m_params[1]:-0}
@@ -125,9 +122,8 @@ if [ "$menu_mode" = false ]; then
     echo "main_menu_option: $main_menu_option"
     echo "sub_menu_option: $sub_menu_option"
     echo "sub_of_sub_menu_option: $sub_of_sub_menu_option"
-    sleep 3
+    sleep 4
 fi
-
 
 # =============== 自定义基础参数 ==============
 shorturl=""
@@ -196,10 +192,12 @@ global_startup_init_action() {
 
 global_exit_action() {
     reset_default_sysctl >/dev/null 2>&1
-    build_text
-    if [ -n "$shorturl" ]; then
-        _green "  短链:"
-        _blue "    $shorturl"
+    if [ "$build_text_status" = true ]; then
+        build_text
+        if [ -n "$shorturl" ]; then
+            _green "  短链:"
+            _blue "    $shorturl"
+        fi
     fi
     rm -rf ${TEMP_DIR}
     rm -rf ${WorkDir}/
@@ -340,6 +338,13 @@ check_unzip() {
     if ! command -v unzip >/dev/null 2>&1; then
         _yellow "Installing unzip"
         ${PACKAGE_INSTALL[int]} unzip
+    fi
+}
+
+check_ip() {
+    if ! command -v ip >/dev/null 2>&1; then
+        _yellow "Installing net-tools to use ip command"
+        ${PACKAGE_INSTALL[int]} net-tools
     fi
 }
 
@@ -2705,6 +2710,8 @@ print_ip_info() {
     for file in "${files[@]}"; do
         rm -rf ${file}
     done
+    # 获取IPV6的子网掩码
+    local ipv6_prefixlen=$(check_and_cat_file "${TEMP_DIR}/eo6s_result")
     # 打印最终结果
     if [[ -n "$ipv4_asn_info" && "$ipv4_asn_info" != "None" ]]; then
         echo " IPV4 ASN          : $(_blue "$ipv4_asn_info")"
@@ -2717,6 +2724,9 @@ print_ip_info() {
     fi
     if [[ -n "$ipv6_location" && "$ipv6_location" != "None" ]]; then
         echo " IPV6 位置         : $(_blue "$ipv6_location")"
+    fi
+    if [[ -n "$ipv6_prefixlen" && "$ipv6_prefixlen" != "None" ]]; then
+        echo " IPV6 子网掩码     : $(_blue "$ipv6_prefixlen")"
     fi
 }
 
@@ -3377,6 +3387,36 @@ ipcheck() {
     rm -rf /tmp/ip_quality_*
 }
 
+eo6s(){
+    # 获取IPV6的子网掩码
+    rm -rf $TEMP_DIR/eo6s_result
+    local interface=$(ls /sys/class/net/ | grep -v "$(ls /sys/devices/virtual/net/)")
+    local current_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
+    # echo ${current_ipv6}
+    local new_ipv6="${current_ipv6%:*}:3"
+    ip addr add ${new_ipv6}/128 dev ${interface}
+    sleep 5
+    local updated_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
+    # echo ${updated_ipv6}
+    ip addr del ${new_ipv6}/128 dev ${interface}
+    sleep 5
+    local final_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
+    # echo ${final_ipv6}
+    local ipv6_prefixlen=""
+    local output=$(ifconfig ${interface} | grep -oP 'inet6 [^f][^e][^8][^0].*prefixlen \K\d+')
+    local num_lines=$(echo "$output" | wc -l)
+    if [ $num_lines -ge 2 ]; then
+        ipv6_prefixlen=$(echo "$output" | sort -n | head -n 1)
+    else
+        ipv6_prefixlen=$(echo "$output" | head -n 1)
+    fi
+    if [ "$updated_ipv6" == "$current_ipv6" ] || [ -z "$updated_ipv6" ]; then
+        echo "128">$TEMP_DIR/eo6s_result
+    else
+        echo "$ipv6_prefixlen">$TEMP_DIR/eo6s_result
+    fi
+}
+
 cdn_urls=("https://cdn0.spiritlhl.top/" "http://cdn3.spiritlhl.net/" "http://cdn1.spiritlhl.net/" "https://ghproxy.com/" "http://cdn2.spiritlhl.net/")
 ST="OvwKx5qgJtf7PZgCKbtyojSU.MTcwMTUxNzY1MTgwMw"
 head='key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c'
@@ -3404,13 +3444,19 @@ pre_check() {
     check_unzip
     check_tar
     check_nc
+    check_ip
     global_startup_init_action
     cd $myvar >/dev/null 2>&1
     ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
     check_china
+    echo "等待后台任务执行完毕"
     wait
     IPV4=$(check_and_cat_file /tmp/ip_quality_ipv4)
     IPV6=$(check_and_cat_file /tmp/ip_quality_ipv6)
+    if [ -n "$IPV6" ] && [ -n "$IPV4" ]; then
+        echo "正在检测和验证IPV6的子网掩码大小，大概需要10~15秒"
+        eo6s
+    fi
 }
 
 sjlleo_script() {
@@ -3431,19 +3477,28 @@ sjlleo_script() {
     _yellow "解锁Youtube，Netflix，DisneyPlus上面和下面进行比较，不同之处自行判断"
 }
 
+cpu_script(){
+    echo "---------------------CPU测试--感谢lemonbench开源------------------------"
+    Function_SysBench_CPU_Fast
+    cd $myvar >/dev/null 2>&1
+    sleep 1
+}
+
+memory_script(){
+    echo "---------------------内存测试--感谢lemonbench开源-----------------------"
+    Function_SysBench_Memory_Fast
+}
+
 basic_script() {
     echo "---------------------基础信息查询--感谢所有开源项目---------------------"
     print_system_info
     print_ip_info
+    # cpu和内存测试
     cd $myvar >/dev/null 2>&1
     sleep 1
-    if [ "$test_base" = false ]; then
-        echo "---------------------CPU测试--感谢lemonbench开源------------------------"
-        Function_SysBench_CPU_Fast
-        cd $myvar >/dev/null 2>&1
-        sleep 1
-        echo "---------------------内存测试--感谢lemonbench开源-----------------------"
-        Function_SysBench_Memory_Fast
+    if [ "$test_base_status" = false ]; then
+        cpu_script
+        memory_script
     fi
 }
 
@@ -3620,7 +3675,6 @@ ecs_net_all_script() {
     cd $myvar >/dev/null 2>&1
     s_time=$(date +%s)
     rm -rf ./speedtest-cli/speedlog.txt
-
     speed | tee ./speedtest-cli/speedlog.txt
     e_time=$(date +%s)
     time=$((${e_time} - ${s_time}))
@@ -3675,15 +3729,20 @@ all_script() {
             CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
             _yellow "checking speedtest" && install_speedtest &
             check_lmc_script &
-            start_time=$(date +%s)
             clear
             print_intro
             basic_script
             wait
             ecs_net_all_script >${TEMP_DIR}/ecs_net_output.txt &
-            io1_script
-            sleep 0.5
-            io2_script
+            if [ "$test_disk_type" = "" ]; then
+                io1_script
+                sleep 0.5
+                io2_script
+            elif [ "$test_disk_type" = "dd" ]; then
+                io1_script
+            elif [ "$test_disk_type" = "fio" ]; then
+                io2_script
+            fi
             sjlleo_script >${TEMP_DIR}/sjlleo_output.txt &
             RegionRestrictionCheck_script >${TEMP_DIR}/RegionRestrictionCheck_output.txt &
             lmc999_script >${TEMP_DIR}/lmc999_output.txt &
@@ -3713,7 +3772,6 @@ all_script() {
             CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
             _yellow "checking speedtest" && install_speedtest &
             check_lmc_script &
-            start_time=$(date +%s)
             clear
             print_intro
             basic_script
@@ -3741,13 +3799,18 @@ all_script() {
             CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
             _yellow "checking speedtest" && install_speedtest
             check_lmc_script
-            start_time=$(date +%s)
             clear
             print_intro
             basic_script
-            io1_script
-            sleep 0.5
-            io2_script
+            if [ "$test_disk_type" = "" ]; then
+                io1_script
+                sleep 0.5
+                io2_script
+            elif [ "$test_disk_type" = "dd" ]; then
+                io1_script
+            elif [ "$test_disk_type" = "fio" ]; then
+                io2_script
+            fi
             sjlleo_script
             RegionRestrictionCheck_script
             lmc999_script
@@ -3767,7 +3830,6 @@ all_script() {
             CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
             _yellow "checking speedtest" && install_speedtest
             check_lmc_script
-            start_time=$(date +%s)
             clear
             print_intro
             basic_script
@@ -3793,7 +3855,6 @@ minal_script() {
     CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
     CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
     _yellow "checking speedtest" && install_speedtest
-    start_time=$(date +%s)
     clear
     print_intro
     basic_script
@@ -3813,7 +3874,6 @@ minal_plus() {
     CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
     CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
     _yellow "checking speedtest" && install_speedtest
-    start_time=$(date +%s)
     clear
     print_intro
     basic_script
@@ -3836,7 +3896,6 @@ minal_plus_network() {
     CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
     CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
     _yellow "checking speedtest" && install_speedtest
-    start_time=$(date +%s)
     clear
     print_intro
     basic_script
@@ -3858,7 +3917,6 @@ minal_plus_media() {
     CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
     CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
     _yellow "checking speedtest" && install_speedtest
-    start_time=$(date +%s)
     clear
     print_intro
     basic_script
@@ -3879,7 +3937,6 @@ network_script() {
     CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
     CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
     _yellow "checking speedtest" && install_speedtest
-    start_time=$(date +%s)
     clear
     print_intro
     spiritlhl_script
@@ -3895,7 +3952,6 @@ media_script() {
     pre_download dp nf tubecheck media_lmc_check
     check_dnsutils
     check_lmc_script
-    start_time=$(date +%s)
     clear
     print_intro
     sjlleo_script
@@ -3908,13 +3964,19 @@ hardware_script() {
     pre_check
     pre_download yabsiotest
     get_system_info
-    start_time=$(date +%s)
     clear
     print_intro
     basic_script
-    if [ "$test_base" = false ]; then
-        io1_script
-        io2_script
+    if [ "$test_base_status" = false ]; then
+        if [ "$test_disk_type" = "" ]; then
+            io1_script
+            sleep 0.5
+            io2_script
+        elif [ "$test_disk_type" = "dd" ]; then
+            io1_script
+        elif [ "$test_disk_type" = "fio" ]; then
+            io2_script
+        fi
     fi
     end_script
 }
@@ -3923,7 +3985,6 @@ port_script() {
     pre_check
     pre_download XXXX
     get_system_info
-    start_time=$(date +%s)
     clear
     print_intro
     # fscarmen_port_script
@@ -3934,7 +3995,6 @@ sw_script() {
     pre_check
     pre_download besttrace nexttrace backtrace ecsspeed_ping
     check_ping
-    start_time=$(date +%s)
     clear
     print_intro
     backtrace_script
@@ -3946,7 +4006,6 @@ sw_script() {
 network_script_select() {
     pre_check
     pre_download besttrace nexttrace
-    start_time=$(date +%s)
     clear
     print_intro
     if [[ "$1" == "g" ]]; then
@@ -3985,7 +4044,7 @@ rm_script() {
 
 build_text() {
     cd $myvar >/dev/null 2>&1
-    if { [ -n "${StartInput}" ] && [ "${StartInput}" -eq 1 ]; } || { [ -n "${StartInput}" ] && [ "${StartInput}" -eq 2 ]; } || { [ -n "${StartInput1}" ] && [ "${StartInput1}" -ge 1 ] && [ "${StartInput1}" -le 4 ]; }; then
+    if { [ -n "${menu_mode}" ] && [ "${menu_mode}" = false ]; } || { [ -n "${StartInput}" ] && [ "${StartInput}" -eq 1 ]; } || { [ -n "${StartInput}" ] && [ "${StartInput}" -eq 2 ]; } || { [ -n "${StartInput1}" ] && [ "${StartInput1}" -ge 1 ] && [ "${StartInput1}" -le 4 ]; }; then
         sed -i -e '1,/-------------------- A Bench Script By spiritlhl ---------------------/d' test_result.txt
         # 下面这个删除在FreeBSD中也删的不干净
         sed -i -e 's/\x1B\[[0-9;]\+[a-zA-Z]//g' test_result.txt
@@ -4685,8 +4744,9 @@ start_script_options() {
 
 start_script() {
     head_script
-    if $test_base; then
-        hardware_script
+    if $test_base_status; then
+        # 纯测系统信息
+        hardware_script | tee -i test_result.txt
     elif $menu_mode; then
         echo -e "${GREEN}1.${PLAIN} 顺序测试--融合怪完全体(所有项目都测试)(平均运行7分钟)(机器普通推荐使用)"
         echo -e "${GREEN}2.${PLAIN} 并行测试--融合怪完全体(所有项目都测试)(平均运行5分钟)(仅机器强劲可使用，机器普通勿要使用)"
