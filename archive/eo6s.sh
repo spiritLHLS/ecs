@@ -20,16 +20,16 @@ for ((int = 0; int < ${#REGEX[@]}; int++)); do
 done
 ${PACKAGE_INSTALL[int]} net-tools
 interface=$(ls /sys/class/net/ | grep -v "$(ls /sys/devices/virtual/net/)")
-current_ipv6=$(curl -s -6 -m 6 ipv6.ip.sb)
+current_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
 echo ${current_ipv6}
 new_ipv6="${current_ipv6%:*}:3"
 ip addr add ${new_ipv6}/128 dev ${interface}
-sleep 4
-updated_ipv6=$(curl -s -6 -m 6 ipv6.ip.sb)
+sleep 5
+updated_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
 echo ${updated_ipv6}
 ip addr del ${new_ipv6}/128 dev ${interface}
-sleep 4
-final_ipv6=$(curl -s -6 -m 6 ipv6.ip.sb)
+sleep 5
+final_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
 echo ${final_ipv6}
 ipv6_prefixlen=""
 output=$(ifconfig ${interface} | grep -oP 'inet6 [^f][^e][^8][^0].*prefixlen \K\d+')
