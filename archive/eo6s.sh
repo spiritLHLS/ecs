@@ -1,6 +1,6 @@
-##!/usr/bin/env bash
-#by spiritlhl
-#from https://github.com/spiritLHLS/ecs
+#!/usr/bin/env bash
+# by spiritlhl
+# from https://github.com/spiritLHLS/ecs
 # curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/eo6s.sh -o eo6s.sh && chmod +x eo6s.sh && bash eo6s.sh
 
 REGEX=("debian|astra" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora" "arch" "freebsd")
@@ -24,11 +24,11 @@ current_ipv6=$(curl -s -6 -m 6 ipv6.ip.sb)
 echo ${current_ipv6}
 new_ipv6="${current_ipv6%:*}:3"
 ip addr add ${new_ipv6}/128 dev ${interface}
-sleep 5
+sleep 4
 updated_ipv6=$(curl -s -6 -m 6 ipv6.ip.sb)
 echo ${updated_ipv6}
 ip addr del ${new_ipv6}/128 dev ${interface}
-sleep 5
+sleep 4
 final_ipv6=$(curl -s -6 -m 6 ipv6.ip.sb)
 echo ${final_ipv6}
 ipv6_prefixlen=""
