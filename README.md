@@ -74,6 +74,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 - 更新参数模式的指令的解析
 - 增加```-base```、```-dtype```、```-banup```三个指令
 - 增加IPV6子网掩码大小的检测
+- 简化运行时间计算的代码，将计时开始时间移动到脚本开头
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
