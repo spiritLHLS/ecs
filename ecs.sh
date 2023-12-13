@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.12.12"
+ver="2023.12.13"
 changeLog="VPS融合怪测试(集百家之长)"
 start_time=$(date +%s)
 
@@ -84,6 +84,12 @@ while [ "$#" -gt 0 ]; do
             test_disk_type="$2"
             shift 2
         ;;
+        -mdisk)
+            # 处理 -mdisk 选项，选择测试多个挂载盘，且含系统盘
+            menu_mode=false
+            multidisk_status=true
+            shift
+        ;;
         -banup)
             # 处理 -banup 选项，选择测试磁盘使用的方式
             menu_mode=false
@@ -101,8 +107,8 @@ while [ "$#" -gt 0 ]; do
             echo "-ctype 可选项，可指定通过何种方式测试cpu，可选 gb4 gb5 gb6 分别对应geekbench的4、5、6版本，无该指令则默认使用sysbench测试"
             echo "-dtype 可选项，可指定测试硬盘IO的程序，可选 dd 或 fio 前者测试快后者测试慢，无该指令则默认为都使用进行测试"
             echo "-banup 可选项，可指定强制不生成分享链接，无该指令则默认生成分享链接"
+            echo "-mdisk 可指定测试多个挂载盘的IO，注意这也会测试系统盘"
             # 更多选项待添加
-            # echo "-multidisk 可指定测试多个挂载盘的IO，注意这也会测试系统盘"
             exit 1
         ;;
         *)
@@ -124,6 +130,7 @@ if [ "$menu_mode" = false ]; then
     echo "route_location: $route_location"
     echo "test_cpu_type: $test_cpu_type"
     echo "test_disk_type: $test_disk_type"
+    echo "multidisk_status: $multidisk_status"
     echo "build_text_status: $build_text_status"
     # 读取 -m 选项后的参数
     main_menu_option=${m_params[0]:-0}
@@ -588,7 +595,6 @@ pre_download() {
         yabs)
             curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/masonr/yet-another-bench-script/master/yabs.sh" -o $TEMP_DIR/yabs.sh && chmod +x $TEMP_DIR/yabs.sh
             sed -i '/# gather basic system information (inc. CPU, AES-NI\/virt status, RAM + swap + disk size)/,/^echo -e "IPv4\/IPv6  : $ONLINE"/d' $TEMP_DIR/yabs.sh
-
             ;;
         ecsspeed_ping)
             curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecsspeed/main/script/ecsspeed-ping.sh" -o $TEMP_DIR/ecsspeed-ping.sh && chmod +x $TEMP_DIR/ecsspeed-ping.sh
@@ -3498,54 +3504,47 @@ sjlleo_script() {
     _yellow "解锁Youtube，Netflix，DisneyPlus上面和下面进行比较，不同之处自行判断"
 }
 
-cpu_script_with_sysbench(){
-    echo "---------------------CPU测试--感谢lemonbench开源------------------------"
-    Function_SysBench_CPU_Fast
-    cd $myvar >/dev/null 2>&1
-    sleep 1
-}
-
-cpu_script_with_geekbench4(){
-    echo "-----------------CPU测试--感谢yabs开源geekbench4测试--------------------"
-    mv $TEMP_DIR/yabs.sh ./
-    local output=$(./yabs.sh -s -- -f -i -n -4 | tail -n +9)
-    if [[ $output =~ "Single Core" ]]; then
-        output=$(echo "$output" | grep -v 'curl' | sed '$d' | sed '$d' | sed '1,2d' )
-        echo "$output"
+cpu_judge() {
+    local benchmark_type=$1
+    local benchmark_name=""
+    case $benchmark_type in
+        sysbench)
+            benchmark_name="SysBench_CPU_Fast"
+            echo "---------------------CPU测试--感谢lemonbench开源------------------------"
+            ;;
+        geekbench4)
+            benchmark_name="4"
+            echo "-----------------CPU测试--感谢yabs开源geekbench4测试--------------------"
+            ;;
+        geekbench5)
+            benchmark_name="5"
+            echo "-----------------CPU测试--感谢yabs开源geekbench5测试--------------------"
+            ;;
+        geekbench6)
+            benchmark_name="6"
+            echo "-----------------CPU测试--感谢yabs开源geekbench6测试--------------------"
+            ;;
+        *)
+            echo "Invalid benchmark type"
+            return
+            ;;
+    esac
+    if [ "$benchmark_type" == "sysbench" ]; then
+        Function_SysBench_CPU_Fast
     else
-        echo "测试失败请替换另一种方式"
+        mv $TEMP_DIR/yabs.sh ./
+        local output=$(./yabs.sh -s -- -f -i -n "-$benchmark_name" 2>&1 | tail -n +9)
+        if [[ $output =~ "Single Core" ]]; then
+            output=$(echo "$output" | grep -v 'curl' | sed '$d' | sed '$d' | sed '1,2d')
+            echo "$output"
+        else
+            echo "测试失败请替换另一种方式"
+        fi
     fi
     cd $myvar >/dev/null 2>&1
     sleep 1
 }
 
-cpu_script_with_geekbench5(){
-    echo "-----------------CPU测试--感谢yabs开源geekbench5测试--------------------"
-    mv $TEMP_DIR/yabs.sh ./
-    local output=$(./yabs.sh -s -- -f -i -n -5 | tail -n +9)
-    if [[ $output =~ "Single Core" ]]; then
-        output=$(echo "$output" | grep -v 'curl' | sed '$d' | sed '$d' | sed '1,2d')
-        echo "$output"
-    else
-        echo "测试失败请替换另一种方式"
-    fi
-    cd $myvar >/dev/null 2>&1
-    sleep 1
-}
-
-cpu_script_with_geekbench6(){
-    echo "-----------------CPU测试--感谢yabs开源geekbench6测试--------------------"
-    mv $TEMP_DIR/yabs.sh ./
-    local output=$(./yabs.sh -s -- -f -i -n -6 | tail -n +9)
-    if [[ $output =~ "Single Core" ]]; then
-        output=$(echo "$output" | grep -v 'curl' | sed '$d' | sed '$d' | sed '1,2d')
-        echo "$output"
-    else
-        echo "测试失败请替换另一种方式"
-    fi
-    cd $myvar >/dev/null 2>&1
-    sleep 1
-}
 
 memory_script(){
     echo "---------------------内存测试--感谢lemonbench开源-----------------------"
@@ -3560,14 +3559,14 @@ basic_script() {
     cd $myvar >/dev/null 2>&1
     sleep 1
     if [ "$test_base_status" = false ]; then
-        if [ "$test_cpu_type" = "" ]; then
-            cpu_script_with_sysbench
+        if [ -z "$test_cpu_type" ] || [ "$test_cpu_type" = "sysbench" ]; then
+            cpu_judge sysbench
         elif [ "$test_cpu_type" = "gb4" ]; then
-            cpu_script_with_geekbench4
+            cpu_judge geekbench4
         elif [ "$test_cpu_type" = "gb5" ]; then
-            cpu_script_with_geekbench5
+            cpu_judge geekbench5
         elif [ "$test_cpu_type" = "gb6" ]; then
-            cpu_script_with_geekbench6
+            cpu_judge geekbench6
         fi
         memory_script
     fi
@@ -3583,10 +3582,79 @@ io1_script() {
 io2_script() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
     cd $myvar >/dev/null 2>&1
-    mv $TEMP_DIR/yabsiotest.sh ./
+    cp $TEMP_DIR/yabsiotest.sh ./
     echo "---------------------磁盘fio读写测试--感谢yabs开源----------------------"
     bash yabsiotest.sh 2>/dev/null
     rm -rf yabsiotest.sh
+}
+
+io3_script() {
+    [ "${Var_OSRelease}" = "freebsd" ] && return
+    cd $myvar >/dev/null 2>&1
+    echo "----------------------多盘读写测试--感谢yabs开源------------------------"
+    # 获取非以vda开头的盘名称
+    disk_names=$(lsblk -e 11 -n -o NAME | grep -v "vda" | grep -v "snap" | grep -v "loop")
+    if [ -z "$disk_names" ]; then
+        echo "No eligible disk names found. Exiting script."
+        return
+    fi
+    # 存储盘名称和盘路径的数组
+    declare -a disk_paths
+    # 遍历每个盘名称并检索对应的盘路径，并将名称和路径存储到数组中
+    for disk_name in $disk_names; do
+    disk_path=$(df -h | awk -v disk_name="$disk_name" '$0 ~ disk_name { print $NF }')
+    if [ -n "$disk_path" ]; then
+        disk_paths+=("$disk_name:$disk_path")
+    fi
+    done
+    # 遍历数组，打开对应盘路径并检测IO
+    if [ ${#disk_paths[@]} -gt 0 ]; then
+        for disk_path in "${disk_paths[@]}"; do
+            disk_name=$(echo "$disk_path" | cut -d ":" -f 1)
+            path=$(echo "$disk_path" | cut -d ":" -f 2)
+            if [ -n "$path" ]; then
+                cd "$path" >/dev/null 2>&1
+                if [ $? -ne 0 ]; then
+                    continue
+                fi
+                echo -e "---------------------------------"
+                echo "Current disk: ${disk_name}"
+                echo "Current path: ${path}"
+                if [ ! -f "yabsiotest.sh" ]; then
+                    cp $TEMP_DIR/yabsiotest.sh ./
+                fi
+                bash yabsiotest.sh
+            fi
+            cd $myvar >/dev/null 2>&1
+        done
+        echo -e "---------------------------------"
+    else
+        echo "No extra disk"
+        return
+    fi
+    rm -rf yabsiotest.sh
+}
+
+io_judge(){
+    local par="$1"
+    if [ "$par" = "all" ] && [ "$test_disk_type" = "" ]; then
+        io1_script
+        sleep 0.5
+        io2_script
+        return
+    elif [ "$par" = "io2" ] && [ "$test_disk_type" = "" ]; then
+        io2_script
+        return
+    fi
+    if [ "$multidisk_status" = true ]; then
+        io1_script
+        sleep 0.5
+        io3_script
+    elif [ "$test_disk_type" = "dd" ]; then
+        io1_script
+    elif [ "$test_disk_type" = "fio" ]; then
+        io2_script
+    fi
 }
 
 RegionRestrictionCheck_script() {
@@ -3806,15 +3874,7 @@ all_script() {
             basic_script
             wait
             ecs_net_all_script >${TEMP_DIR}/ecs_net_output.txt &
-            if [ "$test_disk_type" = "" ]; then
-                io1_script
-                sleep 0.5
-                io2_script
-            elif [ "$test_disk_type" = "dd" ]; then
-                io1_script
-            elif [ "$test_disk_type" = "fio" ]; then
-                io2_script
-            fi
+            io_judge "all"
             sjlleo_script >${TEMP_DIR}/sjlleo_output.txt &
             RegionRestrictionCheck_script >${TEMP_DIR}/RegionRestrictionCheck_output.txt &
             lmc999_script >${TEMP_DIR}/lmc999_output.txt &
@@ -3874,15 +3934,7 @@ all_script() {
             clear
             print_intro
             basic_script
-            if [ "$test_disk_type" = "" ]; then
-                io1_script
-                sleep 0.5
-                io2_script
-            elif [ "$test_disk_type" = "dd" ]; then
-                io1_script
-            elif [ "$test_disk_type" = "fio" ]; then
-                io2_script
-            fi
+            io_judge "all"
             sjlleo_script
             RegionRestrictionCheck_script
             lmc999_script
@@ -3930,7 +3982,7 @@ minal_script() {
     clear
     print_intro
     basic_script
-    io2_script
+    io_judge "io2"
     ecs_net_minal_script
     end_script
 }
@@ -3949,7 +4001,7 @@ minal_plus() {
     clear
     print_intro
     basic_script
-    io2_script
+    io_judge "io2"
     sjlleo_script
     RegionRestrictionCheck_script
     lmc999_script
@@ -3971,7 +4023,7 @@ minal_plus_network() {
     clear
     print_intro
     basic_script
-    io2_script
+    io_judge "io2"
     backtrace_script
     fscarmen_route_script test_area_g[@] test_ip_g[@]
     ecs_net_minal_script
@@ -3992,7 +4044,7 @@ minal_plus_media() {
     clear
     print_intro
     basic_script
-    io2_script
+    io_judge "io2"
     sjlleo_script
     RegionRestrictionCheck_script
     lmc999_script
@@ -4040,15 +4092,7 @@ hardware_script() {
     print_intro
     basic_script
     if [ "$test_base_status" = false ]; then
-        if [ "$test_disk_type" = "" ]; then
-            io1_script
-            sleep 0.5
-            io2_script
-        elif [ "$test_disk_type" = "dd" ]; then
-            io1_script
-        elif [ "$test_disk_type" = "fio" ]; then
-            io2_script
-        fi
+        io_judge "all"
     fi
     end_script
 }
