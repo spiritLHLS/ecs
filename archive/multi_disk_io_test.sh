@@ -69,7 +69,11 @@ rm -rf yabsiotest.sh >/dev/null 2>&1
 curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/yabsiotest.sh" -o yabsiotest.sh && chmod +x yabsiotest.sh
 
 # 获取非以vda开头的盘名称
-disk_names=$(lsblk -e 11 -n -o NAME | grep -v "^vda")
+disk_names=$(lsblk -e 11 -n -o NAME | grep -v "vda" | grep -v "snap" | grep -v "loop")
+if [ -z "$disk_names" ]; then
+  echo "No eligible disk names found. Exiting script."
+  exit 1
+fi
 
 # 存储盘名称和盘路径的数组
 declare -a disk_paths
