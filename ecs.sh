@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.12.13"
+ver="2023.12.17"
 changeLog="VPS融合怪测试(集百家之长)"
 start_time=$(date +%s)
 
@@ -28,6 +28,7 @@ else
     _green "Locale set to $utf8_locale"
 fi
 menu_mode=true
+en_status=false
 swhc_mode=true
 test_base_status=false
 test_cpu_type=""
@@ -66,6 +67,12 @@ while [ "$#" -gt 0 ]; do
             route_location="$2"
             shift 2
         ;;
+        # -en)
+        #     # 处理 -en 选项，选择使用英文显示
+        #     menu_mode=false
+        #     en_status=true
+        #     shift
+        # ;;
         -base)
             # 处理 -base 选项，选择仅测试系统信息
             menu_mode=false
@@ -109,6 +116,7 @@ while [ "$#" -gt 0 ]; do
             echo "-banup 可选项，可指定强制不生成分享链接，无该指令则默认生成分享链接"
             echo "-mdisk 可指定测试多个挂载盘的IO，注意这也会测试系统盘"
             # 更多选项待添加
+            # echo "-speedtest 可指定测试时使用的是什么平台的测速节点，可选 .cn .com 分别对应 speedtest.cn speedtest.com"
             exit 1
         ;;
         *)
@@ -118,12 +126,21 @@ while [ "$#" -gt 0 ]; do
     esac
 done
 if [ -n "$target_ipv4" ]; then
-    test_area_local=("你本地的IPV4地址")
-    test_ip_local=("$target_ipv4")
+    if [ "$en_status" = true ]; then
+        test_area_local=("Yor local public IPV4 address")
+        test_ip_local=("$target_ipv4")
+    else
+        test_area_local=("你本地的IPV4地址")
+        test_ip_local=("$target_ipv4")
+    fi
 fi
 # 在menu_mode为false时才打印信息
 if [ "$menu_mode" = false ]; then
-    _blue "检测到参数，使用参数模式，读取参数如下，显示4秒"
+    if [ "$en_status" = true ]; then
+        _blue "Parameter is detected, use parameter mode, read the parameter as follows, display for 4 seconds"
+    else
+        _blue "检测到参数，使用参数模式，读取参数如下，显示4秒"
+    fi
     echo "menu_mode: $menu_mode"
     echo "test_base_status: $test_base_status"
     echo "target_ipv4: $target_ipv4"
@@ -188,8 +205,12 @@ trap _exit INT QUIT TERM
 
 _exit() {
     # 终止信号捕获 - ctrl+c
-    echo -e "\n${Msg_Error}Exiting ...\n"
-    _red "检测到退出操作，脚本终止！\n"
+    echo -e "\n${Msg_Error}Exiting ..."
+    if [ "$en_status" = true ]; then
+        _red "An exit operation is detected and the script terminates!"
+    else
+        _red "检测到退出操作，脚本终止！"
+    fi
     global_exit_action
     rm_script
     exit 1
@@ -212,7 +233,11 @@ global_exit_action() {
     if [ "$build_text_status" = true ]; then
         build_text
         if [ -n "$shorturl" ]; then
-            _green "  短链:"
+            if [ "$en_status" = true ]; then
+                _green "  Shortlinks:"
+            else
+                _green "  短链:"
+            fi
             _blue "    $shorturl"
         fi
     fi
@@ -268,17 +293,31 @@ checkver() {
     curl -L "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/ecs.sh" -o ecs1.sh && chmod 777 ecs1.sh
     downloaded_version=$(sed -n '8s/ver="\(.*\)"/\1/p' ecs1.sh)
     if [ "$running_version" != "$downloaded_version" ]; then
-        _yellow "更新脚本从 $ver 到 $downloaded_version"
+        if [ "$en_status" = true ]; then
+            _yellow "Upgrade script from $ver to $downloaded_version"
+        else
+            _yellow "更新脚本从 $ver 到 $downloaded_version"
+        fi
         mv ecs1.sh "$0"
         ./ecs.sh
     else
-        _green "本脚本已是最新脚本无需更新"
+        if [ "$en_status" = true ]; then
+            _green "This script is the lastes version."
+        else
+            _green "本脚本已是最新脚本无需更新"
+        fi
         rm -rf ecs1.sh*
     fi
 }
 
 check_root() {
-    [[ $EUID -ne 0 ]] && echo -e "${RED}请使用 root 用户运行本脚本！${PLAIN}" && exit 1
+    local root_status=true
+    [[ $EUID -ne 0 ]] && root_status=false
+    if [ "$en_status" = true ] && [ "$root_status" = false ]; then
+        echo -e "${RED}Please use root user to run this script!${PLAIN}" && exit 1
+    elif [ "$root_status" = false ]; then
+        echo -e "${RED}请使用 root 用户运行本脚本！${PLAIN}" && exit 1
+    fi
 }
 
 check_update() {
@@ -565,39 +604,78 @@ pre_download() {
                 echo "wget failed, trying with curl"
                 curl -Lk -o $TEMP_DIR/sysbench.zip "${cdn_success_url}https://github.com/akopytov/sysbench/archive/1.0.20.zip"
             fi
+            if [ ! -f $TEMP_DIR/sysbench.zip ]; then
+                wget -q -O $TEMP_DIR/sysbench.zip "https://hub.fgit.cf/akopytov/sysbench/archive/1.0.20.zip"
+            fi
+            chmod +x $TEMP_DIR/sysbench.zip
             unzip $TEMP_DIR/sysbench.zip -d ${TEMP_DIR}
             ;;
         dp)
             curl -sL -k "${cdn_success_url}https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_${tp_sys}" -o $TEMP_DIR/dp && chmod +x $TEMP_DIR/dp
+            if [ ! -f $TEMP_DIR/dp ]; then
+                wget -q -O $TEMP_DIR/dp "https://hub.fgit.cf/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_${tp_sys}" && chmod +x $TEMP_DIR/dp
+            fi
             ;;
         nf)
             curl -sL -k "${cdn_success_url}https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_${tp_sys}" -o $TEMP_DIR/nf && chmod +x $TEMP_DIR/nf
+            if [ ! -f $TEMP_DIR/nf ]; then
+                wget -q -O $TEMP_DIR/nf "https://hub.fgit.cf/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_${tp_sys}" && chmod +x $TEMP_DIR/nf
+            fi
             ;;
         tubecheck)
             curl -sL -k "${cdn_success_url}https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_${tp_sys}" -o $TEMP_DIR/tubecheck && chmod +x $TEMP_DIR/tubecheck
+            if [ ! -f $TEMP_DIR/tubecheck ]; then
+                wget -q -O $TEMP_DIR/tubecheck "https://hub.fgit.cf/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_${tp_sys}" && chmod +x $TEMP_DIR/tubecheck
+            fi
             ;;
         media_lmc_check)
             curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh" -o $TEMP_DIR/media_lmc_check.sh && chmod 777 $TEMP_DIR/media_lmc_check.sh
+            if [ ! -f $TEMP_DIR/media_lmc_check.sh ]; then
+                wget -q -O $TEMP_DIR/media_lmc_check.sh "https://raw.fgit.cf/lmc999/RegionRestrictionCheck/main/check.sh" && chmod 777 $TEMP_DIR/media_lmc_check.sh
+            fi
             ;;
         besttrace)
             curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/besttrace/2021/${BESTTRACE_FILE}" -o $TEMP_DIR/$BESTTRACE_FILE && chmod +x $TEMP_DIR/$BESTTRACE_FILE
+            if [ ! -f $TEMP_DIR/$BESTTRACE_FILE ]; then
+                wget -q -O $TEMP_DIR/$BESTTRACE_FILE "https://raw.fgit.cf/spiritLHLS/ecs/main/archive/besttrace/2021/${BESTTRACE_FILE}" && chmod +x $TEMP_DIR/$BESTTRACE_FILE
+            fi
             ;;
         nexttrace)
-            NEXTTRACE_VERSION=$(curl -sSL "https://api.github.com/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}') && curl -sL -k "${cdn_success_url}https://github.com/nxtrace/Ntrace-core/releases/download/${NEXTTRACE_VERSION}/${NEXTTRACE_FILE}" -o $TEMP_DIR/$NEXTTRACE_FILE && chmod +x $TEMP_DIR/$NEXTTRACE_FILE
+            NEXTTRACE_VERSION=$(curl -sSL "https://api.github.com/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
+            # 如果 https://api.github.com/ 请求失败，则使用 https://githubapi.spiritlhl.workers.dev/ ，此时可能宿主机无IPV4网络
+            if [ -z "$NEXTTRACE_VERSION" ]; then
+                NEXTTRACE_VERSION=$(curl -sSL "https://githubapi.spiritlhl.workers.dev/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
+            fi
+            curl -sL -k "${cdn_success_url}https://github.com/nxtrace/Ntrace-core/releases/download/${NEXTTRACE_VERSION}/${NEXTTRACE_FILE}" -o $TEMP_DIR/$NEXTTRACE_FILE && chmod +x $TEMP_DIR/$NEXTTRACE_FILE
+            if [ ! -f $TEMP_DIR/$NEXTTRACE_FILE ]; then
+                wget -q -O $TEMP_DIR/$NEXTTRACE_FILE "https://hub.fgit.cf/nxtrace/Ntrace-core/releases/download/${NEXTTRACE_VERSION}/${NEXTTRACE_FILE}" && chmod +x $TEMP_DIR/$NEXTTRACE_FILE
+            fi
             ;;
         backtrace)
             wget -q -O $TEMP_DIR/backtrace.tar.gz https://github.com/zhanghanyun/backtrace/releases/latest/download/$BACKTRACE_FILE
+            if [ ! -f $TEMP_DIR/backtrace.tar.gz ]; then
+                wget -q -O $TEMP_DIR/backtrace.tar.gz https://hub.fgit.cf/zhanghanyun/backtrace/releases/latest/download/$BACKTRACE_FILE
+            fi
             tar -xf $TEMP_DIR/backtrace.tar.gz -C $TEMP_DIR
             ;;
         yabsiotest)
             curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/yabsiotest.sh" -o $TEMP_DIR/yabsiotest.sh && chmod +x $TEMP_DIR/yabsiotest.sh
+            if [ ! -f $TEMP_DIR/yabsiotest.sh ]; then
+                wget -q -O $TEMP_DIR/yabsiotest.sh "https://raw.fgit.cf/spiritLHLS/ecs/main/archive/yabsiotest.sh" && chmod +x $TEMP_DIR/yabsiotest.sh
+            fi
             ;;
         yabs)
             curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/masonr/yet-another-bench-script/master/yabs.sh" -o $TEMP_DIR/yabs.sh && chmod +x $TEMP_DIR/yabs.sh
+            if [ ! -f $TEMP_DIR/yabs.sh ]; then
+                wget -q -O $TEMP_DIR/yabs.sh "https://raw.fgit.cf/masonr/yet-another-bench-script/master/yabs.sh" && chmod +x $TEMP_DIR/yabs.sh
+            fi
             sed -i '/# gather basic system information (inc. CPU, AES-NI\/virt status, RAM + swap + disk size)/,/^echo -e "IPv4\/IPv6  : $ONLINE"/d' $TEMP_DIR/yabs.sh
             ;;
         ecsspeed_ping)
             curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecsspeed/main/script/ecsspeed-ping.sh" -o $TEMP_DIR/ecsspeed-ping.sh && chmod +x $TEMP_DIR/ecsspeed-ping.sh
+            if [ ! -f $TEMP_DIR/ecsspeed-ping.sh ]; then
+                wget -q -O $TEMP_DIR/ecsspeed-ping.sh "https://raw.fgit.cf/spiritLHLS/ecsspeed/main/script/ecsspeed-ping.sh" && chmod +x $TEMP_DIR/ecsspeed-ping.sh
+            fi
             ;;
         *)
             echo "Invalid file: $file"
@@ -1448,16 +1526,26 @@ Run_SysBench_CPU() {
     local ResultScore="$(echo "${TotalScore} ${maxtestcount}" | awk '{printf "%d",$1/$2}')"
     if [ "$1" = "1" ]; then
         if [ "$ResultScore" -eq "0" ] || ([ "$1" -lt "2" ] && [ "$ResultScore" -gt "100000" ]); then
-            echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_Red}sysbench测试失效，请使用本脚本选项6中的gb4或gb5测试${Font_Suffix}"
-            echo -e " $4:\t\tsysbench测试失效，请使用本脚本选项6中的gb4或gb5测试" >>${WorkDir}/SysBench/CPU/result.txt
+            if [ "$en_status" = true ]; then
+                echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_Red}sysbench test failed, please use this script option '-ctype gb5' to test${Font_Suffix}"
+                echo -e " $4:\t\tsysbench test failed, please use this script option '-ctype gb5' to test" >>${WorkDir}/SysBench/CPU/result.txt
+            else
+                echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_Red}sysbench测试失效，请使用本脚本选项 '-ctype gb5' 进行测试${Font_Suffix}"
+                echo -e " $4:\t\tsysbench测试失效，请使用本脚本选项 '-ctype gb5' 进行测试" >>${WorkDir}/SysBench/CPU/result.txt
+            fi
         else
             echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_SkyBlue}${ResultScore}${Font_Suffix} ${Font_Yellow}Scores${Font_Suffix}"
             echo -e " $4:\t\t\t${ResultScore} Scores" >>${WorkDir}/SysBench/CPU/result.txt
         fi
     elif [ "$1" -ge "2" ]; then
         if [ "$ResultScore" -eq "0" ] || ([ "$1" -lt "2" ] && [ "$ResultScore" -gt "100000" ]); then
-            echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_Red}sysbench测试失效，请使用本脚本选项5中的gb4或gb5测试${Font_Suffix}"
-            echo -e " $4:\t\tsysbench测试失效，请使用本脚本选项5中的gb4或gb5测试" >>${WorkDir}/SysBench/CPU/result.txt
+            if [ "$en_status" = true ]; then
+                echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_Red}sysbench test failed, please use this script option '-ctype gb5' to test${Font_Suffix}"
+                echo -e " $4:\t\tsysbench test failed, please use this script option '-ctype gb5' to test" >>${WorkDir}/SysBench/CPU/result.txt
+            else
+                echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_Red}sysbench测试失效，请使用本脚本选项5中的gb4或gb5测试${Font_Suffix}"
+                echo -e " $4:\t\tsysbench测试失效，请使用本脚本选项5中的gb4或gb5测试" >>${WorkDir}/SysBench/CPU/result.txt
+            fi
         else
             echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_SkyBlue}${ResultScore}${Font_Suffix} ${Font_Yellow}Scores${Font_Suffix}"
             echo -e " $4:\t\t${ResultScore} Scores" >>${WorkDir}/SysBench/CPU/result.txt

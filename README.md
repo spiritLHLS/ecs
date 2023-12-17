@@ -69,12 +69,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2023.12.13
+2023.12.17
 
-- 更新参数模式的指令的解析
-- 增加```-mdisk```指令，可指定测试含挂载盘在内的多盘IO
-- 优化```-ctype```和```-dtype```指令的执行，新增两个judge函数分配任务
-- 更新```-h```指令的解释
+- 修复纯IPV6测试的情况下，大部分反代CDN失效的情况
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
