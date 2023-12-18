@@ -69,9 +69,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2023.12.17
+2023.12.18
 
-- 修复纯IPV6测试的情况下，大部分反代CDN失效的情况
+- 修复纯IPV6测试的情况下，回程路由测试失效的情况，替换广东仍能使用的IPV6网关作为回程测试的目标地址
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

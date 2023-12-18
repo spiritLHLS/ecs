@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.12.17"
+ver="2023.12.18"
 changeLog="VPS融合怪测试(集百家之长)"
 start_time=$(date +%s)
 
@@ -117,6 +117,9 @@ while [ "$#" -gt 0 ]; do
             echo "-mdisk 可指定测试多个挂载盘的IO，注意这也会测试系统盘"
             # 更多选项待添加
             # echo "-speedtest 可指定测试时使用的是什么平台的测速节点，可选 .cn .com 分别对应 speedtest.cn speedtest.com"
+            # echo "-ipv4 可指定测试时使用的是哪种IP网络优先，该指令指定IPV4网络优先"
+            # echo "-ipv6 可指定测试时使用的是哪种IP网络优先，该指令指定IPV6网络优先"
+            # echo "-en   可指定测试时使用的是哪种语言进行展示，该指令指定为使用英语，未指定时使用中文"
             exit 1
         ;;
         *)
@@ -173,7 +176,7 @@ test_ip_b=("219.141.136.12" "202.106.50.1" "221.179.155.161")
 test_area_c=("成都电信" "成都联通" "成都移动")
 test_ip_c=("61.139.2.69" "119.6.6.6" "211.137.96.205")
 test_area_6=("广东电信" "广东联通" "广东移动")
-test_ip_6=("2401:1d40:3100::1" "2408:8001:3000::1" "2409:8054:306c::1")
+test_ip_6=("240e:0:a::c9:5238" "2408:8651:3700::b" "2409:8055:40:2a1::1")
 BrowserUA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36"
 
 # =============== 基础信息设置 ===============
@@ -3830,7 +3833,7 @@ fscarmen_route_script() {
             "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >>/tmp/ip_temp
             if [ ! -s "/tmp/ip_temp" ] || grep -q "http: 403" /tmp/ip_temp || grep -q "error" /tmp/ip_temp 2>/dev/null; then
                 rm -rf /tmp/ip_temp
-                RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip[a]}" --color 2>/dev/null)
+                RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip[a]}" --nocolor 2>/dev/null)
                 RESULT=$(echo "$RESULT" | grep '^[0-9 ]')
                 PART_1=$(echo "$RESULT" | grep '^[0-9]\{1,2\}[ ]\+[0-9a-f]' | awk '{$1="";$2="";print}' | sed "s@^[ ]\+@@g")
                 PART_2=$(echo "$RESULT" | grep '\(.*ms\)\{3\}' | sed 's/.* \([0-9*].*ms\).*ms.*ms/\1/g')
@@ -3863,8 +3866,8 @@ fscarmen_route_script() {
         _green "依次测试电信/联通/移动经过的地区及线路，核心程序来自nexttrace，请知悉!" >/tmp/ecs/ip.test
         for ((a = 0; a < ${#test_area_6[@]}; a++)); do
             rm -rf /tmp/ip_temp
-            RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip_6[a]}" --color 2>/dev/null)
-            RESULT=$(echo "$RESULT" | grep '^[0-9 ]')
+            RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip_6[a]}" --nocolor 2>/dev/null)
+            RESULT=$(echo "$RESULT" | grep -E -v '^(NextTrace|MapTrace|\[NextTrace API\]|IP|traceroute to)')
             PART_1=$(echo "$RESULT" | grep '^[0-9]\{1,2\}[ ]\+[0-9a-f]' | awk '{$1="";$2="";print}' | sed "s@^[ ]\+@@g")
             PART_2=$(echo "$RESULT" | grep '\(.*ms\)\{3\}' | sed 's/.* \([0-9*].*ms\).*ms.*ms/\1/g')
             SPACE=' '
@@ -3875,6 +3878,7 @@ fscarmen_route_script() {
                 echo -e "$p_1 \t$p_2" >>/tmp/ip_temp
             done
             _yellow "${test_area_6[a]} ${test_ip_6[a]}" >>/tmp/ecs/ip.test
+            
             cat /tmp/ip_temp >>/tmp/ecs/ip.test
             rm -rf /tmp/ip_temp
         done
