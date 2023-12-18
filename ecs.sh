@@ -6,7 +6,6 @@ cd /root >/dev/null 2>&1
 myvar=$(pwd)
 ver="2023.12.18"
 changeLog="VPS融合怪测试(集百家之长)"
-start_time=$(date +%s)
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -3555,6 +3554,7 @@ pre_check() {
     systemInfo_get_os_release
     check_lsof
     check_time_zone
+    start_time=$(date +%s) # 同步时间后再进行计时
     global_startup_init_action
     cd $myvar >/dev/null 2>&1
     ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
