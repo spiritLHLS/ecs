@@ -4,8 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.12.18"
-changeLog="VPS融合怪测试(集百家之长)"
+ver="2023.12.31"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -32,6 +31,7 @@ swhc_mode=true
 test_base_status=false
 test_cpu_type=""
 test_disk_type=""
+test_network_type=""
 build_text_status=true
 multidisk_status=false
 target_ipv4=""
@@ -66,12 +66,11 @@ while [ "$#" -gt 0 ]; do
             route_location="$2"
             shift 2
         ;;
-        # -en)
-        #     # 处理 -en 选项，选择使用英文显示
-        #     menu_mode=false
-        #     en_status=true
-        #     shift
-        # ;;
+        -en)
+            # 处理 -en 选项，选择使用英文显示
+            en_status=true
+            shift
+        ;;
         -base)
             # 处理 -base 选项，选择仅测试系统信息
             menu_mode=false
@@ -96,6 +95,12 @@ while [ "$#" -gt 0 ]; do
             multidisk_status=true
             shift
         ;;
+        -stype)
+            # 处理 -stype 选项，选择测试网速的数据来源，不指定时默认优先使用.net数据
+            menu_mode=false
+            test_network_type="$2"
+            shift 2
+        ;;
         -banup)
             # 处理 -banup 选项，选择测试磁盘使用的方式
             menu_mode=false
@@ -103,22 +108,33 @@ while [ "$#" -gt 0 ]; do
             shift
         ;;
         -h)
-            echo "使用参数模式执行："
-            echo "-m     必填项，指定原本menu中的选项，最多支持三层选择"
-            echo "       例如执行 bash ecs.sh -m 5 1 1 将选择主菜单第5选项下的第1选项下的子选项1的脚本执行"
-            echo "       (可缺省仅指定一个参数，如 -m 1 仅指定执行融合怪完全体，执行 -m 1 0 以及 -m 1 0 0 都是指定执行融合怪完全体)"
-            echo "-i     可选项，可指定回程路由测试中的目标IPV4地址，可通过 ip.sb ipinfo.io 等网站获取本地IPV4地址后指定"
-            echo "-r     可选项，可指定回程路由测试中的三网目标地址，可选 b g s c 分别对应 北京、广州、上海、成都 的三网地址，如 -r g 指定测试广州回程"
-            echo "-base  可选项，仅测试基础的系统信息，不测试CPU、硬盘、流媒体、回程路由等内容"
-            echo "-ctype 可选项，可指定通过何种方式测试cpu，可选 gb4 gb5 gb6 分别对应geekbench的4、5、6版本，无该指令则默认使用sysbench测试"
-            echo "-dtype 可选项，可指定测试硬盘IO的程序，可选 dd 或 fio 前者测试快后者测试慢，无该指令则默认为都使用进行测试"
-            echo "-banup 可选项，可指定强制不生成分享链接，无该指令则默认生成分享链接"
-            echo "-mdisk 可指定测试多个挂载盘的IO，注意这也会测试系统盘"
-            # 更多选项待添加
-            # echo "-speedtest 可指定测试时使用的是什么平台的测速节点，可选 .cn .com 分别对应 speedtest.cn speedtest.com"
-            # echo "-ipv4 可指定测试时使用的是哪种IP网络优先，该指令指定IPV4网络优先"
-            # echo "-ipv6 可指定测试时使用的是哪种IP网络优先，该指令指定IPV6网络优先"
-            # echo "-en   可指定测试时使用的是哪种语言进行展示，该指令指定为使用英语，未指定时使用中文"
+            if [ "$en_status" = true ]; then
+                echo "Executed using parameter mode:"
+                echo "-m     Mandatory, Specify the options in the original menu, support up to three levels of selection"
+                echo "       For example, executing bash ecs.sh -m 5 1 1 will select the script execution for sub-option 1 under option 1 of option 5 of the main menu."
+                echo "       Can specify only 1~3 parameter by default, e.g. -m 1 or -m 1 0 or -m 1 0 0"
+                echo "-en    Optional, Can specify which language is used to display the test, unspecified Chinese is used."
+                echo "-i     Optional, Can specify the target IPV4 address in the backhaul routing test."
+                echo "-base  Optional, Only basic system information is tested, not CPU, hard disk, streaming, backhaul routing, etc."
+                echo "-ctype Optional, Can specify the way to test the cpu, optional gb4 gb5 gb6 corresponds to geekbench version 4, 5, 6 respectively."
+                echo "-dtype Optional, Can specify the program to test the IO of the hard disk, you can choose dd or fio, the former test is fast and the latter test is slow."
+                echo "-mdisk Optional, Can specify to test the IO of multiple mounted disks."
+                echo "-banup Optional, Can specify to force not to generate the sharing link."
+            else
+                echo "使用参数模式执行："
+                echo "-m     必填项，指定原本menu中的选项，最多支持三层选择"
+                echo "       例如执行 bash ecs.sh -m 5 1 1 将选择主菜单第5选项下的第1选项下的子选项1的脚本执行"
+                echo "       (可缺省仅指定一个参数，如 -m 1 仅指定执行融合怪完全体，执行 -m 1 0 以及 -m 1 0 0 都是指定执行融合怪完全体)"
+                echo "-en    可选项，可指定测试时使用的是哪种语言进行展示，该指令指定为使用英语，未指定时使用中文"
+                echo "-i     可选项，可指定回程路由测试中的目标IPV4地址，可通过 ip.sb ipinfo.io 等网站获取本地IPV4地址后指定"
+                echo "-r     可选项，可指定回程路由测试中的三网目标地址，可选 b g s c 6 分别对应 北京、广州、上海、成都、纯IPV6 的三网地址，如 -r g 指定测试广州回程"
+                echo "-base  可选项，仅测试基础的系统信息，不测试CPU、硬盘、流媒体、回程路由等内容"
+                echo "-ctype 可选项，可指定通过何种方式测试cpu，可选 gb4 gb5 gb6 分别对应geekbench的4、5、6版本，无该指令则默认使用sysbench测试"
+                echo "-dtype 可选项，可指定测试硬盘IO的程序，可选 dd 或 fio 前者测试快后者测试慢，无该指令则默认为都使用进行测试"
+                echo "-mdisk 可选项，可指定测试多个挂载盘的IO，注意这也会测试系统盘且仅使用fio测试"
+                echo "-stype 可选项，可指定测试时使用的是什么平台的测速节点，可选 .cn .com 分别对应 speedtest.cn speedtest.com 数据"
+                echo "-banup 可选项，可指定强制不生成分享链接，无该指令则默认生成分享链接"
+            fi
             exit 1
         ;;
         *)
@@ -162,6 +178,11 @@ if [ "$menu_mode" = false ]; then
 fi
 
 # =============== 自定义基础参数 ==============
+if [ "$en_status" = true ]; then
+    changeLog="VPS Fusion Monster Test From Multi-script"
+else
+    changeLog="VPS融合怪测试(集百家之长)"
+fi
 shorturl=""
 TEMP_DIR='/tmp/ecs'
 temp_file_apt_fix="${TEMP_DIR}/apt_fix.txt"
@@ -201,6 +222,7 @@ rm -rf test_result.txt >/dev/null 2>&1
 if [ ! -d "/tmp" ]; then
     mkdir /tmp
 fi
+usage_timeout=true
 
 # =============== 脚本退出执行相关函数 部分 ===============
 trap _exit INT QUIT TERM
@@ -236,7 +258,7 @@ global_exit_action() {
         build_text
         if [ -n "$shorturl" ]; then
             if [ "$en_status" = true ]; then
-                _green "  Shortlinks:"
+                _green "  ShortLink:"
             else
                 _green "  短链:"
             fi
@@ -382,6 +404,14 @@ check_lsb_release() {
     if ! command -v lsb_release >/dev/null 2>&1; then
         _yellow "Installing lsb-release"
         ${PACKAGE_INSTALL[int]} lsb-release
+    fi
+}
+
+check_timeout(){
+    if command -v timeout >/dev/null 2>&1; then
+        usage_timeout=true
+    else
+        usage_timeout=false
     fi
 }
 
@@ -816,7 +846,11 @@ check_time_zone() {
             echo "Port 123 is already in use. Skipping ntpd command."
         else
             # 最多对准时长进行60秒，避免对准时间这个过程耗时过长
-            timeout 60 ntpd -gq
+            if [ "$usage_timeout" = true ]; then
+                timeout 60s ntpd -gq
+            else
+                ntpd -gq
+            fi
             if which systemctl >/dev/null 2>&1; then
                 systemctl start ntpd
             else
@@ -1558,16 +1592,30 @@ Run_SysBench_CPU() {
 Function_SysBench_CPU_Fast() {
     cd $myvar >/dev/null 2>&1
     mkdir -p ${WorkDir}/SysBench/CPU/ >/dev/null 2>&1
-    echo -e " ${Font_Yellow}-> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}"
-    echo -e " -> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/CPU/result.txt
-    Run_SysBench_CPU "1" "5" "1" "1 线程测试(1核)得分"
-    sleep 1
-    if [ -n "${Result_Systeminfo_CPUThreads}" ] && [ "${Result_Systeminfo_CPUThreads}" -ge "2" ] >/dev/null 2>&1; then
-        Run_SysBench_CPU "${Result_Systeminfo_CPUThreads}" "5" "1" "${Result_Systeminfo_CPUThreads} 线程测试(多核)得分"
-    elif [ -n "${Result_Systeminfo_CPUCores}" ] && [ "${Result_Systeminfo_CPUCores}" -ge "2" ] >/dev/null 2>&1; then
-        Run_SysBench_CPU "${Result_Systeminfo_CPUCores}" "5" "1" "${Result_Systeminfo_CPUCores} 线程测试(多核)得分"
-    elif [ -n "${cores}" ] && [ "${cores}" -ge "2" ] >/dev/null 2>&1; then
-        Run_SysBench_CPU "${cores}" "5" "1" "${cores} 线程测试(多核)得分"
+    if [ "$en_status" = true ]; then
+        echo -e " ${Font_Yellow}-> CPU test in progress (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}"
+        echo -e " -> CPU test in progress (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/CPU/result.txt
+        Run_SysBench_CPU "1" "5" "1" "1 Thread(s) Test"
+        sleep 1
+        if [ -n "${Result_Systeminfo_CPUThreads}" ] && [ "${Result_Systeminfo_CPUThreads}" -ge "2" ] >/dev/null 2>&1; then
+            Run_SysBench_CPU "${Result_Systeminfo_CPUThreads}" "5" "1" "${Result_Systeminfo_CPUThreads} Thread(s) Test"
+        elif [ -n "${Result_Systeminfo_CPUCores}" ] && [ "${Result_Systeminfo_CPUCores}" -ge "2" ] >/dev/null 2>&1; then
+            Run_SysBench_CPU "${Result_Systeminfo_CPUCores}" "5" "1" "${Result_Systeminfo_CPUCores} Thread(s) Test"
+        elif [ -n "${cores}" ] && [ "${cores}" -ge "2" ] >/dev/null 2>&1; then
+            Run_SysBench_CPU "${cores}" "5" "1" "${cores} Thread(s) Test"
+        fi
+    else
+        echo -e " ${Font_Yellow}-> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}"
+        echo -e " -> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/CPU/result.txt
+        Run_SysBench_CPU "1" "5" "1" "1 线程测试(单核)得分"
+        sleep 1
+        if [ -n "${Result_Systeminfo_CPUThreads}" ] && [ "${Result_Systeminfo_CPUThreads}" -ge "2" ] >/dev/null 2>&1; then
+            Run_SysBench_CPU "${Result_Systeminfo_CPUThreads}" "5" "1" "${Result_Systeminfo_CPUThreads} 线程测试(多核)得分"
+        elif [ -n "${Result_Systeminfo_CPUCores}" ] && [ "${Result_Systeminfo_CPUCores}" -ge "2" ] >/dev/null 2>&1; then
+            Run_SysBench_CPU "${Result_Systeminfo_CPUCores}" "5" "1" "${Result_Systeminfo_CPUCores} 线程测试(多核)得分"
+        elif [ -n "${cores}" ] && [ "${cores}" -ge "2" ] >/dev/null 2>&1; then
+            Run_SysBench_CPU "${cores}" "5" "1" "${cores} 线程测试(多核)得分"
+        fi
     fi
 }
 
@@ -1670,9 +1718,17 @@ speed_test() {
     local nodeName="$2"
     if [ ! -f "./speedtest-cli/speedtest" ]; then
         if [ -z "$1" ]; then
-            ./speedtest-cli/speedtest-go >./speedtest-cli/speedtest.log 2>&1
+            if [ "$usage_timeout" = true ]; then
+                timeout 70s ./speedtest-cli/speedtest-go >./speedtest-cli/speedtest.log 2>&1
+            else
+                ./speedtest-cli/speedtest-go >./speedtest-cli/speedtest.log 2>&1
+            fi
         else
-            ./speedtest-cli/speedtest-go --server=$1 >./speedtest-cli/speedtest.log 2>&1
+            if [ "$usage_timeout" = true ]; then
+                timeout 70s ./speedtest-cli/speedtest-go --server=$1 >./speedtest-cli/speedtest.log 2>&1
+            else
+                ./speedtest-cli/speedtest-go --server=$1 >./speedtest-cli/speedtest.log 2>&1
+            fi
         fi
         if [ $? -eq 0 ]; then
             local dl_speed=$(grep -oP 'Download: \K[\d\.]+' ./speedtest-cli/speedtest.log)
@@ -1749,25 +1805,42 @@ test_list() {
 }
 
 temp_head() {
-    echo "--------------------自动更新测速节点列表--本脚本原创--------------------"
-    if [[ $selection =~ ^[1-5]$ ]]; then
-        if [ -f "./speedtest-cli/speedtest" ]; then
-            echo -e "位置\t         上传速度\t 下载速度\t 延迟\t  丢包率"
+    if [ "$en_status" = true ]; then
+        echo "------------------------------Speedtest---------------------------------"
+        if [[ $selection =~ ^[1-5]$ ]]; then
+            if [ -f "./speedtest-cli/speedtest" ]; then
+                echo -e "Location\t     Upload\t\t  Download\t Delay\t  Loss"
+            else
+                echo -e "Location\t     Upload\t\t Download\t Delay"
+            fi
         else
-            echo -e "位置\t         上传速度\t 下载速度\t 延迟"
+            if [ -f "./speedtest-cli/speedtest" ]; then
+                echo -e "Location\t Upload\t\t Download\t Delay\t Loss"
+            else
+                echo -e "Location\t Upload\t\t  Download\t Delay"
+            fi
         fi
     else
-        if [ -f "./speedtest-cli/speedtest" ]; then
-            echo -e "位置\t\t 上传速度\t 下载速度\t 延迟\t  丢包率"
+        echo "--------------------自动更新测速节点列表--本脚本原创--------------------"
+        if [[ $selection =~ ^[1-5]$ ]]; then
+            if [ -f "./speedtest-cli/speedtest" ]; then
+                echo -e "位置\t         上传速度\t 下载速度\t 延迟\t  丢包率"
+            else
+                echo -e "位置\t         上传速度\t 下载速度\t 延迟"
+            fi
         else
-            echo -e "位置\t\t 上传速度\t 下载速度\t 延迟"
+            if [ -f "./speedtest-cli/speedtest" ]; then
+                echo -e "位置\t\t 上传速度\t 下载速度\t 延迟\t  丢包率"
+            else
+                echo -e "位置\t\t 上传速度\t 下载速度\t 延迟"
+            fi
         fi
     fi
 }
 
 ping_test() {
     local ip="$1"
-    local result="$(ping -c1 -W3 "$ip" 2>/dev/null | awk -F '/' 'END {print $5}')"
+    local result="$(ping -c1 -w3 "$ip" 2>/dev/null | awk -F '/' 'END {print $5}')"
     echo "$ip,$result"
 }
 
@@ -1778,7 +1851,7 @@ get_nearest_data() {
     if [[ -z "${CN}" || "${CN}" != true ]]; then
         local retries=0
         while [[ $retries -lt 2 ]]; do
-            response=$(curl -sL --max-time 2 "$url")
+            response=$(curl -sL -m 2 "$url")
             if [[ $? -eq 0 ]]; then
                 break
             else
@@ -1788,11 +1861,11 @@ get_nearest_data() {
         done
         if [[ $retries -eq 2 ]]; then
             url="${cdn_success_url}${url}"
-            response=$(curl -sL --max-time 6 "$url")
+            response=$(curl -sL -m 6 "$url")
         fi
     else
         url="${cdn_success_url}${url}"
-        response=$(curl -sL --max-time 10 "$url")
+        response=$(curl -sL -m 8 "$url")
     fi
     while read line; do
         if [[ -n "$line" ]]; then
@@ -1809,10 +1882,16 @@ get_nearest_data() {
             elif [[ $url == *"Unicom"* ]]; then
                 city="联通${city}"
             fi
+            if [ "$en_status" = true ]; then
+                city=$(echo "$city" | sed 's/洛杉矶/US_LosAngeles/g')
+                city=$(echo "$city" | sed 's/法兰克福/DE_Frankfurt/g')
+                city=$(echo "$city" | sed 's/新加坡/SG_Singapore/g')
+                city=$(echo "$city" | sed 's/中国香港/HK_HongKong/g')
+                city=$(echo "$city" | sed 's/日本东京/JP_Tokyo/g')
+            fi
             data+=("$id,$city,$ip")
         fi
     done <<<"$response"
-
     rm -f /tmp/pingtest
     # 并行ping测试所有IP
     for ((i = 0; i < ${#data[@]}; i++)); do
@@ -1822,7 +1901,6 @@ get_nearest_data() {
         } &
     done
     wait
-
     # 取IP顺序列表results
     output=$(cat /tmp/pingtest)
     rm -f /tmp/pingtest
@@ -1859,7 +1937,7 @@ checknslookup() {
 }
 
 get_ip_from_url() {
-    nslookup -querytype=A $1 | awk '/^Name:/ {next;} /^Address: / { print $2 }'
+    nslookup -querytype=A $1 2>/dev/null | awk '/^Name:/ {next;} /^Address: / { print $2 }'
 }
 
 get_nearest_data2() {
@@ -1869,7 +1947,7 @@ get_nearest_data2() {
     if [[ -z "${CN}" || "${CN}" != true ]]; then
         local retries=0
         while [[ $retries -lt 2 ]]; do
-            response=$(curl -sL --max-time 2 "$url")
+            response=$(curl -sL -m 2 "$url")
             if [[ $? -eq 0 ]]; then
                 break
             else
@@ -1879,11 +1957,11 @@ get_nearest_data2() {
         done
         if [[ $retries -eq 2 ]]; then
             url="${cdn_success_url}${url}"
-            response=$(curl -sL --max-time 6 "$url")
+            response=$(curl -sL -m 6 "$url")
         fi
     else
         url="${cdn_success_url}${url}"
-        response=$(curl -sL --max-time 10 "$url")
+        response=$(curl -sL -m 8 "$url")
     fi
     ip_list=()
     city_list=()
@@ -1909,6 +1987,13 @@ get_nearest_data2() {
                 city="电信${city}"
             elif [[ $url == *"unicom"* ]]; then
                 city="联通${city}"
+            fi
+            if [ "$en_status" = true ]; then
+                city=$(echo "$city" | sed 's/洛杉矶/US_LosAngeles/g')
+                city=$(echo "$city" | sed 's/法兰克福/DE_Frankfurt/g')
+                city=$(echo "$city" | sed 's/新加坡/SG_Singapore/g')
+                city=$(echo "$city" | sed 's/中国香港/HK_HongKong/g')
+                city=$(echo "$city" | sed 's/日本东京/JP_Tokyo/g')
             fi
             if [[ ! " ${ip_list[@]} " =~ " ${ip} " ]] && [[ ! " ${city_list[@]} " =~ " ${city} " ]]; then
                 data+=("$host,$city,$ip")
@@ -1956,9 +2041,17 @@ speed_test2() {
     local nodeName="$2"
     if [ ! -f "./speedtest-cli/speedtest" ]; then
         if [ -z "$1" ]; then
-            ./speedtest-cli/speedtest-go >./speedtest-cli/speedtest.log 2>&1
+            if [ "$usage_timeout" = true ]; then
+                timeout 70s ./speedtest-cli/speedtest-go >./speedtest-cli/speedtest.log 2>&1
+            else
+                ./speedtest-cli/speedtest-go >./speedtest-cli/speedtest.log 2>&1
+            fi
         else
-            ./speedtest-cli/speedtest-go --custom-url=http://"$1"/upload.php >./speedtest-cli/speedtest.log 2>&1
+            if [ "$usage_timeout" = true ]; then
+                timeout 70s ./speedtest-cli/speedtest-go --custom-url=http://"$1"/upload.php >./speedtest-cli/speedtest.log 2>&1
+            else
+                ./speedtest-cli/speedtest-go --custom-url=http://"$1"/upload.php >./speedtest-cli/speedtest.log 2>&1
+            fi
         fi
         if [ $? -eq 0 ]; then
             local dl_speed=$(grep -oP 'Download: \K[\d\.]+' ./speedtest-cli/speedtest.log)
@@ -1983,6 +2076,56 @@ speed_test2() {
     fi
 }
 
+check_to_cn_test() {
+    local provider_list="$1"
+    local data_array=("$2")
+    local use_all="$3"
+    if [ "$test_network_type" == ".cn" ]; then
+        data_array=($(get_nearest_data2 "${SERVER_BASE_URL2}/${provider_list}")) >/dev/null 2>&1
+        wait
+        if [ ${#data_array[@]} -eq 0 ]; then
+            return
+        else
+            unset -f speed_test
+            speed_test() { speed_test2 "$@"; }
+            echo -en "\r测速中                                                        \r"
+            if [ "$use_all" == "true" ]; then
+                test_list "${data_array[@]}"
+            else
+                test_list "${data_array[0]}"
+            fi
+        fi
+    elif [ ${#data_array[@]} -eq 0 ] && [ -z "$test_network_type" ]; then
+        echo -n "该运营商.net的节点列表为空，正在替换为.cn的节点列表。。。"
+        CN=true
+        if [ -f "./speedtest-cli/speedtest" ]; then
+            rm -rf ./speedtest-cli/speedtest
+            (install_speedtest >/dev/null 2>&1)
+        fi
+        data_array=($(get_nearest_data2 "${SERVER_BASE_URL2}/${provider_list}")) >/dev/null 2>&1
+        wait
+        if [ ${#data_array[@]} -eq 0 ]; then
+            return
+        else
+            unset -f speed_test
+            speed_test() { speed_test2 "$@"; }
+            echo -en "\r测速中                                                        \r"
+            
+            if [ "$use_all" == "true" ]; then
+                test_list "${data_array[@]}"
+            else
+                test_list "${data_array[0]}"
+            fi
+        fi
+    else
+        if [ "$use_all" == "true" ]; then
+            test_list "${data_array[@]}"
+        else
+            test_list "${data_array[0]}"
+        fi
+    fi
+}
+
 speed() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
     local ip4=$(echo "$IPV4" | tr -d '\n' | tr -d '[:space:]')
@@ -1990,30 +2133,14 @@ speed() {
         return
     fi
     temp_head
-    speed_test '' 'Speedtest.net'
+    if [ "$test_network_type" != ".cn" ]; then
+        speed_test '' 'Speedtest.net'
+    fi
     test_list "${ls_sg_hk_jp[@]}"
-    test_list "${CN_Unicom[@]}"
-    test_list "${CN_Telecom[@]}"
-    if [ ${#CN_Mobile[@]} -eq 0 ]; then
-        echo -n "该运营商.net的节点列表为空，正在替换为.cn的节点列表。。。"
-        CN=true
-        if [ -f "./speedtest-cli/speedtest" ]; then
-            rm -rf ./speedtest-cli/speedtest
-            (install_speedtest >/dev/null 2>&1)
-        fi
-        checknslookup >/dev/null 2>&1
-        CN_Mobile=($(get_nearest_data2 "${SERVER_BASE_URL2}/mobile.csv")) >/dev/null 2>&1
-        wait
-        if [ ${#CN_Mobile[@]} -eq 0 ]; then
-            return
-        else
-            unset -f speed_test
-            speed_test() { speed_test2 "$@"; }
-            echo -en "\r测速中                                                        \r"
-            test_list "${CN_Mobile[@]}"
-        fi
-    else
-        test_list "${CN_Mobile[@]}"
+    if [ "$en_status" = false ]; then
+        check_to_cn_test "unicom.csv" "${CN_Unicom[@]}" "true"
+        check_to_cn_test "telecom.csv" "${CN_Telecom[@]}" "true"
+        check_to_cn_test "mobile.csv" "${CN_Mobile[@]}" "true"
     fi
 }
 
@@ -2024,29 +2151,13 @@ speed2() {
         return
     fi
     temp_head
-    speed_test '' 'Speedtest.net'
-    test_list "${CN_Unicom[0]}"
-    test_list "${CN_Telecom[0]}"
-    if [ ${#CN_Mobile[@]} -eq 0 ]; then
-        echo -n "该运营商.net的节点列表为空，正在替换为.cn的节点列表。。。"
-        CN=true
-        if [ -f "./speedtest-cli/speedtest" ]; then
-            rm -rf ./speedtest-cli/speedtest
-            (install_speedtest >/dev/null 2>&1)
-        fi
-        checknslookup >/dev/null 2>&1
-        CN_Mobile=($(get_nearest_data2 "${SERVER_BASE_URL2}/mobile.csv")) >/dev/null 2>&1
-        wait
-        if [ ${#CN_Mobile[@]} -eq 0 ]; then
-            return
-        else
-            unset -f speed_test
-            speed_test() { speed_test2 "$@"; }
-            echo -en "\r测速中                                                         "
-            test_list "${CN_Mobile[0]}"
-        fi
-    else
-        test_list "${CN_Mobile[0]}"
+    if [ "$test_network_type" != ".cn" ]; then
+        speed_test '' 'Speedtest.net'
+    fi
+    if [ "$en_status" = false ]; then
+        check_to_cn_test "unicom.csv" "${CN_Unicom[0]}" "false"
+        check_to_cn_test "telecom.csv" "${CN_Telecom[0]}" "false"
+        check_to_cn_test "mobile.csv" "${CN_Mobile[0]}" "false"
     fi
 }
 
@@ -2107,12 +2218,21 @@ Run_DiskTest_DD() {
 
 Function_DiskTest_Fast() {
     mkdir -p ${WorkDir}/DiskTest/ >/dev/null 2>&1
-    echo -e " ${Font_Yellow}-> 磁盘IO测试中 (4K Block/1M Block, Direct Mode)${Font_Suffix}"
-    echo -e " -> 磁盘IO测试中 (4K Block/1M Block, Direct Mode)\n" >>${WorkDir}/DiskTest/result.txt
+    if [ "$en_status" = true ]; then
+        echo -e " ${Font_Yellow}-> Disk test in progress (4K Block/1M Block, Direct Mode)${Font_Suffix}"
+        echo -e " -> Disk test in progress (4K Block/1M Block, Direct Mode)\n" >>${WorkDir}/DiskTest/result.txt
+    else
+        echo -e " ${Font_Yellow}-> 磁盘IO测试中 (4K Block/1M Block, Direct Mode)${Font_Suffix}"
+        echo -e " -> 磁盘IO测试中 (4K Block/1M Block, Direct Mode)\n" >>${WorkDir}/DiskTest/result.txt
+    fi
     if [ "${Result_Systeminfo_VMMType}" = "docker" ] || [ "${Result_Systeminfo_VMMType}" = "wsl" ]; then
         echo -e " ${Msg_Warning}Due to virt architecture limit, the result may affect by the cache !"
     fi
-    echo -e " ${Font_Yellow}测试操作\t\t写速度\t\t\t\t\t读速度${Font_Suffix}"
+    if [ "$en_status" = true ]; then
+        echo -e " ${Font_Yellow}Block Size\t\tWrite Test\t\t\t\tRead Test${Font_Suffix}"
+    else
+        echo -e " ${Font_Yellow}测试操作\t\t写速度\t\t\t\t\t读速度${Font_Suffix}"
+    fi
     echo -e " Test Name\t\tWrite Speed\t\t\t\tRead Speed" >>${WorkDir}/DiskTest/result.txt
     Run_DiskTest_DD "100MB.test" "4k" "25600" "100MB-4K Block"
     Run_DiskTest_DD "1GB.test" "1M" "1000" "1GB-1M Block"
@@ -2203,10 +2323,17 @@ Run_SysBench_Memory() {
 
 Function_SysBench_Memory_Fast() {
     mkdir -p ${WorkDir}/SysBench/Memory/ >/dev/null 2>&1
-    echo -e " ${Font_Yellow}-> 内存测试 Test (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}"
-    echo -e " -> 内存测试 (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/Memory/result.txt
-    Run_SysBench_Memory "1" "5" "1" "read" "seq" "单线程读测试"
-    Run_SysBench_Memory "1" "5" "1" "write" "seq" "单线程写测试"
+    if [ "$en_status" = true ]; then
+        echo -e " ${Font_Yellow}-> Memory Test (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}"
+        echo -e " -> Memory Test (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/Memory/result.txt
+        Run_SysBench_Memory "1" "5" "1" "read" "seq" "Single Read Test"
+        Run_SysBench_Memory "1" "5" "1" "write" "seq" "Single Write Test"
+    else
+        echo -e " ${Font_Yellow}-> 内存测试 Test (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}"
+        echo -e " -> 内存测试 (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/Memory/result.txt
+        Run_SysBench_Memory "1" "5" "1" "read" "seq" "单线程读测试"
+        Run_SysBench_Memory "1" "5" "1" "write" "seq" "单线程写测试"
+    fi
     sleep 0.5
 }
 
@@ -2661,13 +2788,21 @@ get_system_info() {
     fi
     tcpctrl=$($sysctl_path -n net.ipv4.tcp_congestion_control 2>/dev/null)
     if [ $? -ne 0 ]; then
-        tcpctrl="未设置TCP拥塞控制算法"
+        if [ "$en_status" = true ]; then
+            tcpctrl="TCP congestion control algorithm not set"
+        else
+            tcpctrl="未设置TCP拥塞控制算法"
+        fi
     else
         if [ $tcpctrl == "bbr" ]; then
             :
         else
             if lsmod | grep bbr >/dev/null; then
-                reading "是否要开启bbr再进行测试？(回车则默认不开启) [y/n] " confirmbbr
+                if [ "$en_status" = true ]; then
+                    reading "Should I turn on bbr before testing? (Enter to leave it on by default) [y/n] " confirmbbr
+                else
+                    reading "是否要开启bbr再进行测试？(回车则默认不开启) [y/n] " confirmbbr
+                fi
                 echo ""
                 if [ "$confirmbbr" != "y" ]; then
                     echo "net.core.default_qdisc=fq" >>"$sysctl_conf"
@@ -2686,65 +2821,69 @@ get_system_info() {
         if command -v stun >/dev/null 2>&1; then
             result=$(stun stun.l.google.com)
             nat_type=$(echo "$result" | grep '^Primary' | awk -F'Primary:' '{print $2}' | tr -d ' ')
-            nat_type_r=""
-            if echo "$nat_type" | grep -qE "IndependentMapping|Independent Mapping"; then
-                nat_type_r+="独立映射"
-            fi
-            if echo "$nat_type" | grep -qE "IndependentFilter|Independent Filter"; then
-                if [ -n "$nat_type_r" ]; then
-                    nat_type_r+=","
+            if [ "$en_status" = true ]; then
+                nat_type_r=""
+            else
+                nat_type_r=""
+                if echo "$nat_type" | grep -qE "IndependentMapping|Independent Mapping"; then
+                    nat_type_r+="独立映射"
                 fi
-                nat_type_r+="独立过滤"
-            fi
-            if echo "$nat_type" | grep -q "preservesports|preserves ports"; then
-                if [ -n "$nat_type_r" ]; then
-                    nat_type_r+=","
-                fi
-                nat_type_r+="保留端口"
-            fi
-            if echo "$nat_type" | grep -q "randomport|random port"; then
-                if [ -n "$nat_type_r" ]; then
-                    nat_type_r+=","
-                fi
-                nat_type_r+="随机端口"
-            fi
-            if echo "$nat_type" | grep -qE "nohairpin|no hairpin"; then
-                if [ -n "$nat_type_r" ]; then
-                    nat_type_r+=","
-                fi
-                nat_type_r+="不支持回环"
-            fi
-            if echo "$nat_type" | grep -qE "willhairpin|will hairpin"; then
-                if [ -n "$nat_type_r" ]; then
-                    nat_type_r+=","
-                fi
-                nat_type_r+="支持回环"
-            fi
-            if echo "$nat_type" | grep -q "Open"; then
-                if [ -n "$nat_type_r" ]; then
-                    nat_type_r+=","
-                fi
-                nat_type_r+="开放型"
-            fi
-            if echo "$nat_type" | grep -qE "BlockedorcouldnotreachSTUNserver|Blocked or could not reach STUN server"; then
-                checkpystun
-                if command -v pystun3 >/dev/null 2>&1; then
-                    result=$(pystun3 </dev/null)
-                    nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
-                    if echo "$nat_type_r" | grep -qE "Blocked"; then
-                        nat_type_r="无法检测"
-                    fi
-                elif command -v pystun >/dev/null 2>&1; then
-                    result=$(pystun </dev/null)
-                    nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
-                    if echo "$nat_type_r" | grep -qE "Blocked"; then
-                        nat_type_r="无法检测"
-                    fi
-                else
+                if echo "$nat_type" | grep -qE "IndependentFilter|Independent Filter"; then
                     if [ -n "$nat_type_r" ]; then
                         nat_type_r+=","
                     fi
-                    nat_type_r+="无法检测"
+                    nat_type_r+="独立过滤"
+                fi
+                if echo "$nat_type" | grep -q "preservesports|preserves ports"; then
+                    if [ -n "$nat_type_r" ]; then
+                        nat_type_r+=","
+                    fi
+                    nat_type_r+="保留端口"
+                fi
+                if echo "$nat_type" | grep -q "randomport|random port"; then
+                    if [ -n "$nat_type_r" ]; then
+                        nat_type_r+=","
+                    fi
+                    nat_type_r+="随机端口"
+                fi
+                if echo "$nat_type" | grep -qE "nohairpin|no hairpin"; then
+                    if [ -n "$nat_type_r" ]; then
+                        nat_type_r+=","
+                    fi
+                    nat_type_r+="不支持回环"
+                fi
+                if echo "$nat_type" | grep -qE "willhairpin|will hairpin"; then
+                    if [ -n "$nat_type_r" ]; then
+                        nat_type_r+=","
+                    fi
+                    nat_type_r+="支持回环"
+                fi
+                if echo "$nat_type" | grep -q "Open"; then
+                    if [ -n "$nat_type_r" ]; then
+                        nat_type_r+=","
+                    fi
+                    nat_type_r+="开放型"
+                fi
+                if echo "$nat_type" | grep -qE "BlockedorcouldnotreachSTUNserver|Blocked or could not reach STUN server"; then
+                    checkpystun
+                    if command -v pystun3 >/dev/null 2>&1; then
+                        result=$(pystun3 </dev/null)
+                        nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
+                        if echo "$nat_type_r" | grep -qE "Blocked"; then
+                            nat_type_r="无法检测"
+                        fi
+                    elif command -v pystun >/dev/null 2>&1; then
+                        result=$(pystun </dev/null)
+                        nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
+                        if echo "$nat_type_r" | grep -qE "Blocked"; then
+                            nat_type_r="无法检测"
+                        fi
+                    else
+                        if [ -n "$nat_type_r" ]; then
+                            nat_type_r+=","
+                        fi
+                        nat_type_r+="无法检测"
+                    fi
                 fi
             fi
             if [ -z "$nat_type_r" ]; then
@@ -2761,19 +2900,33 @@ get_system_info() {
             fi
         fi
         if echo "$nat_type_r" | grep -qE "BlockedorcouldnotreachSTUNserver|Blocked or could not reach STUN server"; then
-            nat_type_r="无法检测"
+            if [ "$en_status" = true ]; then
+                nat_type_r="undetectable"
+            else
+                nat_type_r="无法检测"
+            fi
         fi
     else
-        nat_type_r="无法检测"
+        if [ "$en_status" = true ]; then
+            nat_type_r="undetectable"
+        else
+            nat_type_r="无法检测"
+        fi
     fi
 }
 
 # =============== 正式输出 部分 ===============
 print_intro() {
     echo "--------------------- A Bench Script By spiritlhl ----------------------"
-    echo "                   测评频道: https://t.me/vps_reviews                    "
-    echo "版本：$ver"
-    echo "更新日志：$changeLog                       "
+    if [ "$en_status" = true ]; then
+        echo "              Evaluation Channel: https://t.me/vps_reviews               "
+        echo "Version：$ver"
+        echo "UpdateLog：$changeLog                      "
+    else
+        echo "                   测评频道: https://t.me/vps_reviews                    "
+        echo "版本：$ver"
+        echo "更新日志：$changeLog                       "
+    fi
 }
 
 get_first_non_empty_element() {
@@ -2828,94 +2981,185 @@ print_ip_info() {
     # 获取IPV6的子网掩码
     local ipv6_prefixlen=$(check_and_cat_file "${TEMP_DIR}/eo6s_result")
     # 打印最终结果
-    if [[ -n "$ipv4_asn_info" && "$ipv4_asn_info" != "None" ]]; then
-        echo " IPV4 ASN          : $(_blue "$ipv4_asn_info")"
-    fi
-    if [[ -n "$ipv4_location" && "$ipv4_location" != "None" ]]; then
-        echo " IPV4 位置         : $(_blue "$ipv4_location")"
-    fi
-    if [[ -n "$ipv6_asn_info" && "$ipv6_asn_info" != "None" ]]; then
-        echo " IPV6 ASN          : $(_blue "$ipv6_asn_info")"
-    fi
-    if [[ -n "$ipv6_location" && "$ipv6_location" != "None" ]]; then
-        echo " IPV6 位置         : $(_blue "$ipv6_location")"
-    fi
-    if [[ -n "$ipv6_prefixlen" && "$ipv6_prefixlen" != "None" ]]; then
-        echo " IPV6 子网掩码     : $(_blue "$ipv6_prefixlen")"
+    if [ "$en_status" = true ]; then
+        if [[ -n "$ipv4_asn_info" && "$ipv4_asn_info" != "None" ]]; then
+            echo " IPV4 ASN          : $(_blue "$ipv4_asn_info")"
+        fi
+        if [[ -n "$ipv4_location" && "$ipv4_location" != "None" ]]; then
+            echo " IPV4 Location     : $(_blue "$ipv4_location")"
+        fi
+        if [[ -n "$ipv6_asn_info" && "$ipv6_asn_info" != "None" ]]; then
+            echo " IPV6 ASN          : $(_blue "$ipv6_asn_info")"
+        fi
+        if [[ -n "$ipv6_location" && "$ipv6_location" != "None" ]]; then
+            echo " IPV6 Location     : $(_blue "$ipv6_location")"
+        fi
+        if [[ -n "$ipv6_prefixlen" && "$ipv6_prefixlen" != "None" ]]; then
+            echo " IPV6 Subnet Mask  : $(_blue "$ipv6_prefixlen")"
+        fi
+    else
+        if [[ -n "$ipv4_asn_info" && "$ipv4_asn_info" != "None" ]]; then
+            echo " IPV4 ASN          : $(_blue "$ipv4_asn_info")"
+        fi
+        if [[ -n "$ipv4_location" && "$ipv4_location" != "None" ]]; then
+            echo " IPV4 位置         : $(_blue "$ipv4_location")"
+        fi
+        if [[ -n "$ipv6_asn_info" && "$ipv6_asn_info" != "None" ]]; then
+            echo " IPV6 ASN          : $(_blue "$ipv6_asn_info")"
+        fi
+        if [[ -n "$ipv6_location" && "$ipv6_location" != "None" ]]; then
+            echo " IPV6 位置         : $(_blue "$ipv6_location")"
+        fi
+        if [[ -n "$ipv6_prefixlen" && "$ipv6_prefixlen" != "None" ]]; then
+            echo " IPV6 子网掩码     : $(_blue "$ipv6_prefixlen")"
+        fi
     fi
 }
 
 print_system_info() {
-    if [ -n "$cname" ] >/dev/null 2>&1; then
-        echo " CPU 型号          : $(_blue "$cname")"
-    elif [ -n "$Result_Systeminfo_CPUModelName" ] >/dev/null 2>&1; then
-        echo " CPU 型号          : $(_blue "$Result_Systeminfo_CPUModelName")"
-    else
-        echo " CPU 型号          : $(_blue "无法检测到CPU型号")"
-    fi
-    if [[ -n "$Result_Systeminfo_isPhysical" && "$Result_Systeminfo_isPhysical" = "1" ]] >/dev/null 2>&1; then
-        if [ -n "$Result_Systeminfo_CPUSockets" ] && [ "$Result_Systeminfo_CPUSockets" -ne 0 ] &&
-            [ -n "$Result_Systeminfo_CPUCores" ] && [ "$Result_Systeminfo_CPUCores" -ne 0 ] &&
-            [ -n "$Result_Systeminfo_CPUThreads" ] && [ "$Result_Systeminfo_CPUThreads" -ne 0 ] >/dev/null 2>&1; then
-            echo " CPU 核心数        : $(_blue "${Result_Systeminfo_CPUSockets} 物理核心, ${Result_Systeminfo_CPUCores} 总核心, ${Result_Systeminfo_CPUThreads} 总线程数")"
-        elif [ -n "$cores" ]; then
-            echo " CPU 核心数        : $(_blue "$cores")"
+    if [ "$en_status" = true ]; then
+        if [ -n "$cname" ] >/dev/null 2>&1; then
+            echo " Processor         : $(_blue "$cname")"
+        elif [ -n "$Result_Systeminfo_CPUModelName" ] >/dev/null 2>&1; then
+            echo " Processor         : $(_blue "$Result_Systeminfo_CPUModelName")"
         else
-            echo " CPU 核心数        : $(_blue "无法检测到CPU核心数量")"
+            echo " Processor         : $(_blue "Unable to detect Processor")"
         fi
-    elif [[ -n "$Result_Systeminfo_isPhysical" && "$Result_Systeminfo_isPhysical" = "0" ]] >/dev/null 2>&1; then
-        if [[ -n "$Result_Systeminfo_CPUThreads" && "$Result_Systeminfo_CPUThreads" -ne 0 ]] >/dev/null 2>&1; then
-            echo " CPU 核心数        : $(_blue "${Result_Systeminfo_CPUThreads}")"
-        elif [ -n "$cores" ] >/dev/null 2>&1; then
-            echo " CPU 核心数        : $(_blue "$cores")"
+        if [[ -n "$Result_Systeminfo_isPhysical" && "$Result_Systeminfo_isPhysical" = "1" ]] >/dev/null 2>&1; then
+            if [ -n "$Result_Systeminfo_CPUSockets" ] && [ "$Result_Systeminfo_CPUSockets" -ne 0 ] &&
+                [ -n "$Result_Systeminfo_CPUCores" ] && [ "$Result_Systeminfo_CPUCores" -ne 0 ] &&
+                [ -n "$Result_Systeminfo_CPUThreads" ] && [ "$Result_Systeminfo_CPUThreads" -ne 0 ] >/dev/null 2>&1; then
+                echo " CPU Numbers      : $(_blue "${Result_Systeminfo_CPUSockets} Physical CPUs, ${Result_Systeminfo_CPUCores} Total Cores, ${Result_Systeminfo_CPUThreads} Total Threads")"
+            elif [ -n "$cores" ]; then
+                echo " CPU Numbers       : $(_blue "$cores")"
+            else
+                echo " CPU Numbers       : $(_blue "Unable to detect CPU Numbers")"
+            fi
+        elif [[ -n "$Result_Systeminfo_isPhysical" && "$Result_Systeminfo_isPhysical" = "0" ]] >/dev/null 2>&1; then
+            if [[ -n "$Result_Systeminfo_CPUThreads" && "$Result_Systeminfo_CPUThreads" -ne 0 ]] >/dev/null 2>&1; then
+                echo " CPU Numbers       : $(_blue "${Result_Systeminfo_CPUThreads}")"
+            elif [ -n "$cores" ] >/dev/null 2>&1; then
+                echo " CPU Numbers       : $(_blue "$cores")"
+            else
+                echo " CPU Numbers       : $(_blue "Unable to detect CPU Numbers")"
+            fi
         else
-            echo " CPU 核心数        : $(_blue "无法检测到CPU核心数量")"
+            echo " CPU Numbers       : $(_blue "$cores")"
         fi
+        if [ -n "$freq" ] >/dev/null 2>&1; then
+            echo " CPU Frequency     : $(_blue "$freq MHz")"
+        fi
+        if [ -n "$Result_Systeminfo_CPUCacheSizeL1" ] && [ -n "$Result_Systeminfo_CPUCacheSizeL2" ] && [ -n "$Result_Systeminfo_CPUCacheSizeL3" ] >/dev/null 2>&1; then
+            echo " CPU Cache         : $(_blue "L1: ${Result_Systeminfo_CPUCacheSizeL1} / L2: ${Result_Systeminfo_CPUCacheSizeL2} / L3: ${Result_Systeminfo_CPUCacheSizeL3}")"
+        elif [ -n "$ccache" ] >/dev/null 2>&1; then
+            echo " CPU Cache         : $(_blue "$ccache")"
+        fi
+        if [ -n "$Result_Systeminfo_Diskinfo" ] >/dev/null 2>&1; then
+            echo " Disk Space        : $(_blue "$Result_Systeminfo_Diskinfo")"
+        else
+            echo " Disk Space        : $(_yellow "$disk_total_size GB") $(_blue "($disk_used_size GB Usage)")"
+        fi
+        if [ -n "$Result_Systeminfo_DiskRootPath" ] >/dev/null 2>&1; then
+            echo " Boot Disk         : $(_blue "$Result_Systeminfo_DiskRootPath")"
+        fi
+        if [ -n "$Result_Systeminfo_Memoryinfo" ] >/dev/null 2>&1; then
+            echo " RAM               : $(_blue "$Result_Systeminfo_Memoryinfo")"
+        elif [ -n "$tram" ] && [ -n "$uram" ] >/dev/null 2>&1; then
+            echo " RAM               : $(_yellow "$tram MB") $(_blue "($uram MB 已用)")"
+        fi
+        if [ -n "$Result_Systeminfo_Swapinfo" ] >/dev/null 2>&1; then
+            echo " Swap              : $(_blue "$Result_Systeminfo_Swapinfo")"
+        elif [ -n "$swap" ] && [ -n "$uswap" ] >/dev/null 2>&1; then
+            echo " Swap              : $(_blue "$swap MB ($uswap MB 已用)")"
+        fi
+        echo " Uptime            : $(_blue "$up")"
+        echo " Loads             : $(_blue "$load")"
+        if [ -n "$Result_Systeminfo_OSReleaseNameFull" ] >/dev/null 2>&1; then
+            echo " OS Release        : $(_blue "$Result_Systeminfo_OSReleaseNameFull")"
+        elif [ -n "$DISTRO" ] >/dev/null 2>&1; then
+            echo " OS Release        : $(_blue "$DISTRO")"
+        fi
+        [[ -z "$CPU_AES" ]] && CPU_AES="\xE2\x9D\x8C Disabled" || CPU_AES="\xE2\x9C\x94 Enabled"
+        echo " AES-NI            : $(_blue "$CPU_AES")"
+        [[ -z "$CPU_VIRT" ]] && CPU_VIRT="\xE2\x9D\x8C Disabled" || CPU_VIRT="\xE2\x9C\x94 Enabled"
+        echo " VM-x/AMD-V        : $(_blue "$CPU_VIRT")"
+        echo " Arch              : $(_blue "$arch ($lbit Bit)")"
+        echo " Kernel Version    : $(_blue "$kern")"
+        echo " TCP Acceleration  : $(_yellow "$tcpctrl")"
+        echo " VM Type           : $(_blue "$Result_Systeminfo_VMMType")"
+        [[ -n "$nat_type_r" ]] && echo " NAT Type          : $(_blue "$nat_type_r")"
     else
-        echo " CPU 核心数        : $(_blue "$cores")"
+        if [ -n "$cname" ] >/dev/null 2>&1; then
+            echo " CPU 型号          : $(_blue "$cname")"
+        elif [ -n "$Result_Systeminfo_CPUModelName" ] >/dev/null 2>&1; then
+            echo " CPU 型号          : $(_blue "$Result_Systeminfo_CPUModelName")"
+        else
+            echo " CPU 型号          : $(_blue "无法检测到CPU型号")"
+        fi
+        if [[ -n "$Result_Systeminfo_isPhysical" && "$Result_Systeminfo_isPhysical" = "1" ]] >/dev/null 2>&1; then
+            if [ -n "$Result_Systeminfo_CPUSockets" ] && [ "$Result_Systeminfo_CPUSockets" -ne 0 ] &&
+                [ -n "$Result_Systeminfo_CPUCores" ] && [ "$Result_Systeminfo_CPUCores" -ne 0 ] &&
+                [ -n "$Result_Systeminfo_CPUThreads" ] && [ "$Result_Systeminfo_CPUThreads" -ne 0 ] >/dev/null 2>&1; then
+                echo " CPU 核心数        : $(_blue "${Result_Systeminfo_CPUSockets} 物理核心, ${Result_Systeminfo_CPUCores} 总核心, ${Result_Systeminfo_CPUThreads} 总线程数")"
+            elif [ -n "$cores" ]; then
+                echo " CPU 核心数        : $(_blue "$cores")"
+            else
+                echo " CPU 核心数        : $(_blue "无法检测到CPU核心数量")"
+            fi
+        elif [[ -n "$Result_Systeminfo_isPhysical" && "$Result_Systeminfo_isPhysical" = "0" ]] >/dev/null 2>&1; then
+            if [[ -n "$Result_Systeminfo_CPUThreads" && "$Result_Systeminfo_CPUThreads" -ne 0 ]] >/dev/null 2>&1; then
+                echo " CPU 核心数        : $(_blue "${Result_Systeminfo_CPUThreads}")"
+            elif [ -n "$cores" ] >/dev/null 2>&1; then
+                echo " CPU 核心数        : $(_blue "$cores")"
+            else
+                echo " CPU 核心数        : $(_blue "无法检测到CPU核心数量")"
+            fi
+        else
+            echo " CPU 核心数        : $(_blue "$cores")"
+        fi
+        if [ -n "$freq" ] >/dev/null 2>&1; then
+            echo " CPU 频率          : $(_blue "$freq MHz")"
+        fi
+        if [ -n "$Result_Systeminfo_CPUCacheSizeL1" ] && [ -n "$Result_Systeminfo_CPUCacheSizeL2" ] && [ -n "$Result_Systeminfo_CPUCacheSizeL3" ] >/dev/null 2>&1; then
+            echo " CPU 缓存          : $(_blue "L1: ${Result_Systeminfo_CPUCacheSizeL1} / L2: ${Result_Systeminfo_CPUCacheSizeL2} / L3: ${Result_Systeminfo_CPUCacheSizeL3}")"
+        elif [ -n "$ccache" ] >/dev/null 2>&1; then
+            echo " CPU 缓存          : $(_blue "$ccache")"
+        fi
+        if [ -n "$Result_Systeminfo_Diskinfo" ] >/dev/null 2>&1; then
+            echo " 硬盘空间          : $(_blue "$Result_Systeminfo_Diskinfo")"
+        else
+            echo " 硬盘空间          : $(_yellow "$disk_total_size GB") $(_blue "($disk_used_size GB 已用)")"
+        fi
+        if [ -n "$Result_Systeminfo_DiskRootPath" ] >/dev/null 2>&1; then
+            echo " 启动盘路径        : $(_blue "$Result_Systeminfo_DiskRootPath")"
+        fi
+        if [ -n "$Result_Systeminfo_Memoryinfo" ] >/dev/null 2>&1; then
+            echo " 内存              : $(_blue "$Result_Systeminfo_Memoryinfo")"
+        elif [ -n "$tram" ] && [ -n "$uram" ] >/dev/null 2>&1; then
+            echo " 内存              : $(_yellow "$tram MB") $(_blue "($uram MB 已用)")"
+        fi
+        if [ -n "$Result_Systeminfo_Swapinfo" ] >/dev/null 2>&1; then
+            echo " Swap              : $(_blue "$Result_Systeminfo_Swapinfo")"
+        elif [ -n "$swap" ] && [ -n "$uswap" ] >/dev/null 2>&1; then
+            echo " Swap              : $(_blue "$swap MB ($uswap MB 已用)")"
+        fi
+        echo " 系统在线时间      : $(_blue "$up")"
+        echo " 负载              : $(_blue "$load")"
+        if [ -n "$Result_Systeminfo_OSReleaseNameFull" ] >/dev/null 2>&1; then
+            echo " 系统              : $(_blue "$Result_Systeminfo_OSReleaseNameFull")"
+        elif [ -n "$DISTRO" ] >/dev/null 2>&1; then
+            echo " 系统              : $(_blue "$DISTRO")"
+        fi
+        [[ -z "$CPU_AES" ]] && CPU_AES="\xE2\x9D\x8C Disabled" || CPU_AES="\xE2\x9C\x94 Enabled"
+        echo " AES-NI指令集      : $(_blue "$CPU_AES")"
+        [[ -z "$CPU_VIRT" ]] && CPU_VIRT="\xE2\x9D\x8C Disabled" || CPU_VIRT="\xE2\x9C\x94 Enabled"
+        echo " VM-x/AMD-V支持    : $(_blue "$CPU_VIRT")"
+        echo " 架构              : $(_blue "$arch ($lbit Bit)")"
+        echo " 内核              : $(_blue "$kern")"
+        echo " TCP加速方式       : $(_yellow "$tcpctrl")"
+        echo " 虚拟化架构        : $(_blue "$Result_Systeminfo_VMMType")"
+        [[ -n "$nat_type_r" ]] && echo " NAT类型           : $(_blue "$nat_type_r")"
     fi
-    if [ -n "$freq" ] >/dev/null 2>&1; then
-        echo " CPU 频率          : $(_blue "$freq MHz")"
-    fi
-    if [ -n "$Result_Systeminfo_CPUCacheSizeL1" ] && [ -n "$Result_Systeminfo_CPUCacheSizeL2" ] && [ -n "$Result_Systeminfo_CPUCacheSizeL3" ] >/dev/null 2>&1; then
-        echo " CPU 缓存          : $(_blue "L1: ${Result_Systeminfo_CPUCacheSizeL1} / L2: ${Result_Systeminfo_CPUCacheSizeL2} / L3: ${Result_Systeminfo_CPUCacheSizeL3}")"
-    elif [ -n "$ccache" ] >/dev/null 2>&1; then
-        echo " CPU 缓存          : $(_blue "$ccache")"
-    fi
-    if [ -n "$Result_Systeminfo_Diskinfo" ] >/dev/null 2>&1; then
-        echo " 硬盘空间          : $(_blue "$Result_Systeminfo_Diskinfo")"
-    else
-        echo " 硬盘空间          : $(_yellow "$disk_total_size GB") $(_blue "($disk_used_size GB 已用)")"
-    fi
-    if [ -n "$Result_Systeminfo_DiskRootPath" ] >/dev/null 2>&1; then
-        echo " 启动盘路径        : $(_blue "$Result_Systeminfo_DiskRootPath")"
-    fi
-    if [ -n "$Result_Systeminfo_Memoryinfo" ] >/dev/null 2>&1; then
-        echo " 内存              : $(_blue "$Result_Systeminfo_Memoryinfo")"
-    elif [ -n "$tram" ] && [ -n "$uram" ] >/dev/null 2>&1; then
-        echo " 内存              : $(_yellow "$tram MB") $(_blue "($uram MB 已用)")"
-    fi
-    if [ -n "$Result_Systeminfo_Swapinfo" ] >/dev/null 2>&1; then
-        echo " Swap              : $(_blue "$Result_Systeminfo_Swapinfo")"
-    elif [ -n "$swap" ] && [ -n "$uswap" ] >/dev/null 2>&1; then
-        echo " Swap              : $(_blue "$swap MB ($uswap MB 已用)")"
-    fi
-    echo " 系统在线时间      : $(_blue "$up")"
-    echo " 负载              : $(_blue "$load")"
-    if [ -n "$Result_Systeminfo_OSReleaseNameFull" ] >/dev/null 2>&1; then
-        echo " 系统              : $(_blue "$Result_Systeminfo_OSReleaseNameFull")"
-    elif [ -n "$DISTRO" ] >/dev/null 2>&1; then
-        echo " 系统              : $(_blue "$DISTRO")"
-    fi
-    [[ -z "$CPU_AES" ]] && CPU_AES="\xE2\x9D\x8C Disabled" || CPU_AES="\xE2\x9C\x94 Enabled"
-    echo " AES-NI指令集      : $(_blue "$CPU_AES")"
-    [[ -z "$CPU_VIRT" ]] && CPU_VIRT="\xE2\x9D\x8C Disabled" || CPU_VIRT="\xE2\x9C\x94 Enabled"
-    echo " VM-x/AMD-V支持    : $(_blue "$CPU_VIRT")"
-    echo " 架构              : $(_blue "$arch ($lbit Bit)")"
-    echo " 内核              : $(_blue "$kern")"
-    echo " TCP加速方式       : $(_yellow "$tcpctrl")"
-    echo " 虚拟化架构        : $(_blue "$Result_Systeminfo_VMMType")"
-    [[ -n "$nat_type_r" ]] && echo " NAT类型           : $(_blue "$nat_type_r")"
 }
 
 print_end_time() {
@@ -2924,15 +3168,27 @@ print_end_time() {
     end_time_abs=$(echo $end_time | tr -d -)
     time_abs_diff=$((${end_time_abs} - ${start_time_abs}))
     time=$(echo $time_abs_diff | tr -d -)
-    if [ ${time} -gt 60 ]; then
-        min=$(expr $time / 60)
-        sec=$(expr $time % 60)
-        echo " 总共花费      : ${min} 分 ${sec} 秒"
+    if [ "$en_status" = true ]; then
+        if [ ${time} -gt 60 ]; then
+            min=$(expr $time / 60)
+            sec=$(expr $time % 60)
+            echo " Total spent   : ${min} min ${sec} sec"
+        else
+            echo " Total spent   : ${time} sec"
+        fi
+        date_time=$(date)
+        echo " Time          : $date_time"
     else
-        echo " 总共花费      : ${time} 秒"
+        if [ ${time} -gt 60 ]; then
+            min=$(expr $time / 60)
+            sec=$(expr $time % 60)
+            echo " 总共花费      : ${min} 分 ${sec} 秒"
+        else
+            echo " 总共花费      : ${time} 秒"
+        fi
+        date_time=$(date)
+        echo " 时间          : $date_time"
     fi
-    date_time=$(date)
-    echo " 时间          : $date_time"
 }
 
 check_lmc_script() {
@@ -3092,15 +3348,28 @@ cloudflare() {
     rm -rf /tmp/ip_quality_cloudflare_risk
     for ((i = 1; i <= 100; i++)); do
         context1=$(curl -sL -m 10 "https://cf-threat.sukkaw.com/hello.json?threat=$i")
-        if [[ "$context1" != *"pong!"* ]]; then
-            echo "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60" >>/tmp/ip_quality_cloudflare_risk
-            echo "Cloudflare威胁得分：$i" >>/tmp/ip_quality_cloudflare_risk
-            local status=1
-            break
+        if [ "$en_status" = true ]; then
+            if [[ "$context1" != *"pong!"* ]]; then
+                echo "Cloudflare threat scores higher than 10 are crawlers or spammers, higher than 40 have serious bad behavior (e.g., botnets, etc.), and values are generally no greater than 60" >>/tmp/ip_quality_cloudflare_risk
+                echo "Cloudflare threatens to score: $i" >>/tmp/ip_quality_cloudflare_risk
+                local status=1
+                break
+            fi
+        else
+            if [[ "$context1" != *"pong!"* ]]; then
+                echo "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60" >>/tmp/ip_quality_cloudflare_risk
+                echo "Cloudflare威胁得分：$i" >>/tmp/ip_quality_cloudflare_risk
+                local status=1
+                break
+            fi
         fi
     done
     if [[ $i == 100 && $status == 0 ]]; then
-        echo "Cloudflare威胁得分(0为低风险): 0" >>/tmp/ip_quality_cloudflare_risk
+        if [ "$en_status" = true ]; then
+            echo "Cloudflare Threat Score (0 for low risk): 0" >>/tmp/ip_quality_cloudflare_risk
+        else
+            echo "Cloudflare威胁得分(0为低风险): 0" >>/tmp/ip_quality_cloudflare_risk
+        fi
     fi
 }
 
@@ -3299,10 +3568,18 @@ ipgeolocation() {
 google() {
     local curl_result=$(curl -sL -m 10 "https://www.google.com/search?q=www.spiritysdx.top" -H "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0")
     rm -rf /tmp/ip_quality_google
-    if echo "$curl_result" | grep -q "二叉树的博客"; then
-        echo "Google搜索可行性：YES" >>/tmp/ip_quality_google
+    if [ "$en_status" = true ]; then
+        if echo "$curl_result" | grep -q "二叉树的博客"; then
+            echo "Google search feasibility: YES" >>/tmp/ip_quality_google
+        else
+            echo "Google search feasibility: NO" >>/tmp/ip_quality_google
+        fi
     else
-        echo "Google搜索可行性：NO" >>/tmp/ip_quality_google
+        if echo "$curl_result" | grep -q "二叉树的博客"; then
+            echo "Google搜索可行性：YES" >>/tmp/ip_quality_google
+        else
+            echo "Google搜索可行性：NO" >>/tmp/ip_quality_google
+        fi
     fi
 }
 
@@ -3310,45 +3587,72 @@ local_port_25() {
     local host=$1
     local port=$2
     rm -rf /tmp/ip_quality_local_port_25
-    nc -z -w5 $host $port >/dev/null 2>&1
-    if [ $? -eq 0 ]; then
-        echo "  本地: Yes" >>/tmp/ip_quality_local_port_25
+    if [ "$en_status" = true ]; then
+        nc -z -w5 $host $port >/dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            echo "  Local: Yes" >>/tmp/ip_quality_local_port_25
+        else
+            echo "  Local: No" >>/tmp/ip_quality_local_port_25
+        fi
     else
-        echo "  本地: No" >>/tmp/ip_quality_local_port_25
+        nc -z -w5 $host $port >/dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            echo "  本地: Yes" >>/tmp/ip_quality_local_port_25
+        else
+            echo "  本地: No" >>/tmp/ip_quality_local_port_25
+        fi
     fi
 }
 
 check_email_service() {
     local service=$1
     local host=""
+    local en_service=""
     local port=25
     local expected_response="220"
     case $service in
     "gmail邮箱")
         host="smtp.gmail.com"
+        en_service="gmail"
         ;;
     "163邮箱")
         host="smtp.163.com"
+        en_service="163"
         ;;
     "yandex邮箱")
         host="smtp.yandex.com"
+        en_service="yandex"
         ;;
     "outlook邮箱")
         host="smtp.office365.com"
+        en_service="outlook"
         ;;
     "qq邮箱")
         host="smtp.qq.com"
+        en_service="qq"
         ;;
     *)
-        echo "不支持的邮箱服务: $service"
+        if [ "$en_status" = true ]; then
+            echo "Unsupported mailbox services: $service"
+        else
+            echo "不支持的邮箱服务: $service"
+        fi
         return
         ;;
     esac
     local response=$(echo -e "QUIT\r\n" | nc -w6 $host $port 2>/dev/null)
-    if [[ $response == *"$expected_response"* ]]; then
-        echo "  $service: Yes" >>/tmp/ip_quality_check_email_service
+    if [ "$en_status" = true ]; then
+        if [[ $response == *"$expected_response"* ]]; then
+            echo "  $en_service: Yes" >>/tmp/ip_quality_check_email_service
+        else
+            echo "  $en_service：No" >>/tmp/ip_quality_check_email_service
+        fi
     else
-        echo "  $service：No" >>/tmp/ip_quality_check_email_service
+        if [[ $response == *"$expected_response"* ]]; then
+            echo "  $service: Yes" >>/tmp/ip_quality_check_email_service
+        else
+            echo "  $service：No" >>/tmp/ip_quality_check_email_service
+        fi
     fi
 }
 
@@ -3361,7 +3665,11 @@ check_port_25() {
     rm -rf /tmp/ip_quality_check_port_25
     rm -rf /tmp/ip_quality_check_email_service
     rm -rf /tmp/ip_quality_local_port_25
-    echo "端口25检测:" >>/tmp/ip_quality_check_port_25
+    if [ "$en_status" = true ]; then
+        echo "Port 25 Detection:" >>/tmp/ip_quality_check_port_25
+    else
+        echo "端口25检测:" >>/tmp/ip_quality_check_port_25
+    fi
     { local_port_25 "localhost" 25; } &
     check_email_service "163邮箱"
     if [[ $(cat /tmp/ip_quality_check_email_service) == *"No"* ]]; then
@@ -3385,13 +3693,23 @@ check_port_25() {
 }
 
 ipcheck() {
-    _blue "以下为各数据库编号，输出结果后将自带数据库来源对应的编号"
-    _blue "ipinfo数据库 ①  | scamalytics数据库 ②  | virustotal数据库 ③  | abuseipdb数据库 ④  | ip2location数据库   ⑤"
-    _blue "ip-api数据库 ⑥  | ipwhois数据库     ⑦  | ipregistry数据库 ⑧  | ipdata数据库    ⑨  | ipgeolocation数据库 ⑩"
+    if [ "$en_status" = true ]; then
+        _blue "The following is the number of each database, the output will come with the corresponding number of the database source"
+        _blue "ipinfo databases ①  | scamalytics databases ②  | virustotal databases ③  | abuseipdb databases ④  | ip2location databases   ⑤"
+        _blue "ip-api databases ⑥  | ipwhois databases     ⑦  | ipregistry databases ⑧  | ipdata databases    ⑨  | ipgeolocation databases ⑩"
+    else
+        _blue "以下为各数据库编号，输出结果后将自带数据库来源对应的编号"
+        _blue "ipinfo数据库 ①  | scamalytics数据库 ②  | virustotal数据库 ③  | abuseipdb数据库 ④  | ip2location数据库   ⑤"
+        _blue "ip-api数据库 ⑥  | ipwhois数据库     ⑦  | ipregistry数据库 ⑧  | ipdata数据库    ⑨  | ipgeolocation数据库 ⑩"
+    fi
     local ip4=$(echo "$IPV4" | tr -d '\n')
     local ip6=$(echo "$IPV6" | tr -d '\n')
     if [[ -z "${ip4}" ]] && [[ ! -z "${ip6}" ]]; then
-        echo "以下为IPV6检测"
+        if [ "$en_status" = true ]; then
+            echo "The following IPV6 detection"
+        else
+            echo "以下为IPV6检测"
+        fi
     fi
     { ipinfo "$ip4"; } &
     { scamalytics_ipv4 "$ip4"; } &
@@ -3424,17 +3742,33 @@ ipcheck() {
     fi
     local score_2_4=$(check_and_cat_file '/tmp/ip_quality_scamalytics_ipv4_score')
     if [[ -n "$score_2_4" ]]; then
-        echo "欺诈分数(越低越好): $score_2_4②"
+        if [ "$en_status" = true ]; then
+            echo "Fraud score (the lower the better): $score_2_4②"
+        else
+            echo "欺诈分数(越低越好): $score_2_4②"
+        fi
     fi
     local score_4_4=$(check_and_cat_file '/tmp/ip_quality_abuseipdb_ipv4_score')
     if [[ -n "$score_4_4" ]]; then
-        echo "abuse得分(越低越好): $score_4_4④"
+        if [ "$en_status" = true ]; then
+            echo "Fraud score (the lower the better): $score_4_4④"
+        else
+            echo "abuse得分(越低越好): $score_4_4④"
+        fi
     fi
-    echo "IP类型: "
+    if [ "$en_status" = true ]; then
+        echo "IP Type: "
+    else
+        echo "IP类型: "
+    fi
     local ip_quality_filename_data=("/tmp/ip_quality_ipinfo_" "/tmp/ip_quality_scamalytics_ipv4_" "/tmp/ip_quality_ip2location_ipv4_" "/tmp/ip_quality_ip_api_" "/tmp/ip_quality_ipwhois_" "/tmp/ip_quality_ipregistry_" "/tmp/ip_quality_ipdata_" "/tmp/ip_quality_ipgeolocation_")
     local serial_number=("①" "②" "⑤" "⑥" "⑦" "⑧" "⑨" "⑩")
     local project_data=("usage_type" "company_type" "cloud_provider" "datacenter" "mobile" "proxy" "vpn" "tor" "tor_exit" "search_engine_robot" "anonymous" "attacker" "abuser" "threat" "icloud_relay" "bogon")
-    local project_translate_data=("使用类型" "公司类型" "云服务提供商" "数据中心" "移动网络" "代理" "VPN" "TOR" "TOR出口" "搜索引擎机器人" "匿名代理" "攻击方" "滥用者" "威胁" "iCloud中继" "未分配IP")
+    if [ "$en_status" = true ]; then
+        local project_translate_data=("" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "")
+    else
+        local project_translate_data=("使用类型" "公司类型" "云服务提供商" "数据中心" "移动网络" "代理" "VPN" "TOR" "TOR出口" "搜索引擎机器人" "匿名代理" "攻击方" "滥用者" "威胁" "iCloud中继" "未分配IP")
+    fi
     declare -A project_translate
     for ((i = 0; i < ${#project_data[@]}; i++)); do
         project_translate[${project_data[i]}]=${project_translate_data[i]}
@@ -3470,7 +3804,11 @@ ipcheck() {
             fi
         done
         if [ -n "$content" ]; then
-            echo "  ${project_translate[$project]}(${project}):${content}"
+            if [ "$en_status" = true ]; then
+                echo "  ${project_translate[$project]}${project}:${content}"
+            else
+                echo "  ${project_translate[$project]}(${project}):${content}"
+            fi
         fi
     done
     local score_3_1=$(check_and_cat_file '/tmp/ip_quality_virustotal_harmlessness_records')
@@ -3478,25 +3816,45 @@ ipcheck() {
     local score_3_3=$(check_and_cat_file '/tmp/ip_quality_virustotal_suspicious_records')
     local score_3_4=$(check_and_cat_file '/tmp/ip_quality_virustotal_no_records')
     if [ -n "$score_3_1" ] && [ -n "$score_3_2" ] && [ -n "$score_3_3" ] && [ -n "$score_3_4" ]; then
-        echo "黑名单记录统计(有多少个黑名单网站有记录): 无害$score_3_1 恶意$score_3_2 可疑$score_3_3 未检测$score_3_4 ③"
+        if [ "$en_status" = true ]; then
+            echo "Blacklist Records Statistics (how many blacklisted websites have records): harmless $score_3_1 malware $score_3_2 dubious $score_3_3 untested $score_3_4 ③"
+        else
+            echo "黑名单记录统计(有多少个黑名单网站有记录): 无害$score_3_1 恶意$score_3_2 可疑$score_3_3 未检测$score_3_4 ③"
+        fi
     fi
     check_and_cat_file "/tmp/ip_quality_google"
     check_and_cat_file "/tmp/ip_quality_check_port_25"
     if [[ ! -z "${ip6}" ]]; then
         if [[ ! -z "${ip4}" ]] && [[ ! -z "${ip6}" ]]; then
-            echo "------以下为IPV6检测------"
+            if [ "$en_status" = true ]; then
+                echo "------The following IPV6 detection------"
+            else
+                echo "------以下为IPV6检测------"
+            fi
         fi
         local score_2_6=$(check_and_cat_file '/tmp/ip_quality_scamalytics_ipv6_score')
         if [[ -n "$score_2_6" ]]; then
-            echo "欺诈分数(越低越好): $score_2_6②"
+            if [ "$en_status" = true ]; then
+                echo "Fraud score (the lower the better): $score_2_6②"
+            else
+                echo "欺诈分数(越低越好): $score_2_6②"
+            fi
         fi
         local score_4_6=$(check_and_cat_file '/tmp/ip_quality_abuseipdb_ipv6_score')
         if [[ -n "$score_4_6" ]]; then
-            echo "abuse得分(越低越好): $score_4_6④"
+            if [ "$en_status" = true ]; then
+                echo "Fraud score (the lower the better): $score_4_6④"
+            else
+                echo "abuse得分(越低越好): $score_4_6④"
+            fi
         fi
         local usage_type_6=$(check_and_cat_file '/tmp/ip_quality_ip2location_ipv6_usage_type')
         if [[ -n "$usage_type_6" ]]; then
-            echo "IP类型: $usage_type_6⑤"
+            if [ "$en_status" = true ]; then
+                echo "IP Type: $usage_type_6⑤"
+            else
+                echo "IP类型: $usage_type_6⑤"
+            fi
         fi
     fi
     rm -rf /tmp/ip_quality_*
@@ -3563,22 +3921,35 @@ pre_check() {
     IPV4=$(check_and_cat_file /tmp/ip_quality_ipv4)
     IPV6=$(check_and_cat_file /tmp/ip_quality_ipv6)
     if [ -n "$IPV6" ] && [ -n "$IPV4" ]; then
-        echo "正在检测和验证IPV6的子网掩码大小，大概需要10~15秒"
+        if [ "$en_status" = true ]; then
+            echo "Detecting and verifying IPV6 subnet mask size is in progress, it will take about 10~15 seconds"
+        else
+            echo "正在检测和验证IPV6的子网掩码大小，大概需要10~15秒"
+        fi
         eo6s &
     fi
-    echo "请耐心等待后台任务执行完毕"
+    if [ "$en_status" = true ]; then
+        echo "Please wait patiently for the background tasks to finish"
+    else
+        echo "请耐心等待后台任务执行完毕"
+    fi
     check_haveged
     check_free
+    check_timeout
     check_lscpu
     check_unzip
     check_tar
     check_nc
+    checknslookup
     wait
 
 }
 
 sjlleo_script() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
+    if [ "$en_status" = true ]; then
+        return
+    fi
     cd $myvar >/dev/null 2>&1
     mv $TEMP_DIR/{dp,nf,tubecheck} ./
     echo "---------------------流媒体解锁--感谢sjlleo开源-------------------------"
@@ -3598,28 +3969,53 @@ sjlleo_script() {
 cpu_judge() {
     local benchmark_type=$1
     local benchmark_name=""
-    case $benchmark_type in
-        sysbench)
-            benchmark_name="SysBench_CPU_Fast"
-            echo "---------------------CPU测试--感谢lemonbench开源------------------------"
-            ;;
-        geekbench4)
-            benchmark_name="4"
-            echo "-----------------CPU测试--感谢yabs开源geekbench4测试--------------------"
-            ;;
-        geekbench5)
-            benchmark_name="5"
-            echo "-----------------CPU测试--感谢yabs开源geekbench5测试--------------------"
-            ;;
-        geekbench6)
-            benchmark_name="6"
-            echo "-----------------CPU测试--感谢yabs开源geekbench6测试--------------------"
-            ;;
-        *)
-            echo "Invalid benchmark type"
-            return
-            ;;
-    esac
+    if [ "$en_status" = true ]; then
+        case $benchmark_type in
+            sysbench)
+                benchmark_name="SysBench_CPU_Fast"
+                echo "-------------------------------CPU-Test----------------------------------"
+                ;;
+            geekbench4)
+                benchmark_name="4"
+                echo "--------------------------CPU-Geekbench4-Test---------------------------"
+                ;;
+            geekbench5)
+                benchmark_name="5"
+                echo "--------------------------CPU-Geekbench5-Test---------------------------"
+                ;;
+            geekbench6)
+                benchmark_name="6"
+                echo "--------------------------CPU-Geekbench6-Test---------------------------"
+                ;;
+            *)
+                echo "Invalid benchmark type"
+                return
+                ;;
+        esac
+    else
+        case $benchmark_type in
+            sysbench)
+                benchmark_name="SysBench_CPU_Fast"
+                echo "---------------------CPU测试--感谢lemonbench开源------------------------"
+                ;;
+            geekbench4)
+                benchmark_name="4"
+                echo "-----------------CPU测试--感谢yabs开源geekbench4测试--------------------"
+                ;;
+            geekbench5)
+                benchmark_name="5"
+                echo "-----------------CPU测试--感谢yabs开源geekbench5测试--------------------"
+                ;;
+            geekbench6)
+                benchmark_name="6"
+                echo "-----------------CPU测试--感谢yabs开源geekbench6测试--------------------"
+                ;;
+            *)
+                echo "Invalid benchmark type"
+                return
+                ;;
+        esac
+    fi
     if [ "$benchmark_type" == "sysbench" ]; then
         Function_SysBench_CPU_Fast
     else
@@ -3629,7 +4025,11 @@ cpu_judge() {
             output=$(echo "$output" | grep -v 'curl' | sed '$d' | sed '$d' | sed '1,2d')
             echo "$output"
         else
-            echo "测试失败请替换另一种方式"
+            if [ "$en_status" = true ]; then
+                echo "Test failed please replace with another"
+            else
+                echo "测试失败请替换另一种方式"
+            fi
         fi
     fi
     cd $myvar >/dev/null 2>&1
@@ -3638,12 +4038,20 @@ cpu_judge() {
 
 
 memory_script(){
-    echo "---------------------内存测试--感谢lemonbench开源-----------------------"
+    if [ "$en_status" = true ]; then
+        echo "----------------------------Memory-Test---------------------------------"
+    else
+        echo "---------------------内存测试--感谢lemonbench开源-----------------------"
+    fi
     Function_SysBench_Memory_Fast
 }
 
 basic_script() {
-    echo "---------------------基础信息查询--感谢所有开源项目---------------------"
+    if [ "$en_status" = true ]; then
+        echo "----------------------------Basic-Information---------------------------"
+    else
+        echo "---------------------基础信息查询--感谢所有开源项目---------------------"
+    fi
     print_system_info
     print_ip_info
     # cpu和内存测试
@@ -3666,7 +4074,11 @@ basic_script() {
 io1_script() {
     cd $myvar >/dev/null 2>&1
     sleep 1
-    echo "------------------磁盘dd读写测试--感谢lemonbench开源--------------------"
+    if [ "$en_status" = true ]; then
+        echo "------------------------Disk-dd-Read/Write-Test-------------------------"
+    else
+        echo "------------------磁盘dd读写测试--感谢lemonbench开源--------------------"
+    fi
     Function_DiskTest_Fast
 }
 
@@ -3674,7 +4086,11 @@ io2_script() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
     cd $myvar >/dev/null 2>&1
     cp $TEMP_DIR/yabsiotest.sh ./
-    echo "---------------------磁盘fio读写测试--感谢yabs开源----------------------"
+    if [ "$en_status" = true ]; then
+        echo "-----------------------Disk-fio-Read/Write-Test-------------------------"
+    else
+        echo "---------------------磁盘fio读写测试--感谢yabs开源----------------------"
+    fi
     bash yabsiotest.sh 2>/dev/null
     rm -rf yabsiotest.sh
 }
@@ -3682,7 +4098,11 @@ io2_script() {
 io3_script() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
     cd $myvar >/dev/null 2>&1
-    echo "----------------------多盘读写测试--感谢yabs开源------------------------"
+    if [ "$en_status" = true ]; then
+        echo "-----------------------Multi-Disk-Read/Write-Test-----------------------"
+    else
+        echo "----------------------多盘读写测试--感谢yabs开源------------------------"
+    fi
     # 获取非以vda开头的盘名称
     disk_names=$(lsblk -e 11 -n -o NAME | grep -v "vda" | grep -v "snap" | grep -v "loop")
     if [ -z "$disk_names" ]; then
@@ -3749,30 +4169,39 @@ io_judge(){
 }
 
 RegionRestrictionCheck_script() {
-    echo -e "----------------流媒体解锁--感谢RegionRestrictionCheck开源--------------"
-    _yellow " 以下为IPV4网络测试，若无IPV4网络则无输出"
-    echo 0 | bash media_lmc_check.sh -M 4 2>/dev/null | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
-    _yellow " 以下为IPV6网络测试，若无IPV6网络则无输出"
-    echo 0 | bash media_lmc_check.sh -M 6 2>/dev/null | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
+    if [ "$en_status" = true ]; then
+        echo -e "-------------------------Streaming-Unlock-Test--------------------------"
+        _yellow " The following is an IPV4 network test, if there is no IPV4 network there is no output"
+        echo 0 | bash media_lmc_check.sh -E -M 4 2>/dev/null | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
+        _yellow " The following is an IPV6 network test, if there is no IPV6 network there is no output"
+        echo 0 | bash media_lmc_check.sh -E -M 6 2>/dev/null | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
+    else
+        echo -e "----------------流媒体解锁--感谢RegionRestrictionCheck开源--------------"
+        _yellow " 以下为IPV4网络测试，若无IPV4网络则无输出"
+        echo 0 | bash media_lmc_check.sh -M 4 2>/dev/null | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
+        _yellow " 以下为IPV6网络测试，若无IPV6网络则无输出"
+        echo 0 | bash media_lmc_check.sh -M 6 2>/dev/null | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
+    fi
 }
 
 lmc999_script() {
     cd $myvar >/dev/null 2>&1
-    echo -e "---------------TikTok解锁--感谢lmc999的源脚本及fscarmen PR--------------"
-    local Ftmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -sL --max-time 10 "https://www.tiktok.com/")
-
+    if [ "$en_status" = true ]; then
+        echo -e "---------------------------TikTok-Unlock-Test---------------------------"
+    else
+        echo -e "---------------TikTok解锁--感谢lmc999的源脚本及fscarmen PR--------------"
+    fi
+    local Ftmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -sL -m 10 "https://www.tiktok.com/")
     if [[ "$Ftmpresult" = "curl"* ]]; then
         _red "\r Tiktok Region:\t\t${Font_Red}Failed (Network Connection)${Font_Suffix}"
         return
     fi
-
     local FRegion=$(echo $Ftmpresult | grep '"region":' | sed 's/.*"region"//' | cut -f2 -d'"')
     if [ -n "$FRegion" ]; then
         _green "\r Tiktok Region:\t\t${Font_Green}【${FRegion}】${Font_Suffix}"
         return
     fi
-
-    local STmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -sL --max-time 10 -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9" -H "Accept-Encoding: gzip" -H "Accept-Language: en" "https://www.tiktok.com" | gunzip 2>/dev/null)
+    local STmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -sL -m 10 -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9" -H "Accept-Encoding: gzip" -H "Accept-Language: en" "https://www.tiktok.com" | gunzip 2>/dev/null)
     local SRegion=$(echo $STmpresult | grep '"region":' | sed 's/.*"region"//' | cut -f2 -d'"')
     if [ -n "$SRegion" ]; then
         _yellow "\r Tiktok Region:\t\t${Font_Yellow}【${SRegion}】(可能为IDC IP)${Font_Suffix}"
@@ -3786,13 +4215,21 @@ lmc999_script() {
 spiritlhl_script() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
     cd $myvar >/dev/null 2>&1
-    echo -e "-------------------欺诈分数以及IP质量检测--本脚本原创-------------------"
-    _yellow "数据仅作参考，不代表100%准确，如果和实际情况不一致请手动查询多个数据库比对"
+    if [ "$en_status" = true ]; then
+        echo -e "-----------------Fraud-Score-and-IP-Quality-Detection-------------------"
+        _yellow "Data for reference only, does not represent 100% accurate, if and the actual situation is not consistent with the manual query multiple database comparison"
+    else
+        echo -e "-------------------欺诈分数以及IP质量检测--本脚本原创-------------------"
+        _yellow "数据仅作参考，不代表100%准确，如果和实际情况不一致请手动查询多个数据库比对"
+    fi
     ipcheck
 }
 
 backtrace_script() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
+    if [ "$en_status" = true ]; then
+        return
+    fi
     cd $myvar >/dev/null 2>&1
     if [ -f "${TEMP_DIR}/backtrace" ]; then
         chmod 777 ${TEMP_DIR}/backtrace
@@ -3806,24 +4243,29 @@ backtrace_script() {
 
 fscarmen_route_script() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
+    if [ "$en_status" = true ]; then
+        return
+    fi
     cd $myvar >/dev/null 2>&1
     echo -e "---------------------回程路由--感谢fscarmen开源及PR---------------------"
     rm -f /tmp/ecs/ip.test
     if [ "$swhc_mode" = false ]; then
         local test_area=("你本地的IPV4地址")
         local test_ip=("$target_ipv4")
-    elif [ -n "$route_location" ]; then
+    elif [ -n "$route_location" ] && [ "$route_location" != "6" ]; then
         local test_area
         local test_ip
         declare -n test_area="test_area_$route_location"
         declare -n test_ip="test_ip_$route_location"
+    elif [ "$route_location" == "6" ]; then
+        :
     else
         local test_area=("${!1}")
         local test_ip=("${!2}")
     fi
     local ip4=$(echo "$IPV4" | tr -d '\n')
     local ip6=$(echo "$IPV6" | tr -d '\n')
-    if [[ ! -z "${ip4}" ]]; then
+    if [[ ! -z "${ip4}" ]] && [ "$route_location" != "6" ]; then
         if [ "$swhc_mode" = false ]; then
             _green "核心程序来自ipip.net或nexttrace，请知悉!" >/tmp/ecs/ip.test
         else
@@ -3862,7 +4304,7 @@ fscarmen_route_script() {
             cat /tmp/ip_temp >>/tmp/ecs/ip.test
             rm -rf /tmp/ip_temp
         done
-    elif [[ -n "$ip6" ]]; then
+    elif [[ -n "$ip6" ]] || [ "$route_location" == "6" ]; then
         _green "依次测试电信/联通/移动经过的地区及线路，核心程序来自nexttrace，请知悉!" >/tmp/ecs/ip.test
         for ((a = 0; a < ${#test_area_6[@]}; a++)); do
             rm -rf /tmp/ip_temp
@@ -3878,7 +4320,6 @@ fscarmen_route_script() {
                 echo -e "$p_1 \t$p_2" >>/tmp/ip_temp
             done
             _yellow "${test_area_6[a]} ${test_ip_6[a]}" >>/tmp/ecs/ip.test
-            
             cat /tmp/ip_temp >>/tmp/ecs/ip.test
             rm -rf /tmp/ip_temp
         done
@@ -3894,6 +4335,9 @@ fscarmen_route_script() {
 
 ecs_ping() {
     cd $myvar >/dev/null 2>&1
+    if [ "$en_status" = true ]; then
+        return
+    fi
     echo -e "-----------------------全国延迟检测--本脚本原创-------------------------"
     if [ -f "${TEMP_DIR}/ecsspeed-ping.sh" ]; then
         ping_output=$(bash ${TEMP_DIR}/ecsspeed-ping.sh 2>&1)
@@ -4273,8 +4717,14 @@ build_text() {
         sed -i -e '/s)\s*->/d' test_result.txt
         sed -i -e '/^该运营商\|^测速中/d' test_result.txt
         if [ -s test_result.txt ]; then
-            if grep -q -- "---------------------磁盘fio读写测试--感谢yabs开源----------------------" "test_result.txt"; then
-                sed -i '/---------------------磁盘fio读写测试--感谢yabs开源----------------------/a Block Size | 4k            (IOPS) | 64k           (IOPS)' "test_result.txt"
+            if [ "$en_status" = true ]; then
+                if grep -q -- "-----------------------Disk-fio-Read/Write-Test-------------------------" "test_result.txt"; then
+                    sed -i '\#-----------------------Disk-fio-Read/Write-Test-------------------------#a Block Size | 4k            (IOPS) | 64k           (IOPS)' "test_result.txt"
+                fi
+            else
+                if grep -q -- "---------------------磁盘fio读写测试--感谢yabs开源----------------------" "test_result.txt"; then
+                    sed -i '/---------------------磁盘fio读写测试--感谢yabs开源----------------------/a Block Size | 4k            (IOPS) | 64k           (IOPS)' "test_result.txt"
+                fi
             fi
             shorturl=$(curl --ipv4 -sL -m 10 -X POST -H "Authorization: $ST" \
                 -H "Format: RANDOM" \
@@ -4309,27 +4759,23 @@ comprehensive_test_script_options() {
         break_status=true
         ;;
     3)
-        bash <(curl -L -Lso- https://cdn.jsdelivr.net/gh/misaka-gh/misakabench@master/misakabench.sh)
-        break_status=true
-        ;;
-    4)
         curl -sL yabs.sh | bash
         break_status=true
         ;;
-    5)
+    4)
         wget -qO- bench.sh | bash
         break_status=true
         ;;
-    6)
+    5)
         bash <(wget -qO- git.io/ceshi)
+        break_status=true
+        ;;
+    6)
+        wget --no-check-certificate https://raw.githubusercontent.com/teddysun/across/master/unixbench.sh && chmod +x unixbench.sh && ./unixbench.sh
         break_status=true
         ;;
     7)
         wget -N --no-check-certificate https://raw.githubusercontent.com/FunctionClub/ZBench/master/ZBench-CN.sh && bash ZBench-CN.sh
-        break_status=true
-        ;;
-    8)
-        wget --no-check-certificate https://raw.githubusercontent.com/teddysun/across/master/unixbench.sh && chmod +x unixbench.sh && ./unixbench.sh
         break_status=true
         ;;
     0)
@@ -4337,7 +4783,11 @@ comprehensive_test_script_options() {
         break_status=true
         ;;
     *) 
-        echo "输入错误，请重新输入"
+        if [ "$en_status" = true ]; then
+            echo "Input error, please re-enter"
+        else
+            echo "输入错误，请重新输入"
+        fi
         break_status=false
         ;;
     esac
@@ -4346,20 +4796,37 @@ comprehensive_test_script_options() {
 comprehensive_test_script() {
     head_script
     if $menu_mode; then
-        _yellow "具备综合性测试的脚本如下"
-        echo -e "${GREEN}1.${PLAIN} superbench VPS测试脚本-基于teddysun的二开"
-        echo -e "${GREEN}2.${PLAIN} lemonbench VPS测试脚本"
-        echo -e "${GREEN}3.${PLAIN} misakabench VPS测试脚本-基于superbench的二开"
-        echo -e "${GREEN}4.${PLAIN} YABS VPS测试脚本-英文论坛常用"
-        echo -e "${GREEN}5.${PLAIN} teddysun的bench.sh VPS测试脚本"
-        echo -e "${GREEN}6.${PLAIN} Aniverse的a.sh VPS测试脚本-特殊适配独服"
-        echo -e "${GREEN}7.${PLAIN} Zbench VPS测试脚本-国内测试"
-        echo -e "${GREEN}8.${PLAIN} UnixBench VPS测试脚本-特殊适配unix系统"
-        echo " -------------"
-        echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
-        echo ""
+        if [ "$en_status" = true ]; then
+            _yellow "Scripts with comprehensive tests are as follows"
+            echo -e "${GREEN}1.${PLAIN} superbench VPS test scripts - based on teddysun's secondary open source modifications"
+            echo -e "${GREEN}2.${PLAIN} lemonbench VPS test script"
+            echo -e "${GREEN}3.${PLAIN} YABS VPS Test Script"
+            echo -e "${GREEN}4.${PLAIN} Bench.sh VPS test script by teddysun"
+            echo -e "${GREEN}5.${PLAIN} Aniverse's a.sh VPS Test Script - Special Adaptation Dedicated Service"
+            echo -e "${GREEN}6.${PLAIN} UnixBench VPS Test Script - Special Adaptation for unix Systems"
+            echo -e "${GREEN}7.${PLAIN} Zbench VPS Test Script - Testing in China"
+            echo " -------------"
+            echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
+            echo ""
+        else
+            _yellow "具备综合性测试的脚本如下"
+            echo -e "${GREEN}1.${PLAIN} superbench VPS测试脚本-基于teddysun的二开"
+            echo -e "${GREEN}2.${PLAIN} lemonbench VPS测试脚本"
+            echo -e "${GREEN}3.${PLAIN} YABS VPS测试脚本-英文论坛常用"
+            echo -e "${GREEN}4.${PLAIN} teddysun的bench.sh VPS测试脚本"
+            echo -e "${GREEN}5.${PLAIN} Aniverse的a.sh VPS测试脚本-特殊适配独服"
+            echo -e "${GREEN}6.${PLAIN} UnixBench VPS测试脚本-特殊适配unix系统"
+            echo -e "${GREEN}7.${PLAIN} Zbench VPS测试脚本-国内测试"
+            echo " -------------"
+            echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
+            echo ""
+        fi
         while true; do
-            read -rp "请输入选项:" StartInputc
+            if [ "$en_status" = true ]; then
+                read -rp "Please enter the option number:" StartInputc
+            else
+                read -rp "请输入选项:" StartInputc
+            fi
             comprehensive_test_script_options
             if [ "$break_status" = true ] || [ "$menu_mode" = false ]; then
                 break
@@ -4414,7 +4881,11 @@ media_test_script_options() {
         break_status=true
         ;;
     *) 
-        echo "输入错误，请重新输入"
+        if [ "$en_status" = true ]; then
+            echo "Input error, please re-enter"
+        else
+            echo "输入错误，请重新输入"
+        fi
         break_status=false
         ;;
     esac
@@ -4437,7 +4908,11 @@ media_test_script() {
         echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
         echo ""
         while true; do
-            read -rp "请输入选项:" StartInputm
+            if [ "$en_status" = true ]; then
+                read -rp "Please enter the option number:" StartInputm
+            else
+                read -rp "请输入选项:" StartInputm
+            fi
             media_test_script_options
             if [ "$break_status" = true ] || [ "$menu_mode" = false ]; then
                 break
@@ -4512,7 +4987,11 @@ network_test_script_options() {
         break_status=true
         ;;
     *) 
-        echo "输入错误，请重新输入"
+        if [ "$en_status" = true ]; then
+            echo "Input error, please re-enter"
+        else
+            echo "输入错误，请重新输入"
+        fi
         break_status=false
         ;;
     esac
@@ -4540,7 +5019,11 @@ network_test_script() {
         echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
         echo ""
         while true; do
-            read -rp "请输入选项:" StartInputn
+            if [ "$en_status" = true ]; then
+                read -rp "Please enter the option number:" StartInputn
+            else
+                read -rp "请输入选项:" StartInputn
+            fi
             network_test_script_options
             if [ "$break_status" = true ] || [ "$menu_mode" = false ]; then
                 break
@@ -4579,7 +5062,11 @@ hardware_test_script_options() {
         break_status=true
         ;;
     *) 
-        echo "输入错误，请重新输入"
+        if [ "$en_status" = true ]; then
+            echo "Input error, please re-enter"
+        else
+            echo "输入错误，请重新输入"
+        fi
         break_status=false
         ;;
     esac
@@ -4599,7 +5086,11 @@ hardware_test_script() {
         echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
         echo ""
         while true; do
-            read -rp "请输入选项:" StartInputh
+            if [ "$en_status" = true ]; then
+                read -rp "Please enter the option number:" StartInputh
+            else
+                read -rp "请输入选项:" StartInputh
+            fi
             hardware_test_script_options
             if [ "$break_status" = true ] || [ "$menu_mode" = false ]; then
                 break
@@ -4634,7 +5125,11 @@ original_script_options() {
         break_status=true
         ;;
     *) 
-        echo "输入错误，请重新输入"
+        if [ "$en_status" = true ]; then
+            echo "Input error, please re-enter"
+        else
+            echo "输入错误，请重新输入"
+        fi
         break_status=false
         ;;
     esac
@@ -4652,7 +5147,11 @@ original_script() {
         echo -e "${GREEN}0.${PLAIN} 回到主菜单"
         echo ""
         while true; do
-            read -rp "请输入选项:" StartInput3
+            if [ "$en_status" = true ]; then
+                read -rp "Please enter the option number:" StartInput3
+            else
+                read -rp "请输入选项:" StartInput3
+            fi
             original_script_options
             if [ "$break_status" = true ] || [ "$menu_mode" = false ]; then
                 break
@@ -4687,7 +5186,11 @@ simplify_script_options() {
         break_status=true
         ;;
     *) 
-        echo "输入错误，请重新输入"
+        if [ "$en_status" = true ]; then
+            echo "Input error, please re-enter"
+        else
+            echo "输入错误，请重新输入"
+        fi
         break_status=false
         ;;
     esac
@@ -4705,7 +5208,11 @@ simplify_script() {
         echo -e "${GREEN}0.${PLAIN} 回到主菜单"
         echo ""
         while true; do
-            read -rp "请输入选项:" StartInput1
+            if [ "$en_status" = true ]; then
+                read -rp "Please enter the option number:" StartInput1
+            else
+                read -rp "请输入选项:" StartInput1
+            fi
             simplify_script_options
             if [ "$break_status" = true ] || [ "$menu_mode" = false ]; then
                 break
@@ -4748,7 +5255,11 @@ single_item_script_options() {
         break_status=true
         ;;
     *) 
-        echo "输入错误，请重新输入"
+        if [ "$en_status" = true ]; then
+            echo "Input error, please re-enter"
+        else
+            echo "输入错误，请重新输入"
+        fi
         break_status=false
         ;;
     esac
@@ -4768,7 +5279,11 @@ single_item_script() {
         echo -e "${GREEN}0.${PLAIN} 回到主菜单"
         echo ""
         while true; do
-            read -rp "请输入选项:" StartInput2
+            if [ "$en_status" = true ]; then
+                read -rp "Please enter the option number:" StartInput2
+            else
+                read -rp "请输入选项:" StartInput2
+            fi
             single_item_script_options
             if [ "$break_status" = true ] || [ "$menu_mode" = false ]; then
                 break
@@ -4851,7 +5366,11 @@ my_original_script_options() {
         break_status=true
         ;;
     *) 
-        echo "输入错误，请重新输入"
+        if [ "$en_status" = true ]; then
+            echo "Input error, please re-enter"
+        else
+            echo "输入错误，请重新输入"
+        fi
         break_status=false
         ;;
     esac
@@ -4881,7 +5400,11 @@ my_original_script() {
         echo -e "${GREEN}0.${PLAIN} 回到主菜单"
         echo ""
         while true; do
-            read -rp "请输入选项:" StartInput4
+            if [ "$en_status" = true ]; then
+                read -rp "Please enter the option number:" StartInput4
+            else
+                read -rp "请输入选项:" StartInput4
+            fi
             my_original_script_options
             if [ "$break_status" = true ] || [ "$menu_mode" = false ]; then
                 break
@@ -4895,19 +5418,36 @@ my_original_script() {
 
 head_script() {
     clear
-    echo "#############################################################"
-    echo -e "#                     ${YELLOW}融合怪测评脚本${PLAIN}                        #"
-    echo "# 版本(请注意比对仓库版本更新)：$ver                  #"
-    echo "# 更新日志：$changeLog                       #"
-    echo -e "# ${GREEN}作者${PLAIN}: spiritlhl                                           #"
-    echo -e "# ${GREEN}TG频道${PLAIN}: https://t.me/vps_reviews                          #"
-    echo -e "# ${GREEN}GitHub${PLAIN}: https://github.com/spiritLHLS                     #"
-    echo -e "# ${GREEN}GitLab${PLAIN}: https://gitlab.com/spiritysdx                     #"
-    echo "#############################################################"
-    echo ""
-    _green "脚本当天运行次数:${TODAY}，累计运行次数:${TOTAL}"
-    if [ "$menu_mode" = true ]; then
-        _green "请选择你接下来要使用的脚本"
+    if [ "$en_status" = true ]; then
+        echo "#############################################################"
+        echo -e "#          ${YELLOW}VPS Fusion Monster Server Test Script${PLAIN}            #"
+        echo -e "# Version: $ver                                       #"
+        echo -e "# Update log：$changeLog     #"
+        echo -e "# ${GREEN}Author${PLAIN}: spiritlhl                                         #"
+        echo -e "# ${GREEN}TG Channel${PLAIN}: https://t.me/vps_reviews                      #"
+        echo -e "# ${GREEN}GitHub${PLAIN}: https://github.com/spiritLHLS                     #"
+        echo -e "# ${GREEN}GitLab${PLAIN}: https://gitlab.com/spiritysdx                     #"
+        echo "#############################################################"
+        echo ""
+        _green "Number of times the script was run today: ${TODAY}, Cumulative number of runs: ${TOTAL}"
+        if [ "$menu_mode" = true ]; then
+            _green "Please select the option number you want to use"
+        fi
+    else
+        echo "#############################################################"
+        echo -e "#                     ${YELLOW}融合怪测评脚本${PLAIN}                        #"
+        echo -e "# 版本(请注意比对仓库版本更新)：$ver                  #"
+        echo -e "# 更新日志：$changeLog                       #"
+        echo -e "# ${GREEN}作者${PLAIN}: spiritlhl                                           #"
+        echo -e "# ${GREEN}TG频道${PLAIN}: https://t.me/vps_reviews                          #"
+        echo -e "# ${GREEN}GitHub${PLAIN}: https://github.com/spiritLHLS                     #"
+        echo -e "# ${GREEN}GitLab${PLAIN}: https://gitlab.com/spiritysdx                     #"
+        echo "#############################################################"
+        echo ""
+        _green "脚本当天运行次数:${TODAY}，累计运行次数:${TOTAL}"
+        if [ "$menu_mode" = true ]; then
+            _green "请选择你接下来要使用的脚本"
+        fi
     fi
 }
 
@@ -4946,7 +5486,11 @@ start_script_options() {
         break_status=true
         ;;
     *) 
-        echo "输入错误，请重新输入"
+        if [ "$en_status" = true ]; then
+            echo "Input error, please re-enter"
+        else
+            echo "输入错误，请重新输入"
+        fi
         break_status=false
         ;;
     esac
@@ -4958,18 +5502,34 @@ start_script() {
         # 纯测系统信息
         hardware_script | tee -i test_result.txt
     elif $menu_mode; then
-        echo -e "${GREEN}1.${PLAIN} 顺序测试--融合怪完全体(所有项目都测试)(平均运行7分钟)(机器普通推荐使用)"
-        echo -e "${GREEN}2.${PLAIN} 并行测试--融合怪完全体(所有项目都测试)(平均运行5分钟)(仅机器强劲可使用，机器普通勿要使用)"
-        echo -e "${GREEN}3.${PLAIN} 融合怪精简区(融合怪的精简版或单项测试精简版)"
-        echo -e "${GREEN}4.${PLAIN} 融合怪单项区(融合怪的单项测试完整版)"
-        echo -e "${GREEN}5.${PLAIN} 第三方脚本区(同类作者的各种测试脚本)"
-        echo -e "${GREEN}6.${PLAIN} 原创区(本脚本独有的一些测试脚本)"
-        echo -e "${GREEN}7.${PLAIN} 更新本脚本"
-        echo " -------------"
-        echo -e "${GREEN}0.${PLAIN} 退出"
+        if [ "$en_status" = true ]; then
+            echo -e "${GREEN}1.${PLAIN} Sequential Test - Fusion Monster Complete (all items tested) (average run time 7 minutes) (recommended for machine general)"
+            echo -e "${GREEN}2.${PLAIN} Parallel Test - Fusion Monster Complete (all items tested) (runs for 5 minutes on average) (Powerful machines only, do not use for normal machines)"
+            echo -e "${GREEN}3.${PLAIN} Fusion Monster Lite Zone (Lite or Single Test Lite version of Fusion Monster)"
+            echo -e "${GREEN}4.${PLAIN} Fusion Monster Single Zone (full version of Fusion Monster single test)"
+            echo -e "${GREEN}5.${PLAIN} Third-party scripts area (various test scripts by similar authors)"
+            echo -e "${GREEN}6.${PLAIN} Original area (some test scripts unique to this script)"
+            echo -e "${GREEN}7.${PLAIN} Update this script"
+            echo " -------------"
+            echo -e "${GREEN}0.${PLAIN} Exit"
+        else
+            echo -e "${GREEN}1.${PLAIN} 顺序测试--融合怪完全体(所有项目都测试)(平均运行7分钟)(机器普通推荐使用)"
+            echo -e "${GREEN}2.${PLAIN} 并行测试--融合怪完全体(所有项目都测试)(平均运行5分钟)(仅机器强劲可使用，机器普通勿要使用)"
+            echo -e "${GREEN}3.${PLAIN} 融合怪精简区(融合怪的精简版或单项测试精简版)"
+            echo -e "${GREEN}4.${PLAIN} 融合怪单项区(融合怪的单项测试完整版)"
+            echo -e "${GREEN}5.${PLAIN} 第三方脚本区(同类作者的各种测试脚本)"
+            echo -e "${GREEN}6.${PLAIN} 原创区(本脚本独有的一些测试脚本)"
+            echo -e "${GREEN}7.${PLAIN} 更新本脚本"
+            echo " -------------"
+            echo -e "${GREEN}0.${PLAIN} 退出"
+        fi
         echo ""
         while true; do
-            read -rp "请输入选项:" StartInput
+            if [ "$en_status" = true ]; then
+                read -rp "Please enter the option number:" StartInput
+            else
+                read -rp "请输入选项:" StartInput
+            fi
             start_script_options
             if [ "$break_status" = true ] || [ "$menu_mode" = false ]; then
                 break
