@@ -2081,7 +2081,6 @@ check_to_cn_test() {
     local use_all="$2"
     shift 2
     local data_array=("$@")
-    echo "${data_array[@]}" >> /root/log
     if [ "$test_network_type" == ".cn" ]; then
         data_array=($(get_nearest_data2 "${SERVER_BASE_URL2}/${provider_list}")) >/dev/null 2>&1
         wait
