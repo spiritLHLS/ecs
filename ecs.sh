@@ -2078,8 +2078,10 @@ speed_test2() {
 
 check_to_cn_test() {
     local provider_list="$1"
-    local data_array=("$2")
-    local use_all="$3"
+    local use_all="$2"
+    shift 2
+    local data_array=("$@")
+    echo "${data_array[@]}" >> /root/log
     if [ "$test_network_type" == ".cn" ]; then
         data_array=($(get_nearest_data2 "${SERVER_BASE_URL2}/${provider_list}")) >/dev/null 2>&1
         wait
@@ -2089,7 +2091,7 @@ check_to_cn_test() {
             unset -f speed_test
             speed_test() { speed_test2 "$@"; }
             echo -en "\r测速中                                                        \r"
-            if [ "$use_all" == "true" ]; then
+            if [ "$use_all" = "true" ]; then
                 test_list "${data_array[@]}"
             else
                 test_list "${data_array[0]}"
@@ -2111,14 +2113,14 @@ check_to_cn_test() {
             speed_test() { speed_test2 "$@"; }
             echo -en "\r测速中                                                        \r"
             
-            if [ "$use_all" == "true" ]; then
+            if [ "$use_all" = "true" ]; then
                 test_list "${data_array[@]}"
             else
                 test_list "${data_array[0]}"
             fi
         fi
     else
-        if [ "$use_all" == "true" ]; then
+        if [ "$use_all" = "true" ]; then
             test_list "${data_array[@]}"
         else
             test_list "${data_array[0]}"
@@ -2138,9 +2140,9 @@ speed() {
     fi
     test_list "${ls_sg_hk_jp[@]}"
     if [ "$en_status" = false ]; then
-        check_to_cn_test "unicom.csv" "${CN_Unicom[@]}" "true"
-        check_to_cn_test "telecom.csv" "${CN_Telecom[@]}" "true"
-        check_to_cn_test "mobile.csv" "${CN_Mobile[@]}" "true"
+        check_to_cn_test "unicom.csv" "true" "${CN_Unicom[@]}"
+        check_to_cn_test "telecom.csv" "true" "${CN_Telecom[@]}"
+        check_to_cn_test "mobile.csv" "true" "${CN_Mobile[@]}"
     fi
 }
 
@@ -2155,9 +2157,9 @@ speed2() {
         speed_test '' 'Speedtest.net'
     fi
     if [ "$en_status" = false ]; then
-        check_to_cn_test "unicom.csv" "${CN_Unicom[0]}" "false"
-        check_to_cn_test "telecom.csv" "${CN_Telecom[0]}" "false"
-        check_to_cn_test "mobile.csv" "${CN_Mobile[0]}" "false"
+        check_to_cn_test "unicom.csv" "false" "${CN_Unicom[0]}"
+        check_to_cn_test "telecom.csv" "false" "${CN_Telecom[0]}"
+        check_to_cn_test "mobile.csv" "false" "${CN_Mobile[0]}"
     fi
 }
 
