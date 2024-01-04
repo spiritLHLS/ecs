@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.12.31"
+ver="2024.01.04"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -746,8 +746,13 @@ declare -A sysctl_vars=(
     ["net.ipv4.tcp_max_tw_buckets"]=8192
     ["net.ipv4.tcp_fastopen"]=3
     ["net.ipv4.tcp_mtu_probing"]=1
-    ["net.ipv4.tcp_rmem"]="4096 87380 67108864"
-    ["net.ipv4.tcp_wmem"]="4096 65536 67108864"
+    ["net.ipv4.tcp_rmem"]="8192 262144 536870912"
+    ["net.ipv4.tcp_wmem"]="4096 16384 536870912"
+    ["net.ipv4.tcp_adv_win_scale"]=-2
+    ["net.ipv4.tcp_collapse_max_bytes"]=6291456
+    ["net.ipv4.tcp_notsent_lowat"]=131072
+    ["net.ipv4.udp_rmem_min"]=16384
+    ["net.ipv4.udp_wmem_min"]=16384
     ["net.ipv6.conf.all.forwarding"]=1
     ["net.ipv6.conf.default.forwarding"]=1
     ["net.nf_conntrack_max"]=25000000
@@ -3380,6 +3385,11 @@ abuse_ipv4() {
     local score
     local usageType
     rm -rf /tmp/ip_quality_abuseipdb_ipv4*
+    local api_heads=(
+        'key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c'
+        'key: a240c11ca3d2f3d58486fa86f1744a143448d3a6fcb2fc1f8880bafd58c3567a0adddcfd7a722364'
+    )
+    local head=${api_heads[$RANDOM % ${#api_heads[@]}]}
     local context2=$(curl -sL -H "$head" -m 10 "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
     if [[ "$context2" == *"abuseConfidenceScore"* ]]; then
         score=$(echo "$context2" | grep -o '"abuseConfidenceScore":[^,}]*' | sed 's/.*://')
@@ -3398,6 +3408,11 @@ abuse_ipv6() {
     local score
     local usageType
     rm -rf /tmp/ip_quality_abuseipdb_ipv6*
+    local api_heads=(
+        'key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c'
+        'key: a240c11ca3d2f3d58486fa86f1744a143448d3a6fcb2fc1f8880bafd58c3567a0adddcfd7a722364'
+    )
+    local head=${api_heads[$RANDOM % ${#api_heads[@]}]}
     local context2=$(curl -sL -H "$head" -m 10 "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
     if [[ "$context2" == *"abuseConfidenceScore"* ]]; then
         score=$(echo "$context2" | grep -o '"abuseConfidenceScore":[^,}]*' | sed 's/.*://')
@@ -3893,7 +3908,6 @@ eo6s(){
 
 cdn_urls=("https://cdn0.spiritlhl.top/" "http://cdn3.spiritlhl.net/" "http://cdn1.spiritlhl.net/" "https://ghproxy.com/" "http://cdn2.spiritlhl.net/")
 ST="OvwKx5qgJtf7PZgCKbtyojSU.MTcwMTUxNzY1MTgwMw"
-head='key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c'
 speedtest_ver="1.2.0"
 SERVER_BASE_URL="https://raw.githubusercontent.com/spiritLHLS/speedtest.net-CN-ID/main"
 SERVER_BASE_URL2="https://raw.githubusercontent.com/spiritLHLS/speedtest.cn-CN-ID/main"

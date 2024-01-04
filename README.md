@@ -69,12 +69,10 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2023.12.31
+2023.01.04
 
-- 增加```-stype```和```-en```的指令模式，正式适配英文输出模式
-- 修复部分测速时长可能超过70秒的问题，尽可能的去限制执行任务的时长
-- 修复三网测速时部分运营商之前未考虑不可用时使用第二个平台替代的问题
-- 修复nslookup可能重复判断的问题，提前到环境预处理中
+- 部分IP质量查询API将要达到限额，增加随机抽取Key以避免达到限额
+- 优化部分sysctl配置，参考了[cloudflare](https://blog.cloudflare.com/optimizing-tcp-for-high-throughput-and-low-latency)和[magicTCP](https://github.com/nexstorm/magicTCP)的内容
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2023.11.22"
+ver="2024.01.04"
 changeLog="IP质量测试，由频道 https://t.me/vps_reviews 原创"
 temp_file_apt_fix="/tmp/apt_fix.txt"
 shorturl=""
@@ -539,7 +539,6 @@ check_and_cat_file() {
     fi
 }
 
-head='key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c'
 ST="OvwKx5qgJtf7PZgCKbtyojSU.MTcwMTUxNzY1MTgwMw"
 
 translate_status() {
@@ -711,6 +710,11 @@ abuse_ipv4() {
     local score
     local usageType
     rm -rf /tmp/ip_quality_abuseipdb_ipv4*
+    local api_heads=(
+        'key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c'
+        'key: a240c11ca3d2f3d58486fa86f1744a143448d3a6fcb2fc1f8880bafd58c3567a0adddcfd7a722364'
+    )
+    local head=${api_heads[$RANDOM % ${#api_heads[@]}]}
     local context2=$(curl -sL -H "$head" -m 10 "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
     if [[ "$context2" == *"abuseConfidenceScore"* ]]; then
         score=$(echo "$context2" | grep -o '"abuseConfidenceScore":[^,}]*' | sed 's/.*://')
@@ -729,6 +733,11 @@ abuse_ipv6() {
     local score
     local usageType
     rm -rf /tmp/ip_quality_abuseipdb_ipv6*
+    local api_heads=(
+        'key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c'
+        'key: a240c11ca3d2f3d58486fa86f1744a143448d3a6fcb2fc1f8880bafd58c3567a0adddcfd7a722364'
+    )
+    local head=${api_heads[$RANDOM % ${#api_heads[@]}]}
     local context2=$(curl -sL -H "$head" -m 10 "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
     if [[ "$context2" == *"abuseConfidenceScore"* ]]; then
         score=$(echo "$context2" | grep -o '"abuseConfidenceScore":[^,}]*' | sed 's/.*://')
