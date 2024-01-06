@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.01.04"
+ver="2024.01.06"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -689,12 +689,6 @@ pre_download() {
                 wget -q -O $TEMP_DIR/backtrace.tar.gz https://hub.fgit.cf/zhanghanyun/backtrace/releases/latest/download/$BACKTRACE_FILE
             fi
             tar -xf $TEMP_DIR/backtrace.tar.gz -C $TEMP_DIR
-            ;;
-        yabsiotest)
-            curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/yabsiotest.sh" -o $TEMP_DIR/yabsiotest.sh && chmod +x $TEMP_DIR/yabsiotest.sh
-            if [ ! -f $TEMP_DIR/yabsiotest.sh ]; then
-                wget -q -O $TEMP_DIR/yabsiotest.sh "https://raw.fgit.cf/spiritLHLS/ecs/main/archive/yabsiotest.sh" && chmod +x $TEMP_DIR/yabsiotest.sh
-            fi
             ;;
         yabs)
             curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/masonr/yet-another-bench-script/master/yabs.sh" -o $TEMP_DIR/yabs.sh && chmod +x $TEMP_DIR/yabs.sh
@@ -2116,7 +2110,6 @@ check_to_cn_test() {
             unset -f speed_test
             speed_test() { speed_test2 "$@"; }
             echo -en "\r测速中                                                        \r"
-            
             if [ "$use_all" = "true" ]; then
                 test_list "${data_array[@]}"
             else
@@ -3016,7 +3009,7 @@ print_ip_info() {
         if [[ -n "$ipv6_location" && "$ipv6_location" != "None" ]]; then
             echo " IPV6 位置         : $(_blue "$ipv6_location")"
         fi
-        if [[ -n "$ipv6_prefixlen" && "$ipv6_prefixlen" != "None" ]]; then
+        if [[ -n "$ipv6_prefixlen" && "$ipv6_prefixlen" != "None" && -n "$ipv6_asn_info" && "$ipv6_asn_info" != "None" ]]; then
             echo " IPV6 子网掩码     : $(_blue "$ipv6_prefixlen")"
         fi
     fi
@@ -3988,7 +3981,7 @@ cpu_judge() {
         case $benchmark_type in
             sysbench)
                 benchmark_name="SysBench_CPU_Fast"
-                echo "-------------------------------CPU-Test----------------------------------"
+                echo "---------------------------CPU-Sysbench-Test------------------------------"
                 ;;
             geekbench4)
                 benchmark_name="4"
@@ -4011,7 +4004,7 @@ cpu_judge() {
         case $benchmark_type in
             sysbench)
                 benchmark_name="SysBench_CPU_Fast"
-                echo "---------------------CPU测试--感谢lemonbench开源------------------------"
+                echo "----------------------CPU测试--通过sysbench测试-------------------------"
                 ;;
             geekbench4)
                 benchmark_name="4"
@@ -4100,14 +4093,27 @@ io1_script() {
 io2_script() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
     cd $myvar >/dev/null 2>&1
-    cp $TEMP_DIR/yabsiotest.sh ./
+    cp $TEMP_DIR/yabs.sh ./
     if [ "$en_status" = true ]; then
         echo "-----------------------Disk-fio-Read/Write-Test-------------------------"
     else
         echo "---------------------磁盘fio读写测试--感谢yabs开源----------------------"
     fi
-    bash yabsiotest.sh 2>/dev/null
-    rm -rf yabsiotest.sh
+    echo -en "\rRunning fio test..."
+    local output=$(./yabs.sh -s -- -i -n -g 2>&1 | tail -n +9)
+    if [[ $output =~ "Block Size" ]]; then
+        output=$(echo "$output" | grep -v 'curl' | sed '$d' | sed '$d' | sed '1,2d')
+        echo -en "\r"
+        echo "$output"
+    else
+        echo -en "\r"
+        if [ "$en_status" = true ]; then
+            echo "Test failed please replace with another"
+        else
+            echo "测试失败请替换另一种方式"
+        fi
+    fi
+    rm -rf yabs.sh
 }
 
 io3_script() {
@@ -4146,10 +4152,23 @@ io3_script() {
                 echo -e "---------------------------------"
                 echo "Current disk: ${disk_name}"
                 echo "Current path: ${path}"
-                if [ ! -f "yabsiotest.sh" ]; then
-                    cp $TEMP_DIR/yabsiotest.sh ./
+                if [ ! -f "yabs.sh" ]; then
+                    cp $TEMP_DIR/yabs.sh ./
                 fi
-                bash yabsiotest.sh
+                echo -en "\rRunning fio test..."
+                local output=$(./yabs.sh -s -- -i -n -g 2>&1 | tail -n +9)
+                echo -en "\r"
+                if [[ $output =~ "Block Size" ]]; then
+                    output=$(echo "$output" | grep -v 'curl' | sed '$d' | sed '$d' | sed '1,2d')
+                    echo "$output"
+                else
+                    if [ "$en_status" = true ]; then
+                        echo "Test failed please replace with another"
+                    else
+                        echo "测试失败请替换另一种方式"
+                    fi
+                fi
+                rm -rf yabs.sh
             fi
             cd $myvar >/dev/null 2>&1
         done
@@ -4158,7 +4177,7 @@ io3_script() {
         echo "No extra disk"
         return
     fi
-    rm -rf yabsiotest.sh
+    rm -rf yabs.sh
 }
 
 io_judge(){
@@ -4407,7 +4426,7 @@ all_script() {
     pre_check
     if [ "$1" = "B" ]; then
         if [[ -z "${CN}" || "${CN}" != true ]]; then
-            dfiles=(yabsiotest yabs dp nf tubecheck media_lmc_check besttrace nexttrace backtrace)
+            dfiles=(yabs dp nf tubecheck media_lmc_check besttrace nexttrace backtrace)
             for dfile in "${dfiles[@]}"; do
                 { pre_download ${dfile}; } &
             done
@@ -4472,7 +4491,7 @@ all_script() {
         fi
     else
         if [[ -z "${CN}" || "${CN}" != true ]]; then
-            pre_download yabsiotest yabs dp nf tubecheck media_lmc_check besttrace nexttrace backtrace
+            pre_download yabs dp nf tubecheck media_lmc_check besttrace nexttrace backtrace
             get_system_info
             check_dnsutils
             check_ping
@@ -4524,7 +4543,7 @@ all_script() {
 minal_script() {
     pre_check
     get_system_info
-    pre_download yabsiotest yabs
+    pre_download yabs
     check_ping
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
     CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
@@ -4540,7 +4559,7 @@ minal_script() {
 
 minal_plus() {
     pre_check
-    pre_download yabsiotest yabs dp nf tubecheck media_lmc_check besttrace nexttrace backtrace
+    pre_download yabs dp nf tubecheck media_lmc_check besttrace nexttrace backtrace
     get_system_info
     check_lmc_script
     check_dnsutils
@@ -4564,7 +4583,7 @@ minal_plus() {
 
 minal_plus_network() {
     pre_check
-    pre_download yabsiotest yabs besttrace nexttrace backtrace
+    pre_download yabs besttrace nexttrace backtrace
     get_system_info
     check_ping
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
@@ -4583,7 +4602,7 @@ minal_plus_network() {
 
 minal_plus_media() {
     pre_check
-    pre_download yabsiotest yabs dp nf tubecheck media_lmc_check
+    pre_download yabs dp nf tubecheck media_lmc_check
     get_system_info
     check_dnsutils
     check_lmc_script
@@ -4637,7 +4656,7 @@ media_script() {
 
 hardware_script() {
     pre_check
-    pre_download yabsiotest yabs
+    pre_download yabs
     get_system_info
     clear
     print_intro
@@ -4703,7 +4722,6 @@ rm_script() {
     rm -rf LemonBench.Result.txt*
     rm -rf speedtest.log*
     rm -rf test
-    rm -rf yabsiotest.sh*
     rm -rf yabs.sh*
     rm -rf speedtest.tgz*
     rm -rf speedtest.tar.gz*

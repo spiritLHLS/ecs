@@ -2,6 +2,11 @@
 
 # 主要变化
 
+2023.01.04
+
+- 部分IP质量查询API将要达到限额，增加随机抽取Key以避免达到限额
+- 优化部分sysctl配置，参考了[cloudflare](https://blog.cloudflare.com/optimizing-tcp-for-high-throughput-and-low-latency)和[magicTCP](https://github.com/nexstorm/magicTCP)的内容
+
 2023.12.31
 
 - 增加```-stype```和```-en```的指令模式，正式适配英文输出模式
