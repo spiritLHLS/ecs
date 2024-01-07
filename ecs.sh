@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.01.06"
+ver="2024.01.07"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -36,6 +36,7 @@ build_text_status=true
 multidisk_status=false
 target_ipv4=""
 route_location=""
+enable_speedtest=true
 main_menu_option=0
 sub_menu_option=0
 sub_of_sub_menu_option=0
@@ -55,14 +56,12 @@ while [ "$#" -gt 0 ]; do
         ;;
         -i)
             # 处理 -i 选项，获取IPv4地址
-            menu_mode=false
             target_ipv4="$2"
             swhc_mode=false
             shift 2
         ;;
         -r)
             # 处理 -r 选项，选择测试回程路由的出口地址
-            menu_mode=false
             route_location="$2"
             shift 2
         ;;
@@ -79,31 +78,31 @@ while [ "$#" -gt 0 ]; do
         ;;
         -ctype)
             # 处理 -ctype 选项，选择测试cpu使用的方式
-            menu_mode=false
             test_cpu_type="$2"
             shift 2
         ;;
         -dtype)
             # 处理 -dtype 选项，选择测试磁盘使用的方式
-            menu_mode=false
             test_disk_type="$2"
             shift 2
         ;;
         -mdisk)
             # 处理 -mdisk 选项，选择测试多个挂载盘，且含系统盘
-            menu_mode=false
             multidisk_status=true
             shift
         ;;
         -stype)
             # 处理 -stype 选项，选择测试网速的数据来源，不指定时默认优先使用.net数据
-            menu_mode=false
             test_network_type="$2"
             shift 2
         ;;
+        -bansp)
+            # 处理 -bansp 选项，禁用测速
+            enable_speedtest=false
+            shift
+        ;;
         -banup)
             # 处理 -banup 选项，选择测试磁盘使用的方式
-            menu_mode=false
             build_text_status=false
             shift
         ;;
@@ -119,6 +118,7 @@ while [ "$#" -gt 0 ]; do
                 echo "-ctype Optional, Can specify the way to test the cpu, optional gb4 gb5 gb6 corresponds to geekbench version 4, 5, 6 respectively."
                 echo "-dtype Optional, Can specify the program to test the IO of the hard disk, you can choose dd or fio, the former test is fast and the latter test is slow."
                 echo "-mdisk Optional, Can specify to test the IO of multiple mounted disks."
+                echo "-bansp Optional, Can specify not to run speedtest."
                 echo "-banup Optional, Can specify to force not to generate the sharing link."
             else
                 echo "使用参数模式执行："
@@ -133,6 +133,7 @@ while [ "$#" -gt 0 ]; do
                 echo "-dtype 可选项，可指定测试硬盘IO的程序，可选 dd 或 fio 前者测试快后者测试慢，无该指令则默认为都使用进行测试"
                 echo "-mdisk 可选项，可指定测试多个挂载盘的IO，注意这也会测试系统盘且仅使用fio测试"
                 echo "-stype 可选项，可指定测试时使用的是什么平台的测速节点，可选 .cn .com 分别对应 speedtest.cn speedtest.com 数据"
+                echo "-bansp 可选项，可指定强制不测试网速，无该指令则默认测试网速"
                 echo "-banup 可选项，可指定强制不生成分享链接，无该指令则默认生成分享链接"
             fi
             exit 1
@@ -166,6 +167,7 @@ if [ "$menu_mode" = false ]; then
     echo "test_cpu_type: $test_cpu_type"
     echo "test_disk_type: $test_disk_type"
     echo "multidisk_status: $multidisk_status"
+    echo "enable_speedtest: $enable_speedtest"
     echo "build_text_status: $build_text_status"
     # 读取 -m 选项后的参数
     main_menu_option=${m_params[0]:-0}
@@ -4383,11 +4385,14 @@ ecs_ping() {
 
 ecs_net_all_script() {
     cd $myvar >/dev/null 2>&1
-    s_time=$(date +%s)
+    if [ "$enable_speedtest" = false ]; then
+        return
+    fi
+    # s_time=$(date +%s)
     rm -rf ./speedtest-cli/speedlog.txt
     speed | tee ./speedtest-cli/speedlog.txt
-    e_time=$(date +%s)
-    time=$((${e_time} - ${s_time}))
+    # e_time=$(date +%s)
+    # time=$((${e_time} - ${s_time}))
     if ! grep -qE "(Speedtest.net|洛杉矶|新加坡|香港|联通|电信|移动|日本|中国)" ./speedtest-cli/speedlog.txt; then
         export speedtest_ver="1.0.0"
         rm -rf ./speedtest-cli/speedlog.txt
@@ -4400,11 +4405,14 @@ ecs_net_all_script() {
 
 ecs_net_minal_script() {
     cd $myvar >/dev/null 2>&1
-    s_time=$(date +%s)
+    if [ "$enable_speedtest" = false ]; then
+        return
+    fi
+    # s_time=$(date +%s)
     rm -rf ./speedtest-cli/speedlog.txt
     speed2 | tee ./speedtest-cli/speedlog.txt
-    e_time=$(date +%s)
-    time=$((${e_time} - ${s_time}))
+    # e_time=$(date +%s)
+    # time=$((${e_time} - ${s_time}))
     if ! grep -qE "(Speedtest.net|洛杉矶|新加坡|香港|联通|电信|移动|日本|中国)" ./speedtest-cli/speedlog.txt; then
         export speedtest_ver="1.0.0"
         rm -rf ./speedtest-cli/speedlog.txt
@@ -4749,16 +4757,17 @@ build_text() {
         sed -i -e '/Block\s*->/d' test_result.txt
         sed -i -e '/s)\s*->/d' test_result.txt
         sed -i -e '/^该运营商\|^测速中/d' test_result.txt
+        sed -i -e '/^Running fio test.../d' test_result.txt
         if [ -s test_result.txt ]; then
-            if [ "$en_status" = true ]; then
-                if grep -q -- "-----------------------Disk-fio-Read/Write-Test-------------------------" "test_result.txt"; then
-                    sed -i '\#-----------------------Disk-fio-Read/Write-Test-------------------------#a Block Size | 4k            (IOPS) | 64k           (IOPS)' "test_result.txt"
-                fi
-            else
-                if grep -q -- "---------------------磁盘fio读写测试--感谢yabs开源----------------------" "test_result.txt"; then
-                    sed -i '/---------------------磁盘fio读写测试--感谢yabs开源----------------------/a Block Size | 4k            (IOPS) | 64k           (IOPS)' "test_result.txt"
-                fi
-            fi
+            # if [ "$en_status" = true ]; then
+            #     if grep -q -- "-----------------------Disk-fio-Read/Write-Test-------------------------" "test_result.txt"; then
+            #         sed -i '\#-----------------------Disk-fio-Read/Write-Test-------------------------#a Block Size | 4k            (IOPS) | 64k           (IOPS)' "test_result.txt"
+            #     fi
+            # else
+            #     if grep -q -- "---------------------磁盘fio读写测试--感谢yabs开源----------------------" "test_result.txt"; then
+            #         sed -i '/---------------------磁盘fio读写测试--感谢yabs开源----------------------/a Block Size | 4k            (IOPS) | 64k           (IOPS)' "test_result.txt"
+            #     fi
+            # fi
             shorturl=$(curl --ipv4 -sL -m 10 -X POST -H "Authorization: $ST" \
                 -H "Format: RANDOM" \
                 -H "Max-Views: 0" \
