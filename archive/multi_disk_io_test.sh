@@ -134,4 +134,4 @@ if [ ${#disk_paths[@]} -gt 0 ]; then
 else
   echo "No extra disk"
 fi
-rm -rf cp yabs.sh
+rm -rf yabs.sh
