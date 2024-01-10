@@ -2,6 +2,7 @@
 # by spiritlhl
 # from https://github.com/spiritLHLS/ecs
 # curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/multi_disk_io_test.sh -o mdit.sh && chmod +x mdit.sh && bash mdit.sh
+# 2024.01.10
 
 myvar=$(pwd)
 export DEBIAN_FRONTEND=noninteractive
@@ -65,8 +66,22 @@ cdn_urls=("https://cdn0.spiritlhl.top/" "http://cdn3.spiritlhl.net/" "http://cdn
 check_cdn_file
 
 # 当前路径下下载测试脚本
-rm -rf yabsiotest.sh >/dev/null 2>&1
-curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/yabsiotest.sh" -o yabsiotest.sh && chmod +x yabsiotest.sh
+rm -rf yabs.sh >/dev/null 2>&1
+curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/masonr/yet-another-bench-script/master/yabs.sh" -o yabs.sh && chmod +x yabs.sh
+sed -i '/# gather basic system information (inc. CPU, AES-NI\/virt status, RAM + swap + disk size)/,/^echo -e "IPv4\/IPv6  : $ONLINE"/d' yabs.sh
+echo -e "---------------------------------"
+echo "Current disk: system disk"
+echo "Current path: /root"
+echo -en "\rRunning fio test..."
+output=$(./yabs.sh -s -- -i -n -g 2>&1 | tail -n +9)
+if [[ $output =~ "Block Size" ]]; then
+    output=$(echo "$output" | grep -v 'curl' | sed '$d' | sed '$d' | sed '1,2d')
+    echo -en "\r"
+    echo "$output"
+else
+    echo -en "\r"
+    echo "Test failed please replace with another"
+fi
 
 # 获取非以vda开头的盘名称
 disk_names=$(lsblk -e 11 -n -o NAME | grep -v "vda" | grep -v "snap" | grep -v "loop")
@@ -99,10 +114,19 @@ if [ ${#disk_paths[@]} -gt 0 ]; then
       echo -e "---------------------------------"
       echo "Current disk: ${disk_name}"
       echo "Current path: ${path}"
-      if [ ! -f "yabsiotest.sh" ]; then
-        cp ${myvar}/yabsiotest.sh ./
+      if [ ! -f "yabs.sh" ]; then
+        cp ${myvar}/yabs.sh ./
       fi
-      bash yabsiotest.sh
+      echo -en "\rRunning fio test..."
+      output=$(./yabs.sh -s -- -i -n -g 2>&1 | tail -n +9)
+      if [[ $output =~ "Block Size" ]]; then
+          output=$(echo "$output" | grep -v 'curl' | sed '$d' | sed '$d' | sed '1,2d')
+          echo -en "\r"
+          echo "$output"
+      else
+          echo -en "\r"
+          echo "Test failed please replace with another"
+      fi
     fi
     cd $myvar >/dev/null 2>&1
   done
@@ -110,4 +134,4 @@ if [ ${#disk_paths[@]} -gt 0 ]; then
 else
   echo "No extra disk"
 fi
-rm -rf cp yabsiotest.sh
+rm -rf cp yabs.sh
