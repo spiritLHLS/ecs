@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.01.07"
+ver="2024.01.12"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -249,7 +249,6 @@ global_startup_init_action() {
     rm -rf /.tmp_LBench/
     mkdir "$WorkDir"/
     echo -e "${Msg_Info}Checking Dependency ..."
-    Check_SysBench
     BenchFunc_Systeminfo_GetSysteminfo
     echo -e "${Msg_Info}Starting Test ..."
 }
@@ -1483,7 +1482,8 @@ Check_SysBench() {
     # 最终检测
     if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
         echo -e "${Msg_Error}SysBench Moudle install Failure! Try Restart Bench or Manually install it! (/usr/bin/sysbench)"
-        exit 1
+        echo -e "${Msg_Warning}Will try to test with geekbench5 instead later on"
+        test_cpu_type="gb5"
     fi
 }
 
@@ -3875,29 +3875,33 @@ eo6s(){
     # 获取IPV6的子网掩码
     rm -rf $TEMP_DIR/eo6s_result
     local interface=$(ls /sys/class/net/ | grep -v "$(ls /sys/devices/virtual/net/)")
-    local current_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
-    # echo ${current_ipv6}
-    local new_ipv6="${current_ipv6%:*}:3"
-    ip addr add ${new_ipv6}/128 dev ${interface}
-    sleep 6
-    local updated_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
-    # echo ${updated_ipv6}
-    ip addr del ${new_ipv6}/128 dev ${interface}
-    sleep 6
-    local final_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
-    # echo ${final_ipv6}
-    local ipv6_prefixlen=""
-    local output=$(ifconfig ${interface} | grep -oP 'inet6 [^f][^e][^8][^0].*prefixlen \K\d+')
-    local num_lines=$(echo "$output" | wc -l)
-    if [ $num_lines -ge 2 ]; then
-        ipv6_prefixlen=$(echo "$output" | sort -n | head -n 1)
+    if [ -n "$interface" ]; then
+        local current_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
+        # echo ${current_ipv6}
+        local new_ipv6="${current_ipv6%:*}:3"
+        ip addr add ${new_ipv6}/128 dev ${interface}
+        sleep 6
+        local updated_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
+        # echo ${updated_ipv6}
+        ip addr del ${new_ipv6}/128 dev ${interface}
+        sleep 6
+        local final_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
+        # echo ${final_ipv6}
+        local ipv6_prefixlen=""
+        local output=$(ifconfig ${interface} | grep -oP 'inet6 [^f][^e][^8][^0].*prefixlen \K\d+')
+        local num_lines=$(echo "$output" | wc -l)
+        if [ $num_lines -ge 2 ]; then
+            ipv6_prefixlen=$(echo "$output" | sort -n | head -n 1)
+        else
+            ipv6_prefixlen=$(echo "$output" | head -n 1)
+        fi
+        if [ "$updated_ipv6" == "$current_ipv6" ] || [ -z "$updated_ipv6" ]; then
+            echo "128">$TEMP_DIR/eo6s_result
+        else
+            echo "$ipv6_prefixlen">$TEMP_DIR/eo6s_result
+        fi
     else
-        ipv6_prefixlen=$(echo "$output" | head -n 1)
-    fi
-    if [ "$updated_ipv6" == "$current_ipv6" ] || [ -z "$updated_ipv6" ]; then
-        echo "128">$TEMP_DIR/eo6s_result
-    else
-        echo "$ipv6_prefixlen">$TEMP_DIR/eo6s_result
+        echo "Unknown">$TEMP_DIR/eo6s_result
     fi
 }
 
@@ -3923,6 +3927,7 @@ pre_check() {
     check_lsof
     check_time_zone
     start_time=$(date +%s) # 同步时间后再进行计时
+    Check_SysBench
     global_startup_init_action
     cd $myvar >/dev/null 2>&1
     ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
@@ -4046,14 +4051,15 @@ cpu_judge() {
     sleep 1
 }
 
-
 memory_script(){
-    if [ "$en_status" = true ]; then
-        echo "----------------------------Memory-Test---------------------------------"
-    else
-        echo "---------------------内存测试--感谢lemonbench开源-----------------------"
+    if command -v sysbench >/dev/null 2>&1; then
+        if [ "$en_status" = true ]; then
+            echo "----------------------------Memory-Test---------------------------------"
+        else
+            echo "---------------------内存测试--感谢lemonbench开源-----------------------"
+        fi
+        Function_SysBench_Memory_Fast
     fi
-    Function_SysBench_Memory_Fast
 }
 
 basic_script() {

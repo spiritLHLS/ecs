@@ -2,12 +2,17 @@
 
 # 主要变化
 
-2023.01.06
+2024.01.07
+
+- 更新部分yabs的处理内容，避免上传后结果出现重复行
+- 增加一个参数```-bansp```可选项，可强制不测网速
+
+2024.01.06
 
 - 更新fio测试的原始脚本，继续依托最新的```yabs.sh```去构建
 - 优化IPV6子网掩码查询时若V6不为公网则不显示
 
-2023.01.04
+2024.01.04
 
 - 部分IP质量查询API将要达到限额，增加随机抽取Key以避免达到限额
 - 优化部分sysctl配置，参考了[cloudflare](https://blog.cloudflare.com/optimizing-tcp-for-high-throughput-and-low-latency)和[magicTCP](https://github.com/nexstorm/magicTCP)的内容

@@ -69,11 +69,10 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2023.01.07
+2024.01.12
 
-- 更新部分yabs的处理内容，避免上传后结果出现重复行
-- 增加一个参数```-bansp```可选项，可强制不测网速
-
+- 更新sysbench安装失败时处理的相关逻辑，避免安装失败时卡死脚本
+- 更新IPV6子网掩码判断的相关逻辑，避免获取不到物理网卡时还显示128
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
