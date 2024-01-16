@@ -69,10 +69,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.01.12
+2024.01.16
 
-- 更新sysbench安装失败时处理的相关逻辑，避免安装失败时卡死脚本
-- 更新IPV6子网掩码判断的相关逻辑，避免获取不到物理网卡时还显示128
+- 修复```api.github.com```的反代在国内被```ban```的问题，使用自定义的域名避免被```ban```.
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

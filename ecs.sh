@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.01.12"
+ver="2024.01.16"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -674,10 +674,12 @@ pre_download() {
             fi
             ;;
         nexttrace)
-            NEXTTRACE_VERSION=$(curl -sSL "https://api.github.com/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
+            NEXTTRACE_VERSION=$(curl -m 6 -sSL "https://api.github.com/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
             # 如果 https://api.github.com/ 请求失败，则使用 https://githubapi.spiritlhl.workers.dev/ ，此时可能宿主机无IPV4网络
             if [ -z "$NEXTTRACE_VERSION" ]; then
-                NEXTTRACE_VERSION=$(curl -sSL "https://githubapi.spiritlhl.workers.dev/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
+                NEXTTRACE_VERSION=$(curl -m 6 -sSL "https://githubapi.spiritlhl.workers.dev/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
+            elif [ -z "$NEXTTRACE_VERSION" ]; then
+                NEXTTRACE_VERSION=$(curl -m 6 -sSL "https://githubapi.spiritlhl.top/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
             fi
             curl -sL -k "${cdn_success_url}https://github.com/nxtrace/Ntrace-core/releases/download/${NEXTTRACE_VERSION}/${NEXTTRACE_FILE}" -o $TEMP_DIR/$NEXTTRACE_FILE && chmod +x $TEMP_DIR/$NEXTTRACE_FILE
             if [ ! -f $TEMP_DIR/$NEXTTRACE_FILE ]; then
