@@ -2,7 +2,11 @@
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FspiritLHLS%2Fecs&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
-### 前言
+## 语言
+
+[中文文档](README.md) | [English Docs](README_EN.md)
+
+## 前言
 
 支持系统：
 
@@ -69,9 +73,10 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.01.16
+2024.01.17
 
-- 修复```api.github.com```的反代在国内被```ban```的问题，使用自定义的域名避免被```ban```.
+- 增加脚本的英文说明文档。
+- 更新部分脚本中文说明文档的描述。
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -166,15 +171,15 @@ bash <(wget -qO- --no-check-certificate https://raw.githubusercontent.com/spirit
 
 融合怪脚本最好在 /root 路径下执行，避免各种奇奇怪怪的问题
 
-融合怪的执行结果保存在当前路径下的test_result.txt中，可先退出SSH登录后续再查看文件
+融合怪的执行结果保存在当前路径下的```test_result.txt```中，可在```screen```或```tmux```中执行，先退出SSH登录过一段时间后再查看文件
+
+**有时候想要测一些配置极其拉跨的机器时，上面这样执行这样可以避免IO或者CPU过于垃圾导致的测试过程中的SSH连接中断，就不会测一半啥都没了，假如screen中显示乱码，也没问题，分享链接中的结果是不带乱码的**
 
 融合怪的完整版和精简版运行完毕会自动上传结果到pastebin并回传分享链接，如果测一半想要退出，那么按```Ctrl+C```同时按下可终止测试，此时会自动退出删除残余文件
 
-**有时候想要测一些配置极其拉跨的机器时，推荐使用screen命令挂起执行选项1的融合怪，然后你可以关闭SSH连接，等待一段时间后使用```cat test_result.txt```查看运行的实时状况，这样可以避免IO或者CPU过于垃圾导致的测试过程中的SSH连接中断，就不会测一半啥都没了，假如screen中显示乱码，也没问题，结果是不带乱码的**
-
 最烂机器测试的例子(跑了47分钟一样测完)：[跳转](https://github.com/spiritLHLS/ecs/blob/main/lowpage/README.md)
 
-使用**CDN**加速已支持**国内**和**国外**服务器测试，但国内受CDN连通性或国内机器带宽大小的限制加载可能会慢很多
+使用**CDN**已支持**国内**和**国外**加速服务器环境安装和预制文件下载，但国内受CDN连通性或国内机器带宽大小的限制加载可能会慢很多
 
 融合怪测试说明以及部分测试结果的内容解释(初次使用推荐查看)：
 <details>
@@ -185,11 +190,13 @@ bash <(wget -qO- --no-check-certificate https://raw.githubusercontent.com/spirit
 
 系统基础信息测试融合了多家还有我自己修补的部分检测(systl、NAT类型检测，并发ASN检测等)，应该是目前最全面最通用的了
 
-CPU测试使用sysbench测试得分，不是yabs的gb4或gb5，前者只是简单的计算质数测试速度快，后者geekbench是综合测试系统算加权得分，不是同一种东西，别互相比较了，没有可比性
+CPU测试默认使用sysbench测试得分，不是yabs的gb4或gb5(虽然默认不是geekbench但可以通过指令指定geekbench常见版本进行测试)，前者只是简单的计算质数测试速度快，后者geekbench是综合测试系统算加权得分
 
-CPU测试单核得分在5000以上的可以算第一梯队，4000到5000分算第二梯队，每1000分算一档，自己看看自己在哪个档位吧
+使用sysbench测试得分是每秒处理的事件数目，这个指标无论在强还是弱性能的服务器上都能迅速测出来，而geekbench很多是测不动或者速度很慢起码2分半钟
 
-AMD的7950x单核满血性能得分在6500左右，AMD的5950x单核满血性能得分5700左右，Intel普通的CPU(E5之类的)在1000~800左右，低于500的单核CPU可以算是比较烂的了
+CPU测试单核sysbench得分在5000以上的可以算第一梯队，4000到5000分算第二梯队，每1000分算一档，自己看看自己在哪个档位吧
+
+AMD的7950x单核满血性能得分在6500左右，AMD的5950x单核满血性能得分5700左右，Intel普通的CPU(E5之类的)在1000~800左右，低于500的单核CPU可以说是性能比较烂的了
 
 IO测试收录了两种，来源于lemonbench的dd磁盘测试和yabs的fio磁盘测试，综合来看会比较好，前者可能误差偏大但测试速度快无硬盘大小限制，后者真实一点但测试速度慢有硬盘以及内存大小限制
 
@@ -203,7 +210,7 @@ IP质量检测纯原创，如有bug或者更多数据库来源可在issues中提
 
 融合怪的IP质量检测是简化过的，没有查询Cloudflare的威胁得分，个人原创区的IP质量检测才是完整版(或者仓库说明中列出的那个IP质量检测的命令也是完整版)
 
-三网测速使用自写的测速脚本，尽量使用最新节点最新组件进行测速，且有备用go版本测速，做到自更新测速节点列表，自适应系统环境测速
+三网测速使用自写的测速脚本，尽量使用最新节点最新组件进行测速，且有备用第三方go版本测速内核，做到自更新测速节点列表，自适应系统环境测速
 
 其他第三方脚本归纳到了第三方脚本区，里面有同类型脚本不同作者的各种竞品脚本，如果融合怪不能使你满意或者有错误，可以看看那部分
 
