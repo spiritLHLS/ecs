@@ -73,10 +73,10 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.01.17
+2024.01.20
 
-- 增加脚本的英文说明文档。
-- 更新部分脚本中文说明文档的描述。
+- 优化部分参数的对应逻辑，加速脚本运行
+- 修正IPV6的子网掩码判断
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

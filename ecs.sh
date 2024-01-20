@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.01.16"
+ver="2024.01.20"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -45,102 +45,102 @@ m_params=()
 # 解析命令行选项
 while [ "$#" -gt 0 ]; do
     case "$1" in
-        -m)
-            # 处理 -m 选项，关闭菜单模式
-            menu_mode=false
-            shift  # 移动到下一个参数
-            while [ "$#" -gt 0 ] && [[ "$1" != -* ]]; do
-                m_params+=("$1")
-                shift
-            done
-        ;;
-        -i)
-            # 处理 -i 选项，获取IPv4地址
-            target_ipv4="$2"
-            swhc_mode=false
-            shift 2
-        ;;
-        -r)
-            # 处理 -r 选项，选择测试回程路由的出口地址
-            route_location="$2"
-            shift 2
-        ;;
-        -en)
-            # 处理 -en 选项，选择使用英文显示
-            en_status=true
+    -m)
+        # 处理 -m 选项，关闭菜单模式
+        menu_mode=false
+        shift # 移动到下一个参数
+        while [ "$#" -gt 0 ] && [[ "$1" != -* ]]; do
+            m_params+=("$1")
             shift
+        done
         ;;
-        -base)
-            # 处理 -base 选项，选择仅测试系统信息
-            menu_mode=false
-            test_base_status=true
-            shift
+    -i)
+        # 处理 -i 选项，获取IPv4地址
+        target_ipv4="$2"
+        swhc_mode=false
+        shift 2
         ;;
-        -ctype)
-            # 处理 -ctype 选项，选择测试cpu使用的方式
-            test_cpu_type="$2"
-            shift 2
+    -r)
+        # 处理 -r 选项，选择测试回程路由的出口地址
+        route_location="$2"
+        shift 2
         ;;
-        -dtype)
-            # 处理 -dtype 选项，选择测试磁盘使用的方式
-            test_disk_type="$2"
-            shift 2
+    -en)
+        # 处理 -en 选项，选择使用英文显示
+        en_status=true
+        shift
         ;;
-        -mdisk)
-            # 处理 -mdisk 选项，选择测试多个挂载盘，且含系统盘
-            multidisk_status=true
-            shift
+    -base)
+        # 处理 -base 选项，选择仅测试系统信息
+        menu_mode=false
+        test_base_status=true
+        shift
         ;;
-        -stype)
-            # 处理 -stype 选项，选择测试网速的数据来源，不指定时默认优先使用.net数据
-            test_network_type="$2"
-            shift 2
+    -ctype)
+        # 处理 -ctype 选项，选择测试cpu使用的方式
+        test_cpu_type="$2"
+        shift 2
         ;;
-        -bansp)
-            # 处理 -bansp 选项，禁用测速
-            enable_speedtest=false
-            shift
+    -dtype)
+        # 处理 -dtype 选项，选择测试磁盘使用的方式
+        test_disk_type="$2"
+        shift 2
         ;;
-        -banup)
-            # 处理 -banup 选项，选择测试磁盘使用的方式
-            build_text_status=false
-            shift
+    -mdisk)
+        # 处理 -mdisk 选项，选择测试多个挂载盘，且含系统盘
+        multidisk_status=true
+        shift
         ;;
-        -h)
-            if [ "$en_status" = true ]; then
-                echo "Executed using parameter mode:"
-                echo "-m     Mandatory, Specify the options in the original menu, support up to three levels of selection"
-                echo "       For example, executing bash ecs.sh -m 5 1 1 will select the script execution for sub-option 1 under option 1 of option 5 of the main menu."
-                echo "       Can specify only 1~3 parameter by default, e.g. -m 1 or -m 1 0 or -m 1 0 0"
-                echo "-en    Optional, Can specify which language is used to display the test, unspecified Chinese is used."
-                echo "-i     Optional, Can specify the target IPV4 address in the backhaul routing test."
-                echo "-base  Optional, Only basic system information is tested, not CPU, hard disk, streaming, backhaul routing, etc."
-                echo "-ctype Optional, Can specify the way to test the cpu, optional gb4 gb5 gb6 corresponds to geekbench version 4, 5, 6 respectively."
-                echo "-dtype Optional, Can specify the program to test the IO of the hard disk, you can choose dd or fio, the former test is fast and the latter test is slow."
-                echo "-mdisk Optional, Can specify to test the IO of multiple mounted disks."
-                echo "-bansp Optional, Can specify not to run speedtest."
-                echo "-banup Optional, Can specify to force not to generate the sharing link."
-            else
-                echo "使用参数模式执行："
-                echo "-m     必填项，指定原本menu中的选项，最多支持三层选择"
-                echo "       例如执行 bash ecs.sh -m 5 1 1 将选择主菜单第5选项下的第1选项下的子选项1的脚本执行"
-                echo "       (可缺省仅指定一个参数，如 -m 1 仅指定执行融合怪完全体，执行 -m 1 0 以及 -m 1 0 0 都是指定执行融合怪完全体)"
-                echo "-en    可选项，可指定测试时使用的是哪种语言进行展示，该指令指定为使用英语，未指定时使用中文"
-                echo "-i     可选项，可指定回程路由测试中的目标IPV4地址，可通过 ip.sb ipinfo.io 等网站获取本地IPV4地址后指定"
-                echo "-r     可选项，可指定回程路由测试中的三网目标地址，可选 b g s c 6 分别对应 北京、广州、上海、成都、纯IPV6 的三网地址，如 -r g 指定测试广州回程"
-                echo "-base  可选项，仅测试基础的系统信息，不测试CPU、硬盘、流媒体、回程路由等内容"
-                echo "-ctype 可选项，可指定通过何种方式测试cpu，可选 gb4 gb5 gb6 分别对应geekbench的4、5、6版本，无该指令则默认使用sysbench测试"
-                echo "-dtype 可选项，可指定测试硬盘IO的程序，可选 dd 或 fio 前者测试快后者测试慢，无该指令则默认为都使用进行测试"
-                echo "-mdisk 可选项，可指定测试多个挂载盘的IO，注意这也会测试系统盘且仅使用fio测试"
-                echo "-stype 可选项，可指定测试时使用的是什么平台的测速节点，可选 .cn .com 分别对应 speedtest.cn speedtest.com 数据"
-                echo "-bansp 可选项，可指定强制不测试网速，无该指令则默认测试网速"
-                echo "-banup 可选项，可指定强制不生成分享链接，无该指令则默认生成分享链接"
-            fi
-            exit 1
+    -stype)
+        # 处理 -stype 选项，选择测试网速的数据来源，不指定时默认优先使用.net数据
+        test_network_type="$2"
+        shift 2
         ;;
-        *)
-            echo "未知的选项: $1"
-            exit 1
+    -bansp)
+        # 处理 -bansp 选项，禁用测速
+        enable_speedtest=false
+        shift
+        ;;
+    -banup)
+        # 处理 -banup 选项，禁用分享链接生成
+        build_text_status=false
+        shift
+        ;;
+    -h)
+        if [ "$en_status" = true ]; then
+            echo "Executed using parameter mode:"
+            echo "-m     Mandatory, Specify the options in the original menu, support up to three levels of selection"
+            echo "       For example, executing bash ecs.sh -m 5 1 1 will select the script execution for sub-option 1 under option 1 of option 5 of the main menu."
+            echo "       Can specify only 1~3 parameter by default, e.g. -m 1 or -m 1 0 or -m 1 0 0"
+            echo "-en    Optional, Can specify which language is used to display the test, unspecified Chinese is used."
+            echo "-i     Optional, Can specify the target IPV4 address in the backhaul routing test."
+            echo "-base  Optional, Only basic system information is tested, not CPU, hard disk, streaming, backhaul routing, etc."
+            echo "-ctype Optional, Can specify the way to test the cpu, optional gb4 gb5 gb6 corresponds to geekbench version 4, 5, 6 respectively."
+            echo "-dtype Optional, Can specify the program to test the IO of the hard disk, you can choose dd or fio, the former test is fast and the latter test is slow."
+            echo "-mdisk Optional, Can specify to test the IO of multiple mounted disks."
+            echo "-bansp Optional, Can specify not to run speedtest."
+            echo "-banup Optional, Can specify to force not to generate the sharing link."
+        else
+            echo "使用参数模式执行："
+            echo "-m     必填项，指定原本menu中的选项，最多支持三层选择"
+            echo "       例如执行 bash ecs.sh -m 5 1 1 将选择主菜单第5选项下的第1选项下的子选项1的脚本执行"
+            echo "       (可缺省仅指定一个参数，如 -m 1 仅指定执行融合怪完全体，执行 -m 1 0 以及 -m 1 0 0 都是指定执行融合怪完全体)"
+            echo "-en    可选项，可指定测试时使用的是哪种语言进行展示，该指令指定为使用英语，未指定时使用中文"
+            echo "-i     可选项，可指定回程路由测试中的目标IPV4地址，可通过 ip.sb ipinfo.io 等网站获取本地IPV4地址后指定"
+            echo "-r     可选项，可指定回程路由测试中的三网目标地址，可选 b g s c 6 分别对应 北京、广州、上海、成都、纯IPV6 的三网地址，如 -r g 指定测试广州回程"
+            echo "-base  可选项，仅测试基础的系统信息，不测试CPU、硬盘、流媒体、回程路由等内容"
+            echo "-ctype 可选项，可指定通过何种方式测试cpu，可选 gb4 gb5 gb6 分别对应geekbench的4、5、6版本，无该指令则默认使用sysbench测试"
+            echo "-dtype 可选项，可指定测试硬盘IO的程序，可选 dd 或 fio 前者测试快后者测试慢，无该指令则默认为都使用进行测试"
+            echo "-mdisk 可选项，可指定测试多个挂载盘的IO，注意这也会测试系统盘且仅使用fio测试"
+            echo "-stype 可选项，可指定测试时使用的是什么平台的测速节点，可选 .cn .com 分别对应 speedtest.cn speedtest.com 数据"
+            echo "-bansp 可选项，可指定强制不测试网速，无该指令则默认测试网速"
+            echo "-banup 可选项，可指定强制不生成分享链接，无该指令则默认生成分享链接"
+        fi
+        exit 1
+        ;;
+    *)
+        echo "未知的选项: $1"
+        exit 1
         ;;
     esac
 done
@@ -408,7 +408,7 @@ check_lsb_release() {
     fi
 }
 
-check_timeout(){
+check_timeout() {
     if command -v timeout >/dev/null 2>&1; then
         usage_timeout=true
     else
@@ -1547,7 +1547,7 @@ Run_SysBench_CPU() {
             # freebsd系统下测不准待官方修复，故而设置为0
             local TestResult="events per second: 0"
         # elif [ "$sysbench_version" == "$target_version" ]; then
-        elif [ "$(printf '%s\n' "$sysbench_version" "$target_version" | sort -V | head -n 1)" == "$target_version" ]; then 
+        elif [ "$(printf '%s\n' "$sysbench_version" "$target_version" | sort -V | head -n 1)" == "$target_version" ]; then
             # 版本号大于或等于1.0.20使用新命令检测否则使用旧命令检测
             local TestResult="$(sysbench cpu --threads=$1 --cpu-max-prime=10000 --events=1000000 --time=$2 run 2>&1)"
         else
@@ -3873,13 +3873,14 @@ ipcheck() {
     rm -rf /tmp/ip_quality_*
 }
 
-eo6s(){
+eo6s() {
     # 获取IPV6的子网掩码
     rm -rf $TEMP_DIR/eo6s_result
     local interface=$(ls /sys/class/net/ | grep -v "$(ls /sys/devices/virtual/net/)")
     if [ -n "$interface" ]; then
         local current_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
         # echo ${current_ipv6}
+        [ -z "$current_ipv6" ] && echo "None" >$TEMP_DIR/eo6s_result && return
         local new_ipv6="${current_ipv6%:*}:3"
         ip addr add ${new_ipv6}/128 dev ${interface}
         sleep 6
@@ -3898,12 +3899,12 @@ eo6s(){
             ipv6_prefixlen=$(echo "$output" | head -n 1)
         fi
         if [ "$updated_ipv6" == "$current_ipv6" ] || [ -z "$updated_ipv6" ]; then
-            echo "128">$TEMP_DIR/eo6s_result
+            echo "128" >$TEMP_DIR/eo6s_result
         else
-            echo "$ipv6_prefixlen">$TEMP_DIR/eo6s_result
+            echo "$ipv6_prefixlen" >$TEMP_DIR/eo6s_result
         fi
     else
-        echo "Unknown">$TEMP_DIR/eo6s_result
+        echo "Unknown" >$TEMP_DIR/eo6s_result
     fi
 }
 
@@ -3988,49 +3989,49 @@ cpu_judge() {
     local benchmark_name=""
     if [ "$en_status" = true ]; then
         case $benchmark_type in
-            sysbench)
-                benchmark_name="SysBench_CPU_Fast"
-                echo "---------------------------CPU-Sysbench-Test------------------------------"
-                ;;
-            geekbench4)
-                benchmark_name="4"
-                echo "--------------------------CPU-Geekbench4-Test---------------------------"
-                ;;
-            geekbench5)
-                benchmark_name="5"
-                echo "--------------------------CPU-Geekbench5-Test---------------------------"
-                ;;
-            geekbench6)
-                benchmark_name="6"
-                echo "--------------------------CPU-Geekbench6-Test---------------------------"
-                ;;
-            *)
-                echo "Invalid benchmark type"
-                return
-                ;;
+        sysbench)
+            benchmark_name="SysBench_CPU_Fast"
+            echo "---------------------------CPU-Sysbench-Test------------------------------"
+            ;;
+        geekbench4)
+            benchmark_name="4"
+            echo "--------------------------CPU-Geekbench4-Test---------------------------"
+            ;;
+        geekbench5)
+            benchmark_name="5"
+            echo "--------------------------CPU-Geekbench5-Test---------------------------"
+            ;;
+        geekbench6)
+            benchmark_name="6"
+            echo "--------------------------CPU-Geekbench6-Test---------------------------"
+            ;;
+        *)
+            echo "Invalid benchmark type"
+            return
+            ;;
         esac
     else
         case $benchmark_type in
-            sysbench)
-                benchmark_name="SysBench_CPU_Fast"
-                echo "----------------------CPU测试--通过sysbench测试-------------------------"
-                ;;
-            geekbench4)
-                benchmark_name="4"
-                echo "-----------------CPU测试--感谢yabs开源geekbench4测试--------------------"
-                ;;
-            geekbench5)
-                benchmark_name="5"
-                echo "-----------------CPU测试--感谢yabs开源geekbench5测试--------------------"
-                ;;
-            geekbench6)
-                benchmark_name="6"
-                echo "-----------------CPU测试--感谢yabs开源geekbench6测试--------------------"
-                ;;
-            *)
-                echo "Invalid benchmark type"
-                return
-                ;;
+        sysbench)
+            benchmark_name="SysBench_CPU_Fast"
+            echo "----------------------CPU测试--通过sysbench测试-------------------------"
+            ;;
+        geekbench4)
+            benchmark_name="4"
+            echo "-----------------CPU测试--感谢yabs开源geekbench4测试--------------------"
+            ;;
+        geekbench5)
+            benchmark_name="5"
+            echo "-----------------CPU测试--感谢yabs开源geekbench5测试--------------------"
+            ;;
+        geekbench6)
+            benchmark_name="6"
+            echo "-----------------CPU测试--感谢yabs开源geekbench6测试--------------------"
+            ;;
+        *)
+            echo "Invalid benchmark type"
+            return
+            ;;
         esac
     fi
     if [ "$benchmark_type" == "sysbench" ]; then
@@ -4053,7 +4054,7 @@ cpu_judge() {
     sleep 1
 }
 
-memory_script(){
+memory_script() {
     if command -v sysbench >/dev/null 2>&1; then
         if [ "$en_status" = true ]; then
             echo "----------------------------Memory-Test---------------------------------"
@@ -4144,10 +4145,10 @@ io3_script() {
     declare -a disk_paths
     # 遍历每个盘名称并检索对应的盘路径，并将名称和路径存储到数组中
     for disk_name in $disk_names; do
-    disk_path=$(df -h | awk -v disk_name="$disk_name" '$0 ~ disk_name { print $NF }')
-    if [ -n "$disk_path" ]; then
-        disk_paths+=("$disk_name:$disk_path")
-    fi
+        disk_path=$(df -h | awk -v disk_name="$disk_name" '$0 ~ disk_name { print $NF }')
+        if [ -n "$disk_path" ]; then
+            disk_paths+=("$disk_name:$disk_path")
+        fi
     done
     # 遍历数组，打开对应盘路径并检测IO
     if [ ${#disk_paths[@]} -gt 0 ]; then
@@ -4190,7 +4191,7 @@ io3_script() {
     rm -rf yabs.sh
 }
 
-io_judge(){
+io_judge() {
     local par="$1"
     if [ "$par" = "all" ] && [ "$test_disk_type" = "" ]; then
         io1_script
@@ -4393,9 +4394,7 @@ ecs_ping() {
 
 ecs_net_all_script() {
     cd $myvar >/dev/null 2>&1
-    if [ "$enable_speedtest" = false ]; then
-        return
-    fi
+    [ "$enable_speedtest" = false ] && return
     # s_time=$(date +%s)
     rm -rf ./speedtest-cli/speedlog.txt
     speed | tee ./speedtest-cli/speedlog.txt
@@ -4413,9 +4412,7 @@ ecs_net_all_script() {
 
 ecs_net_minal_script() {
     cd $myvar >/dev/null 2>&1
-    if [ "$enable_speedtest" = false ]; then
-        return
-    fi
+    [ "$enable_speedtest" = false ] && return
     # s_time=$(date +%s)
     rm -rf ./speedtest-cli/speedlog.txt
     speed2 | tee ./speedtest-cli/speedlog.txt
@@ -4453,7 +4450,7 @@ all_script() {
             CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
             CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
             CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
-            _yellow "checking speedtest" && install_speedtest &
+            [ "$enable_speedtest" = true ] && _yellow "checking speedtest" && install_speedtest &
             check_lmc_script &
             clear
             print_intro
@@ -4488,7 +4485,7 @@ all_script() {
             CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
             CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
             CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
-            _yellow "checking speedtest" && install_speedtest &
+            [ "$enable_speedtest" = true ] && _yellow "checking speedtest" && install_speedtest &
             check_lmc_script &
             clear
             print_intro
@@ -4515,7 +4512,7 @@ all_script() {
             CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
             CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
             CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
-            _yellow "checking speedtest" && install_speedtest
+            [ "$enable_speedtest" = true ] && _yellow "checking speedtest" && install_speedtest
             check_lmc_script
             clear
             print_intro
@@ -4538,7 +4535,7 @@ all_script() {
             CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
             CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
             CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
-            _yellow "checking speedtest" && install_speedtest
+            [ "$enable_speedtest" = true ] && _yellow "checking speedtest" && install_speedtest
             check_lmc_script
             clear
             print_intro
@@ -4564,7 +4561,7 @@ minal_script() {
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
     CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
     CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
-    _yellow "checking speedtest" && install_speedtest
+    [ "$enable_speedtest" = true ] && _yellow "checking speedtest" && install_speedtest
     clear
     print_intro
     basic_script
@@ -4583,7 +4580,7 @@ minal_plus() {
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
     CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
     CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
-    _yellow "checking speedtest" && install_speedtest
+    [ "$enable_speedtest" = true ] && _yellow "checking speedtest" && install_speedtest
     clear
     print_intro
     basic_script
@@ -4605,7 +4602,7 @@ minal_plus_network() {
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
     CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
     CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
-    _yellow "checking speedtest" && install_speedtest
+    [ "$enable_speedtest" = true ] && _yellow "checking speedtest" && install_speedtest
     clear
     print_intro
     basic_script
@@ -4626,7 +4623,7 @@ minal_plus_media() {
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
     CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
     CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
-    _yellow "checking speedtest" && install_speedtest
+    [ "$enable_speedtest" = true ] && _yellow "checking speedtest" && install_speedtest
     clear
     print_intro
     basic_script
@@ -4646,7 +4643,7 @@ network_script() {
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
     CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
     CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
-    _yellow "checking speedtest" && install_speedtest
+    [ "$enable_speedtest" = true ] && _yellow "checking speedtest" && install_speedtest
     clear
     print_intro
     spiritlhl_script
@@ -4672,7 +4669,9 @@ media_script() {
 
 hardware_script() {
     pre_check
-    pre_download yabs
+    if [ "$test_base_status" = false ]; then
+        pre_download yabs
+    fi
     get_system_info
     clear
     print_intro
@@ -4832,7 +4831,7 @@ comprehensive_test_script_options() {
         original_script
         break_status=true
         ;;
-    *) 
+    *)
         if [ "$en_status" = true ]; then
             echo "Input error, please re-enter"
         else
@@ -4930,7 +4929,7 @@ media_test_script_options() {
         original_script
         break_status=true
         ;;
-    *) 
+    *)
         if [ "$en_status" = true ]; then
             echo "Input error, please re-enter"
         else
@@ -5036,7 +5035,7 @@ network_test_script_options() {
         original_script
         break_status=true
         ;;
-    *) 
+    *)
         if [ "$en_status" = true ]; then
             echo "Input error, please re-enter"
         else
@@ -5111,7 +5110,7 @@ hardware_test_script_options() {
         original_script
         break_status=true
         ;;
-    *) 
+    *)
         if [ "$en_status" = true ]; then
             echo "Input error, please re-enter"
         else
@@ -5174,7 +5173,7 @@ original_script_options() {
         start_script
         break_status=true
         ;;
-    *) 
+    *)
         if [ "$en_status" = true ]; then
             echo "Input error, please re-enter"
         else
@@ -5235,7 +5234,7 @@ simplify_script_options() {
         start_script
         break_status=true
         ;;
-    *) 
+    *)
         if [ "$en_status" = true ]; then
             echo "Input error, please re-enter"
         else
@@ -5304,7 +5303,7 @@ single_item_script_options() {
         start_script
         break_status=true
         ;;
-    *) 
+    *)
         if [ "$en_status" = true ]; then
             echo "Input error, please re-enter"
         else
@@ -5415,7 +5414,7 @@ my_original_script_options() {
         start_script
         break_status=true
         ;;
-    *) 
+    *)
         if [ "$en_status" = true ]; then
             echo "Input error, please re-enter"
         else
@@ -5535,7 +5534,7 @@ start_script_options() {
         exit 1
         break_status=true
         ;;
-    *) 
+    *)
         if [ "$en_status" = true ]; then
             echo "Input error, please re-enter"
         else

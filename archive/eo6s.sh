@@ -22,6 +22,7 @@ ${PACKAGE_INSTALL[int]} net-tools
 interface=$(ls /sys/class/net/ | grep -v "$(ls /sys/devices/virtual/net/)")
 current_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
 echo ${current_ipv6}
+[ -z "$current_ipv6" ] && exit 1
 new_ipv6="${current_ipv6%:*}:3"
 ip addr add ${new_ipv6}/128 dev ${interface}
 sleep 5
@@ -44,4 +45,3 @@ if [ "$updated_ipv6" == "$current_ipv6" ] || [ -z "$updated_ipv6" ]; then
 else
     echo "IPV6 子网掩码: $ipv6_prefixlen"
 fi
-
