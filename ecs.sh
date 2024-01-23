@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.01.20"
+ver="2024.01.23"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -867,11 +867,11 @@ check_time_zone() {
     fi
     if which systemctl >/dev/null 2>&1; then
         systemctl stop chronyd
-        chronyd -q
+        chronyd -q -t 30
         systemctl start chronyd
     else
         service chronyd stop
-        chronyd -q
+        chronyd -q -t 30
         service chronyd start
     fi
     sleep 0.5

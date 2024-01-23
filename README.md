@@ -73,10 +73,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.01.20
+2024.01.23
 
-- 优化部分参数的对应逻辑，加速脚本运行
-- 修正IPV6的子网掩码判断
+- 限制chronyd最多执行30秒，避免有的机器卡死在时间同步这块
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
