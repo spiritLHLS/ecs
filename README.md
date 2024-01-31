@@ -76,6 +76,8 @@ https://github.com/spiritLHLS/one-click-installation-script
 2024.01.31
 
 - 修复github的api的请求处理逻辑，适配纯IPV6、国内被ban的情况
+- 优化ASN和地区检测的部分网站解析逻辑
+- 更正潜在可能导致查询出现错误的函数
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

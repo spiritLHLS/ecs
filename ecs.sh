@@ -2491,8 +2491,8 @@ check_ip_info_by_ipinfo() {
             elif [ -n "$asn" ] && [ -n "$ipv4_city" ] && [ -z "$ipv4_region" ]; then
                 local ipv4_asn_info="${asn}"
                 local ipv4_location="${ipv4_city} / ${ipv4_region}"
-            elif [[ -n $ipv4_asn && -n $ipv4_city ]]; then
-                local ipv4_asn_info="${ipv4_asn}"
+            elif [[ -n $asn && -n $ipv4_city ]]; then
+                local ipv4_asn_info="${asn}"
                 local ipv4_location="${ipv4_city}"
             else
                 local ipv4_asn_info="None"
@@ -2548,16 +2548,22 @@ check_ip_info_by_cloudflare() {
     if [ -n "$ipv4_asn" ] && [ -n "$ipv4_as_organization" ] && [ -n "$ipv4_city" ] && [ -n "$ipv4_region" ]; then
         local ipv4_asn_info="AS${ipv4_asn} ${ipv4_as_organization}"
         local ipv4_location="${ipv4_city} / ${ipv4_region}"
+    elif [ -n "$ipv4_asn" ] && [ -n "$ipv4_as_organization" ] && [ -n "$ipv4_city" ]; then
+        local ipv4_asn_info="AS${ipv4_asn} ${ipv4_as_organization}"
+        local ipv4_location="${ipv4_city}"
+    elif [ -n "$ipv4_asn" ] && [ -n "$ipv4_as_organization" ] && [ -n "$ipv4_region" ]; then
+        local ipv4_asn_info="AS${ipv4_asn} ${ipv4_as_organization}"
+        local ipv4_location="${ipv4_region}"
     else
         local ipv4_asn_info="None"
         local ipv4_location="None"
     fi
     # 去除双引号
     if [[ $ipv4_asn_info == *"\""* ]]; then
-        ipv4_asn_info="${ipv4_asn_info//\"/}"
+        ipv4_asn_info="${ipv4_asn_info%"\""}"
     fi
     if [[ $ipv4_location == *"\""* ]]; then
-        ipv4_location="${ipv4_location//\"/}"
+        ipv4_location="${ipv4_location%"\""}"
     fi
     # 返回结果
     echo "$ipv4_asn_info" >>/tmp/cloudflare
@@ -2573,16 +2579,22 @@ check_ip_info_by_cloudflare() {
     if [ -n "$ipv6_asn" ] && [ -n "$ipv6_as_organization" ] && [ -n "$ipv6_city" ] && [ -n "$ipv6_region" ]; then
         local ipv6_asn_info="AS${ipv6_asn} ${ipv6_as_organization}"
         local ipv6_location="${ipv6_city} / ${ipv6_region}"
+    elif [ -n "$ipv6_asn" ] && [ -n "$ipv6_as_organization" ] && [ -n "$ipv6_city" ]; then
+        local ipv6_asn_info="AS${ipv6_asn} ${ipv6_as_organization}"
+        local ipv6_location="${ipv6_city}"
+    elif [ -n "$ipv6_asn" ] && [ -n "$ipv6_as_organization" ] && [ -n "$ipv6_region" ]; then
+        local ipv6_asn_info="AS${ipv6_asn} ${ipv6_as_organization}"
+        local ipv6_location="${ipv6_region}"
     else
         local ipv6_asn_info="None"
         local ipv6_location="None"
     fi
     # 去除双引号
     if [[ $ipv6_asn_info == *"\""* ]]; then
-        ipv6_asn_info="${ipv6_asn_info//\"/}"
+        ipv6_asn_info="${ipv6_asn_info%"\""}"
     fi
     if [[ $ipv6_location == *"\""* ]]; then
-        ipv6_location="${ipv6_location//\"/}"
+        ipv6_location="${ipv6_location%"\""}"
     fi
     # 返回结果
     echo "$ipv6_asn_info" >>/tmp/cloudflare
@@ -2607,6 +2619,18 @@ check_ip_info_by_ipsb() {
             if [ -n "$ipv4_asn" ] && [ -n "$ipv4_as_organization" ] && [ -n "$ipv4_city" ] && [ -n "$ipv4_region" ] && [ -n "$ipv4_country" ]; then
                 local ipv4_asn_info="AS${ipv4_asn} ${ipv4_as_organization}"
                 local ipv4_location="${ipv4_city} / ${ipv4_region} / ${ipv4_country}"
+            elif [ -n "$ipv4_asn" ] && [ -n "$ipv4_as_organization" ] && [ -n "$ipv4_city" ] && [ -n "$ipv4_region" ]; then
+                local ipv4_asn_info="AS${ipv4_asn} ${ipv4_as_organization}"
+                local ipv4_location="${ipv4_city} / ${ipv4_region}"
+            elif [ -n "$ipv4_asn" ] && [ -n "$ipv4_as_organization" ] && [ -n "$ipv4_city" ] && [ -n "$ipv4_country" ]; then
+                local ipv4_asn_info="AS${ipv4_asn} ${ipv4_as_organization}"
+                local ipv4_location="${ipv4_city} / ${ipv4_country}"
+            elif [ -n "$ipv4_asn" ] && [ -n "$ipv4_as_organization" ] && [ -n "$ipv4_region" ] && [ -n "$ipv4_country" ]; then
+                local ipv4_asn_info="AS${ipv4_asn} ${ipv4_as_organization}"
+                local ipv4_location="${ipv4_region} / ${ipv4_country}"
+            elif [ -n "$ipv4_asn" ] && [ -n "$ipv4_as_organization" ] && { [ -n "$ipv4_city" ] || [ -n "$ipv4_region" ] || [ -n "$ipv4_country" ]; }; then
+                local ipv4_asn_info="AS${ipv4_asn} ${ipv4_as_organization}"
+                local ipv4_location="${ipv4_city} ${ipv4_region} ${ipv4_country}"
             else
                 local ipv4_asn_info="None"
                 local ipv4_location="None"
@@ -2631,10 +2655,22 @@ check_ip_info_by_ipsb() {
             local ipv6_as_organization=$(expr "$result_ipv6" : '.*isp\":[ ]*\"\([^"]*\).*')
             local ipv6_city=$(echo $result_ipv6 | grep -oE '"city":"[^"]+"' | cut -d ":" -f2 | tr -d '"')
             local ipv6_region=$(echo $result_ipv6 | grep -oE '"region":"[^"]+"' | cut -d ":" -f2 | tr -d '"')
-            local ipv6_country=$(echo "$result_ipv4" | grep -oP '(?<="country":")[^"]*')
+            local ipv6_country=$(echo "$result_ipv6" | grep -oP '(?<="country":")[^"]*')
             if [ -n "$ipv6_asn" ] && [ -n "$ipv6_as_organization" ] && [ -n "$ipv6_city" ] && [ -n "$ipv6_region" ] && [ -n "$ipv6_country" ]; then
                 local ipv6_asn_info="AS${ipv6_asn} ${ipv6_as_organization}"
                 local ipv6_location="${ipv6_city} / ${ipv6_region} / ${ipv6_country}"
+            elif [ -n "$ipv6_asn" ] && [ -n "$ipv6_as_organization" ] && [ -n "$ipv6_city" ] && [ -n "$ipv6_region" ]; then
+                local ipv6_asn_info="AS${ipv6_asn} ${ipv6_as_organization}"
+                local ipv6_location="${ipv6_city} / ${ipv6_region}"
+            elif [ -n "$ipv6_asn" ] && [ -n "$ipv6_as_organization" ] && [ -n "$ipv6_city" ] && [ -n "$ipv6_country" ]; then
+                local ipv6_asn_info="AS${ipv6_asn} ${ipv6_as_organization}"
+                local ipv6_location="${ipv6_city} / ${ipv6_country}"
+            elif [ -n "$ipv6_asn" ] && [ -n "$ipv6_as_organization" ] && [ -n "$ipv6_region" ] && [ -n "$ipv6_country" ]; then
+                local ipv6_asn_info="AS${ipv6_asn} ${ipv6_as_organization}"
+                local ipv6_location="${ipv6_region} / ${ipv6_country}"
+            elif [ -n "$ipv6_asn" ] && [ -n "$ipv6_as_organization" ] && { [ -n "$ipv6_city" ] || [ -n "$ipv6_region" ] || [ -n "$ipv6_country" ]; }; then
+                local ipv6_asn_info="AS${ipv6_asn} ${ipv6_as_organization}"
+                local ipv6_location="${ipv6_city} ${ipv6_region} ${ipv6_country}"
             else
                 local ipv6_asn_info="None"
                 local ipv6_location="None"
@@ -2934,12 +2970,12 @@ print_intro() {
     fi
 }
 
-get_first_non_empty_element() {
+get_first_not_none_element() {
     local array=("$@")
     for element in "${array[@]}"; do
-        if [[ "$element" != "None" ]]; then
+        if [[ "$element" != "None" && -n "$element" ]]; then
             echo "$element"
-            break
+            return
         fi
     done
 }
@@ -2961,7 +2997,7 @@ print_ip_info() {
     local ipv6_asn_info_list=()
     local ipv6_location_list=()
     # 遍历每个函数的结果文件，读取内容到对应的列表中，按顺序来说越往后越不准
-    files=("/tmp/ipinfo" "/tmp/cloudflare" "/tmp/ipsb" "/tmp/cheervision")
+    files=("/tmp/ipinfo" "/tmp/ipsb" "/tmp/cloudflare" "/tmp/cheervision")
     for file in "${files[@]}"; do
         {
             read -r asn_info
@@ -2975,10 +3011,10 @@ print_ip_info() {
         ipv6_location_list+=("$ipv6_location")
     done
     # 找到每个列表中最长的第一个元素作为最终结果
-    local ipv4_asn_info=$(get_first_non_empty_element "${ipv4_asn_info_list[@]}")
-    local ipv4_location=$(get_first_non_empty_element "${ipv4_location_list[@]}")
-    local ipv6_asn_info=$(get_first_non_empty_element "${ipv6_asn_info_list[@]}")
-    local ipv6_location=$(get_first_non_empty_element "${ipv6_location_list[@]}")
+    local ipv4_asn_info=$(get_first_not_none_element "${ipv4_asn_info_list[@]}")
+    local ipv4_location=$(get_first_not_none_element "${ipv4_location_list[@]}")
+    local ipv6_asn_info=$(get_first_not_none_element "${ipv6_asn_info_list[@]}")
+    local ipv6_location=$(get_first_not_none_element "${ipv6_location_list[@]}")
     # 删除缓存文件
     for file in "${files[@]}"; do
         rm -rf ${file}
@@ -3539,7 +3575,7 @@ ipdata() {
     )
     local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
     response=$(curl -sL -m 10 "https://api.ipdata.co/${ip}?api-key=${api_key}" 2>/dev/null)
-    local usage_type=$(echo "$response" | grep -o '"type": "[^"]*' | cut -d'"' -f4)
+    local usage_type=$(echo "$response" | grep -o '"type": "[^"]*' | cut -d'"' -f4 | tr -d '\n' )
     local tor=$(grep -o '"is_tor": \w\+' <<<"$response" | cut -d ' ' -f 2)
     local icloud_relay=$(grep -o '"is_icloud_relay": \w\+' <<<"$response" | cut -d ' ' -f 2)
     local proxy=$(grep -o '"is_proxy": \w\+' <<<"$response" | cut -d ' ' -f 2)
