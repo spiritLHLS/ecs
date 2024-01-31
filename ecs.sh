@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.01.23"
+ver="2024.01.31"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -678,7 +678,9 @@ pre_download() {
             # 如果 https://api.github.com/ 请求失败，则使用 https://githubapi.spiritlhl.workers.dev/ ，此时可能宿主机无IPV4网络
             if [ -z "$NEXTTRACE_VERSION" ]; then
                 NEXTTRACE_VERSION=$(curl -m 6 -sSL "https://githubapi.spiritlhl.workers.dev/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
-            elif [ -z "$NEXTTRACE_VERSION" ]; then
+            fi
+            # 如果 https://githubapi.spiritlhl.workers.dev/ 请求失败，则使用 https://githubapi.spiritlhl.top/ ，此时可能宿主机在国内
+            if [ -z "$NEXTTRACE_VERSION" ]; then
                 NEXTTRACE_VERSION=$(curl -m 6 -sSL "https://githubapi.spiritlhl.top/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
             fi
             curl -sL -k "${cdn_success_url}https://github.com/nxtrace/Ntrace-core/releases/download/${NEXTTRACE_VERSION}/${NEXTTRACE_FILE}" -o $TEMP_DIR/$NEXTTRACE_FILE && chmod +x $TEMP_DIR/$NEXTTRACE_FILE

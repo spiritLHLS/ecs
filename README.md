@@ -73,9 +73,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.01.23
+2024.01.31
 
-- 限制chronyd最多执行30秒，避免有的机器卡死在时间同步这块
+- 修复github的api的请求处理逻辑，适配纯IPV6、国内被ban的情况
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
