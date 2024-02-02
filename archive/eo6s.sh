@@ -19,7 +19,7 @@ for ((int = 0; int < ${#REGEX[@]}; int++)); do
     fi
 done
 ${PACKAGE_INSTALL[int]} net-tools
-interface=$(ls /sys/class/net/ | grep -v "$(ls /sys/devices/virtual/net/)")
+interface=$(ls /sys/class/net/ | grep -v "$(ls /sys/devices/virtual/net/)" | grep -E '^(eth|en)' | head -n 1)
 current_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
 echo ${current_ipv6}
 [ -z "$current_ipv6" ] && exit 1
