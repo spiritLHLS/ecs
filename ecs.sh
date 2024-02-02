@@ -3820,7 +3820,7 @@ ipcheck() {
     local score_4_4=$(check_and_cat_file '/tmp/ip_quality_abuseipdb_ipv4_score')
     if [[ -n "$score_4_4" ]]; then
         if [ "$en_status" = true ]; then
-            echo "Fraud score (the lower the better): $score_4_4④"
+            echo "Abuse score (the lower the better): $score_4_4④"
         else
             echo "abuse得分(越低越好): $score_4_4④"
         fi
@@ -3912,7 +3912,7 @@ ipcheck() {
         local score_4_6=$(check_and_cat_file '/tmp/ip_quality_abuseipdb_ipv6_score')
         if [[ -n "$score_4_6" ]]; then
             if [ "$en_status" = true ]; then
-                echo "Fraud score (the lower the better): $score_4_6④"
+                echo "Abuse score (the lower the better): $score_4_6④"
             else
                 echo "abuse得分(越低越好): $score_4_6④"
             fi
