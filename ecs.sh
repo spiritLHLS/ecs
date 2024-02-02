@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.01.31"
+ver="2024.02.02"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -61,7 +61,7 @@ while [ "$#" -gt 0 ]; do
         shift 2
         ;;
     -r)
-        # 处理 -r 选项，选择测试回程路由的出口地址
+        # 处理 -r 选项，选择测试回程路由的目标地址 (三网)
         route_location="$2"
         shift 2
         ;;
@@ -127,7 +127,8 @@ while [ "$#" -gt 0 ]; do
             echo "       (可缺省仅指定一个参数，如 -m 1 仅指定执行融合怪完全体，执行 -m 1 0 以及 -m 1 0 0 都是指定执行融合怪完全体)"
             echo "-en    可选项，可指定测试时使用的是哪种语言进行展示，该指令指定为使用英语，未指定时使用中文"
             echo "-i     可选项，可指定回程路由测试中的目标IPV4地址，可通过 ip.sb ipinfo.io 等网站获取本地IPV4地址后指定"
-            echo "-r     可选项，可指定回程路由测试中的三网目标地址，可选 b g s c 6 分别对应 北京、广州、上海、成都、纯IPV6 的三网地址，如 -r g 指定测试广州回程"
+            echo "-r     可选项，可指定回程路由测试中的三网IPV4地址，可选 b g s c 分别对应 北京、广州、上海、成都 的三网地址，如 -r g 指定测试广州地址"
+            echo "       可指定仅测试IPV6三网，可选 b6 g6 s6 分别对应 北京、广州、上海 的三网的IPV6地址，如 -r b6 指定测试北京IPV6地址"
             echo "-base  可选项，仅测试基础的系统信息，不测试CPU、硬盘、流媒体、回程路由等内容"
             echo "-ctype 可选项，可指定通过何种方式测试cpu，可选 gb4 gb5 gb6 分别对应geekbench的4、5、6版本，无该指令则默认使用sysbench测试"
             echo "-dtype 可选项，可指定测试硬盘IO的程序，可选 dd 或 fio 前者测试快后者测试慢，无该指令则默认为都使用进行测试"
@@ -197,8 +198,12 @@ test_area_b=("北京电信" "北京联通" "北京移动")
 test_ip_b=("219.141.136.12" "202.106.50.1" "221.179.155.161")
 test_area_c=("成都电信" "成都联通" "成都移动")
 test_ip_c=("61.139.2.69" "119.6.6.6" "211.137.96.205")
-test_area_6=("广东电信" "广东联通" "广东移动")
-test_ip_6=("240e:0:a::c9:5238" "2408:8651:3700::b" "2409:8055:40:2a1::1")
+test_area_g6=("广州电信" "广州联通" "广州移动")
+test_ip_g6=("240e:97c:2f:3000::44" "2408:8756:f50:1001::c" "2409:8c54:871:1001::12")
+test_area_s6=("上海电信" "上海联通" "上海移动")
+test_ip_s6=("240e:e1:aa00:4000::24" "2408:80f1:21:5003::a" "2409:8c1e:75b0:3003::26")
+test_area_b6=("北京电信" "北京联通" "北京移动")
+test_ip_b6=("2400:89c0:1053:3::69" "2400:89c0:1013:3::54" "2409:8c00:8421:1303::55")
 BrowserUA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36"
 
 # =============== 基础信息设置 ===============
@@ -3914,7 +3919,7 @@ ipcheck() {
 eo6s() {
     # 获取IPV6的子网掩码
     rm -rf $TEMP_DIR/eo6s_result
-    local interface=$(ls /sys/class/net/ | grep -v "$(ls /sys/devices/virtual/net/)")
+    local interface=$(ls /sys/class/net/ | grep -v "$(ls /sys/devices/virtual/net/)" | grep -E '^(eth|en)' | head -n 1)
     if [ -n "$interface" ]; then
         local current_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
         # echo ${current_ipv6}
@@ -4332,33 +4337,41 @@ fscarmen_route_script() {
     cd $myvar >/dev/null 2>&1
     echo -e "---------------------回程路由--感谢fscarmen开源及PR---------------------"
     rm -f /tmp/ecs/ip.test
+    local test_area_4
+    local test_ip_4
+    local test_area_6
+    local test_ip_6
     if [ "$swhc_mode" = false ]; then
-        local test_area=("你本地的IPV4地址")
-        local test_ip=("$target_ipv4")
-    elif [ -n "$route_location" ] && [ "$route_location" != "6" ]; then
-        local test_area
-        local test_ip
-        declare -n test_area="test_area_$route_location"
-        declare -n test_ip="test_ip_$route_location"
-    elif [ "$route_location" == "6" ]; then
-        :
+        test_area_4=("你本地的IPV4地址")
+        test_ip_4=("$target_ipv4")
+    elif [ -n "$route_location" ] && [[ "$route_location" =~ ^(b|g|s|c)$ ]]; then
+        declare -n test_area_4="test_area_$route_location"
+        declare -n test_ip_4="test_ip_$route_location"
+    elif [ -n "$route_location" ] && [[ "$route_location" =~ ^(b6|g6|s6)$ ]]; then
+        declare -n test_area_6="test_area_$route_location"
+        declare -n test_ip_6="test_ip_$route_location"
     else
-        local test_area=("${!1}")
-        local test_ip=("${!2}")
+        test_area_4=("${!1}")
+        test_ip_4=("${!2}")
     fi
     local ip4=$(echo "$IPV4" | tr -d '\n')
     local ip6=$(echo "$IPV6" | tr -d '\n')
-    if [[ ! -z "${ip4}" ]] && [ "$route_location" != "6" ]; then
+    # 不存在IPV4网络，存在IPV6网络，未指定使用哪个城市的三网地址测试，默认修改为使用广州三网IPV6地址
+    if [[ -z "${ip4}" ]] && [[ -n "$ip6" ]] && [ -z "$route_location" ]; then
+        declare -n test_area_6="test_area_g6"
+        declare -n test_ip_6="test_ip_g6"
+    fi
+    if [[ ! -z "${ip4}" ]] && [[ "$route_location" != "b6" && "$route_location" != "g6" && "$route_location" != "s6" ]]; then
         if [ "$swhc_mode" = false ]; then
             _green "核心程序来自ipip.net或nexttrace，请知悉!" >/tmp/ecs/ip.test
         else
             _green "依次测试电信/联通/移动经过的地区及线路，核心程序来自ipip.net或nexttrace，请知悉!" >/tmp/ecs/ip.test
         fi
-        for ((a = 0; a < ${#test_area[@]}; a++)); do
-            "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >>/tmp/ip_temp
+        for ((a = 0; a < ${#test_area_4[@]}; a++)); do
+            "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip_4[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >>/tmp/ip_temp
             if [ ! -s "/tmp/ip_temp" ] || grep -q "http: 403" /tmp/ip_temp || grep -q "error" /tmp/ip_temp 2>/dev/null; then
                 rm -rf /tmp/ip_temp
-                RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip[a]}" --nocolor 2>/dev/null)
+                RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip_4[a]}" --nocolor 2>/dev/null)
                 RESULT=$(echo "$RESULT" | grep '^[0-9 ]')
                 PART_1=$(echo "$RESULT" | grep '^[0-9]\{1,2\}[ ]\+[0-9a-f]' | awk '{$1="";$2="";print}' | sed "s@^[ ]\+@@g")
                 PART_2=$(echo "$RESULT" | grep '\(.*ms\)\{3\}' | sed 's/.* \([0-9*].*ms\).*ms.*ms/\1/g')
@@ -4371,23 +4384,23 @@ fscarmen_route_script() {
                 done
             fi
             if [ "$swhc_mode" = false ]; then
-                ori_ipv4="${test_ip[a]}"
+                ori_ipv4="${test_ip_4[a]}"
                 IFS='.' read -ra parts <<<"$ori_ipv4"
                 if [ "${#parts[@]}" -ge 2 ]; then
                     parts[2]="xxx"
                     parts[3]="xxx"
                     new_ipv4="${parts[0]}.${parts[1]}.${parts[2]}.${parts[3]}"
-                    _yellow "${test_area[a]} $new_ipv4" >>/tmp/ecs/ip.test
+                    _yellow "${test_area_4[a]} $new_ipv4" >>/tmp/ecs/ip.test
                 else
-                    _yellow "${test_area[a]} xxx.xxx.xxx.xxx" >>/tmp/ecs/ip.test
+                    _yellow "${test_area_4[a]} xxx.xxx.xxx.xxx" >>/tmp/ecs/ip.test
                 fi
             else
-                _yellow "${test_area[a]} ${test_ip[a]}" >>/tmp/ecs/ip.test
+                _yellow "${test_area_4[a]} ${test_ip_4[a]}" >>/tmp/ecs/ip.test
             fi
             cat /tmp/ip_temp >>/tmp/ecs/ip.test
             rm -rf /tmp/ip_temp
         done
-    elif [[ -n "$ip6" ]] || [ "$route_location" == "6" ]; then
+    elif [[ -n "$ip6" ]] || [[ "$route_location" =~ ^(b6|g6|s6)$ ]]; then
         _green "依次测试电信/联通/移动经过的地区及线路，核心程序来自nexttrace，请知悉!" >/tmp/ecs/ip.test
         for ((a = 0; a < ${#test_area_6[@]}; a++)); do
             rm -rf /tmp/ip_temp
