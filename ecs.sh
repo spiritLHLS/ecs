@@ -2482,7 +2482,7 @@ check_ip_info_by_ipinfo() {
         local city=$(echo "$ip_info" | grep -o '"city": "[^"]*' | cut -d'"' -f4)
         local region=$(echo "$ip_info" | grep -o '"region": "[^"]*' | cut -d'"' -f4)
         local country=$(echo "$ip_info" | grep -o '"country": "[^"]*' | cut -d'"' -f4)
-        local asn=$(echo "$ip_info" | grep -o '"org": "[^"]*' | cut -d'"' -f4)
+        local asn=$(echo "$ip_info" | awk -F'"' '/"org":/{gsub(/^[^:]*: "/, ""); gsub(/"$/, ""); print $0}')
         if [ -z "$asn" ] || echo "$asn" | grep -qE "(Comodo Secure DNS|Rate limit exceeded)|Your client does not have permission to get URL" >/dev/null 2>&1; then
             local ipv4_asn_info="None"
             local ipv4_location="None"
@@ -2529,6 +2529,19 @@ check_ip_info_by_ipinfo() {
             fi
         fi
     fi
+    # 去除最后一个双引号后的内容
+    if [[ $ipv4_asn_info == *"\""* ]]; then
+        ipv4_asn_info="${ipv4_asn_info%\"*}"
+    fi
+    if [[ $ipv4_location == *"\""* ]]; then
+        ipv4_location="${ipv4_location%\"*}"
+    fi
+    if [[ $ipv6_asn_info == *"\""* ]]; then
+        ipv6_asn_info="${ipv4_asn_info%\"*}"
+    fi
+    if [[ $ipv6_location == *"\""* ]]; then
+        ipv6_location="${ipv6_location%\"*}"
+    fi
     # 返回结果
     echo "$ipv4_asn_info" >>/tmp/ipinfo
     echo "$ipv4_location" >>/tmp/ipinfo
@@ -2565,10 +2578,10 @@ check_ip_info_by_cloudflare() {
     fi
     # 去除双引号
     if [[ $ipv4_asn_info == *"\""* ]]; then
-        ipv4_asn_info="${ipv4_asn_info%"\""}"
+        ipv4_asn_info="${ipv4_asn_info%\"*}"
     fi
     if [[ $ipv4_location == *"\""* ]]; then
-        ipv4_location="${ipv4_location%"\""}"
+        ipv4_location="${ipv4_location%\"*}"
     fi
     # 返回结果
     echo "$ipv4_asn_info" >>/tmp/cloudflare
@@ -2596,10 +2609,10 @@ check_ip_info_by_cloudflare() {
     fi
     # 去除双引号
     if [[ $ipv6_asn_info == *"\""* ]]; then
-        ipv6_asn_info="${ipv6_asn_info%"\""}"
+        ipv6_asn_info="${ipv6_asn_info%\"*}"
     fi
     if [[ $ipv6_location == *"\""* ]]; then
-        ipv6_location="${ipv6_location%"\""}"
+        ipv6_location="${ipv6_location%\"*}"
     fi
     # 返回结果
     echo "$ipv6_asn_info" >>/tmp/cloudflare
@@ -4034,7 +4047,7 @@ cpu_judge() {
         case $benchmark_type in
         sysbench)
             benchmark_name="SysBench_CPU_Fast"
-            echo "---------------------------CPU-Sysbench-Test------------------------------"
+            echo "---------------------------CPU-Sysbench-Test----------------------------"
             ;;
         geekbench4)
             benchmark_name="4"

@@ -75,6 +75,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 2024.02.02
 
+- 修复ASN的双引号处理逻辑，避免提取内容遇到多个双引号时出错
 - 增加IPV6路由测试的 北京、上海、广州 三网地址，可通过```-r```指令进行指定
 - 修复IPV6的子网掩码测试，避免筛选网卡的过程中出现错误
 
