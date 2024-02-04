@@ -146,7 +146,7 @@ The fusion monster script is best executed under the /root path to avoid all sor
 
 The result of the fusion monster is saved in ```test_result.txt``` under the current path, which can be executed in ```screen``` or ```tmux```, first log out of SSH and log in for a period of time before checking the file.
 
-**Sometimes want to test some of the configuration of the machine is extremely pull across the above so that the implementation of this can be avoided IO or CPU is too much garbage caused by the test process of the SSH connection interruption, will not test half of the nothing, if the screen in the display of the garbled, but also no problem, to share the link in the results are not garbled **
+**Sometimes want to test some of the configuration of the machine is extremely pull across the above so that the implementation of this can be avoided IO or CPU is too much garbage caused by the test process of the SSH connection interruption, will not test half of the nothing, if the screen in the display of the garbled, but also no problem, to share the link in the results are not garbled**
 
 The full version and lite version of Fusion Monster will automatically upload the results to pastebin and send back the sharing link when finished, if you want to quit halfway through the test, then press ```Ctrl+C``` at the same time to terminate the test, and then it will automatically quit and delete the remaining files.
 

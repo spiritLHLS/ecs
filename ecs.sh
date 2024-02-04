@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.02.02"
+ver="2024.02.04"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -5312,13 +5312,23 @@ simplify_script_options() {
 simplify_script() {
     head_script
     if $menu_mode; then
-        _yellow "融合怪的精简脚本如下"
-        echo -e "${GREEN}1.${PLAIN} 极简版(系统信息+CPU+内存+磁盘IO+测速节点4个)(平均运行3分钟)"
-        echo -e "${GREEN}2.${PLAIN} 精简版(系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体+TikTok+回程+路由+测速节点4个)(平均运行4分钟)"
-        echo -e "${GREEN}3.${PLAIN} 精简网络版(系统信息+CPU+内存+磁盘IO+回程+路由+测速节点4个)(平均运行4分钟)"
-        echo -e "${GREEN}4.${PLAIN} 精简解锁版(系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体+TikTok+测速节点4个)(平均运行4分钟)"
-        echo " -------------"
-        echo -e "${GREEN}0.${PLAIN} 回到主菜单"
+        if [ "$en_status" = true ]; then
+            _yellow "The streamlined script for the fusion monster is as follows"
+            echo -e "${GREEN}1.${PLAIN} Minimalist version (system information + CPU + memory + disk IO + 4 nodes for speed test) (average run time 3 minutes)"
+            echo -e "${GREEN}2.${PLAIN} Lite (System Info + CPU + RAM + Disk IO + Mikado Unlocked + Common Streams + TikTok + Backhaul + Routing + 4 nodes for speed test) (4 minutes average run time)"
+            echo -e "${GREEN}3.${PLAIN} Lite Network Edition (4 nodes for system information + CPU + memory + disk IO + backhaul + routing + speed test) (average run time 4 minutes)"
+            echo -e "${GREEN}4.${PLAIN} Lite unlocked version (System info + CPU + RAM + Disk IO + Gosanja unlocked + common streams + TikTok + 4 nodes for speed test) (runs for 4 minutes on average)"
+            echo " -------------"
+            echo -e "${GREEN}0.${PLAIN} Back to the main menu"
+        else
+            _yellow "融合怪的精简脚本如下"
+            echo -e "${GREEN}1.${PLAIN} 极简版(系统信息+CPU+内存+磁盘IO+测速节点4个)(平均运行3分钟)"
+            echo -e "${GREEN}2.${PLAIN} 精简版(系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体+TikTok+回程+路由+测速节点4个)(平均运行4分钟)"
+            echo -e "${GREEN}3.${PLAIN} 精简网络版(系统信息+CPU+内存+磁盘IO+回程+路由+测速节点4个)(平均运行4分钟)"
+            echo -e "${GREEN}4.${PLAIN} 精简解锁版(系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体+TikTok+测速节点4个)(平均运行4分钟)"
+            echo " -------------"
+            echo -e "${GREEN}0.${PLAIN} 回到主菜单"
+        fi
         echo ""
         while true; do
             if [ "$en_status" = true ]; then
@@ -5381,15 +5391,27 @@ single_item_script_options() {
 single_item_script() {
     head_script
     if $menu_mode; then
-        _yellow "融合怪拆分的单项测试脚本如下"
-        echo -e "${GREEN}1.${PLAIN} 网络方面(简化的IP质量检测+三网回程+三网路由与延迟+测速节点11个)(平均运行6分钟左右)"
-        echo -e "${GREEN}2.${PLAIN} 解锁方面(御三家解锁+常用流媒体解锁+TikTok解锁)(平均运行30~60秒)"
-        echo -e "${GREEN}3.${PLAIN} 硬件方面(基础系统信息+CPU+内存+双重磁盘IO测试)(平均运行1分半钟)"
-        echo -e "${GREEN}4.${PLAIN} 完整的IP质量检测(平均运行10~20秒)"
-        echo -e "${GREEN}5.${PLAIN} 常用端口开通情况(是否有阻断)(平均运行1分钟左右)(暂时有bug未修复)"
-        echo -e "${GREEN}6.${PLAIN} 三网回程线路+广州三网路由+全国三网延迟(平均运行1分20秒)"
-        echo " -------------"
-        echo -e "${GREEN}0.${PLAIN} 回到主菜单"
+        if [ "$en_status" = true ]; then
+            _yellow "The single test script for fusion monster splitting is as follows"
+            echo -e "${GREEN}1.${PLAIN} Networking (simplified IP quality check + triple network backhaul + triple network routing and latency + 11 speed nodes) (average run time about 6 minutes)"
+            echo -e "${GREEN}2.${PLAIN} For unlocking (Gosanja unlocking + common streamer unlocking + TikTok unlocking) (average runtime 30~60 seconds)"
+            echo -e "${GREEN}3.${PLAIN} Hardware (basic system information + CPU + RAM + dual disk IO test) (average run time 1½ minutes)"
+            echo -e "${GREEN}4.${PLAIN} Complete IP quality check (average runtime 10~20 seconds)"
+            # echo -e "${GREEN}5.${PLAIN} Common port openings (blocked or not) (average run time about 1 minute) (bugs not fixed yet)"
+            # echo -e "${GREEN}6.${PLAIN} Triple-net backhaul line + Guangzhou triple-net routing + nationwide triple-net delay (average running 1 minute 20 seconds)"
+            echo " -------------"
+            echo -e "${GREEN}0.${PLAIN} Back to the main menu"
+        else
+            _yellow "融合怪拆分的单项测试脚本如下"
+            echo -e "${GREEN}1.${PLAIN} 网络方面(简化的IP质量检测+三网回程+三网路由与延迟+测速节点11个)(平均运行6分钟左右)"
+            echo -e "${GREEN}2.${PLAIN} 解锁方面(御三家解锁+常用流媒体解锁+TikTok解锁)(平均运行30~60秒)"
+            echo -e "${GREEN}3.${PLAIN} 硬件方面(基础系统信息+CPU+内存+双重磁盘IO测试)(平均运行1分半钟)"
+            echo -e "${GREEN}4.${PLAIN} 完整的IP质量检测(平均运行10~20秒)"
+            echo -e "${GREEN}5.${PLAIN} 常用端口开通情况(是否有阻断)(平均运行1分钟左右)(暂时有bug未修复)"
+            echo -e "${GREEN}6.${PLAIN} 三网回程线路+广州三网路由+全国三网延迟(平均运行1分20秒)"
+            echo " -------------"
+            echo -e "${GREEN}0.${PLAIN} 回到主菜单"
+        fi
         echo ""
         while true; do
             if [ "$en_status" = true ]; then
