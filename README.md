@@ -73,9 +73,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.02.04
+2024.02.18
 
-- 优化部分英文描述
+- 优化sysbench安装失败时替换为geekbench5测试的判断条件，重载PATH
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
