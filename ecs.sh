@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.02.18"
+ver="2024.02.22"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -939,89 +939,20 @@ statistics_of_run-times() {
 systemInfo_get_os_release() {
     if [ -f "/etc/centos-release" ]; then # CentOS
         Var_OSRelease="centos"
-        if [ "$(rpm -qa | grep -o el6 | sort -u)" = "el6" ]; then
-            Var_CentOSELRepoVersion="6"
-            Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $3}')"
-        elif [ "$(rpm -qa | grep -o el7 | sort -u)" = "el7" ]; then
-            Var_CentOSELRepoVersion="7"
-            Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $4}')"
-        elif [ "$(rpm -qa | grep -o el8 | sort -u)" = "el8" ]; then
-            Var_CentOSELRepoVersion="8"
-            Var_OSReleaseVersion="$(cat /etc/centos-release | awk '{print $4}')"
-        else
-            local Var_CentOSELRepoVersion="unknown"
-            Var_OSReleaseVersion="<Unknown Release>"
-        fi
     elif [ -f "/etc/fedora-release" ]; then # Fedora
         Var_OSRelease="fedora"
-        Var_OSReleaseVersion="$(cat /etc/fedora-release | awk '{print $3,$4,$5,$6,$7}')"
     elif [ -f "/etc/redhat-release" ]; then # RedHat
         Var_OSRelease="rhel"
-        if [ "$(rpm -qa | grep -o el6 | sort -u)" = "el6" ]; then
-            Var_RedHatELRepoVersion="6"
-            Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $3}')"
-        elif [ "$(rpm -qa | grep -o el7 | sort -u)" = "el7" ]; then
-            Var_RedHatELRepoVersion="7"
-            Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $4}')"
-        elif [ "$(rpm -qa | grep -o el8 | sort -u)" = "el8" ]; then
-            Var_RedHatELRepoVersion="8"
-            Var_OSReleaseVersion="$(cat /etc/redhat-release | awk '{print $4}')"
-        else
-            local Var_RedHatELRepoVersion="unknown"
-            Var_OSReleaseVersion="<Unknown Release>"
-        fi
     elif [ -f "/etc/astra_version" ]; then # Astra
         Var_OSRelease="astra"
-        local Var_OSReleaseVersionShort="$(cat /etc/debian_version | awk '{printf "%d\n",$1}')"
-        if [ "${Var_OSReleaseVersionShort}" = "7" ]; then
-            Var_OSReleaseVersion_Codename="wheezy"
-        elif [ "${Var_OSReleaseVersionShort}" = "8" ]; then
-            Var_OSReleaseVersion_Codename="jessie"
-        elif [ "${Var_OSReleaseVersionShort}" = "9" ]; then
-            Var_OSReleaseVersion_Codename="stretch"
-        elif [ "${Var_OSReleaseVersionShort}" = "10" ]; then
-            Var_OSReleaseVersion_Codename="buster"
-        elif [ "${Var_OSReleaseVersionShort}" = "11" ]; then
-            Var_OSReleaseVersion_Codename="bullseye"
-        elif [ "${Var_OSReleaseVersionShort}" = "12" ]; then
-            Var_OSReleaseVersion_Codename="bookworm"
-        else
-            Var_OSReleaseVersion_Codename="sid"
-        fi
     elif [ -f "/etc/lsb-release" ]; then # Ubuntu
         Var_OSRelease="ubuntu"
-        Var_OSReleaseVersion="$(cat /etc/os-release | awk -F '[= "]' '/VERSION/{print $3,$4,$5,$6,$7}' | head -n1)"
-        cleaned_string=$(echo "$Var_OSReleaseVersion" | sed 's/[^0-9A-Za-z.]//g')
-        if [[ "$cleaned_string" =~ \. ]]; then
-            Var_OSReleaseVersion=${cleaned_string%%.*}
-        else
-            Var_OSReleaseVersion=${cleaned_string}
-        fi
     elif [ -f "/etc/debian_version" ]; then # Debian
         Var_OSRelease="debian"
-        local Var_OSReleaseVersion="$(cat /etc/debian_version | awk '{print $1}')"
-        local Var_OSReleaseVersionShort="$(cat /etc/debian_version | awk '{printf "%d\n",$1}')"
-        if [ "${Var_OSReleaseVersionShort}" = "7" ]; then
-            Var_OSReleaseVersion_Codename="wheezy"
-        elif [ "${Var_OSReleaseVersionShort}" = "8" ]; then
-            Var_OSReleaseVersion_Codename="jessie"
-        elif [ "${Var_OSReleaseVersionShort}" = "9" ]; then
-            Var_OSReleaseVersion_Codename="stretch"
-        elif [ "${Var_OSReleaseVersionShort}" = "10" ]; then
-            Var_OSReleaseVersion_Codename="buster"
-        elif [ "${Var_OSReleaseVersionShort}" = "11" ]; then
-            Var_OSReleaseVersion_Codename="bullseye"
-        elif [ "${Var_OSReleaseVersionShort}" = "12" ]; then
-            Var_OSReleaseVersion_Codename="bookworm"
-        else
-            Var_OSReleaseVersion_Codename="sid"
-        fi
     elif [ -f "/etc/alpine-release" ]; then # Alpine Linux
         Var_OSRelease="alpinelinux"
-        Var_OSReleaseVersion="$(cat /etc/alpine-release | awk '{print $1}')"
     elif [ -f "/etc/almalinux-release" ]; then # almalinux
         Var_OSRelease="almalinux"
-        Var_OSReleaseVersion="$(cat /etc/almalinux-release | awk '{print $3,$4,$5,$6,$7}')"
     elif [ -f "/etc/arch-release" ]; then # archlinux
         Var_OSRelease="arch"
     elif [ -f "/etc/freebsd-update.conf" ]; then # freebsd
