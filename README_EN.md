@@ -216,6 +216,18 @@ VPS test, VPS speed test, VPS comprehensive performance test, VPS backhaul line 
 
 **[Back to top](https://github.com/spiritLHLS/ecs/blob/main/README_EN.md#top)**
 
+# Screenshot
+
+![图片](https://github.com/spiritLHLS/ecs/assets/103393591/0acecaea-8cbc-43a0-9262-e2fa157fb8e9)
+
+![图片](https://github.com/spiritLHLS/ecs/assets/103393591/d25713e1-eeb0-48c0-9d6f-6ac1a0f6b6df)
+
+![图片](https://github.com/spiritLHLS/ecs/assets/103393591/1b578739-4809-4ab0-8187-b860a502c8d9)
+
+![图片](https://github.com/spiritLHLS/ecs/assets/103393591/010d4e5d-561e-4aa3-8313-e592f29405d1)
+
+![图片](https://github.com/spiritLHLS/ecs/assets/103393591/bfe775ad-323c-4f6e-8d81-fcf787644653)
+
 # Stargazers_over_time
 
 [![Stargazers over time](https://starchart.cc/spiritLHLS/ecs.svg)](https://starchart.cc/spiritLHLS/ecs)
