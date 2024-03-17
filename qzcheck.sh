@@ -778,19 +778,18 @@ ipapi() {
 ipwhois() {
     local ip="$1"
     rm -rf /tmp/ip_quality_ipwhois*
-    local url="https://ipwhois.io/widget.php?ip=${ip}&lang=en"
-    local response=$(curl -s -X GET "$url" \
-        -H "Host: ipwhois.io" \
-        -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/116.0" \
+    local url="https://ipwhois.io/widget?ip=${ip}&lang=en"
+    local response=$(curl -s "$url" --compressed \
+        -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0" \
         -H "Accept: */*" \
         -H "Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2" \
         -H "Accept-Encoding: gzip, deflate, br" \
-        -H "Origin: https://ipwhois.io" \
         -H "Connection: keep-alive" \
         -H "Referer: https://ipwhois.io/" \
         -H "Sec-Fetch-Dest: empty" \
         -H "Sec-Fetch-Mode: cors" \
-        -H "Sec-Fetch-Site: cross-site")
+        -H "Sec-Fetch-Site: same-origin" \
+        -H "TE: trailers")
     if [[ "$?" -ne 0 ]]; then
         return
     fi
