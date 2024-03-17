@@ -73,9 +73,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.02.22
+2024.03.17
 
-- 优化系统查询命令，仅查询必要信息
+- 更新IP质量查询的部分命令，原有域名失效，使用新域名
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.02.22"
+ver="2024.03.17"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -3440,9 +3440,9 @@ ipapi() {
 ipwhois() {
     local ip="$1"
     rm -rf /tmp/ip_quality_ipwhois*
-    local url="https://ipwhois.app/widget.php?ip=${ip}&lang=en"
+    local url="https://ipwhois.io/widget.php?ip=${ip}&lang=en"
     local response=$(curl -s -X GET "$url" \
-        -H "Host: ipwhois.app" \
+        -H "Host: ipwhois.io" \
         -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/116.0" \
         -H "Accept: */*" \
         -H "Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2" \
