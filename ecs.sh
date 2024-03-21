@@ -3413,7 +3413,7 @@ abuse_ipv6() {
 }
 
 # ip-api数据库 ⑥
-ipapi() {
+ip_api() {
     local ip=$1
     local mobile
     local tp1
