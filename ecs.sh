@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.03.20"
+ver="2024.03.26"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -319,9 +319,9 @@ next() {
 # =============== 组件预安装及文件预下载 部分 ===============
 checkver() {
     check_cdn_file
-    running_version=$(sed -n '8s/ver="\(.*\)"/\1/p' "$0")
+    running_version=$(sed -n '7s/ver="\(.*\)"/\1/p' "$0")
     curl -L "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/ecs.sh" -o ecs1.sh && chmod 777 ecs1.sh
-    downloaded_version=$(sed -n '8s/ver="\(.*\)"/\1/p' ecs1.sh)
+    downloaded_version=$(sed -n '7s/ver="\(.*\)"/\1/p' ecs1.sh)
     if [ "$running_version" != "$downloaded_version" ]; then
         if [ "$en_status" = true ]; then
             _yellow "Upgrade script from $ver to $downloaded_version"
