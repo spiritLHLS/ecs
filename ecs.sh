@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.03.26"
+ver="2024.04.20"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -5243,18 +5243,22 @@ network_test_script_options() {
         break_status=true
         ;;
     11)
-        curl -sL network-speed.xyz | bash
+        bash <(curl -sL bash.icu/speedtest)
         break_status=true
         ;;
     12)
-        bash <(wget -qO- bash.spiritlhl.net/ecs-net)
+        curl -sL network-speed.xyz | bash
         break_status=true
         ;;
     13)
-        bash <(wget -qO- bash.spiritlhl.net/ecs-cn)
+        bash <(wget -qO- bash.spiritlhl.net/ecs-net)
         break_status=true
         ;;
     14)
+        bash <(wget -qO- bash.spiritlhl.net/ecs-cn)
+        break_status=true
+        ;;
+    15)
         bash <(wget -qO- bash.spiritlhl.net/ecs-ping)
         break_status=true
         ;;
@@ -5287,10 +5291,11 @@ network_test_script() {
         echo -e "${GREEN}8.${PLAIN} 未知作者修复的superspeed的三网测速脚本"
         echo -e "${GREEN}9.${PLAIN} 由sunpma维护的superspeed的三网测速脚本"
         echo -e "${GREEN}10.${PLAIN} 原始作者维护的hyperspeed的三网测速脚本(测速内核不开源)"
-        echo -e "${GREEN}11.${PLAIN} 综合速度测试脚本(全球的测速节点)"
-        echo -e "${GREEN}12.${PLAIN} 本人的ecs-net三网测速脚本(自动更新测速节点，对应 speedtest.net)"
-        echo -e "${GREEN}13.${PLAIN} 本人的ecs-cn三网测速脚本(自动更新测速节点，对应 speedtest.cn)"
-        echo -e "${GREEN}14.${PLAIN} 本人的ecs-ping三网测ping脚本(自动更新测试节点)"
+        echo -e "${GREEN}11.${PLAIN} 原始作者维护的多功能测速脚本(部分测速内核不开源)"
+        echo -e "${GREEN}12.${PLAIN} 综合速度测试脚本(全球的测速节点)"
+        echo -e "${GREEN}13.${PLAIN} 本人的ecs-net三网测速脚本(自动更新测速节点，对应 speedtest.net)"
+        echo -e "${GREEN}14.${PLAIN} 本人的ecs-cn三网测速脚本(自动更新测速节点，对应 speedtest.cn)"
+        echo -e "${GREEN}15.${PLAIN} 本人的ecs-ping三网测ping脚本(自动更新测试节点)"
         echo " -------------"
         echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
         echo ""

@@ -36,6 +36,8 @@ FreeBSD系统的sed命令类似alpine而不是debian，很多命令的sed需要�
 
 能连得上网都支持
 
+PS: 考虑到多系统多架构的普遍测试的需求，本套脚本不再做新功能开发，仅作维护，重构为Golang版本的测试中，预计年末完成。
+
 # 目录
 - [前言](#前言)
 - [目录](#目录)
@@ -73,9 +75,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.03.26
+2024.04.20
 
-- 修复更新选项的错误行匹配
+- 增加第三方测速脚本
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
