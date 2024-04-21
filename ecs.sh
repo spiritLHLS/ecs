@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.04.20"
+ver="2024.04.21"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -1421,11 +1421,11 @@ Check_SysBench() {
     fi
     source ~/.bashrc
     # 最终检测
-    if [ command -v sysbench ] || [ -f "/usr/bin/sysbench" ] || [ -f "/usr/local/bin/sysbench" ]; then
-        echo -e "Install sysbench successfully!"
+    if [ "$(command -v sysbench)" ] || [ -f "/usr/bin/sysbench" ] || [ -f "/usr/local/bin/sysbench" ]; then
+        echo "Install sysbench successfully!"
     else
-        echo -e "${Msg_Error}SysBench Moudle install Failure! Try Restart Bench or Manually install it! (/usr/bin/sysbench)"
-        echo -e "${Msg_Warning}Will try to test with geekbench5 instead later on"
+        echo "SysBench Moudle install Failure! Try Restart Bench or Manually install it! (/usr/bin/sysbench)"
+        echo "Will try to test with geekbench5 instead later on"
         test_cpu_type="gb5"
     fi
 }

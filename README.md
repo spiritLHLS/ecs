@@ -75,9 +75,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.04.20
+2024.04.21
 
-- 增加第三方测速脚本
+- 修复sysbench的可用性判断的一个错误
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
