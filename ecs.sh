@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.04.21"
+ver="2024.05.01"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -694,11 +694,10 @@ pre_download() {
             fi
             ;;
         backtrace)
-            wget -q -O $TEMP_DIR/backtrace.tar.gz https://github.com/zhanghanyun/backtrace/releases/latest/download/$BACKTRACE_FILE
-            if [ ! -f $TEMP_DIR/backtrace.tar.gz ]; then
-                wget -q -O $TEMP_DIR/backtrace.tar.gz https://hub.fgit.cf/zhanghanyun/backtrace/releases/latest/download/$BACKTRACE_FILE
+            wget -q -O $TEMP_DIR/backtrace https://github.com/oneclickvirt/backtrace/releases/download/output/$BACKTRACE_FILE
+            if [ ! -f $TEMP_DIR/backtrace ]; then
+                wget -q -O $TEMP_DIR/backtrace https://hub.fgit.cf/oneclickvirt/backtrace/releases/download/output/$BACKTRACE_FILE
             fi
-            tar -xf $TEMP_DIR/backtrace.tar.gz -C $TEMP_DIR
             ;;
         yabs)
             curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/masonr/yet-another-bench-script/master/yabs.sh" -o $TEMP_DIR/yabs.sh && chmod +x $TEMP_DIR/yabs.sh
@@ -976,20 +975,21 @@ get_system_bit() {
         LBench_Result_SystemBit_Short="32"
         LBench_Result_SystemBit_Full="i386"
         BESTTRACE_FILE=besttracemac
+        BACKTRACE_FILE=backtrace-linux-386
         NEXTTRACE_FILE=nexttrace_darwin_amd64
         ;;
     "armv7l" | "armv8" | "armv8l" | "aarch64")
         LBench_Result_SystemBit_Short="arm"
         LBench_Result_SystemBit_Full="arm"
         BESTTRACE_FILE=besttracearm
-        BACKTRACE_FILE=backtrace-linux-arm64.tar.gz
+        BACKTRACE_FILE=backtrace-linux-arm64
         NEXTTRACE_FILE=nexttrace_linux_arm64
         ;;
     *)
         LBench_Result_SystemBit_Short="64"
         LBench_Result_SystemBit_Full="amd64"
         BESTTRACE_FILE=besttrace
-        BACKTRACE_FILE=backtrace-linux-amd64.tar.gz
+        BACKTRACE_FILE=backtrace-linux-amd64
         NEXTTRACE_FILE=nexttrace_linux_amd64
         ;;
     esac
@@ -4501,8 +4501,8 @@ backtrace_script() {
     else
         return
     fi
-    echo -e "----------------三网回程--感谢zhanghanyun/backtrace开源-----------------"
-    grep -sq 'sendto: network is unreachable' <<<$curl_output && _yellow "纯IPV6网络无法查询" || echo "${curl_output}" | grep -v 'github.com/zhanghanyun/backtrace' | grep -v '正在测试' | grep -v '测试完成' | grep -v 'json decode err'
+    echo -e "----------------三网回程--基于oneclickvirt/backtrace开源----------------"
+    grep -sq 'sendto: network is unreachable' <<<$curl_output && _yellow "纯IPV6网络无法查询" || echo "${curl_output}" | grep -v 'github.com/oneclickvirt/backtrace' | grep -v '正在测试' | grep -v '测试完成' | grep -v 'json decode err'
 }
 
 fscarmen_route_script() {
