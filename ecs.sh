@@ -205,6 +205,7 @@ test_ip_s6=("240e:e1:aa00:4000::24" "2408:80f1:21:5003::a" "2409:8c1e:75b0:3003:
 test_area_b6=("北京电信" "北京联通" "北京移动")
 test_ip_b6=("2400:89c0:1053:3::69" "2400:89c0:1013:3::54" "2409:8c00:8421:1303::55")
 BrowserUA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36"
+Speedtest_Go_version="1.6.12"
 
 # =============== 基础信息设置 ===============
 REGEX=("debian|astra" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora" "arch" "freebsd")
@@ -1584,13 +1585,13 @@ download_speedtest_file() {
         if [ "$sys_bit" = "aarch64" ]; then
             sys_bit="arm64"
         fi
-        local url3="https://github.com/showwin/speedtest-go/releases/download/v1.6.0/speedtest-go_1.6.0_Linux_${sys_bit}.tar.gz"
+        local url3="https://github.com/showwin/speedtest-go/releases/download/v${Speedtest_Go_version}/speedtest-go_${Speedtest_Go_version}_Linux_${sys_bit}.tar.gz"
         curl --fail -sL -m 10 -o speedtest.tar.gz "${url3}" || curl --fail -sL -m 15 -o speedtest.tar.gz "${cdn_success_url}${url3}"
     else
         if [ "$sys_bit" = "aarch64" ]; then
             sys_bit="arm64"
         fi
-        local url3="https://github.com/showwin/speedtest-go/releases/download/v1.6.0/speedtest-go_1.6.0_Linux_${sys_bit}.tar.gz"
+        local url3="https://github.com/showwin/speedtest-go/releases/download/v${Speedtest_Go_version}/speedtest-go_${Speedtest_Go_version}_Linux_${sys_bit}.tar.gz"
         curl -o speedtest.tar.gz "${cdn_success_url}${url3}"
         # if [ $? -eq 0 ]; then
         #     _green "Used unofficial speedtest-go"
@@ -1654,15 +1655,15 @@ speed_test() {
     if [ ! -f "./speedtest-cli/speedtest" ]; then
         if [ -z "$1" ]; then
             if [ "$usage_timeout" = true ]; then
-                timeout 70s ./speedtest-cli/speedtest-go >./speedtest-cli/speedtest.log 2>&1
+                timeout 70s ./speedtest-cli/speedtest-go --ua="${BrowserUA}" >./speedtest-cli/speedtest.log 2>&1
             else
-                ./speedtest-cli/speedtest-go >./speedtest-cli/speedtest.log 2>&1
+                ./speedtest-cli/speedtest-go --ua="${BrowserUA}" >./speedtest-cli/speedtest.log 2>&1
             fi
         else
             if [ "$usage_timeout" = true ]; then
-                timeout 70s ./speedtest-cli/speedtest-go --server=$1 >./speedtest-cli/speedtest.log 2>&1
+                timeout 70s ./speedtest-cli/speedtest-go --server=$1 --ua="${BrowserUA}" >./speedtest-cli/speedtest.log 2>&1
             else
-                ./speedtest-cli/speedtest-go --server=$1 >./speedtest-cli/speedtest.log 2>&1
+                ./speedtest-cli/speedtest-go --server=$1 --ua="${BrowserUA}" >./speedtest-cli/speedtest.log 2>&1
             fi
         fi
         if [ $? -eq 0 ]; then
