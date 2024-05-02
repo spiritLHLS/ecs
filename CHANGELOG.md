@@ -2,6 +2,15 @@
 
 # 主要变化
 
+2024.05.01
+
+- 二次开发[zhanghanyun/backtrace](https://github.com/zhanghanyun/backtrace)使用自修复和优化版本的[oneclickvirt/backtrace](https://github.com/oneclickvirt/backtrace)替代原版
+- 增加对```CN2GT```和```CN2GIA```线路的判断，原版[backtrace](https://github.com/zhanghanyun/backtrace)不支持
+- 增加对```CMIN2```和```CMI```线路的判断，原版[backtrace](https://github.com/zhanghanyun/backtrace)不支持
+- 增加对整个回程路由进行线路分析，与原版[backtrace](https://github.com/zhanghanyun/backtrace)仅进行一次判断不同
+- 修复原版[backtrace](https://github.com/zhanghanyun/backtrace)对IPV4地址信息获取时json解析失败依然打印信息的问题
+- 增加对全平台的编译支持，原版[backtrace](https://github.com/zhanghanyun/backtrace)仅支持linux平台的amd64和arm64架构
+
 2024.04.21
 
 - 修复sysbench的可用性判断的一个错误

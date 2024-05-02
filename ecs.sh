@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.05.01"
+ver="2024.05.02"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -648,22 +648,10 @@ pre_download() {
             chmod +x $TEMP_DIR/sysbench.zip
             unzip $TEMP_DIR/sysbench.zip -d ${TEMP_DIR}
             ;;
-        dp)
-            curl -sL -k "${cdn_success_url}https://github.com/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_${tp_sys}" -o $TEMP_DIR/dp && chmod +x $TEMP_DIR/dp
-            if [ ! -f $TEMP_DIR/dp ]; then
-                wget -q -O $TEMP_DIR/dp "https://hub.fgit.cf/sjlleo/VerifyDisneyPlus/releases/download/1.01/dp_1.01_linux_${tp_sys}" && chmod +x $TEMP_DIR/dp
-            fi
-            ;;
-        nf)
-            curl -sL -k "${cdn_success_url}https://github.com/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_${tp_sys}" -o $TEMP_DIR/nf && chmod +x $TEMP_DIR/nf
-            if [ ! -f $TEMP_DIR/nf ]; then
-                wget -q -O $TEMP_DIR/nf "https://hub.fgit.cf/sjlleo/netflix-verify/releases/download/v3.1.0/nf_linux_${tp_sys}" && chmod +x $TEMP_DIR/nf
-            fi
-            ;;
-        tubecheck)
-            curl -sL -k "${cdn_success_url}https://github.com/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_${tp_sys}" -o $TEMP_DIR/tubecheck && chmod +x $TEMP_DIR/tubecheck
-            if [ ! -f $TEMP_DIR/tubecheck ]; then
-                wget -q -O $TEMP_DIR/tubecheck "https://hub.fgit.cf/sjlleo/TubeCheck/releases/download/1.0Beta/tubecheck_1.0beta_linux_${tp_sys}" && chmod +x $TEMP_DIR/tubecheck
+        CommonMediaTests)
+            curl -sL -k "${cdn_success_url}https://github.com/oneclickvirt/CommonMediaTests/releases/download/output/${CommonMediaTests_FILE}" -o $TEMP_DIR/CommonMediaTests && chmod +x $TEMP_DIR/CommonMediaTests
+            if [ ! -f $TEMP_DIR/CommonMediaTests ]; then
+                wget -q -O $TEMP_DIR/CommonMediaTests "https://hub.fgit.cf/oneclickvirt/CommonMediaTests/releases/download/output/${CommonMediaTests_FILE}" && chmod +x $TEMP_DIR/CommonMediaTests
             fi
             ;;
         media_lmc_check)
@@ -975,6 +963,7 @@ get_system_bit() {
         LBench_Result_SystemBit_Short="32"
         LBench_Result_SystemBit_Full="i386"
         BESTTRACE_FILE=besttracemac
+        CommonMediaTests_FILE=CommonMediaTests-linux-386
         BACKTRACE_FILE=backtrace-linux-386
         NEXTTRACE_FILE=nexttrace_darwin_amd64
         ;;
@@ -982,6 +971,7 @@ get_system_bit() {
         LBench_Result_SystemBit_Short="arm"
         LBench_Result_SystemBit_Full="arm"
         BESTTRACE_FILE=besttracearm
+        CommonMediaTests_FILE=CommonMediaTests-linux-arm64
         BACKTRACE_FILE=backtrace-linux-arm64
         NEXTTRACE_FILE=nexttrace_linux_arm64
         ;;
@@ -989,6 +979,7 @@ get_system_bit() {
         LBench_Result_SystemBit_Short="64"
         LBench_Result_SystemBit_Full="amd64"
         BESTTRACE_FILE=besttrace
+        CommonMediaTests_FILE=CommonMediaTests-linux-amd64
         BACKTRACE_FILE=backtrace-linux-amd64
         NEXTTRACE_FILE=nexttrace_linux_amd64
         ;;
@@ -4188,19 +4179,11 @@ sjlleo_script() {
         return
     fi
     cd $myvar >/dev/null 2>&1
-    mv $TEMP_DIR/{dp,nf,tubecheck} ./
-    echo "---------------------流媒体解锁--感谢sjlleo开源-------------------------"
+    mv $TEMP_DIR/CommonMediaTests ./
+    echo "------------流媒体解锁--基于oneclickvirt/CommonMediaTests开源-----------"
     _yellow "以下测试的解锁地区是准确的，但是不是完整解锁的判断可能有误，这方面仅作参考使用"
-    _yellow "----------------Youtube----------------"
-    ./tubecheck | sed "/@sjlleo/d;/^$/d"
-    sleep 0.5
-    _yellow "----------------Netflix----------------"
-    ./nf | sed "/@sjlleo/d;/^$/d"
-    sleep 0.5
-    _yellow "---------------DisneyPlus---------------"
-    ./dp | sed "/@sjlleo/d;/^$/d"
-    sleep 0.5
-    _yellow "解锁Youtube，Netflix，DisneyPlus上面和下面进行比较，不同之处自行判断"
+    ./CommonMediaTests | grep -v 'github.com/oneclickvirt/CommonMediaTests'
+    _yellow "解锁Netflix，Youtube，DisneyPlus上面和下面进行比较，不同之处自行判断"
 }
 
 cpu_judge() {
@@ -4666,7 +4649,7 @@ all_script() {
     pre_check
     if [ "$1" = "B" ]; then
         if [[ -z "${CN}" || "${CN}" != true ]]; then
-            dfiles=(yabs dp nf tubecheck media_lmc_check besttrace nexttrace backtrace)
+            dfiles=(yabs CommonMediaTests media_lmc_check besttrace nexttrace backtrace)
             for dfile in "${dfiles[@]}"; do
                 { pre_download ${dfile}; } &
             done
@@ -4731,7 +4714,7 @@ all_script() {
         fi
     else
         if [[ -z "${CN}" || "${CN}" != true ]]; then
-            pre_download yabs dp nf tubecheck media_lmc_check besttrace nexttrace backtrace
+            pre_download yabs CommonMediaTests media_lmc_check besttrace nexttrace backtrace
             get_system_info
             check_dnsutils
             check_ping
@@ -4799,7 +4782,7 @@ minal_script() {
 
 minal_plus() {
     pre_check
-    pre_download yabs dp nf tubecheck media_lmc_check besttrace nexttrace backtrace
+    pre_download yabs CommonMediaTests media_lmc_check besttrace nexttrace backtrace
     get_system_info
     check_lmc_script
     check_dnsutils
@@ -4842,7 +4825,7 @@ minal_plus_network() {
 
 minal_plus_media() {
     pre_check
-    pre_download yabs dp nf tubecheck media_lmc_check
+    pre_download yabs CommonMediaTests media_lmc_check
     get_system_info
     check_dnsutils
     check_lmc_script
@@ -4883,7 +4866,7 @@ network_script() {
 
 media_script() {
     pre_check
-    pre_download dp nf tubecheck media_lmc_check
+    pre_download CommonMediaTests media_lmc_check
     check_dnsutils
     check_lmc_script
     clear
@@ -4956,9 +4939,7 @@ rm_script() {
     rm -rf speedtest.tgz*
     rm -rf wget-log*
     rm -rf media_lmc_check.sh*
-    rm -rf dp
-    rm -rf nf
-    rm -rf tubecheck
+    rm -rf CommonMediaTests
     rm -rf besttrace
     rm -rf nexttrace
     rm -rf LemonBench.Result.txt*
