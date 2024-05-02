@@ -4974,6 +4974,7 @@ build_text() {
         sed -i -e '/s)\s*->/d' test_result.txt
         sed -i -e '/^该运营商\|^测速中/d' test_result.txt
         sed -i -e '/^Running fio test.../d' test_result.txt
+        sed -i -e '/^checking speedtest/d' test_result.txt
         if [ -s test_result.txt ]; then
             # if [ "$en_status" = true ]; then
             #     if grep -q -- "-----------------------Disk-fio-Read/Write-Test-------------------------" "test_result.txt"; then
