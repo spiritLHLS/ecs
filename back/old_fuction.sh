@@ -700,3 +700,76 @@
 # 	sudo service sshd restart >/dev/null 2>&1
 # 	echo "开启22端口完毕"
 # }
+
+# check_stun() {
+#     _yellow "checking stun"
+#     if ! command -v stun >/dev/null 2>&1; then
+#         _yellow "Installing stun"
+#         ${PACKAGE_INSTALL[int]} stun-client >/dev/null 2>&1
+#     fi
+# }
+
+# checkpystun() {
+#     _yellow "checking pystun"
+#     local python_command
+#     local pip_command
+#     if command -v python3 >/dev/null 2>&1; then
+#         python_command="python3"
+#         pip_command="pip3"
+#         _blue "$($python_command --version 2>&1)"
+#     elif command -v python >/dev/null 2>&1; then
+#         python_command="python"
+#         pip_command="pip"
+#         _blue "$($python_command --version 2>&1)"
+#     else
+#         _yellow "installing python3"
+#         ${PACKAGE_INSTALL[int]} python3
+#         if command -v python3 >/dev/null 2>&1; then
+#             python_command="python3"
+#             pip_command="pip3"
+#             _blue "$($python_command --version 2>&1)"
+#         elif command -v python >/dev/null 2>&1; then
+#             python_command="python"
+#             pip_command="pip"
+#             _blue "$($python_command --version 2>&1)"
+#         else
+#             _yellow "installing python"
+#             ${PACKAGE_INSTALL[int]} python
+#             if command -v python3 >/dev/null 2>&1; then
+#                 python_command="python3"
+#                 pip_command="pip3"
+#                 _blue "$($python_command --version 2>&1)"
+#             elif command -v python >/dev/null 2>&1; then
+#                 python_command="python"
+#                 pip_command="pip"
+#                 _blue "$($python_command --version 2>&1)"
+#             else
+#                 return
+#             fi
+#         fi
+#     fi
+#     if [[ $python_command == "python3" ]]; then
+#         checkpip 3
+#         if ! command -v pystun3 >/dev/null 2>&1; then
+#             _yellow "Installing pystun3"
+#             if ! "$pip_command" install -q pystun3 >/dev/null 2>&1; then
+#                 "$pip_command" install -q pystun3
+#                 if [ $? -ne 0 ]; then
+#                     "$pip_command" install -q pystun3 --break-system-packages
+#                 fi
+#             fi
+#         fi
+#     fi
+#     if [[ $python_command == "python" ]]; then
+#         checkpip
+#         if [[ $($python_command --version 2>&1) == Python\ 2* ]]; then
+#             _yellow "Installing pystun"
+#             if ! "$pip_command" install -q pystun >/dev/null 2>&1; then
+#                 "$pip_command" install -q pystun
+#                 if [ $? -ne 0 ]; then
+#                     "$pip_command" install -q pystun --break-system-packages
+#                 fi
+#             fi
+#         fi
+#     fi
+# }

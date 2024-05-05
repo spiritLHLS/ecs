@@ -2,6 +2,12 @@
 
 # 主要变化
 
+2024.05.02
+
+- 基于[netflix-verify](https://github.com/sjlleo/netflix-verify)、[VerifyDisneyPlus](https://github.com/sjlleo/VerifyDisneyPlus)、[TubeCheck](https://github.com/sjlleo/TubeCheck)整合代码至于[CommonMediaTests](https://github.com/oneclickvirt/CommonMediaTests)，同时优化测试速度
+- 脚本应用[speedtest-go](https://github.com/showwin/speedtest-go/issues/182)优化，使用请求头避免测速请求被拒绝导致的下载速度测试为零，同时更新二进制文件的版本
+- 修复分享链接生成过程中的日志裁剪部分代码的小BUG
+
 2024.05.01
 
 - 二次开发[zhanghanyun/backtrace](https://github.com/zhanghanyun/backtrace)使用自修复和优化版本的[oneclickvirt/backtrace](https://github.com/oneclickvirt/backtrace)替代原版

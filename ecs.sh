@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.05.02"
+ver="2024.05.05"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -468,14 +468,6 @@ check_nc() {
     fi
 }
 
-check_stun() {
-    _yellow "checking stun"
-    if ! command -v stun >/dev/null 2>&1; then
-        _yellow "Installing stun"
-        ${PACKAGE_INSTALL[int]} stun-client >/dev/null 2>&1
-    fi
-}
-
 check_tar() {
     _yellow "checking tar"
     if ! command -v tar &>/dev/null; then
@@ -542,71 +534,6 @@ checkpip() {
         else
             _red "python${pvr}-pip installation failed, please install it manually"
             return
-        fi
-    fi
-}
-
-checkpystun() {
-    _yellow "checking pystun"
-    local python_command
-    local pip_command
-    if command -v python3 >/dev/null 2>&1; then
-        python_command="python3"
-        pip_command="pip3"
-        _blue "$($python_command --version 2>&1)"
-    elif command -v python >/dev/null 2>&1; then
-        python_command="python"
-        pip_command="pip"
-        _blue "$($python_command --version 2>&1)"
-    else
-        _yellow "installing python3"
-        ${PACKAGE_INSTALL[int]} python3
-        if command -v python3 >/dev/null 2>&1; then
-            python_command="python3"
-            pip_command="pip3"
-            _blue "$($python_command --version 2>&1)"
-        elif command -v python >/dev/null 2>&1; then
-            python_command="python"
-            pip_command="pip"
-            _blue "$($python_command --version 2>&1)"
-        else
-            _yellow "installing python"
-            ${PACKAGE_INSTALL[int]} python
-            if command -v python3 >/dev/null 2>&1; then
-                python_command="python3"
-                pip_command="pip3"
-                _blue "$($python_command --version 2>&1)"
-            elif command -v python >/dev/null 2>&1; then
-                python_command="python"
-                pip_command="pip"
-                _blue "$($python_command --version 2>&1)"
-            else
-                return
-            fi
-        fi
-    fi
-    if [[ $python_command == "python3" ]]; then
-        checkpip 3
-        if ! command -v pystun3 >/dev/null 2>&1; then
-            _yellow "Installing pystun3"
-            if ! "$pip_command" install -q pystun3 >/dev/null 2>&1; then
-                "$pip_command" install -q pystun3
-                if [ $? -ne 0 ]; then
-                    "$pip_command" install -q pystun3 --break-system-packages
-                fi
-            fi
-        fi
-    fi
-    if [[ $python_command == "python" ]]; then
-        checkpip
-        if [[ $($python_command --version 2>&1) == Python\ 2* ]]; then
-            _yellow "Installing pystun"
-            if ! "$pip_command" install -q pystun >/dev/null 2>&1; then
-                "$pip_command" install -q pystun
-                if [ $? -ne 0 ]; then
-                    "$pip_command" install -q pystun --break-system-packages
-                fi
-            fi
         fi
     fi
 }
@@ -686,6 +613,12 @@ pre_download() {
             wget -q -O $TEMP_DIR/backtrace https://github.com/oneclickvirt/backtrace/releases/download/output/$BACKTRACE_FILE
             if [ ! -f $TEMP_DIR/backtrace ]; then
                 wget -q -O $TEMP_DIR/backtrace https://hub.fgit.cf/oneclickvirt/backtrace/releases/download/output/$BACKTRACE_FILE
+            fi
+            ;;
+        gostun)
+            wget -q -O $TEMP_DIR/gostun https://github.com/oneclickvirt/gostun/releases/download/output/$GOSTUN_FILE
+            if [ ! -f $TEMP_DIR/gostun ]; then
+                wget -q -O $TEMP_DIR/gostun https://hub.fgit.cf/oneclickvirt/gostun/releases/download/output/$GOSTUN_FILE
             fi
             ;;
         yabs)
@@ -872,6 +805,25 @@ check_time_zone() {
     sleep 0.5
 }
 
+check_nat_type() {
+    _yellow "NAT Type being detected ......"
+    if [[ ! -z "$IPV4" ]]; then
+        if [ -f "$TEMP_DIR/gostun" ]; then
+            chmod 777 $TEMP_DIR/gostun
+            output=$($TEMP_DIR/gostun | tail -n 1)
+            if [[ $output == *"NAT Type"* ]]; then
+                nat_type_r=$(echo "$output" | awk -F ':' '{print $NF}' | awk '{$1=$1;print}')
+            else
+                if [ "$en_status" = true ]; then
+                    nat_type_r="The query fails, please try other architectures of https://github.com/oneclickvirt/gostun by yourself"
+                else
+                    nat_type_r="查询失败，请自行尝试 https://github.com/oneclickvirt/gostun 的其他架构"
+                fi
+            fi
+        fi
+    fi
+}
+
 check_china() {
     _yellow "IP area being detected ......"
     if [[ -z "${CN}" ]]; then
@@ -963,6 +915,7 @@ get_system_bit() {
     "i386" | "i686")
         LBench_Result_SystemBit_Short="32"
         LBench_Result_SystemBit_Full="i386"
+        GOSTUN_FILE=gostun-linux-386
         BESTTRACE_FILE=besttracemac
         CommonMediaTests_FILE=CommonMediaTests-linux-386
         BACKTRACE_FILE=backtrace-linux-386
@@ -971,6 +924,7 @@ get_system_bit() {
     "armv7l" | "armv8" | "armv8l" | "aarch64")
         LBench_Result_SystemBit_Short="arm"
         LBench_Result_SystemBit_Full="arm"
+        GOSTUN_FILE=gostun-linux-arm64
         BESTTRACE_FILE=besttracearm
         CommonMediaTests_FILE=CommonMediaTests-linux-arm64
         BACKTRACE_FILE=backtrace-linux-arm64
@@ -979,6 +933,7 @@ get_system_bit() {
     *)
         LBench_Result_SystemBit_Short="64"
         LBench_Result_SystemBit_Full="amd64"
+        GOSTUN_FILE=gostun-linux-amd64
         BESTTRACE_FILE=besttrace
         CommonMediaTests_FILE=CommonMediaTests-linux-amd64
         BACKTRACE_FILE=backtrace-linux-amd64
@@ -2801,103 +2756,6 @@ get_system_info() {
             fi
         fi
     fi
-    if [[ ! -z "${ip4}" ]]; then
-        check_stun
-        if command -v stun >/dev/null 2>&1; then
-            result=$(stun stun.l.google.com)
-            nat_type=$(echo "$result" | grep '^Primary' | awk -F'Primary:' '{print $2}' | tr -d ' ')
-            if [ "$en_status" = true ]; then
-                nat_type_r=""
-            else
-                nat_type_r=""
-                if echo "$nat_type" | grep -qE "IndependentMapping|Independent Mapping"; then
-                    nat_type_r+="独立映射"
-                fi
-                if echo "$nat_type" | grep -qE "IndependentFilter|Independent Filter"; then
-                    if [ -n "$nat_type_r" ]; then
-                        nat_type_r+=","
-                    fi
-                    nat_type_r+="独立过滤"
-                fi
-                if echo "$nat_type" | grep -q "preservesports|preserves ports"; then
-                    if [ -n "$nat_type_r" ]; then
-                        nat_type_r+=","
-                    fi
-                    nat_type_r+="保留端口"
-                fi
-                if echo "$nat_type" | grep -q "randomport|random port"; then
-                    if [ -n "$nat_type_r" ]; then
-                        nat_type_r+=","
-                    fi
-                    nat_type_r+="随机端口"
-                fi
-                if echo "$nat_type" | grep -qE "nohairpin|no hairpin"; then
-                    if [ -n "$nat_type_r" ]; then
-                        nat_type_r+=","
-                    fi
-                    nat_type_r+="不支持回环"
-                fi
-                if echo "$nat_type" | grep -qE "willhairpin|will hairpin"; then
-                    if [ -n "$nat_type_r" ]; then
-                        nat_type_r+=","
-                    fi
-                    nat_type_r+="支持回环"
-                fi
-                if echo "$nat_type" | grep -q "Open"; then
-                    if [ -n "$nat_type_r" ]; then
-                        nat_type_r+=","
-                    fi
-                    nat_type_r+="开放型"
-                fi
-                if echo "$nat_type" | grep -qE "BlockedorcouldnotreachSTUNserver|Blocked or could not reach STUN server"; then
-                    checkpystun
-                    if command -v pystun3 >/dev/null 2>&1; then
-                        result=$(pystun3 </dev/null)
-                        nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
-                        if echo "$nat_type_r" | grep -qE "Blocked"; then
-                            nat_type_r="无法检测"
-                        fi
-                    elif command -v pystun >/dev/null 2>&1; then
-                        result=$(pystun </dev/null)
-                        nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
-                        if echo "$nat_type_r" | grep -qE "Blocked"; then
-                            nat_type_r="无法检测"
-                        fi
-                    else
-                        if [ -n "$nat_type_r" ]; then
-                            nat_type_r+=","
-                        fi
-                        nat_type_r+="无法检测"
-                    fi
-                fi
-            fi
-            if [ -z "$nat_type_r" ]; then
-                nat_type_r="$nat_type"
-            fi
-        else
-            checkpystun
-            if command -v pystun3 >/dev/null 2>&1; then
-                result=$(pystun3 </dev/null)
-                nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
-            elif command -v pystun >/dev/null 2>&1; then
-                result=$(pystun </dev/null)
-                nat_type_r=$(echo "$result" | grep -oP 'NAT Type:\s*\K.*')
-            fi
-        fi
-        if echo "$nat_type_r" | grep -qE "BlockedorcouldnotreachSTUNserver|Blocked or could not reach STUN server"; then
-            if [ "$en_status" = true ]; then
-                nat_type_r="undetectable"
-            else
-                nat_type_r="无法检测"
-            fi
-        fi
-    else
-        if [ "$en_status" = true ]; then
-            nat_type_r="undetectable"
-        else
-            nat_type_r="无法检测"
-        fi
-    fi
 }
 
 # =============== 正式输出 部分 ===============
@@ -4650,7 +4508,7 @@ all_script() {
     pre_check
     if [ "$1" = "B" ]; then
         if [[ -z "${CN}" || "${CN}" != true ]]; then
-            dfiles=(yabs CommonMediaTests media_lmc_check besttrace nexttrace backtrace)
+            dfiles=(gostun yabs CommonMediaTests media_lmc_check besttrace nexttrace backtrace)
             for dfile in "${dfiles[@]}"; do
                 { pre_download ${dfile}; } &
             done
@@ -4663,6 +4521,7 @@ all_script() {
             CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
             [ "$enable_speedtest" = true ] && _yellow "checking speedtest" && install_speedtest &
             check_lmc_script &
+            check_nat_type &
             clear
             print_intro
             basic_script
@@ -4698,6 +4557,7 @@ all_script() {
             CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
             [ "$enable_speedtest" = true ] && _yellow "checking speedtest" && install_speedtest &
             check_lmc_script &
+            check_nat_type &
             clear
             print_intro
             basic_script
@@ -4715,7 +4575,7 @@ all_script() {
         fi
     else
         if [[ -z "${CN}" || "${CN}" != true ]]; then
-            pre_download yabs CommonMediaTests media_lmc_check besttrace nexttrace backtrace
+            pre_download yabs CommonMediaTests media_lmc_check besttrace nexttrace backtrace gostun
             get_system_info
             check_dnsutils
             check_ping
@@ -4725,6 +4585,7 @@ all_script() {
             CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
             [ "$enable_speedtest" = true ] && _yellow "checking speedtest" && install_speedtest
             check_lmc_script
+            check_nat_type
             clear
             print_intro
             basic_script
@@ -4748,6 +4609,7 @@ all_script() {
             CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
             [ "$enable_speedtest" = true ] && _yellow "checking speedtest" && install_speedtest
             check_lmc_script
+            check_nat_type
             clear
             print_intro
             basic_script
@@ -4767,12 +4629,13 @@ all_script() {
 minal_script() {
     pre_check
     get_system_info
-    pre_download yabs
+    pre_download yabs gostun
     check_ping
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
     CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
     CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
     [ "$enable_speedtest" = true ] && _yellow "checking speedtest" && install_speedtest
+    check_nat_type
     clear
     print_intro
     basic_script
@@ -4783,7 +4646,7 @@ minal_script() {
 
 minal_plus() {
     pre_check
-    pre_download yabs CommonMediaTests media_lmc_check besttrace nexttrace backtrace
+    pre_download yabs CommonMediaTests media_lmc_check besttrace nexttrace backtrace gostun
     get_system_info
     check_lmc_script
     check_dnsutils
@@ -4792,6 +4655,7 @@ minal_plus() {
     CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
     CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
     [ "$enable_speedtest" = true ] && _yellow "checking speedtest" && install_speedtest
+    check_nat_type
     clear
     print_intro
     basic_script
@@ -4807,13 +4671,14 @@ minal_plus() {
 
 minal_plus_network() {
     pre_check
-    pre_download yabs besttrace nexttrace backtrace
+    pre_download yabs besttrace nexttrace backtrace gostun
     get_system_info
     check_ping
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
     CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
     CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
     [ "$enable_speedtest" = true ] && _yellow "checking speedtest" && install_speedtest
+    check_nat_type
     clear
     print_intro
     basic_script
@@ -4826,7 +4691,7 @@ minal_plus_network() {
 
 minal_plus_media() {
     pre_check
-    pre_download yabs CommonMediaTests media_lmc_check
+    pre_download yabs CommonMediaTests media_lmc_check gostun
     get_system_info
     check_dnsutils
     check_lmc_script
@@ -4835,6 +4700,7 @@ minal_plus_media() {
     CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
     CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
     [ "$enable_speedtest" = true ] && _yellow "checking speedtest" && install_speedtest
+    check_nat_type
     clear
     print_intro
     basic_script
@@ -4883,7 +4749,9 @@ hardware_script() {
     if [ "$test_base_status" = false ]; then
         pre_download yabs
     fi
+    pre_download gostun
     get_system_info
+    check_nat_type
     clear
     print_intro
     basic_script
@@ -5647,6 +5515,10 @@ my_original_script_options() {
         bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/multi_disk_io_test.sh)
         break_status=true
         ;;
+    17)
+        bash <(curl -sSL https://raw.githubusercontent.com/oneclickvirt/gostun/main/gostun_install.sh)
+        break_status=true
+        ;;
     0)
         start_script
         break_status=true
@@ -5682,6 +5554,7 @@ my_original_script() {
         echo -e "${GREEN}14.${PLAIN} ecs-cn三网测速脚本(自动更新测速节点，对应 speedtest.cn)"
         echo -e "${GREEN}15.${PLAIN} ecs-ping三网测ping脚本(自动更新测试节点)"
         echo -e "${GREEN}16.${PLAIN} 测试挂载的多个磁盘的IO(仅测试挂载盘)"
+        echo -e "${GREEN}17.${PLAIN} 检测本机的NAT类型"
         echo " -------------"
         echo -e "${GREEN}0.${PLAIN} 回到主菜单"
         echo ""

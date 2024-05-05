@@ -75,11 +75,10 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.05.02
+2024.05.05
 
-- 基于[netflix-verify](https://github.com/sjlleo/netflix-verify)、[VerifyDisneyPlus](https://github.com/sjlleo/VerifyDisneyPlus)、[TubeCheck](https://github.com/sjlleo/TubeCheck)整合代码至于[CommonMediaTests](https://github.com/oneclickvirt/CommonMediaTests)，同时优化测试速度
-- 脚本应用[speedtest-go](https://github.com/showwin/speedtest-go/issues/182)优化，使用请求头避免测速请求被拒绝导致的下载速度测试为零，同时更新二进制文件的版本
-- 修复分享链接生成过程中的日志裁剪部分代码的小BUG
+- 去除脚本的Python环境依赖，大幅优化初始化加载速度
+- 使用自写[gostun](https://github.com/oneclickvirt/gostun)检测本机NAT类型，不再依赖[pystun](https://github.com/jtriley/pystun)和[py3stun](https://github.com/xiongnemo/py3stun)进行检测，适配更多架构和平台
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
