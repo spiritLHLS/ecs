@@ -2897,14 +2897,10 @@ print_system_info() {
         elif [ -n "$ccache" ] >/dev/null 2>&1; then
             echo " CPU Cache         : $(_blue "$ccache")"
         fi
-        if [ -n "$Result_Systeminfo_Diskinfo" ] >/dev/null 2>&1; then
-            echo " Disk Space        : $(_blue "$Result_Systeminfo_Diskinfo")"
-        else
-            echo " Disk Space        : $(_yellow "$disk_total_size GB") $(_blue "($disk_used_size GB Usage)")"
-        fi
-        if [ -n "$Result_Systeminfo_DiskRootPath" ] >/dev/null 2>&1; then
-            echo " Boot Disk         : $(_blue "$Result_Systeminfo_DiskRootPath")"
-        fi
+        [[ -z "$CPU_AES" ]] && CPU_AES="\xE2\x9D\x8C Disabled" || CPU_AES="\xE2\x9C\x94 Enabled"
+        echo " AES-NI            : $(_blue "$CPU_AES")"
+        [[ -z "$CPU_VIRT" ]] && CPU_VIRT="\xE2\x9D\x8C Disabled" || CPU_VIRT="\xE2\x9C\x94 Enabled"
+        echo " VM-x/AMD-V        : $(_blue "$CPU_VIRT")"
         if [ -n "$Result_Systeminfo_Memoryinfo" ] >/dev/null 2>&1; then
             echo " RAM               : $(_blue "$Result_Systeminfo_Memoryinfo")"
         elif [ -n "$tram" ] && [ -n "$uram" ] >/dev/null 2>&1; then
@@ -2915,6 +2911,14 @@ print_system_info() {
         elif [ -n "$swap" ] && [ -n "$uswap" ] >/dev/null 2>&1; then
             echo " Swap              : $(_blue "$swap MB ($uswap MB 已用)")"
         fi
+        if [ -n "$Result_Systeminfo_Diskinfo" ] >/dev/null 2>&1; then
+            echo " Disk Space        : $(_blue "$Result_Systeminfo_Diskinfo")"
+        else
+            echo " Disk Space        : $(_yellow "$disk_total_size GB") $(_blue "($disk_used_size GB Usage)")"
+        fi
+        if [ -n "$Result_Systeminfo_DiskRootPath" ] >/dev/null 2>&1; then
+            echo " Boot Disk         : $(_blue "$Result_Systeminfo_DiskRootPath")"
+        fi
         echo " Uptime            : $(_blue "$up")"
         echo " Loads             : $(_blue "$load")"
         if [ -n "$Result_Systeminfo_OSReleaseNameFull" ] >/dev/null 2>&1; then
@@ -2922,10 +2926,6 @@ print_system_info() {
         elif [ -n "$DISTRO" ] >/dev/null 2>&1; then
             echo " OS Release        : $(_blue "$DISTRO")"
         fi
-        [[ -z "$CPU_AES" ]] && CPU_AES="\xE2\x9D\x8C Disabled" || CPU_AES="\xE2\x9C\x94 Enabled"
-        echo " AES-NI            : $(_blue "$CPU_AES")"
-        [[ -z "$CPU_VIRT" ]] && CPU_VIRT="\xE2\x9D\x8C Disabled" || CPU_VIRT="\xE2\x9C\x94 Enabled"
-        echo " VM-x/AMD-V        : $(_blue "$CPU_VIRT")"
         echo " Arch              : $(_blue "$arch ($lbit Bit)")"
         echo " Kernel Version    : $(_blue "$kern")"
         echo " TCP Acceleration  : $(_yellow "$tcpctrl")"
@@ -2968,14 +2968,10 @@ print_system_info() {
         elif [ -n "$ccache" ] >/dev/null 2>&1; then
             echo " CPU 缓存          : $(_blue "$ccache")"
         fi
-        if [ -n "$Result_Systeminfo_Diskinfo" ] >/dev/null 2>&1; then
-            echo " 硬盘空间          : $(_blue "$Result_Systeminfo_Diskinfo")"
-        else
-            echo " 硬盘空间          : $(_yellow "$disk_total_size GB") $(_blue "($disk_used_size GB 已用)")"
-        fi
-        if [ -n "$Result_Systeminfo_DiskRootPath" ] >/dev/null 2>&1; then
-            echo " 启动盘路径        : $(_blue "$Result_Systeminfo_DiskRootPath")"
-        fi
+        [[ -z "$CPU_AES" ]] && CPU_AES="\xE2\x9D\x8C Disabled" || CPU_AES="\xE2\x9C\x94 Enabled"
+        echo " AES-NI指令集      : $(_blue "$CPU_AES")"
+        [[ -z "$CPU_VIRT" ]] && CPU_VIRT="\xE2\x9D\x8C Disabled" || CPU_VIRT="\xE2\x9C\x94 Enabled"
+        echo " VM-x/AMD-V支持    : $(_blue "$CPU_VIRT")"
         if [ -n "$Result_Systeminfo_Memoryinfo" ] >/dev/null 2>&1; then
             echo " 内存              : $(_blue "$Result_Systeminfo_Memoryinfo")"
         elif [ -n "$tram" ] && [ -n "$uram" ] >/dev/null 2>&1; then
@@ -2986,6 +2982,14 @@ print_system_info() {
         elif [ -n "$swap" ] && [ -n "$uswap" ] >/dev/null 2>&1; then
             echo " Swap              : $(_blue "$swap MB ($uswap MB 已用)")"
         fi
+        if [ -n "$Result_Systeminfo_Diskinfo" ] >/dev/null 2>&1; then
+            echo " 硬盘空间          : $(_blue "$Result_Systeminfo_Diskinfo")"
+        else
+            echo " 硬盘空间          : $(_yellow "$disk_total_size GB") $(_blue "($disk_used_size GB 已用)")"
+        fi
+        if [ -n "$Result_Systeminfo_DiskRootPath" ] >/dev/null 2>&1; then
+            echo " 启动盘路径        : $(_blue "$Result_Systeminfo_DiskRootPath")"
+        fi
         echo " 系统在线时间      : $(_blue "$up")"
         echo " 负载              : $(_blue "$load")"
         if [ -n "$Result_Systeminfo_OSReleaseNameFull" ] >/dev/null 2>&1; then
@@ -2993,10 +2997,6 @@ print_system_info() {
         elif [ -n "$DISTRO" ] >/dev/null 2>&1; then
             echo " 系统              : $(_blue "$DISTRO")"
         fi
-        [[ -z "$CPU_AES" ]] && CPU_AES="\xE2\x9D\x8C Disabled" || CPU_AES="\xE2\x9C\x94 Enabled"
-        echo " AES-NI指令集      : $(_blue "$CPU_AES")"
-        [[ -z "$CPU_VIRT" ]] && CPU_VIRT="\xE2\x9D\x8C Disabled" || CPU_VIRT="\xE2\x9C\x94 Enabled"
-        echo " VM-x/AMD-V支持    : $(_blue "$CPU_VIRT")"
         echo " 架构              : $(_blue "$arch ($lbit Bit)")"
         echo " 内核              : $(_blue "$kern")"
         echo " TCP加速方式       : $(_yellow "$tcpctrl")"
@@ -3182,37 +3182,6 @@ virustotal() {
         echo "$result" | sed 's/ //g' | awk 'NR==2' >/tmp/ip_quality_virustotal_malicious_records
         echo "$result" | sed 's/ //g' | awk 'NR==3' >/tmp/ip_quality_virustotal_suspicious_records
         echo "$result" | sed 's/ //g' | awk 'NR==4' >/tmp/ip_quality_virustotal_no_records
-    fi
-}
-
-cloudflare() {
-    local status=0
-    local context1
-    rm -rf /tmp/ip_quality_cloudflare_risk
-    for ((i = 1; i <= 100; i++)); do
-        context1=$(curl -sL -m 10 "https://cf-threat.sukkaw.com/hello.json?threat=$i")
-        if [ "$en_status" = true ]; then
-            if [[ "$context1" != *"pong!"* ]]; then
-                echo "Cloudflare threat scores higher than 10 are crawlers or spammers, higher than 40 have serious bad behavior (e.g., botnets, etc.), and values are generally no greater than 60" >>/tmp/ip_quality_cloudflare_risk
-                echo "Cloudflare threatens to score: $i" >>/tmp/ip_quality_cloudflare_risk
-                local status=1
-                break
-            fi
-        else
-            if [[ "$context1" != *"pong!"* ]]; then
-                echo "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60" >>/tmp/ip_quality_cloudflare_risk
-                echo "Cloudflare威胁得分：$i" >>/tmp/ip_quality_cloudflare_risk
-                local status=1
-                break
-            fi
-        fi
-    done
-    if [[ $i == 100 && $status == 0 ]]; then
-        if [ "$en_status" = true ]; then
-            echo "Cloudflare Threat Score (0 for low risk): 0" >>/tmp/ip_quality_cloudflare_risk
-        else
-            echo "Cloudflare威胁得分(0为低风险): 0" >>/tmp/ip_quality_cloudflare_risk
-        fi
     fi
 }
 
@@ -5339,7 +5308,7 @@ single_item_script() {
             echo -e "${GREEN}1.${PLAIN} Networking (simplified IP quality check + triple network backhaul + triple network routing and latency + 11 speed nodes) (average run time about 6 minutes)"
             echo -e "${GREEN}2.${PLAIN} For unlocking (Gosanja unlocking + common streamer unlocking + TikTok unlocking) (average runtime 30~60 seconds)"
             echo -e "${GREEN}3.${PLAIN} Hardware (basic system information + CPU + RAM + dual disk IO test) (average run time 1½ minutes)"
-            echo -e "${GREEN}4.${PLAIN} Complete IP quality check (average runtime 10~20 seconds)"
+            echo -e "${GREEN}4.${PLAIN} IP quality check (average runtime 10~20 seconds)"
             # echo -e "${GREEN}5.${PLAIN} Common port openings (blocked or not) (average run time about 1 minute) (bugs not fixed yet)"
             # echo -e "${GREEN}6.${PLAIN} Triple-net backhaul line + Guangzhou triple-net routing + nationwide triple-net delay (average running 1 minute 20 seconds)"
             echo " -------------"
@@ -5349,7 +5318,7 @@ single_item_script() {
             echo -e "${GREEN}1.${PLAIN} 网络方面(简化的IP质量检测+三网回程+三网路由与延迟+测速节点11个)(平均运行6分钟左右)"
             echo -e "${GREEN}2.${PLAIN} 解锁方面(御三家解锁+常用流媒体解锁+TikTok解锁)(平均运行30~60秒)"
             echo -e "${GREEN}3.${PLAIN} 硬件方面(基础系统信息+CPU+内存+双重磁盘IO测试)(平均运行1分半钟)"
-            echo -e "${GREEN}4.${PLAIN} 完整的IP质量检测(平均运行10~20秒)"
+            echo -e "${GREEN}4.${PLAIN} IP质量检测(平均运行10~20秒)"
             echo -e "${GREEN}5.${PLAIN} 常用端口开通情况(是否有阻断)(平均运行1分钟左右)(暂时有bug未修复)"
             echo -e "${GREEN}6.${PLAIN} 三网回程线路+广州三网路由+全国三网延迟(平均运行1分20秒)"
             echo " -------------"

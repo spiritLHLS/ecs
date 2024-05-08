@@ -397,7 +397,7 @@ print_end_time() {
     echo " 时间          : $date_time"
 }
 
-head='key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c'
+head='key: '
 
 translate_status() {
     if [[ "$1" == "false" ]]; then

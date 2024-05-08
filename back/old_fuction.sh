@@ -773,3 +773,52 @@
 #         fi
 #     fi
 # }
+
+# cloudflare() {
+#     local status=0
+#     local context1
+#     rm -rf /tmp/ip_quality_cloudflare_risk
+#     for ((i = 1; i <= 100; i++)); do
+#         context1=$(curl -sL -m 10 "https://cf-threat.sukkaw.com/hello.json?threat=$i")
+#         if [ "$en_status" = true ]; then
+#             if [[ "$context1" != *"pong!"* ]]; then
+#                 echo "Cloudflare threat scores higher than 10 are crawlers or spammers, higher than 40 have serious bad behavior (e.g., botnets, etc.), and values are generally no greater than 60" >>/tmp/ip_quality_cloudflare_risk
+#                 echo "Cloudflare threatens to score: $i" >>/tmp/ip_quality_cloudflare_risk
+#                 local status=1
+#                 break
+#             fi
+#         else
+#             if [[ "$context1" != *"pong!"* ]]; then
+#                 echo "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60" >>/tmp/ip_quality_cloudflare_risk
+#                 echo "Cloudflare威胁得分：$i" >>/tmp/ip_quality_cloudflare_risk
+#                 local status=1
+#                 break
+#             fi
+#         fi
+#     done
+#     if [[ $i == 100 && $status == 0 ]]; then
+#         if [ "$en_status" = true ]; then
+#             echo "Cloudflare Threat Score (0 for low risk): 0" >>/tmp/ip_quality_cloudflare_risk
+#         else
+#             echo "Cloudflare威胁得分(0为低风险): 0" >>/tmp/ip_quality_cloudflare_risk
+#         fi
+#     fi
+# }
+
+# cloudflare() {
+#     local status=0
+#     local context1
+#     rm -rf /tmp/ip_quality_cloudflare_risk
+#     for ((i = 1; i <= 100; i++)); do
+#         context1=$(curl -sL -m 10 "https://cf-threat.sukkaw.com/hello.json?threat=$i")
+#         if [[ "$context1" != *"pong!"* ]]; then
+#             echo "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60" >>/tmp/ip_quality_cloudflare_risk
+#             echo "Cloudflare威胁得分：$i" >>/tmp/ip_quality_cloudflare_risk
+#             local status=1
+#             break
+#         fi
+#     done
+#     if [[ $i == 100 && $status == 0 ]]; then
+#         echo "Cloudflare威胁得分(0为低风险): 0" >>/tmp/ip_quality_cloudflare_risk
+#     fi
+# }

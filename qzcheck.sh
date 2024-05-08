@@ -685,24 +685,6 @@ virustotal() {
     fi
 }
 
-cloudflare() {
-    local status=0
-    local context1
-    rm -rf /tmp/ip_quality_cloudflare_risk
-    for ((i = 1; i <= 100; i++)); do
-        context1=$(curl -sL -m 10 "https://cf-threat.sukkaw.com/hello.json?threat=$i")
-        if [[ "$context1" != *"pong!"* ]]; then
-            echo "Cloudflare威胁得分高于10为爬虫或垃圾邮件发送者,高于40有严重不良行为(如僵尸网络等),数值一般不会大于60" >>/tmp/ip_quality_cloudflare_risk
-            echo "Cloudflare威胁得分：$i" >>/tmp/ip_quality_cloudflare_risk
-            local status=1
-            break
-        fi
-    done
-    if [[ $i == 100 && $status == 0 ]]; then
-        echo "Cloudflare威胁得分(0为低风险): 0" >>/tmp/ip_quality_cloudflare_risk
-    fi
-}
-
 # abuseipdb数据库 ④ IP2Location数据库 ⑤
 abuse_ipv4() {
     local ip="$1"
@@ -1188,9 +1170,7 @@ ipcheck() {
     fi
     check_and_cat_file "/tmp/ip_quality_google"
     check_and_cat_file "/tmp/ip_quality_check_port_25"
-    cloudflare
     wait
-    check_and_cat_file "/tmp/ip_quality_cloudflare_risk"
     if [[ -n "$ip6" ]]; then
         echo "------以下为IPV6检测------"
         temp_text=""
@@ -1222,7 +1202,7 @@ ipcheck() {
             echo "IP类型: $usage_type_11_6⑪"
         fi
     fi
-    # rm -rf /tmp/ip_quality_*
+    rm -rf /tmp/ip_quality_*
 }
 
 build_text() {

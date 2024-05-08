@@ -9,13 +9,13 @@ import random
 ip4 = str(sys.argv[1])
 
 keys_list = [
-    "e0ea0d2980ae971b27af40040769cc6db60a34e02f1c517d67db7e05efe3183a26a3bc959f1656cf"
+    ""
 ]
 
 head = {
     "Accept":
     "application/json",
-    "key": "e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c"
+    "key": ""
 }
 
 def excuteCommand(com):

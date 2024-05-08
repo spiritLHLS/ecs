@@ -79,6 +79,8 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 - 删除无效的两个数据库，因为风控过于严格几乎等于没有，查询了等于没查
 - 增加Golang版本融合怪重构过程中产生的部分模块的项目地址说明[此处查询相关模块重构进度](https://github.com/topics/goecs)
+- 删除Cloudflare的威胁得分查询，因为频繁的查询会导致URL被CF的Privacy规则Ban掉，所以查的多了URL自然会失效无法查询，且一般不是攻击者该项测试值都为0，没有查询的必要
+- 基础系统信息排版顺序优化了一下
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
