@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.03.20"
+ver="2024.05.08"
 changeLog="IP质量测试，由频道 https://t.me/vps_reviews 原创"
 temp_file_apt_fix="/tmp/apt_fix.txt"
 shorturl=""
@@ -992,67 +992,6 @@ ipapicom_ipv6() {
     echo "$threat_level" >/tmp/ip_quality_ipapicom_ipv6_threat_level
 }
 
-# abstractapi数据库 ⑩ 如有其他数据库应当替换，API风控严格
-abstractapi() {
-    rm -rf /tmp/ip_quality_abstractapi_*
-    local ip="$1"
-    local api_keys=(
-        "0660144e46a0417792a027c9501cc054",
-        "e11dc0f9bab446bfa9957aad2c4ad064",
-        "a1ebbf04c6164dd98b527e26c57fc28c",
-        "817c260ae19b4c2981045f2d2fb00ace",
-        "9f6cb3e3cf744599af57e6350a1894dc",
-        "cbbe05ede2d7429cacb8c08ce9dda1f9",
-        "f5717dc070fb45d1ae361a31e761badf",
-        "40213bf4125645b6b0ef263b4aeaf88f",
-        "40f78db40af64d159e2a83ebd1ba5bdb",
-        "e826a2cd7f754d4e99d437a79a1b2d2b",
-        "91110d20bf094f3e93eff5156d5ab722",
-        "767b7eb30a7d49a4a295495e1a1531d6",
-        "1330303f6957465688a72807d94d0c72",
-        "3896a49ac077493ebc121829f9c2ea87",
-        "3fd8d367a42a45288da33b6892bb1548",
-        "e28855b523284c2589f6c61bd0225ebf",
-        "84accc62d2f64a39b02f3bacd610c74d"
-    )
-    local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
-    local response=$(curl -sL -m 10 "https://ipgeolocation.abstractapi.com/v1/?api_key=$api_key&ip_address=$ip" 2>/dev/null)
-    local is_vpn=$(echo "$response" | grep -o '"is_vpn":\s*false\|true' | cut -d ":" -f2 | tr -d '"')
-    echo "$is_vpn" >/tmp/ip_quality_abstractapi_vpn
-}
-
-#ipqualityscore数据库 ⑭ 如有其他数据库应当替换，API风控严格
-ipqualityscore() {
-    rm -rf /tmp/ip_quality_ipqualityscore_*
-    local ip="$1"
-    local api_keys=(
-        "O3AT606i4GvBJBC5ePetx3rGXzIMxapj",
-        "DJcK0cFyVvqBhR4RYqqsELIxHz0clzja",
-        "VloVwex6edRJfsgR41xZO6vmsIrxbqqR",
-        "yx3K0H8IoNTqtGO7oGfNr4ntbp53fnkP",
-        "U2g1jJPWvfWKpD5jijAI4QuykqBPXhoU",
-        "RO2MscN92tfRKSzl81BqNyo4D7zYtiHF",
-    )
-    local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
-    local response=$(curl -s -m 10 "https://www.ipqualityscore.com/api/json/ip/${api_key}/${ip}?strictness=0&allow_public_access_points=true&fast=true&lighter_penalties=true&mobile=true" 2>/dev/null)
-    local fraud_score=$(echo "$response" | sed -n 's/.*"fraud_score": "\(.*\)".*/\1/p' | tail -n 1)
-    local crawler=$(echo "$response" | grep -o '"is_crawler":\s*false\|true' | cut -d ":" -f2 | tr -d '"')
-    local proxy=$(echo "$response" | grep -o '"proxy":\s*false\|true' | cut -d ":" -f2 | tr -d '"')
-    local mobile=$(echo "$response" | grep -o '"mobile":\s*false\|true' | cut -d ":" -f2 | tr -d '"')
-    local vpn=$(echo "$response" | grep -o '"vpn":\s*false\|true' | cut -d ":" -f2 | tr -d '"')
-    local tor=$(echo "$response" | grep -o '"tor":\s*false\|true' | cut -d ":" -f2 | tr -d '"')
-    local recent_abuse=$(echo "$response" | grep -o '"recent_abuse":\s*false\|true' | cut -d ":" -f2 | tr -d '"')
-    # local bot_status=$(echo "$response" | grep -o '"bot_status":\s*false\|true' | cut -d ":" -f2 | tr -d '"')
-    echo "$response" >/tmp/ip_quality_ipqualityscore_response
-    echo "$fraud_score" >/tmp/ip_quality_ipqualityscore_fraud_score
-    echo "$mobile" >/tmp/ip_quality_ipqualityscore_mobile
-    echo "$crawler" >/tmp/ip_quality_ipqualityscore_crawler
-    echo "$tor" >/tmp/ip_quality_ipqualityscore_tor
-    echo "$proxy" >/tmp/ip_quality_ipqualityscore_proxy
-    echo "$vpn" >/tmp/ip_quality_ipqualityscore_vpn
-    echo "$recent_abuse" >/tmp/ip_quality_ipqualityscore_abuser
-}
-
 google() {
     local curl_result=$(curl -sL -m 10 "https://www.google.com/search?q=www.spiritysdx.top" -H "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0")
     rm -rf /tmp/ip_quality_google
@@ -1156,8 +1095,6 @@ ipcheck() {
     { ipregistry "$ip4"; } &
     { ipdata "$ip4"; } &
     { ipgeolocation "$ip4"; } &
-    { abstractapi "$ip4"; } &
-    { ipqualityscore "$ip4"; } &
     if command -v nc >/dev/null; then
         { check_port_25; } &
     fi
@@ -1182,12 +1119,7 @@ ipcheck() {
     # 得分和等级合并同一行
     local temp_text=""
     local score_2_4=$(check_and_cat_file '/tmp/ip_quality_scamalytics_ipv4_score')
-    local score_14_4=$(check_and_cat_file '/tmp/ip_quality_ipqualityscore_fraud_score')
-    if [[ -n "$score_2_4" && -n "$score_14_4" ]]; then
-        temp_text+="欺诈分数(越低越好): $score_2_4⑤  $score_14_4⑪  "
-    elif [[ -n "$score_2_4" && -z "$score_14_4" ]]; then
-        temp_text+="欺诈分数(越低越好): $score_2_4⑤  "
-    elif [[ -n "$score_14_4" && -z "$score_2_4" ]]; then
+    if [[ -z "$score_2_4" ]]; then
         temp_text+="欺诈分数(越低越好): $score_14_4⑪  "
     fi
     local score_4_4=$(check_and_cat_file '/tmp/ip_quality_abuseipdb_ipv4_score')
@@ -1205,7 +1137,7 @@ ipcheck() {
     fi
     echo "$temp_text"
     echo "IP类型: "
-    local ip_quality_filename_data=("/tmp/ip_quality_ipinfo_" "/tmp/ip_quality_scamalytics_ipv4_" "/tmp/ip_quality_ip2location_ipv4_" "/tmp/ip_quality_ip_api_" "/tmp/ip_quality_ipwhois_" "/tmp/ip_quality_ipregistry_" "/tmp/ip_quality_ipdata_" "/tmp/ip_quality_ipgeolocation_" "/tmp/ip_quality_ipapiis_ipv4_" "/tmp/ip_quality_ipapicom_ipv4_" "/tmp/ip_quality_abstractapi_" "/tmp/ip_quality_ipqualityscore_")
+    local ip_quality_filename_data=("/tmp/ip_quality_ipinfo_" "/tmp/ip_quality_scamalytics_ipv4_" "/tmp/ip_quality_ip2location_ipv4_" "/tmp/ip_quality_ip_api_" "/tmp/ip_quality_ipwhois_" "/tmp/ip_quality_ipregistry_" "/tmp/ip_quality_ipdata_" "/tmp/ip_quality_ipgeolocation_" "/tmp/ip_quality_ipapiis_ipv4_" "/tmp/ip_quality_ipapicom_ipv4_")
     local serial_number=("①" "②" "⑤" "⑥" "⑦" "⑧" "⑨" "⑩" "⑪" "⑫" "⑬" "⑭")
     local project_data=("usage_type" "company_type" "cloud_provider" "datacenter" "mobile" "proxy" "vpn" "tor" "tor_exit" "crawler" "anonymous" "attacker" "abuser" "threat" "icloud_relay" "bogon")
     local project_translate_data=("使用类型" "公司类型" "云服务提供商" "数据中心" "移动网络" "代理" "VPN" "TOR" "TOR出口" "爬虫" "匿名代理" "攻击方" "滥用者" "威胁" "iCloud中继" "未分配IP")
@@ -1290,7 +1222,7 @@ ipcheck() {
             echo "IP类型: $usage_type_11_6⑪"
         fi
     fi
-    rm -rf /tmp/ip_quality_*
+    # rm -rf /tmp/ip_quality_*
 }
 
 build_text() {
@@ -1332,7 +1264,7 @@ main() {
     _blue "以下为各数据库编号，输出结果后将自带数据库来源对应的编号"
     _blue "ipinfo数据库  ① | scamalytics数据库 ②  | virustotal数据库  ③ | abuseipdb数据库 ④  | ip2location数据库   ⑤"
     _blue "ip-api数据库  ⑥ | ipwhois数据库     ⑦  | ipregistry数据库  ⑧ | ipdata数据库    ⑨  | ipgeolocation数据库 ⑩"
-    _blue "ipapiis数据库 ⑪ | ipapicom数据库    ⑫  | abstractapi数据库 ⑬ | ipqualityscore数据库 ⑭ "
+    _blue "ipapiis数据库 ⑪ | ipapicom数据库    ⑫  "
     print_ip_info
     ipcheck
     next

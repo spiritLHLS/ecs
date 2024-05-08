@@ -36,7 +36,7 @@ FreeBSD系统的sed命令类似alpine而不是debian，很多命令的sed需要�
 
 能连得上网都支持
 
-PS: 考虑到多系统多架构的普遍测试的需求，本套脚本不再做新功能开发，仅作维护，各项测试逐步重构为Golang版本中，预计年末完成整个项目重构。
+PS: 考虑到多系统多架构的普遍测试的需求，本套脚本不再做新功能开发，仅作维护，各项测试逐步重构为Golang版本中([此处查询相关模块重构进度](https://github.com/topics/goecs))，预计年末完成整个项目重构。
 
 # 目录
 - [前言](#前言)
@@ -75,10 +75,10 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.05.05
+2024.05.08
 
-- 去除脚本的Python环境依赖，大幅优化初始化加载速度
-- 使用自写[gostun](https://github.com/oneclickvirt/gostun)检测本机NAT类型，不再依赖[pystun](https://github.com/jtriley/pystun)和[py3stun](https://github.com/xiongnemo/py3stun)进行检测，适配更多架构和平台
+- 删除无效的两个数据库，因为风控过于严格几乎等于没有，查询了等于没查
+- 增加Golang版本融合怪重构过程中产生的部分模块的项目地址说明[此处查询相关模块重构进度](https://github.com/topics/goecs)
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -294,7 +294,7 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 # 致谢
 
-感谢 [ipinfo.io](https://ipinfo.io) [ip.sb](https://ip.sb) [cheervision.co](https://cheervision.co) [ipip.net](https://en.ipip.net) [cip.cc](http://www.cip.cc) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [virustotal.com](https://www.virustotal.com/) [ip2location.com](ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) [abstractapi.com](https://abstractapi.com/) [ipqualityscore.com](https://www.ipqualityscore.com/) 等网站提供的API进行检测，感谢互联网各网站提供的查询资源
+感谢 [ipinfo.io](https://ipinfo.io) [ip.sb](https://ip.sb) [cheervision.co](https://cheervision.co) [ipip.net](https://en.ipip.net) [cip.cc](http://www.cip.cc) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [virustotal.com](https://www.virustotal.com/) [ip2location.com](ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) 等网站提供的API进行检测，感谢互联网各网站提供的查询资源
 
 感谢所有开源项目提供的原始测试脚本
 

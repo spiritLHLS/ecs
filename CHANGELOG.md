@@ -2,6 +2,11 @@
 
 # 主要变化
 
+2024.05.05
+
+- 去除脚本的Python环境依赖，大幅优化初始化加载速度
+- 使用自写[gostun](https://github.com/oneclickvirt/gostun)检测本机NAT类型，不再依赖[pystun](https://github.com/jtriley/pystun)和[py3stun](https://github.com/xiongnemo/py3stun)进行检测，适配更多架构和平台
+
 2024.05.02
 
 - 基于[netflix-verify](https://github.com/sjlleo/netflix-verify)、[VerifyDisneyPlus](https://github.com/sjlleo/VerifyDisneyPlus)、[TubeCheck](https://github.com/sjlleo/TubeCheck)整合代码至于[CommonMediaTests](https://github.com/oneclickvirt/CommonMediaTests)，同时优化测试速度
