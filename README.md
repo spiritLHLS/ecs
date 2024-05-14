@@ -80,6 +80,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 - 使用[oneclickvirt/securityCheck](https://github.com/oneclickvirt/securityCheck)替换shell版本的IP质量检测
 - 优化环境初始化过程中的文件下载，更改为并行下载以加速环境初始化
 - 归档一些被golang版本融合怪模块替换的函数
+- 更新仓库脚本运行示例截图
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -271,15 +272,15 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 ![图片](https://github.com/spiritLHLS/ecs/assets/103393591/051f1a83-ecd6-4713-af2f-c8b494e33c7f)
 
-选项1融合怪完全体：
+选项1融合怪完全体(实际有高亮颜色显示，截图问题暂无显示，以实际运行结果为准)：
 
-![图片](https://github.com/spiritLHLS/ecs/assets/103393591/a769cb11-b416-4d40-a78c-265549bc4d49)
-![图片](https://github.com/spiritLHLS/ecs/assets/103393591/291854bf-4760-4a7f-8fad-33a114a2ba46)
-![图片](https://github.com/spiritLHLS/ecs/assets/103393591/6cad0c32-2409-4a92-b2c7-435f8eb66b3c)
-![图片](https://github.com/spiritLHLS/ecs/assets/103393591/e5e486e8-0791-43d6-919e-63b420cec022)
-![图片](https://github.com/spiritLHLS/ecs/assets/103393591/7296621e-76c0-41f1-bd9c-e3e696301dcc)
-![图片](https://github.com/spiritLHLS/ecs/assets/103393591/08289d71-9f91-4597-bcb1-0909622e16d4)
-![图片](https://github.com/spiritLHLS/ecs/assets/103393591/3a53758e-5fab-4fc5-a0b6-651c2f6b79a3)
+![图片](https://github.com/spiritLHLS/ecs/assets/103393591/6dfab873-39fd-44ac-90e0-d3b82720fc04)
+![图片](https://github.com/spiritLHLS/ecs/assets/103393591/62b2d8e1-497d-4329-aa00-cd56f732f28a)
+![图片](https://github.com/spiritLHLS/ecs/assets/103393591/77b79eb9-1b2a-448b-bf83-0ecec8529515)
+![图片](https://github.com/spiritLHLS/ecs/assets/103393591/350c7323-39a5-4caf-8bf2-c3fde045fa64)
+![图片](https://github.com/spiritLHLS/ecs/assets/103393591/5cbaf73c-308e-4147-9a8c-638cfede3440)
+![图片](https://github.com/spiritLHLS/ecs/assets/103393591/903c0b19-b93c-4739-80f6-944992cb0640)
+![图片](https://github.com/spiritLHLS/ecs/assets/103393591/58bc4f72-415b-4b47-a98d-4329ab31fd3e)
 
 选项6原创区：
 
