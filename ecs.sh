@@ -3821,7 +3821,7 @@ all_script() {
             check_and_cat_file ${TEMP_DIR}/fscarmen_route_output.txt
             check_and_cat_file ${TEMP_DIR}/ecs_net_output.txt
         else
-            dfiles=(ecsspeed_ping)
+            dfiles=(securityCheck ecsspeed_ping)
             for dfile in "${dfiles[@]}"; do
                 { pre_download ${dfile}; } &
             done
