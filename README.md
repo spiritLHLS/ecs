@@ -75,12 +75,10 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.05.08
+2024.05.14
 
-- 删除无效的两个数据库，因为风控过于严格几乎等于没有，查询了等于没查
-- 增加Golang版本融合怪重构过程中产生的部分模块的项目地址说明[此处查询相关模块重构进度](https://github.com/topics/goecs)
-- 删除Cloudflare的威胁得分查询，因为频繁的查询会导致URL被CF的Privacy规则Ban掉，所以查的多了URL自然会失效无法查询，且一般不是攻击者该项测试值都为0，没有查询的必要
-- 基础系统信息排版顺序优化了一下
+- 使用[oneclickvirt/securityCheck](https://github.com/oneclickvirt/securityCheck)替换shell版本的IP质量查询，目前仅替换融合怪，未替换纯IP质量检测，后续将替换
+- 优化环境初始化过程中的文件下载，更改为并行下载以加速环境初始化
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -252,7 +250,7 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 - [x] Tiktok解锁--感谢[TikTokCheck](https://github.com/lmc999/TikTokCheck)开源，本人整理修改优化
 - [x] 三网回程以及路由延迟--感谢[zhanghanyun/backtrace](https://github.com/zhanghanyun/backtrace)开源，本人整理修改维护[oneclickvirt/backtrace](https://github.com/oneclickvirt/backtrace)使用
 - [x] 回程路由及带宽类型检测(商宽/家宽/数据中心)--由[fscarmen](https://github.com/fscarmen)的PR以及本人的技术思路提供，本人修改优化维护
-- [x] IP质量与25端口检测(含IPV4和IPV6)--本脚本独创，感谢互联网提供的查询资源
+- [x] IP质量与25端口检测(含IPV4和IPV6)--使用[oneclickvirt/securityCheck](https://github.com/oneclickvirt/securityCheck)进行测试，感谢互联网提供的查询资源
 - [x] speedtest测速--使用自写[ecsspeed](https://github.com/spiritLHLS/ecsspeed)仓库，自动更新测速服务器ID，一劳永逸解决老是要手动更新测速ID的问题
 
 # 友链
