@@ -122,10 +122,9 @@ The following is a description of the parameters:
 
 - IP quality inspection with multiple database lookups and blacklist lookups
 - With ``IPV4`` and ``IPV6`` inspection, including ASN and address lookups.
-- Mailbox reachability test on port 25, if a mailbox is reachable, then you can build a post office.
 
 ```bash
-bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh)
+bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/ipcheck.sh)
 ```
 
 OR
@@ -137,7 +136,7 @@ bash <(wget -qO- bash.spiritlhl.net/ecs-ipcheck)
 OR
 
 ```bash
-bash <(wget -qO- --no-check-certificate https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck.sh)
+bash <(wget -qO- --no-check-certificate https://raw.githubusercontent.com/spiritLHLS/ecs/main/ipcheck.sh)
 ```
 
 ## Fusion_Monster_Description

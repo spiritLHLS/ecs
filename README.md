@@ -77,8 +77,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 2024.05.14
 
-- 使用[oneclickvirt/securityCheck](https://github.com/oneclickvirt/securityCheck)替换shell版本的IP质量查询，目前仅替换融合怪，未替换纯IP质量检测，后续将替换
+- 使用[oneclickvirt/securityCheck](https://github.com/oneclickvirt/securityCheck)替换shell版本的IP质量检测
 - 优化环境初始化过程中的文件下载，更改为并行下载以加速环境初始化
+- 归档一些被golang版本融合怪模块替换的函数
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -162,12 +163,11 @@ bash ecs.sh -m 1
 
 ## IP质量检测
 
-- IP质量检测，含多家数据库查询，含黑名单查询
+- IP质量检测，含多家数据库查询，含DNS黑名单查询
 - 含 ```IPV4``` 和 ```IPV6``` 检测，含ASN和地址查询
-- 含25端口的邮箱可达性检测，如果某个邮箱可达，则可搭建邮局
 
 ```bash
-bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/qzcheck.sh)
+bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/ipcheck.sh)
 ```
 
 或
@@ -179,7 +179,7 @@ bash <(wget -qO- bash.spiritlhl.net/ecs-ipcheck)
 或
 
 ```bash
-bash <(wget -qO- --no-check-certificate https://raw.githubusercontent.com/spiritLHLS/ecs/main/qzcheck.sh)
+bash <(wget -qO- --no-check-certificate https://raw.githubusercontent.com/spiritLHLS/ecs/main/ipcheck.sh)
 ```
 
 ## 融合怪说明
@@ -294,7 +294,7 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 # 致谢
 
-感谢 [ipinfo.io](https://ipinfo.io) [ip.sb](https://ip.sb) [cheervision.co](https://cheervision.co) [ipip.net](https://en.ipip.net) [cip.cc](http://www.cip.cc) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [virustotal.com](https://www.virustotal.com/) [ip2location.com](ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) 等网站提供的API进行检测，感谢互联网各网站提供的查询资源
+感谢 [ipinfo.io](https://ipinfo.io) [ip.sb](https://ip.sb) [cheervision.co](https://cheervision.co) [ipip.net](https://en.ipip.net) [cip.cc](http://www.cip.cc) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [virustotal.com](https://www.virustotal.com/) [ip2location.com](ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) [abstractapi.com](https://abstractapi.com/) [ipqualityscore.com](https://www.ipqualityscore.com/) 等网站提供的API进行检测，感谢互联网各网站提供的查询资源
 
 感谢所有开源项目提供的原始测试脚本
 

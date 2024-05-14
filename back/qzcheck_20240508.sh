@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.05.08"
+ver="2024.05.14"
 changeLog="IP质量测试，由频道 https://t.me/vps_reviews 原创"
 temp_file_apt_fix="/tmp/apt_fix.txt"
 shorturl=""
@@ -653,12 +653,7 @@ scamalytics_ipv6() {
 virustotal() {
     local ip="$1"
     rm -rf /tmp/ip_quality_virustotal*
-    local api_keys=(
-        "401e74a0a76ff4a5c2462177bfe54d1fb71a86a97031a3a5b461eb9fe06fa9a5"
-        "e6184c04de532cd5a094f3fd6b3ce36cd187e41e671b5336fd69862257d07a9a"
-        "9929218dcd124c19bcee49ecd6d7555213de0e8f27d407cc3e85c92c3fc2508e"
-        "bcc1f94cc4ec1966f43a5552007d6c4fa3461cec7200f8d95053ebeeecc68afa"
-    )
+    local api_keys=()
     local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
     local output=$(curl -s --request GET --url "https://www.virustotal.com/api/v3/ip_addresses/$ip" --header "x-apikey:$api_key")
     result=$(echo "$output" | awk -F"[,:}]" '{
@@ -691,10 +686,7 @@ abuse_ipv4() {
     local score
     local usageType
     rm -rf /tmp/ip_quality_abuseipdb_ipv4*
-    local api_heads=(
-        'key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c'
-        'key: a240c11ca3d2f3d58486fa86f1744a143448d3a6fcb2fc1f8880bafd58c3567a0adddcfd7a722364'
-    )
+    local api_heads=()
     local head=${api_heads[$RANDOM % ${#api_heads[@]}]}
     local context2=$(curl -sL -H "$head" -m 10 "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
     if [[ "$context2" == *"abuseConfidenceScore"* ]]; then
@@ -714,10 +706,7 @@ abuse_ipv6() {
     local score
     local usageType
     rm -rf /tmp/ip_quality_abuseipdb_ipv6*
-    local api_heads=(
-        'key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c'
-        'key: a240c11ca3d2f3d58486fa86f1744a143448d3a6fcb2fc1f8880bafd58c3567a0adddcfd7a722364'
-    )
+    local api_heads=()
     local head=${api_heads[$RANDOM % ${#api_heads[@]}]}
     local context2=$(curl -sL -H "$head" -m 10 "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
     if [[ "$context2" == *"abuseConfidenceScore"* ]]; then
@@ -791,16 +780,7 @@ ipwhois() {
 ipregistry() {
     rm -rf /tmp/ip_quality_ipregistry*
     local ip="$1"
-    local api_keys=(
-        "ing7l12cxp6jaahw"
-        "r208izz0q0icseks"
-        "szh9vdbsf64ez2bk"
-        "vum97powo0pxshko"
-        "m7irmmf8ey12rx7o"
-        "nd2chql8jm9f7gxa"
-        "9mbbr52gsds5xtyb"
-        "0xjh6xmh6j0jwsy6"
-    )
+    local api_keys=()
     local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
     local response
     response=$(curl -sL -H "Origin: https://ipregistry.co" -H "Referer: https://ipregistry.co" --header "Content-Type: application/json" -m 10 "https://api.ipregistry.co/${ip}?hostname=true&key=sb69ksjcajfs4c" 2>/dev/null)
@@ -839,10 +819,7 @@ ipregistry() {
 ipdata() {
     rm -rf /tmp/ip_quality_ipdata*
     local ip="$1"
-    local api_keys=(
-        "47c090ef820c47af56b382bb08ba863dbd84a0b10b80acd0dd8deb48"
-        "c6d4d04d5f11f2cd0839ee03c47c58621d74e361c945b5c1b4f668f3"
-    )
+    local api_keys=()
     local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
     response=$(curl -sL -m 10 "https://api.ipdata.co/${ip}?api-key=${api_key}" 2>/dev/null)
     local usage_type=$(echo "$response" | grep -o '"type": "[^"]*' | cut -d'"' -f4)
@@ -871,14 +848,7 @@ ipdata() {
 ipgeolocation() {
     rm -rf /tmp/ip_quality_ipgeolocation*
     local ip="$1"
-    local api_keys=(
-        "0d4f60641cd9b95ff5ac9b4d866a0655"
-        "7C5384E65E3B5B520A588FB8F9281719"
-        "4E191A613023EA66D24E35E41C870D3B"
-        "3D07E2EAAF55940AF44734C3F2AC7C1A"
-        "32D24DBFB5C3BFFDEF5FE9331F93BA5B"
-        "28cc35ee8608480fa7087be0e435320c"
-    )
+    local api_keys=()
     local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
     local response=$(curl -sL -m 10 "https://api.ip2location.io/?key=${api_key}&ip=${ip}" 2>/dev/null)
     local is_proxy=$(echo "$response" | grep -o '"is_proxy":\s*false\|true' | cut -d ":" -f2)
