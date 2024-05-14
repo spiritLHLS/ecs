@@ -155,7 +155,7 @@ print_end_time() {
     echo " 时间          : $date_time"
 }
 
-head='key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c'
+head='key: '
 
 translate_status() {
     if [[ "$1" == "false" ]]; then
@@ -204,12 +204,7 @@ scamalytics() {
 
 virustotal() {
     local ip="$1"
-    local api_keys=(
-        "401e74a0a76ff4a5c2462177bfe54d1fb71a86a97031a3a5b461eb9fe06fa9a5"
-        "e6184c04de532cd5a094f3fd6b3ce36cd187e41e671b5336fd69862257d07a9a"
-        "9929218dcd124c19bcee49ecd6d7555213de0e8f27d407cc3e85c92c3fc2508e"
-        "bcc1f94cc4ec1966f43a5552007d6c4fa3461cec7200f8d95053ebeeecc68afa"
-    )
+    local api_keys=()
     local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
     local output=$(curl -s --request GET --url "https://www.virustotal.com/api/v3/ip_addresses/$ip" --header "x-apikey:$api_key")
     local result=$(echo "$output" | awk -F"[,:}]" '{
