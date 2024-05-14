@@ -822,3 +822,663 @@
 #         echo "Cloudflare威胁得分(0为低风险): 0" >>/tmp/ip_quality_cloudflare_risk
 #     fi
 # }
+
+
+# # ipinfo数据库 ①
+# ipinfo() {
+#     rm -rf /tmp/ip_quality_ipinfo*
+#     local ip="$1"
+#     local output=$(curl -sL -m 10 -v "https://ipinfo.io/widget/demo/${ip}" -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36" -H "Referer: https://ipinfo.io" 2>/dev/null)
+#     local temp_output=$(echo "$output" | sed -e '/^*/d' -e '/^>/d' -e '/^  CApath/d')
+#     local type_output=$(echo "$temp_output" | awk -F'"type":' '{print $2}' | awk -F'"' '{print $2}' | sed '/^\s*$/d')
+#     local asn_type=$(echo "$type_output" | sed -n '1p')
+#     local company_type=$(echo "$type_output" | sed -n '2p')
+#     local vpn=$(echo "$temp_output" | grep -o '"vpn": .*,' | cut -d' ' -f2 | tr -d '",')
+#     local proxy=$(echo "$temp_output" | grep -o '"proxy": .*,' | cut -d' ' -f2 | tr -d '",')
+#     local tor=$(echo "$temp_output" | grep -o '"tor": .*,' | cut -d' ' -f2 | tr -d '",')
+#     local relay=$(echo "$temp_output" | grep -o '"relay": .*,' | cut -d' ' -f2 | tr -d '",')
+#     local hosting=$(echo "$temp_output" | grep -o '"hosting": .*,' | cut -d' ' -f2 | tr -d '",')
+#     echo "$asn_type" >/tmp/ip_quality_ipinfo_usage_type
+#     echo "$company_type" >/tmp/ip_quality_ipinfo_company_type
+#     echo "$vpn" >/tmp/ip_quality_ipinfo_vpn
+#     echo "$proxy" >/tmp/ip_quality_ipinfo_proxy
+#     echo "$tor" >/tmp/ip_quality_ipinfo_tor
+#     echo "$relay" >/tmp/ip_quality_ipinfo_icloud_relay
+#     echo "$hosting" >/tmp/ip_quality_ipinfo_hosting
+# }
+
+# # scamalytics数据库 ②
+# scamalytics_ipv4() {
+#     local ip="$1"
+#     rm -rf /tmp/ip_quality_scamalytics_ipv4*
+#     local context=$(curl -sL -H "Referer: https://scamalytics.com" -m 10 "https://scamalytics.com/ip/$ip")
+#     if [[ "$?" -ne 0 ]]; then
+#         return
+#     fi
+#     local temp1=$(echo "$context" | grep -oP '(?<=>Fraud Score: )[^<]+')
+#     # 欺诈分数
+#     if [ -n "$temp1" ]; then
+#         echo "$temp1" >>/tmp/ip_quality_scamalytics_ipv4_score
+#     else
+#         return
+#     fi
+#     local temp2=$(echo "$context" | grep -oP '(?<=<div).*?(?=</div>)' | tail -n 6)
+#     local nlist=("vpn" "tor" "datacenter" "public_proxy" "web_proxy" "search_engine_robot")
+#     local status_t2
+#     for element in $temp2; do
+#         if echo "$element" | grep -q "score" >/dev/null 2>&1; then
+#             status_t2=1
+#             break
+#         else
+#             status_t2=2
+#             break
+#         fi
+#     done
+#     local i=0
+#     if ! [ "$status_t2" -eq 1 ]; then
+#         while read -r temp3; do
+#             if [[ -n "$temp3" ]]; then
+#                 echo "${temp3#*>}" >>/tmp/ip_quality_scamalytics_ipv4_${nlist[$i]}
+#                 i=$((i + 1))
+#             fi
+#         done <<<"$(echo "$temp2" | sed 's/<[^>]*>//g' | sed 's/^[[:blank:]]*//g')"
+#     fi
+# }
+
+# # scamalytics数据库 ②
+# scamalytics_ipv6() {
+#     local ip="$1"
+#     rm -rf /tmp/ip_quality_scamalytics_ipv6*
+#     local context=$(curl -sL -H "Referer: https://scamalytics.com" -m 10 "https://scamalytics.com/ip/$ip")
+#     if [[ "$?" -ne 0 ]]; then
+#         return
+#     fi
+#     local temp1=$(echo "$context" | grep -oP '(?<=>Fraud Score: )[^<]+')
+#     # 欺诈分数
+#     if [ -n "$temp1" ]; then
+#         echo "$temp1" >>/tmp/ip_quality_scamalytics_ipv6_score
+#     else
+#         return
+#     fi
+#     local temp2=$(echo "$context" | grep -oP '(?<=<div).*?(?=</div>)' | tail -n 6)
+#     local nlist=("vpn" "tor" "datacenter" "public_proxy" "web_proxy" "search_engine_robot")
+#     local status_t2
+#     for element in $temp2; do
+#         if echo "$element" | grep -q "score" >/dev/null 2>&1; then
+#             status_t2=1
+#             break
+#         else
+#             status_t2=2
+#             break
+#         fi
+#     done
+#     local i=0
+#     if ! [ "$status_t2" -eq 1 ]; then
+#         while read -r temp3; do
+#             if [[ -n "$temp3" ]]; then
+#                 echo "${temp3#*>}" >>/tmp/ip_quality_scamalytics_ipv6_${nlist[$i]}
+#                 i=$((i + 1))
+#             fi
+#         done <<<"$(echo "$temp2" | sed 's/<[^>]*>//g' | sed 's/^[[:blank:]]*//g')"
+#     fi
+# }
+
+# # virustotal数据库 ③
+# virustotal() {
+#     local ip="$1"
+#     rm -rf /tmp/ip_quality_virustotal*
+#     local api_keys=(
+#         "401e74a0a76ff4a5c2462177bfe54d1fb71a86a97031a3a5b461eb9fe06fa9a5"
+#         "e6184c04de532cd5a094f3fd6b3ce36cd187e41e671b5336fd69862257d07a9a"
+#         "9929218dcd124c19bcee49ecd6d7555213de0e8f27d407cc3e85c92c3fc2508e"
+#         "bcc1f94cc4ec1966f43a5552007d6c4fa3461cec7200f8d95053ebeeecc68afa"
+#     )
+#     local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
+#     local output=$(curl -s --request GET --url "https://www.virustotal.com/api/v3/ip_addresses/$ip" --header "x-apikey:$api_key")
+#     result=$(echo "$output" | awk -F"[,:}]" '{
+#         for(i=1;i<=NF;i++){
+#             if($i~/\042timeout\042/){
+#                 exit
+#             } else if($i~/\042harmless\042/){
+#                 print $(i+1)
+#             } else if($i~/\042malicious\042/){
+#                 print $(i+1)
+#             } else if($i~/\042suspicious\042/){
+#                 print $(i+1)
+#             } else if($i~/\042undetected\042/){
+#                 print $(i+1)
+#             }
+#         }
+#     }' | sed 's/\"//g')
+#     # 黑名单记录统计:(有多少黑名单网站有记录)
+#     if [[ -n "$result" ]] && [[ -n "$(echo "$result" | awk 'NF')" ]]; then
+#         echo "$result" | sed 's/ //g' | awk 'NR==1' >/tmp/ip_quality_virustotal_harmlessness_records
+#         echo "$result" | sed 's/ //g' | awk 'NR==2' >/tmp/ip_quality_virustotal_malicious_records
+#         echo "$result" | sed 's/ //g' | awk 'NR==3' >/tmp/ip_quality_virustotal_suspicious_records
+#         echo "$result" | sed 's/ //g' | awk 'NR==4' >/tmp/ip_quality_virustotal_no_records
+#     fi
+# }
+
+# # abuseipdb数据库 ④ IP2Location数据库 ⑤
+# abuse_ipv4() {
+#     local ip="$1"
+#     local score
+#     local usageType
+#     rm -rf /tmp/ip_quality_abuseipdb_ipv4*
+#     local api_heads=(
+#         'key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c'
+#         'key: a240c11ca3d2f3d58486fa86f1744a143448d3a6fcb2fc1f8880bafd58c3567a0adddcfd7a722364'
+#     )
+#     local head=${api_heads[$RANDOM % ${#api_heads[@]}]}
+#     local context2=$(curl -sL -H "$head" -m 10 "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
+#     if [[ "$context2" == *"abuseConfidenceScore"* ]]; then
+#         score=$(echo "$context2" | grep -o '"abuseConfidenceScore":[^,}]*' | sed 's/.*://')
+#         echo "$score" >/tmp/ip_quality_abuseipdb_ipv4_score
+#         usageType=$(grep -oP '"usageType":\s*"\K[^"]+' <<<"$context2" | sed 's/\\\//\//g')
+#         if [ -z "$usageType" ]; then
+#             usageType="Unknown (Maybe Fixed Line ISP)"
+#         fi
+#         echo "$usageType" >/tmp/ip_quality_ip2location_ipv4_usage_type
+#     fi
+# }
+
+# # abuseipdb数据库 ④ IP2Location数据库 ⑤
+# abuse_ipv6() {
+#     local ip="$1"
+#     local score
+#     local usageType
+#     rm -rf /tmp/ip_quality_abuseipdb_ipv6*
+#     local api_heads=(
+#         'key: e88362808d1219e27a786a465a1f57ec3417b0bdeab46ad670432b7ce1a7fdec0d67b05c3463dd3c'
+#         'key: a240c11ca3d2f3d58486fa86f1744a143448d3a6fcb2fc1f8880bafd58c3567a0adddcfd7a722364'
+#     )
+#     local head=${api_heads[$RANDOM % ${#api_heads[@]}]}
+#     local context2=$(curl -sL -H "$head" -m 10 "https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}")
+#     if [[ "$context2" == *"abuseConfidenceScore"* ]]; then
+#         score=$(echo "$context2" | grep -o '"abuseConfidenceScore":[^,}]*' | sed 's/.*://')
+#         echo "$score" >/tmp/ip_quality_abuseipdb_ipv6_score
+#         usageType=$(grep -oP '"usageType":\s*"\K[^"]+' <<<"$context2" | sed 's/\\\//\//g')
+#         if [ -z "$usageType" ]; then
+#             usageType="Unknown (Maybe Fixed Line ISP)"
+#         fi
+#         echo "$usageType" >/tmp/ip_quality_ip2location_ipv6_usage_type
+#     fi
+# }
+
+# # ip-api数据库 ⑥
+# ip_api() {
+#     local ip=$1
+#     local mobile
+#     local tp1
+#     local proxy
+#     local tp2
+#     local hosting
+#     local tp3
+#     rm -rf /tmp/ip_quality_ipapi*
+#     local context4=$(curl -sL -m 10 "http://ip-api.com/json/$ip?fields=mobile,proxy,hosting")
+#     if [[ "$context4" == *"mobile"* ]]; then
+#         mobile=$(echo "$context4" | grep -o '"mobile":[^,}]*' | sed 's/.*://;s/"//g')
+#         tp1=$(translate_status ${mobile})
+#         echo "$tp1" >>/tmp/ip_quality_ip_api_mobile
+#         proxy=$(echo "$context4" | grep -o '"proxy":[^,}]*' | sed 's/.*://;s/"//g')
+#         tp2=$(translate_status ${proxy})
+#         echo "$tp2" >>/tmp/ip_quality_ip_api_proxy
+#         hosting=$(echo "$context4" | grep -o '"hosting":[^,}]*' | sed 's/.*://;s/"//g')
+#         tp3=$(translate_status ${hosting})
+#         echo "$tp3" >>/tmp/ip_quality_ip_api_datacenter
+#     fi
+# }
+
+# # ipwhois数据库 ⑦
+# ipwhois() {
+#     local ip="$1"
+#     rm -rf /tmp/ip_quality_ipwhois*
+#     local url="https://ipwhois.io/widget?ip=${ip}&lang=en"
+#     local response=$(curl -s "$url" --compressed \
+#         -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0" \
+#         -H "Accept: */*" \
+#         -H "Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2" \
+#         -H "Accept-Encoding: gzip, deflate, br" \
+#         -H "Connection: keep-alive" \
+#         -H "Referer: https://ipwhois.io/" \
+#         -H "Sec-Fetch-Dest: empty" \
+#         -H "Sec-Fetch-Mode: cors" \
+#         -H "Sec-Fetch-Site: same-origin" \
+#         -H "TE: trailers")
+#     if [[ "$?" -ne 0 ]]; then
+#         return
+#     fi
+#     security_section=$(echo "$response" | grep -o '"security":{[^}]*}')
+#     anonymous=$(echo "$security_section" | awk -F'"anonymous":' '{print $2}' | cut -d',' -f1)
+#     proxy=$(echo "$security_section" | awk -F'"proxy":' '{print $2}' | cut -d',' -f1)
+#     vpn=$(echo "$security_section" | awk -F'"vpn":' '{print $2}' | cut -d',' -f1)
+#     tor=$(echo "$security_section" | awk -F'"tor":' '{print $2}' | cut -d',' -f1)
+#     hosting=$(echo "$security_section" | awk -F'"hosting":' '{print $2}' | cut -d',' -f1 | sed 's/}//')
+#     echo "$anonymous" >>/tmp/ip_quality_ipwhois_anonymous
+#     echo "$proxy" >>/tmp/ip_quality_ipwhois_proxy
+#     echo "$vpn" >>/tmp/ip_quality_ipwhois_vpn
+#     echo "$tor" >>/tmp/ip_quality_ipwhois_tor
+#     echo "$hosting" >>/tmp/ip_quality_ipwhois_hosting
+# }
+
+# # ipregistry数据库 ⑧
+# ipregistry() {
+#     rm -rf /tmp/ip_quality_ipregistry*
+#     local ip="$1"
+#     local api_keys=(
+#         "ing7l12cxp6jaahw"
+#         "r208izz0q0icseks"
+#         "szh9vdbsf64ez2bk"
+#         "vum97powo0pxshko"
+#         "m7irmmf8ey12rx7o"
+#         "nd2chql8jm9f7gxa"
+#         "9mbbr52gsds5xtyb"
+#         "0xjh6xmh6j0jwsy6"
+#     )
+#     local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
+#     local response
+#     response=$(curl -sL -H "Origin: https://ipregistry.co" -H "Referer: https://ipregistry.co" --header "Content-Type: application/json" -m 10 "https://api.ipregistry.co/${ip}?hostname=true&key=sb69ksjcajfs4c" 2>/dev/null)
+#     if [ $? -ne 0 ]; then
+#         response=$(curl -sL -m 10 "https://api.ipregistry.co/${ip}?key=${api_keys}" 2>/dev/null)
+#     fi
+#     local company_type=$(echo "$response" | grep -oE '"company":\{"domain":"[^"]+","name":"[^"]+","type":"[^"]+"}' | sed 's/.*"type":"\([^"]*\)".*/\1/')
+#     local connection_type=$(echo "$response" | grep -oE '"connection":\{"asn":[0-9]+,"domain":"[^"]+","organization":"[^"]+","route":"[^"]+","type":"[^"]+"}' | sed 's/.*"type":"\([^"]*\)".*/\1/')
+#     local abuser=$(echo "$response" | grep -o '"is_abuser":[a-zA-Z]*' | awk -F':' '{print $2}')
+#     local attacker=$(echo "$response" | grep -o '"is_attacker":[a-zA-Z]*' | awk -F':' '{print $2}')
+#     local bogon=$(echo "$response" | grep -o '"is_bogon":[a-zA-Z]*' | awk -F':' '{print $2}')
+#     local cloud_provider=$(echo "$response" | grep -o '"is_cloud_provider":[a-zA-Z]*' | awk -F':' '{print $2}')
+#     local proxy=$(echo "$response" | grep -o '"is_proxy":[a-zA-Z]*' | awk -F':' '{print $2}')
+#     local relay=$(echo "$response" | grep -o '"is_relay":[a-zA-Z]*' | awk -F':' '{print $2}')
+#     local tor=$(echo "$response" | grep -o '"is_tor":[a-zA-Z]*' | awk -F':' '{print $2}')
+#     local tor_exit=$(echo "$response" | grep -o '"is_tor_exit":[a-zA-Z]*' | awk -F':' '{print $2}')
+#     local vpn=$(echo "$response" | grep -o '"is_vpn":[a-zA-Z]*' | awk -F':' '{print $2}')
+#     local anonymous=$(echo "$response" | grep -o '"is_anonymous":[a-zA-Z]*' | awk -F':' '{print $2}')
+#     local threat=$(echo "$response" | grep -o '"is_threat":[a-zA-Z]*' | awk -F':' '{print $2}')
+#     echo "$company_type" >/tmp/ip_quality_ipregistry_company_type
+#     echo "$connection_type" >/tmp/ip_quality_ipregistry_usage_type
+#     echo "$abuser" >/tmp/ip_quality_ipregistry_abuser
+#     echo "$attacker" >/tmp/ip_quality_ipregistry_attacker
+#     echo "$bogon" >/tmp/ip_quality_ipregistry_bogon
+#     echo "$cloud_provider" >/tmp/ip_quality_ipregistry_cloud_provider
+#     echo "$proxy" >/tmp/ip_quality_ipregistry_proxy
+#     echo "$relay" >/tmp/ip_quality_ipregistry_icloud_relay
+#     echo "$tor" >/tmp/ip_quality_ipregistry_tor
+#     echo "$tor_exit" >/tmp/ip_quality_ipregistry_tor_exit
+#     echo "$vpn" >/tmp/ip_quality_ipregistry_vpn
+#     echo "$anonymous" >/tmp/ip_quality_ipregistry_anonymous
+#     echo "$threat" >/tmp/ip_quality_ipregistry_threat
+# }
+
+# # ipdata数据库 ⑨
+# ipdata() {
+#     rm -rf /tmp/ip_quality_ipdata*
+#     local ip="$1"
+#     local api_keys=(
+#         "47c090ef820c47af56b382bb08ba863dbd84a0b10b80acd0dd8deb48"
+#         "c6d4d04d5f11f2cd0839ee03c47c58621d74e361c945b5c1b4f668f3"
+#     )
+#     local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
+#     response=$(curl -sL -m 10 "https://api.ipdata.co/${ip}?api-key=${api_key}" 2>/dev/null)
+#     local usage_type=$(echo "$response" | grep -o '"type": "[^"]*' | cut -d'"' -f4 | tr -d '\n')
+#     local tor=$(grep -o '"is_tor": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local icloud_relay=$(grep -o '"is_icloud_relay": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local proxy=$(grep -o '"is_proxy": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local datacenter=$(grep -o '"is_datacenter": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local anonymous=$(grep -o '"is_anonymous": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local attacker=$(grep -o '"is_known_attacker": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local abuser=$(grep -o '"is_known_abuser": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local threat=$(grep -o '"is_threat": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local bogon=$(grep -o '"is_bogon": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     echo "$usage_type" >/tmp/ip_quality_ipdata_usage_type
+#     echo "$tor" >/tmp/ip_quality_ipdata_tor
+#     echo "$icloud_relay" >/tmp/ip_quality_ipdata_icloud_relay
+#     echo "$proxy" >/tmp/ip_quality_ipdata_proxy
+#     echo "$datacenter" >/tmp/ip_quality_ipdata_datacenter
+#     echo "$anonymous" >/tmp/ip_quality_ipdata_anonymous
+#     echo "$attacker" >/tmp/ip_quality_ipdata_attacker
+#     echo "$abuser" >/tmp/ip_quality_ipdata_abuser
+#     echo "$threat" >/tmp/ip_quality_ipdata_threat
+#     echo "$bogon" >/tmp/ip_quality_ipdata_bogon
+# }
+
+# # ipgeolocation数据库 ⑩
+# ipgeolocation() {
+#     rm -rf /tmp/ip_quality_ipgeolocation*
+#     local ip="$1"
+#     local api_keys=(
+#         "0d4f60641cd9b95ff5ac9b4d866a0655"
+#         "7C5384E65E3B5B520A588FB8F9281719"
+#         "4E191A613023EA66D24E35E41C870D3B"
+#         "3D07E2EAAF55940AF44734C3F2AC7C1A"
+#         "32D24DBFB5C3BFFDEF5FE9331F93BA5B"
+#         "28cc35ee8608480fa7087be0e435320c"
+#     )
+#     local api_key=${api_keys[$RANDOM % ${#api_keys[@]}]}
+#     local response=$(curl -sL -m 10 "https://api.ip2location.io/?key=${api_key}&ip=${ip}" 2>/dev/null)
+#     local is_proxy=$(echo "$response" | grep -o '"is_proxy":\s*false\|true' | cut -d ":" -f2)
+#     is_proxy=$(echo "$is_proxy" | tr -d '"')
+#     echo "$is_proxy" >/tmp/ip_quality_ipgeolocation_proxy
+# }
+
+# # ipapiis数据库 ⑪
+# ipapiis_ipv4() {
+#     rm -rf /tmp/ip_quality_ipapiis_ipv4_*
+#     local ip="$1"
+#     local response=$(curl -sL -m 10 "https://api.ipapi.is/?q=${ip}" 2>/dev/null)
+#     local company_type=$(echo "$response" | sed -n 's/.*"type": "\(.*\)".*/\1/p' | head -n 1)
+#     local usage_type=$(echo "$response" | sed -n 's/.*"type": "\(.*\)".*/\1/p' | tail -n 1)
+#     local abuser_score=$(echo "$response" | sed -n 's/.*"abuser_score": "\(.*\)".*/\1/p' | head -n 1)
+#     local bogon=$(grep -o '"is_bogon": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local mobile=$(grep -o '"is_mobile": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local crawler=$(grep -o '"is_crawler": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local datacenter=$(grep -o '"is_datacenter": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local tor=$(grep -o '"is_tor": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local proxy=$(grep -o '"is_proxy": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local vpn=$(grep -o '"is_vpn": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local abuser=$(grep -o '"is_abuser": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     echo "$company_type" >/tmp/ip_quality_ipapiis_ipv4_company_type
+#     echo "$usage_type" >/tmp/ip_quality_ipapiis_ipv4_usage_type
+#     echo "$abuser_score" >/tmp/ip_quality_ipapiis_ipv4_score
+#     echo "$bogon" >/tmp/ip_quality_ipapiis_ipv4_bogon
+#     echo "$mobile" >/tmp/ip_quality_ipapiis_ipv4_mobile
+#     echo "$crawler" >/tmp/ip_quality_ipapiis_ipv4_crawler
+#     echo "$datacenter" >/tmp/ip_quality_ipapiis_ipv4_datacenter
+#     echo "$tor" >/tmp/ip_quality_ipapiis_ipv4_tor
+#     echo "$proxy" >/tmp/ip_quality_ipapiis_ipv4_proxy
+#     echo "$vpn" >/tmp/ip_quality_ipapiis_ipv4_vpn
+#     echo "$abuser" >/tmp/ip_quality_ipapiis_ipv4_abuser
+# }
+
+# # ipapiis数据库 ⑪
+# ipapiis_ipv6() {
+#     rm -rf /tmp/ip_quality_ipapiis_ipv6_*
+#     local ip="$1"
+#     local response=$(curl -sL -m 10 "https://api.ipapi.is/?q=${ip}" 2>/dev/null)
+#     local company_type=$(echo "$response" | sed -n 's/.*"type": "\(.*\)".*/\1/p' | head -n 1)
+#     local usage_type=$(echo "$response" | sed -n 's/.*"type": "\(.*\)".*/\1/p' | tail -n 1)
+#     local abuser_score=$(echo "$response" | sed -n 's/.*"abuser_score": "\(.*\)".*/\1/p' | tail -n 1)
+#     # local bogon=$(grep -o '"is_bogon": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     # local mobile=$(grep -o '"is_mobile": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     # local crawler=$(grep -o '"is_crawler": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     # local datacenter=$(grep -o '"is_datacenter": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     # local tor=$(grep -o '"is_tor": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     # local proxy=$(grep -o '"is_proxy": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     # local vpn=$(grep -o '"is_vpn": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     # local abuser=$(grep -o '"is_abuser": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     echo "$company_type" >/tmp/ip_quality_ipapiis_ipv6_company_type
+#     echo "$usage_type" >/tmp/ip_quality_ipapiis_ipv6_usage_type
+#     echo "$abuser_score" >/tmp/ip_quality_ipapiis_ipv6_score
+#     # echo "$bogon" >/tmp/ip_quality_ipapiis_ipv6_bogon
+#     # echo "$mobile" >/tmp/ip_quality_ipapiis_ipv6_mobile
+#     # echo "$crawler" >/tmp/ip_quality_ipapiis_ipv6_crawler
+#     # echo "$datacenter" >/tmp/ip_quality_ipapiis_ipv6_datacenter
+#     # echo "$tor" >/tmp/ip_quality_ipapiis_ipv6_tor
+#     # echo "$proxy" >/tmp/ip_quality_ipapiis_ipv6_proxy
+#     # echo "$vpn" >/tmp/ip_quality_ipapiis_ipv6_vpn
+#     # echo "$abuser" >/tmp/ip_quality_ipapiis_ipv6_abuser
+# }
+
+# # ipapicom数据库 ⑫
+# ipapicom_ipv4() {
+#     rm -rf /tmp/ip_quality_ipapicom*
+#     local ip="$1"
+#     local response=$(curl -sL -m 10 "https://ipapi.com/ip_api.php?ip=${ip}" 2>/dev/null)
+#     local proxy=$(grep -o '"is_proxy": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local crawler=$(grep -o '"is_crawler": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local tor=$(grep -o '"is_tor": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local threat_level=$(grep -o '"threat_level": "[^"]\+"' <<<"$response" | cut -d '"' -f 4)
+#     echo "$crawler" >/tmp/ip_quality_ipapicom_ipv4_crawler
+#     echo "$tor" >/tmp/ip_quality_ipapicom_ipv4_tor
+#     echo "$proxy" >/tmp/ip_quality_ipapicom_ipv4_proxy
+#     echo "$threat_level" >/tmp/ip_quality_ipapicom_ipv4_threat_level
+# }
+
+# # ipapicom数据库 ⑫
+# ipapicom_ipv6() {
+#     rm -rf /tmp/ip_quality_ipapicom*
+#     local ip="$1"
+#     local response=$(curl -sL -m 10 "https://ipapi.com/ip_api.php?ip=${ip}" 2>/dev/null)
+#     local proxy=$(grep -o '"is_proxy": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local crawler=$(grep -o '"is_crawler": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local tor=$(grep -o '"is_tor": \w\+' <<<"$response" | cut -d ' ' -f 2)
+#     local threat_level=$(grep -o '"threat_level": "[^"]\+"' <<<"$response" | cut -d '"' -f 4)
+#     echo "$crawler" >/tmp/ip_quality_ipapicom_ipv6_crawler
+#     echo "$tor" >/tmp/ip_quality_ipapicom_ipv6_tor
+#     echo "$proxy" >/tmp/ip_quality_ipapicom_ipv6_proxy
+#     echo "$threat_level" >/tmp/ip_quality_ipapicom_ipv6_threat_level
+# }
+
+
+# ipcheck() {
+#     if [ "$en_status" = true ]; then
+#         _blue "The following is the number of each database, the output will come with the corresponding number of the database source"
+#         _blue "ipinfo  databases ① | scamalytics databases ②  | virustotal  databases ③ | abuseipdb databases ④  | ip2location databases   ⑤"
+#         _blue "ip-api  databases ⑥ | ipwhois databases     ⑦  | ipregistry  databases ⑧ | ipdata databases    ⑨  | ipgeolocation databases ⑩"
+#         _blue "ipapiis databases ⑪ | ipapicom databases    ⑫  "
+#     else
+#         _blue "以下为各数据库编号，输出结果后将自带数据库来源对应的编号"
+#         _blue "ipinfo数据库  ① | scamalytics数据库 ②  | virustotal数据库  ③ | abuseipdb数据库 ④  | ip2location数据库   ⑤"
+#         _blue "ip-api数据库  ⑥ | ipwhois数据库     ⑦  | ipregistry数据库  ⑧ | ipdata数据库    ⑨  | ipgeolocation数据库 ⑩"
+#         _blue "ipapiis数据库 ⑪ | ipapicom数据库    ⑫  "
+#     fi
+#     local ip4=$(echo "$IPV4" | tr -d '\n')
+#     local ip6=$(echo "$IPV6" | tr -d '\n')
+#     if [[ -z "${ip4}" ]] && [[ ! -z "${ip6}" ]]; then
+#         if [ "$en_status" = true ]; then
+#             echo "The following IPV6 detection"
+#         else
+#             echo "以下为IPV6检测"
+#         fi
+#     fi
+#     { ipapiis_ipv4 "$ip4"; } &
+#     { ipapicom_ipv4 "$ip4"; } &
+#     { scamalytics_ipv4 "$ip4"; } &
+#     { abuse_ipv4 "$ip4"; } &
+#     { google; } &
+#     { ipinfo "$ip4"; } &
+#     { virustotal "$ip4"; } &
+#     { ip_api "$ip4"; } &
+#     { ipwhois "$ip4"; } &
+#     { ipregistry "$ip4"; } &
+#     { ipdata "$ip4"; } &
+#     { ipgeolocation "$ip4"; } &
+#     if command -v nc >/dev/null; then
+#         { check_port_25; } &
+#     fi
+#     if [[ -n "$ip6" ]]; then
+#         { ipapiis_ipv6 "$ip6"; } &
+#         { ipapicom_ipv6 "$ip6"; } &
+#         { scamalytics_ipv6 "$ip6"; } &
+#         { abuse_ipv6 "$ip6"; } &
+#     fi
+#     wait
+#     # 预处理部分类型
+#     rm -rf /tmp/ip_quality_scamalytics_ipv4_proxy
+#     local public_proxy_4=$(check_and_cat_file '/tmp/ip_quality_scamalytics_ipv4_public_proxy')
+#     local web_proxy_4=$(check_and_cat_file '/tmp/ip_quality_scamalytics_ipv4_web_proxy')
+#     if [ -n "$public_proxy_4" ] && [ -n "$web_proxy_4" ]; then
+#         if [ "$public_proxy_4" = "Yes" ] || [ "$web_proxy_4" = "Yes" ]; then
+#             echo "Yes" >/tmp/ip_quality_scamalytics_ipv4_proxy
+#         else
+#             echo "No" >/tmp/ip_quality_scamalytics_ipv4_proxy
+#         fi
+#     fi
+#     # 得分和等级合并同一行
+#     local temp_text=""
+#     local score_2_4=$(check_and_cat_file '/tmp/ip_quality_scamalytics_ipv4_score')
+#     if [[ -z "$score_2_4" ]]; then
+#         if [ "$en_status" = true ]; then
+#             temp_text+="Fraud_score(the lower the better): $score_14_4⑪  "
+#         else
+#             temp_text+="欺诈分数(越低越好): $score_14_4⑪  "
+#         fi
+#     fi
+#     local score_4_4=$(check_and_cat_file '/tmp/ip_quality_abuseipdb_ipv4_score')
+#     local score_11_4=$(check_and_cat_file '/tmp/ip_quality_ipapiis_ipv4_score')
+#     if [[ -n "$score_4_4" && -n "$score_11_4" ]]; then
+#         if [ "$en_status" = true ]; then
+#             temp_text+="Abuse_score(the lower the better): $score_4_4⑤  $score_11_4⑪  "
+#         else
+#             temp_text+="abuse得分(越低越好): $score_4_4⑤  $score_11_4⑪  "
+#         fi
+#     elif [[ -n "$score_4_4" && -z "$score_11_4" ]]; then
+#         if [ "$en_status" = true ]; then
+#             temp_text+="Abuse_score(the lower the better): $score_4_4⑤  "
+#         else
+#             temp_text+="abuse得分(越低越好): $score_4_4⑤  "
+#         fi
+#     elif [[ -n "$score_11_4" && -z "$score_5_4" ]]; then
+#         if [ "$en_status" = true ]; then
+#             temp_text+="Abuse_score(the lower the better): $score_11_4⑪  "
+#         else
+#             temp_text+="abuse得分(越低越好): $score_11_4⑪  "
+#         fi
+#     fi
+#     local threat_12_4=$(check_and_cat_file '/tmp/ip_quality_ipapicom_ipv4_threat_level')
+#     if [[ -n "$threat_12_4" ]]; then
+#         if [ "$en_status" = true ]; then
+#             temp_text+="threat_level: $threat_12_4②  "
+#         else
+#             temp_text+="威胁等级: $threat_12_4②  "
+#         fi
+#     fi
+#     echo "$temp_text"
+#     if [ "$en_status" = true ]; then
+#         echo "IP Type: "
+#     else
+#         echo "IP类型: "
+#     fi
+#     local ip_quality_filename_data=("/tmp/ip_quality_ipinfo_" "/tmp/ip_quality_scamalytics_ipv4_" "/tmp/ip_quality_ip2location_ipv4_" "/tmp/ip_quality_ip_api_" "/tmp/ip_quality_ipwhois_" "/tmp/ip_quality_ipregistry_" "/tmp/ip_quality_ipdata_" "/tmp/ip_quality_ipgeolocation_" "/tmp/ip_quality_ipapiis_ipv4_" "/tmp/ip_quality_ipapicom_ipv4_")
+#     local serial_number=("①" "②" "⑤" "⑥" "⑦" "⑧" "⑨" "⑩" "⑪" "⑫" "⑬" "⑭")
+#     local project_data=("usage_type" "company_type" "cloud_provider" "datacenter" "mobile" "proxy" "vpn" "tor" "tor_exit" "search_engine_robot" "anonymous" "attacker" "abuser" "threat" "icloud_relay" "bogon")
+#     if [ "$en_status" = true ]; then
+#         local project_translate_data=("" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "")
+#     else
+#         local project_translate_data=("使用类型" "公司类型" "云服务提供商" "数据中心" "移动网络" "代理" "VPN" "TOR" "TOR出口" "搜索引擎机器人" "匿名代理" "攻击方" "滥用者" "威胁" "iCloud中继" "未分配IP")
+#     fi
+#     declare -A project_translate
+#     for ((i = 0; i < ${#project_data[@]}; i++)); do
+#         project_translate[${project_data[i]}]=${project_translate_data[i]}
+#     done
+#     for project in "${project_data[@]}"; do
+#         content=""
+#         no_appear=0
+#         yes_appear=0
+#         for ((i = 0; i < ${#ip_quality_filename_data[@]}; i++)); do
+#             file_content=$(check_and_cat_file "${ip_quality_filename_data[i]}${project}")
+#             if [ -n "$file_content" ]; then
+#                 if [ "$project" = "usage_type" ] || [ "$project" = "company_type" ]; then
+#                     content+="${file_content}${serial_number[i]}"
+#                     content+=" "
+#                 else
+#                     file_status=$(translate_status ${file_content})
+#                     if [ "$file_status" = "No" ]; then
+#                         if [ $no_appear -eq 0 ]; then
+#                             content+="  "
+#                             content+="No"
+#                             no_appear=1
+#                         fi
+#                     elif [ "$file_status" = "Yes" ]; then
+#                         if [ $yes_appear -eq 0 ]; then
+#                             content+="  "
+#                             content+="Yes"
+#                             yes_appear=1
+#                         fi
+#                     fi
+#                     content+="${serial_number[i]}"
+#                 fi
+#                 content+=" "
+#             fi
+#         done
+#         if [ -n "$content" ]; then
+#             if [ "$en_status" = true ]; then
+#                 echo "  ${project_translate[$project]}${project}:${content}"
+#             else
+#                 echo "  ${project_translate[$project]}(${project}):${content}"
+#             fi
+#         fi
+#     done
+#     local score_3_1=$(check_and_cat_file '/tmp/ip_quality_virustotal_harmlessness_records')
+#     local score_3_2=$(check_and_cat_file '/tmp/ip_quality_virustotal_malicious_records')
+#     local score_3_3=$(check_and_cat_file '/tmp/ip_quality_virustotal_suspicious_records')
+#     local score_3_4=$(check_and_cat_file '/tmp/ip_quality_virustotal_no_records')
+#     if [ -n "$score_3_1" ] && [ -n "$score_3_2" ] && [ -n "$score_3_3" ] && [ -n "$score_3_4" ]; then
+#         if [ "$en_status" = true ]; then
+#             echo "Blacklist_Records_Statistics(how many blacklisted websites have records): harmless $score_3_1 malware $score_3_2 dubious $score_3_3 untested $score_3_4 ③"
+#         else
+#             echo "黑名单记录统计(有多少个黑名单网站有记录): 无害$score_3_1 恶意$score_3_2 可疑$score_3_3 未检测$score_3_4 ③"
+#         fi
+#     fi
+#     check_and_cat_file "/tmp/ip_quality_google"
+#     check_and_cat_file "/tmp/ip_quality_check_port_25"
+#     if [[ ! -z "${ip6}" ]]; then
+#         if [[ ! -z "${ip4}" ]] && [[ ! -z "${ip6}" ]]; then
+#             if [ "$en_status" = true ]; then
+#                 echo "------The following IPV6 detection------"
+#             else
+#                 echo "------以下为IPV6检测------"
+#             fi
+#         fi
+#         temp_text=""
+#         local score_2_6=$(check_and_cat_file '/tmp/ip_quality_scamalytics_ipv6_score')
+#         if [[ -n "$score_2_6" ]]; then
+#             if [ "$en_status" = true ]; then
+#                 temp_text+="Fraud_score(the lower the better): $score_2_6②  "
+#             else
+#                 temp_text+="欺诈分数(越低越好): $score_2_6②  "
+#             fi
+#         fi
+#         local score_4_6=$(check_and_cat_file '/tmp/ip_quality_abuseipdb_ipv6_score')
+#         local score_11_6=$(check_and_cat_file '/tmp/ip_quality_ipapiis_ipv6_score')
+#         if [[ -n "$score_4_6" && -n "$score_11_6" ]]; then
+#             if [ "$en_status" = true ]; then
+#                 temp_text+="Abuse_score(the lower the better): $score_4_6⑤  $score_11_6⑪  "
+#             else
+#                 temp_text+="abuse得分(越低越好): $score_4_6⑤  $score_11_6⑪  "
+#             fi
+#         elif [[ -n "$score_4_6" && -z "$score_11_6" ]]; then
+#             if [ "$en_status" = true ]; then
+#                 temp_text+="Abuse_score(the lower the better): $score_4_6⑤  "
+#             else
+#                 temp_text+="abuse得分(越低越好): $score_4_6⑤  "
+#             fi
+#         elif [[ -n "$score_11_6" && -z "$score_5_6" ]]; then
+#             if [ "$en_status" = true ]; then
+#                 temp_text+="Abuse_score(the lower the better): $score_11_6⑪  "
+#             else
+#                 temp_text+="abuse得分(越低越好): $score_11_6⑪  "
+#             fi
+#         fi
+#         local threat_12_6=$(check_and_cat_file '/tmp/ip_quality_ipapicom_ipv6_threat_level')
+#         if [[ -n "$threat_12_6" ]]; then
+#             if [ "$en_status" = true ]; then
+#                 temp_text+="threat_level: $threat_12_6②  "
+#             else
+#                 temp_text+="威胁等级: $threat_12_6②  "
+#             fi
+#         fi
+#         echo "$temp_text"
+#         local usage_type_5_6=$(check_and_cat_file '/tmp/ip_quality_ip2location_ipv6_usage_type')
+#         local usage_type_11_6=$(check_and_cat_file '/tmp/ip_quality_ipapiis_ipv6_usage_type')
+#         if [[ -n "$usage_type_5_6" && -n "$usage_type_11_6" ]]; then
+#             if [ "$en_status" = true ]; then
+#                 echo "IP_Type: $usage_type_5_6⑤  $usage_type_11_6⑪"
+#             else
+#                 echo "IP类型: $usage_type_5_6⑤  $usage_type_11_6⑪"
+#             fi
+#         elif [[ -n "$usage_type_5_6" && -z "$usage_type_11_6" ]]; then
+#             if [ "$en_status" = true ]; then
+#                 echo "IP_Type: $usage_type_5_6⑤"
+#             else
+#                 echo "IP类型: $usage_type_5_6⑤"
+#             fi
+#         elif [[ -n "$usage_type_11_6" && -z "$usage_type_5_6" ]]; then
+#             if [ "$en_status" = true ]; then
+#                 echo "IP_Type: $usage_type_11_6⑪"
+#             else
+#                 echo "IP类型: $usage_type_11_6⑪"
+#             fi
+#         fi
+#     fi
+#     rm -rf /tmp/ip_quality_*
+# }
