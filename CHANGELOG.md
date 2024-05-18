@@ -2,6 +2,13 @@
 
 # 主要变化
 
+2024.05.14
+
+- 使用[oneclickvirt/securityCheck](https://github.com/oneclickvirt/securityCheck)替换shell版本的IP质量检测
+- 优化环境初始化过程中的文件下载，更改为并行下载以加速环境初始化
+- 归档一些被golang版本融合怪模块替换的函数
+- 更新仓库脚本运行示例截图
+
 2024.05.08
 
 - 删除无效的两个数据库，因为风控过于严格几乎等于没有，查询了等于没查

@@ -75,12 +75,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.05.14
+2024.05.18
 
-- 使用[oneclickvirt/securityCheck](https://github.com/oneclickvirt/securityCheck)替换shell版本的IP质量检测
-- 优化环境初始化过程中的文件下载，更改为并行下载以加速环境初始化
-- 归档一些被golang版本融合怪模块替换的函数
-- 更新仓库脚本运行示例截图
+- 更新北京电信、北京联通的目标IP地址
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
