@@ -2,6 +2,10 @@
 
 # 主要变化
 
+2024.05.18
+
+- 更新北京电信、北京联通的目标IP地址
+
 2024.05.14
 
 - 使用[oneclickvirt/securityCheck](https://github.com/oneclickvirt/securityCheck)替换shell版本的IP质量检测

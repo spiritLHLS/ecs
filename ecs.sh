@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.05.18"
+ver="2024.05.20"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -3745,12 +3745,14 @@ ecs_net_all_script() {
     speed | tee ./speedtest-cli/speedlog.txt
     # e_time=$(date +%s)
     # time=$((${e_time} - ${s_time}))
-    if ! grep -qE "(Speedtest.net|洛杉矶|新加坡|香港|联通|电信|移动|日本|中国)" ./speedtest-cli/speedlog.txt; then
-        export speedtest_ver="1.0.0"
-        rm -rf ./speedtest-cli/speedlog.txt
-        rm -rf ./speedtest-cli*
-        (install_speedtest >/dev/null 2>&1)
-        speed
+    if [ -f ./speedtest-cli/speedlog.txt ]; then
+        if ! grep -qE "(Speedtest.net|洛杉矶|新加坡|香港|联通|电信|移动|日本|中国)" ./speedtest-cli/speedlog.txt; then
+            export speedtest_ver="1.0.0"
+            rm -rf ./speedtest-cli/speedlog.txt
+            rm -rf ./speedtest-cli*
+            (install_speedtest >/dev/null 2>&1)
+            speed
+        fi
     fi
     rm -fr speedtest-cli
 }
@@ -3763,12 +3765,14 @@ ecs_net_minal_script() {
     speed2 | tee ./speedtest-cli/speedlog.txt
     # e_time=$(date +%s)
     # time=$((${e_time} - ${s_time}))
-    if ! grep -qE "(Speedtest.net|洛杉矶|新加坡|香港|联通|电信|移动|日本|中国)" ./speedtest-cli/speedlog.txt; then
-        export speedtest_ver="1.0.0"
-        rm -rf ./speedtest-cli/speedlog.txt
-        rm -rf ./speedtest-cli*
-        (install_speedtest >/dev/null 2>&1)
-        speed2
+    if [ -f ./speedtest-cli/speedlog.txt ]; then
+        if ! grep -qE "(Speedtest.net|洛杉矶|新加坡|香港|联通|电信|移动|日本|中国)" ./speedtest-cli/speedlog.txt; then
+            export speedtest_ver="1.0.0"
+            rm -rf ./speedtest-cli/speedlog.txt
+            rm -rf ./speedtest-cli*
+            (install_speedtest >/dev/null 2>&1)
+            speed2
+        fi
     fi
     rm -fr speedtest-cli
 }

@@ -75,9 +75,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.05.18
+2024.05.20
 
-- 更新北京电信、北京联通的目标IP地址
+- 优化测速的重试机制
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
