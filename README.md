@@ -75,9 +75,11 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.05.20
+2024.05.24
 
-- 优化测速的重试机制
+- 删除无用的中间文件的生成
+- 增加文件下载的提示，避免部分服务器带宽过小时不知道环境安装走到哪一步了
+- 增加部分二进制文件执行前的检测，避免部分文件下载失败时仍执行文件
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

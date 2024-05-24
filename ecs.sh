@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.05.20"
+ver="2024.05.24"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -928,7 +928,7 @@ get_system_bit() {
         BACKTRACE_FILE=backtrace-linux-386
         NEXTTRACE_FILE=nexttrace_darwin_amd64
         ;;
-    "armv7l" | "armv8" | "armv8l" | "aarch64")
+    "armv7l" | "armv8" | "armv8l" | "aarch64" | "arm64")
         LBench_Result_SystemBit_Short="arm"
         LBench_Result_SystemBit_Full="arm"
         GOSTUN_FILE=gostun-linux-arm64
@@ -1378,12 +1378,13 @@ Check_SysBench() {
     source ~/.bashrc
     # 最终检测
     if [ "$(command -v sysbench)" ] || [ -f "/usr/bin/sysbench" ] || [ -f "/usr/local/bin/sysbench" ]; then
-        echo "Install sysbench successfully!"
+        _yellow "Install sysbench successfully!"
     else
-        echo "SysBench Moudle install Failure! Try Restart Bench or Manually install it! (/usr/bin/sysbench)"
-        echo "Will try to test with geekbench5 instead later on"
+        _red "SysBench Moudle install Failure! Try Restart Bench or Manually install it! (/usr/bin/sysbench)"
+        _blue "Will try to test with geekbench5 instead later on"
         test_cpu_type="gb5"
     fi
+    sleep 3
 }
 
 Check_Sysbench_InstantBuild() {
@@ -1430,7 +1431,6 @@ prepare_compile_env() {
 Run_SysBench_CPU() {
     # 调用方式: Run_SysBench_CPU "线程数" "测试时长(s)" "测试遍数" "说明"
     # 变量初始化
-    mkdir -p ${WorkDir}/SysBench/CPU/ >/dev/null 2>&1
     maxtestcount="$3"
     local count="1"
     local TestScore="0"
@@ -1464,37 +1464,29 @@ Run_SysBench_CPU() {
         if [ "$ResultScore" -eq "0" ] || ([ "$1" -lt "2" ] && [ "$ResultScore" -gt "100000" ]); then
             if [ "$en_status" = true ]; then
                 echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_Red}sysbench test failed, please use this script option '-ctype gb5' to test${Font_Suffix}"
-                echo -e " $4:\t\tsysbench test failed, please use this script option '-ctype gb5' to test" >>${WorkDir}/SysBench/CPU/result.txt
             else
                 echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_Red}sysbench测试失效，请使用本脚本选项 '-ctype gb5' 进行测试${Font_Suffix}"
-                echo -e " $4:\t\tsysbench测试失效，请使用本脚本选项 '-ctype gb5' 进行测试" >>${WorkDir}/SysBench/CPU/result.txt
             fi
         else
             echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_SkyBlue}${ResultScore}${Font_Suffix} ${Font_Yellow}Scores${Font_Suffix}"
-            echo -e " $4:\t\t\t${ResultScore} Scores" >>${WorkDir}/SysBench/CPU/result.txt
         fi
     elif [ "$1" -ge "2" ]; then
         if [ "$ResultScore" -eq "0" ] || ([ "$1" -lt "2" ] && [ "$ResultScore" -gt "100000" ]); then
             if [ "$en_status" = true ]; then
                 echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_Red}sysbench test failed, please use this script option '-ctype gb5' to test${Font_Suffix}"
-                echo -e " $4:\t\tsysbench test failed, please use this script option '-ctype gb5' to test" >>${WorkDir}/SysBench/CPU/result.txt
             else
                 echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_Red}sysbench测试失效，请使用本脚本选项5中的gb4或gb5测试${Font_Suffix}"
-                echo -e " $4:\t\tsysbench测试失效，请使用本脚本选项5中的gb4或gb5测试" >>${WorkDir}/SysBench/CPU/result.txt
             fi
         else
             echo -e "\r ${Font_Yellow}$4: ${Font_Suffix}\t\t${Font_SkyBlue}${ResultScore}${Font_Suffix} ${Font_Yellow}Scores${Font_Suffix}"
-            echo -e " $4:\t\t${ResultScore} Scores" >>${WorkDir}/SysBench/CPU/result.txt
         fi
     fi
 }
 
 Function_SysBench_CPU_Fast() {
     cd $myvar >/dev/null 2>&1
-    mkdir -p ${WorkDir}/SysBench/CPU/ >/dev/null 2>&1
     if [ "$en_status" = true ]; then
         echo -e " ${Font_Yellow}-> CPU test in progress (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}"
-        echo -e " -> CPU test in progress (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/CPU/result.txt
         Run_SysBench_CPU "1" "5" "1" "1 Thread(s) Test"
         sleep 1
         if [ -n "${Result_Systeminfo_CPUThreads}" ] && [ "${Result_Systeminfo_CPUThreads}" -ge "2" ] >/dev/null 2>&1; then
@@ -1506,7 +1498,6 @@ Function_SysBench_CPU_Fast() {
         fi
     else
         echo -e " ${Font_Yellow}-> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}"
-        echo -e " -> CPU 测试中 (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/CPU/result.txt
         Run_SysBench_CPU "1" "5" "1" "1 线程测试(单核)得分"
         sleep 1
         if [ -n "${Result_Systeminfo_CPUThreads}" ] && [ "${Result_Systeminfo_CPUThreads}" -ge "2" ] >/dev/null 2>&1; then
@@ -2064,7 +2055,6 @@ speed2() {
 # =============== 磁盘测试 部分 ===============
 Run_DiskTest_DD() {
     # 调用方式: Run_DiskTest_DD "测试文件名" "块大小" "写入次数" "测试项目名称"
-    mkdir -p ${WorkDir}/DiskTest/ >/dev/null 2>&1
     mkdir -p /.tmp_LBench/DiskTest >/dev/null 2>&1
     mkdir -p ${WorkDir}/data >/dev/null 2>&1
     local Var_DiskTestResultFile="${WorkDir}/data/disktest_result"
@@ -2112,18 +2102,14 @@ Run_DiskTest_DD() {
     rm -f ${Var_DiskTestResultFile}
     # 输出结果
     echo -n -e "\r $4\t\t${Font_SkyBlue}${DiskTest_WriteSpeed} (${DiskTest_WriteIOPS} IOPS, ${DiskTest_WritePastTime}s)${Font_Suffix}\t\t${Font_SkyBlue}${DiskTest_ReadSpeed} (${DiskTest_ReadIOPS} IOPS, ${DiskTest_ReadPastTime}s)${Font_Suffix}\n"
-    echo -e " $4\t\t${DiskTest_WriteSpeed} (${DiskTest_WriteIOPS} IOPS, ${DiskTest_WritePastTime} s)\t\t${DiskTest_ReadSpeed} (${DiskTest_ReadIOPS} IOPS, ${DiskTest_ReadPastTime} s)" >>${WorkDir}/DiskTest/result.txt
     rm -rf /.tmp_LBench/DiskTest/
 }
 
 Function_DiskTest_Fast() {
-    mkdir -p ${WorkDir}/DiskTest/ >/dev/null 2>&1
     if [ "$en_status" = true ]; then
         echo -e " ${Font_Yellow}-> Disk test in progress (4K Block/1M Block, Direct Mode)${Font_Suffix}"
-        echo -e " -> Disk test in progress (4K Block/1M Block, Direct Mode)\n" >>${WorkDir}/DiskTest/result.txt
     else
         echo -e " ${Font_Yellow}-> 磁盘IO测试中 (4K Block/1M Block, Direct Mode)${Font_Suffix}"
-        echo -e " -> 磁盘IO测试中 (4K Block/1M Block, Direct Mode)\n" >>${WorkDir}/DiskTest/result.txt
     fi
     if [ "${Result_Systeminfo_VMMType}" = "docker" ] || [ "${Result_Systeminfo_VMMType}" = "wsl" ]; then
         echo -e " ${Msg_Warning}Due to virt architecture limit, the result may affect by the cache !"
@@ -2133,7 +2119,6 @@ Function_DiskTest_Fast() {
     else
         echo -e " ${Font_Yellow}测试操作\t\t写速度\t\t\t\t\t读速度${Font_Suffix}"
     fi
-    echo -e " Test Name\t\tWrite Speed\t\t\t\tRead Speed" >>${WorkDir}/DiskTest/result.txt
     Run_DiskTest_DD "100MB.test" "4k" "25600" "100MB-4K Block"
     Run_DiskTest_DD "1GB.test" "1M" "1000" "1GB-1M Block"
     sleep 0.5
@@ -2143,7 +2128,6 @@ Function_DiskTest_Fast() {
 Run_SysBench_Memory() {
     # 调用方式: Run_SysBench_Memory "线程数" "测试时长(s)" "测试遍数" "测试模式(读/写)" "读写方式(顺序/随机)" "说明"
     # 变量初始化
-    mkdir -p ${WorkDir}/SysBench/Memory/ >/dev/null 2>&1
     maxtestcount="$3"
     local count="1"
     local TestScore="0.00"
@@ -2187,6 +2171,7 @@ Run_SysBench_Memory() {
         # 直接输出
         ResultSpeed="$(echo "${TotalSpeed} ${maxtestcount}" | awk '{printf "%.2f",$1/$2}')"
     fi
+    
     # 1线程的测试结果写入临时变量，方便与后续的多线程变量做对比
     if [ "$1" = "1" ] && [ "$4" = "read" ]; then
         LBench_Result_MemoryReadSpeedSingle="${ResultSpeed}"
@@ -2211,26 +2196,17 @@ Run_SysBench_Memory() {
             echo -e "\r ${Font_Yellow}$6:${Font_Suffix}\t\t${Font_SkyBlue}${ResultSpeed}${Font_Suffix} ${Font_Yellow}MB/s${Font_Suffix}"
         fi
     fi
-    # Fix
-    if [ "$1" -ge "2" ] && [ "$4" = "write" ]; then
-        echo -e " $6:\t${ResultSpeed} MB/s" >>${WorkDir}/SysBench/Memory/result.txt
-    else
-        echo -e " $6:\t\t${ResultSpeed} MB/s" >>${WorkDir}/SysBench/Memory/result.txt
-    fi
     sleep 0.5
 
 }
 
 Function_SysBench_Memory_Fast() {
-    mkdir -p ${WorkDir}/SysBench/Memory/ >/dev/null 2>&1
     if [ "$en_status" = true ]; then
         echo -e " ${Font_Yellow}-> Memory Test (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}"
-        echo -e " -> Memory Test (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/Memory/result.txt
         Run_SysBench_Memory "1" "5" "1" "read" "seq" "Single Read Test"
         Run_SysBench_Memory "1" "5" "1" "write" "seq" "Single Write Test"
     else
         echo -e " ${Font_Yellow}-> 内存测试 Test (Fast Mode, 1-Pass @ 5sec)${Font_Suffix}"
-        echo -e " -> 内存测试 (Fast Mode, 1-Pass @ 5sec)\n" >>${WorkDir}/SysBench/Memory/result.txt
         Run_SysBench_Memory "1" "5" "1" "read" "seq" "单线程读测试"
         Run_SysBench_Memory "1" "5" "1" "write" "seq" "单线程写测试"
     fi
@@ -3314,11 +3290,15 @@ sjlleo_script() {
         return
     fi
     cd $myvar >/dev/null 2>&1
-    mv $TEMP_DIR/CommonMediaTests ./
-    echo "------------流媒体解锁--基于oneclickvirt/CommonMediaTests开源-----------"
-    _yellow "以下测试的解锁地区是准确的，但是不是完整解锁的判断可能有误，这方面仅作参考使用"
-    ./CommonMediaTests | grep -v 'github.com/oneclickvirt/CommonMediaTests'
-    _yellow "解锁Netflix，Youtube，DisneyPlus上面和下面进行比较，不同之处自行判断"
+    if [ -f $TEMP_DIR/CommonMediaTests ]; then 
+        mv $TEMP_DIR/CommonMediaTests ./
+        echo "------------流媒体解锁--基于oneclickvirt/CommonMediaTests开源-----------"
+        _yellow "以下测试的解锁地区是准确的，但是不是完整解锁的判断可能有误，这方面仅作参考使用"
+        ./CommonMediaTests | grep -v 'github.com/oneclickvirt/CommonMediaTests'
+        _yellow "解锁Netflix，Youtube，DisneyPlus上面和下面进行比较，不同之处自行判断"
+    else 
+        _red "CommonMediaTests下载失败所以不进行测试"
+    fi
 }
 
 cpu_judge() {
@@ -3788,11 +3768,13 @@ all_script() {
     pre_check
     if [ "$1" = "B" ]; then
         if [[ -z "${CN}" || "${CN}" != true ]]; then
+            _yellow "Concurrently downloading files..."
             dfiles=(gostun CommonMediaTests besttrace nexttrace backtrace securityCheck yabs media_lmc_check)
             for dfile in "${dfiles[@]}"; do
                 { pre_download ${dfile}; } &
             done
             wait
+            _yellow "All files download successfully."
             get_system_info
             check_dnsutils
             check_ping
@@ -3825,11 +3807,13 @@ all_script() {
             check_and_cat_file ${TEMP_DIR}/fscarmen_route_output.txt
             check_and_cat_file ${TEMP_DIR}/ecs_net_output.txt
         else
+            _yellow "Concurrently downloading files..."
             dfiles=(securityCheck ecsspeed_ping)
             for dfile in "${dfiles[@]}"; do
                 { pre_download ${dfile}; } &
             done
             wait
+            _yellow "All files download successfully."
             get_system_info
             check_dnsutils
             check_ping
@@ -3858,6 +3842,7 @@ all_script() {
     else
         # 顺序测试
         if [[ -z "${CN}" || "${CN}" != true ]]; then
+            _yellow "Concurrently downloading files..."
             { pre_download besttrace; } &
             { pre_download nexttrace; } &
             { pre_download backtrace; } &
@@ -3867,6 +3852,7 @@ all_script() {
             { pre_download yabs; } &
             { pre_download media_lmc_check; } &
             wait
+            _yellow "All files download successfully."
             get_system_info
             check_dnsutils
             check_ping
@@ -3890,10 +3876,12 @@ all_script() {
             wait
             ecs_net_all_script
         else
+            _yellow "Concurrently downloading files..."
             { pre_download ecsspeed_ping; } &
             { pre_download securityCheck; } &
             { pre_download gostun; } &
             wait
+            _yellow "All files download successfully."
             get_system_info
             check_dnsutils
             check_ping
@@ -3923,9 +3911,11 @@ all_script() {
 minal_script() {
     pre_check
     get_system_info
+    _yellow "Concurrently downloading files..."
     { pre_download gostun; } &
     { pre_download yabs; } &
     wait
+    _yellow "All files download successfully."
     check_ping
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
     CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
@@ -3942,6 +3932,7 @@ minal_script() {
 
 minal_plus() {
     pre_check
+    _yellow "Concurrently downloading files..."
     { pre_download besttrace; } &
     { pre_download nexttrace; } &
     { pre_download backtrace; } &
@@ -3950,6 +3941,7 @@ minal_plus() {
     { pre_download yabs; } &
     { pre_download media_lmc_check; } &
     wait
+    _yellow "All files download successfully."
     get_system_info
     check_lmc_script
     check_dnsutils
@@ -3974,12 +3966,14 @@ minal_plus() {
 
 minal_plus_network() {
     pre_check
+    _yellow "Concurrently downloading files..."
     { pre_download besttrace; } &
     { pre_download nexttrace; } &
     { pre_download backtrace; } &
     { pre_download gostun; } &
     { pre_download yabs; } &
     wait
+    _yellow "All files download successfully."
     get_system_info
     check_ping
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
@@ -3999,11 +3993,13 @@ minal_plus_network() {
 
 minal_plus_media() {
     pre_check
+    _yellow "Concurrently downloading files..."
     { pre_download CommonMediaTests; } &
     { pre_download gostun; } &
     { pre_download media_lmc_check; } &
     { pre_download yabs; } &
     wait
+    _yellow "All files download successfully."
     get_system_info
     check_dnsutils
     check_lmc_script
@@ -4026,11 +4022,13 @@ minal_plus_media() {
 
 network_script() {
     pre_check
+    _yellow "Concurrently downloading files..."
     { pre_download besttrace; } &
     { pre_download nexttrace; } &
     { pre_download securityCheck; } &
     { pre_download backtrace; } &
     wait
+    _yellow "All files download successfully."
     check_ping
     ls_sg_hk_jp=($(get_nearest_data "${SERVER_BASE_URL}/ls_sg_hk_jp.csv"))
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
@@ -4049,9 +4047,11 @@ network_script() {
 
 media_script() {
     pre_check
+    _yellow "Concurrently downloading files..."
     { pre_download CommonMediaTests; } &
     { pre_download media_lmc_check; } &
     wait
+    _yellow "All files download successfully."
     check_dnsutils
     check_lmc_script
     clear
@@ -4091,11 +4091,13 @@ port_script() {
 
 sw_script() {
     pre_check
+    _yellow "Concurrently downloading files..."
     { pre_download besttrace; } &
     { pre_download nexttrace; } &
     { pre_download backtrace; } &
     { pre_download ecsspeed_ping; } &
     wait
+    _yellow "All files download successfully."
     check_ping
     clear
     print_intro
@@ -4107,9 +4109,11 @@ sw_script() {
 
 network_script_select() {
     pre_check
+    _yellow "Concurrently downloading files..."
     { pre_download besttrace; } &
     { pre_download nexttrace; } &
     wait
+    _yellow "All files download successfully."
     clear
     print_intro
     if [[ "$1" == "g" ]]; then
