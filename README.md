@@ -178,8 +178,12 @@ bash <(wget -qO- --no-check-certificate https://raw.githubusercontent.com/spirit
 
 或
 
+需要事先安裝```dos2unxi```
+
 ```bash
-bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/ipcheck.sh)
+wget -qO ipcheck.sh --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/ipcheck.sh
+dos2unix ipcheck.sh
+bash ipcheck.sh
 ```
 
 ## 融合怪说明
