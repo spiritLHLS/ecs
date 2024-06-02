@@ -124,12 +124,6 @@ The following is a description of the parameters:
 - With ``IPV4`` and ``IPV6`` inspection, including ASN and address lookups.
 
 ```bash
-bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/ipcheck.sh)
-```
-
-OR
-
-```bash
 bash <(wget -qO- bash.spiritlhl.net/ecs-ipcheck)
 ```
 
@@ -137,6 +131,12 @@ OR
 
 ```bash
 bash <(wget -qO- --no-check-certificate https://raw.githubusercontent.com/spiritLHLS/ecs/main/ipcheck.sh)
+```
+
+OR
+
+```bash
+bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/ipcheck.sh)
 ```
 
 ## Fusion_Monster_Description
