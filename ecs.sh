@@ -4709,7 +4709,8 @@ single_item_script_options() {
         break_status=true
         ;;
     4)
-        bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/ipcheck.sh)
+        # bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/ipcheck.sh)
+        bash <(wget -qO- --no-check-certificate https://cdn.spiritlhl.net/https://raw.githubusercontent.com/spiritLHLS/ecs/main/ipcheck.sh)
         break_status=true
         ;;
     5)
@@ -4780,7 +4781,8 @@ single_item_script() {
 my_original_script_options() {
     case $StartInput4 in
     1)
-        bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/ipcheck.sh)
+        # bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/ipcheck.sh)
+        bash <(wget -qO- --no-check-certificate https://cdn.spiritlhl.net/https://raw.githubusercontent.com/spiritLHLS/ecs/main/ipcheck.sh)
         break_status=true
         ;;
     2)
