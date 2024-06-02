@@ -167,12 +167,6 @@ bash ecs.sh -m 1
 - 含 ```IPV4``` 和 ```IPV6``` 检测，含ASN和地址查询
 
 ```bash
-bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/ipcheck.sh)
-```
-
-或
-
-```bash
 bash <(wget -qO- bash.spiritlhl.net/ecs-ipcheck)
 ```
 
@@ -180,6 +174,12 @@ bash <(wget -qO- bash.spiritlhl.net/ecs-ipcheck)
 
 ```bash
 bash <(wget -qO- --no-check-certificate https://raw.githubusercontent.com/spiritLHLS/ecs/main/ipcheck.sh)
+```
+
+或
+
+```bash
+bash <(wget -qO- --no-check-certificate https://gitlab.com/spiritysdx/za/-/raw/main/ipcheck.sh)
 ```
 
 ## 融合怪说明
