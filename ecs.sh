@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.05.24"
+ver="2024.06.13"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -551,6 +551,10 @@ check_and_cat_file() {
     else
         truncate -s 0 "$file"
     fi
+    # 检测文件内容是否包含"error"，如果包含则不打印文件内容
+    if grep -q "error" "$file"; then
+        return
+    fi
     cat "$file"
 }
 
@@ -586,6 +590,9 @@ pre_download() {
             curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh" -o $TEMP_DIR/media_lmc_check.sh && chmod 777 $TEMP_DIR/media_lmc_check.sh
             if [ ! -f $TEMP_DIR/media_lmc_check.sh ]; then
                 wget -q -O $TEMP_DIR/media_lmc_check.sh "https://raw.fgit.cf/lmc999/RegionRestrictionCheck/main/check.sh" && chmod 777 $TEMP_DIR/media_lmc_check.sh
+                old_url="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcheck.unclock.media&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=visit&edge_flat=false"
+                new_url="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Foneclickvirt%2FUnlockTests&count_bg=%2323E01C&title_bg=%23555555&icon=sonarcloud.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false"
+                sed -i "s|$old_url|$new_url|g" $TEMP_DIR/media_lmc_check.sh
             fi
             ;;
         besttrace)
@@ -625,6 +632,12 @@ pre_download() {
             wget -q -O $TEMP_DIR/securityCheck https://github.com/oneclickvirt/securityCheck/releases/download/output/$SecurityCheck_FILE
             if [ ! -f $TEMP_DIR/securityCheck ]; then
                 wget -q -O $TEMP_DIR/securityCheck https://hub.fgit.cf/oneclickvirt/securityCheck/releases/download/output/$SecurityCheck_FILE
+            fi
+            ;;
+        portchecker)
+            wget -q -O $TEMP_DIR/pck https://github.com/oneclickvirt/portchecker/releases/download/output/$PortChecker_FILE
+            if [ ! -f $TEMP_DIR/pck ]; then
+                wget -q -O $TEMP_DIR/pck https://hub.fgit.cf/oneclickvirt/portchecker/releases/download/output/$PortChecker_FILE
             fi
             ;;
         yabs)
@@ -925,6 +938,7 @@ get_system_bit() {
         BESTTRACE_FILE=besttracemac
         CommonMediaTests_FILE=CommonMediaTests-linux-386
         SecurityCheck_FILE=securityCheck-linux-386
+        PortChecker_FILE=portchecker-linux-386
         BACKTRACE_FILE=backtrace-linux-386
         NEXTTRACE_FILE=nexttrace_darwin_amd64
         ;;
@@ -935,6 +949,7 @@ get_system_bit() {
         BESTTRACE_FILE=besttracearm
         CommonMediaTests_FILE=CommonMediaTests-linux-arm64
         SecurityCheck_FILE=securityCheck-linux-arm64
+        PortChecker_FILE=portchecker-linux-arm64
         BACKTRACE_FILE=backtrace-linux-arm64
         NEXTTRACE_FILE=nexttrace_linux_arm64
         ;;
@@ -945,6 +960,7 @@ get_system_bit() {
         BESTTRACE_FILE=besttrace
         CommonMediaTests_FILE=CommonMediaTests-linux-amd64
         SecurityCheck_FILE=securityCheck-linux-amd64
+        PortChecker_FILE=portchecker-linux-amd64
         BACKTRACE_FILE=backtrace-linux-amd64
         NEXTTRACE_FILE=nexttrace_linux_amd64
         ;;
@@ -2882,9 +2898,9 @@ print_system_info() {
         elif [ -n "$ccache" ] >/dev/null 2>&1; then
             echo " CPU Cache         : $(_blue "$ccache")"
         fi
-        [[ -z "$CPU_AES" ]] && CPU_AES="\xE2\x9D\x8C Disabled" || CPU_AES="\xE2\x9C\x94 Enabled"
+        [[ -z "$CPU_AES" ]] && CPU_AES="✘ Disabled" || CPU_AES="✔ Enabled"
         echo " AES-NI            : $(_blue "$CPU_AES")"
-        [[ -z "$CPU_VIRT" ]] && CPU_VIRT="\xE2\x9D\x8C Disabled" || CPU_VIRT="\xE2\x9C\x94 Enabled"
+        [[ -z "$CPU_VIRT" ]] && CPU_VIRT="✘ Disabled" || CPU_VIRT="✔ Enabled"
         echo " VM-x/AMD-V        : $(_blue "$CPU_VIRT")"
         if [ -n "$Result_Systeminfo_Memoryinfo" ] >/dev/null 2>&1; then
             echo " RAM               : $(_blue "$Result_Systeminfo_Memoryinfo")"
@@ -3064,129 +3080,33 @@ security_check() {
     ${TEMP_DIR}/securityCheck -l $language | sed '1d' >>/tmp/ip_quality_security_check
 }
 
-local_port_25() {
-    local host=$1
-    local port=$2
-    rm -rf /tmp/ip_quality_local_port_25
-    if [ "$en_status" = true ]; then
-        nc -z -w5 $host $port >/dev/null 2>&1
-        if [ $? -eq 0 ]; then
-            echo "  Local: Yes" >>/tmp/ip_quality_local_port_25
-        else
-            echo "  Local: No" >>/tmp/ip_quality_local_port_25
-        fi
+email_check(){
+    cd $myvar >/dev/null 2>&1
+    if [ -f "${TEMP_DIR}/pck" ]; then
+        chmod 777 ${TEMP_DIR}/pck
     else
-        nc -z -w5 $host $port >/dev/null 2>&1
-        if [ $? -eq 0 ]; then
-            echo "  本地: Yes" >>/tmp/ip_quality_local_port_25
-        else
-            echo "  本地: No" >>/tmp/ip_quality_local_port_25
-        fi
-    fi
-}
-
-check_email_service() {
-    local service=$1
-    local host=""
-    local en_service=""
-    local port=25
-    local expected_response="220"
-    case $service in
-    "gmail邮箱")
-        host="smtp.gmail.com"
-        en_service="gmail"
-        ;;
-    "163邮箱")
-        host="smtp.163.com"
-        en_service="163"
-        ;;
-    "yandex邮箱")
-        host="smtp.yandex.com"
-        en_service="yandex"
-        ;;
-    "outlook邮箱")
-        host="smtp.office365.com"
-        en_service="outlook"
-        ;;
-    "qq邮箱")
-        host="smtp.qq.com"
-        en_service="qq"
-        ;;
-    *)
-        if [ "$en_status" = true ]; then
-            echo "Unsupported mailbox services: $service"
-        else
-            echo "不支持的邮箱服务: $service"
-        fi
         return
-        ;;
-    esac
-    local response=$(echo -e "QUIT\r\n" | nc -w6 $host $port 2>/dev/null)
-    if [ "$en_status" = true ]; then
-        if [[ $response == *"$expected_response"* ]]; then
-            echo "  $en_service: Yes" >>/tmp/ip_quality_check_email_service
-        else
-            echo "  $en_service：No" >>/tmp/ip_quality_check_email_service
-        fi
-    else
-        if [[ $response == *"$expected_response"* ]]; then
-            echo "  $service: Yes" >>/tmp/ip_quality_check_email_service
-        else
-            echo "  $service：No" >>/tmp/ip_quality_check_email_service
-        fi
     fi
-}
-
-combine_result_of_ip_quality() {
-    check_and_cat_file /tmp/ip_quality_local_port_25 >>/tmp/ip_quality_check_port_25
-    check_and_cat_file /tmp/ip_quality_check_email_service >>/tmp/ip_quality_check_port_25
-}
-
-check_port_25() {
-    rm -rf /tmp/ip_quality_check_port_25
-    rm -rf /tmp/ip_quality_check_email_service
-    rm -rf /tmp/ip_quality_local_port_25
-    if [ "$en_status" = true ]; then
-        echo "Port 25 Detection:" >>/tmp/ip_quality_check_port_25
-    else
-        echo "端口25检测:" >>/tmp/ip_quality_check_port_25
-    fi
-    { local_port_25 "localhost" 25; } &
-    check_email_service "163邮箱"
-    if [[ $(cat /tmp/ip_quality_check_email_service) == *"No"* ]]; then
-        wait
-        combine_result_of_ip_quality
-        return
-    else
-        check_email_service "gmail邮箱"
-        if [[ $(cat /tmp/ip_quality_check_email_service) == *"No"* ]]; then
-            wait
-            combine_result_of_ip_quality
-            return
-        else
-            { check_email_service "outlook邮箱"; } &
-            { check_email_service "yandex邮箱"; } &
-            { check_email_service "qq邮箱"; } &
-        fi
-    fi
-    wait
-    combine_result_of_ip_quality
+    ${TEMP_DIR}/pck | sed '1d' >>/tmp/ip_quality_email_check
 }
 
 ipcheck() {
     { google; } &
-    if command -v nc >/dev/null; then
-        { check_port_25; } &
-    fi
     if [ "$en_status" = true ]; then
         { security_check "en"; } &
     else
         { security_check "zh"; } &
     fi
+    { email_check; } &
     wait
     check_and_cat_file "/tmp/ip_quality_security_check"
     check_and_cat_file "/tmp/ip_quality_google"
-    check_and_cat_file "/tmp/ip_quality_check_port_25"
+    if [ "$en_status" = true ]; then
+        echo -e "-------Email-Port-Detection--Base-On-oneclickvirt/portchecker--------"
+    else
+        echo -e "-------------邮件端口检测--基于oneclickvirt/portchecker开源-------------"
+    fi
+    check_and_cat_file "/tmp/ip_quality_email_check"
     rm -rf /tmp/ip_quality_*
 }
 
@@ -3769,7 +3689,7 @@ all_script() {
     if [ "$1" = "B" ]; then
         if [[ -z "${CN}" || "${CN}" != true ]]; then
             _yellow "Concurrently downloading files..."
-            dfiles=(gostun CommonMediaTests besttrace nexttrace backtrace securityCheck yabs media_lmc_check)
+            dfiles=(gostun CommonMediaTests besttrace nexttrace backtrace securityCheck portchecker yabs media_lmc_check)
             for dfile in "${dfiles[@]}"; do
                 { pre_download ${dfile}; } &
             done
@@ -3808,7 +3728,7 @@ all_script() {
             check_and_cat_file ${TEMP_DIR}/ecs_net_output.txt
         else
             _yellow "Concurrently downloading files..."
-            dfiles=(securityCheck ecsspeed_ping)
+            dfiles=(securityCheck portchecker ecsspeed_ping)
             for dfile in "${dfiles[@]}"; do
                 { pre_download ${dfile}; } &
             done
@@ -3848,6 +3768,7 @@ all_script() {
             { pre_download backtrace; } &
             { pre_download CommonMediaTests; } &
             { pre_download securityCheck; } &
+            { pre_download portchecker; } &
             { pre_download gostun; } &
             { pre_download yabs; } &
             { pre_download media_lmc_check; } &
@@ -3879,6 +3800,7 @@ all_script() {
             _yellow "Concurrently downloading files..."
             { pre_download ecsspeed_ping; } &
             { pre_download securityCheck; } &
+            { pre_download portchecker; } &
             { pre_download gostun; } &
             wait
             _yellow "All files download successfully."
@@ -4026,6 +3948,7 @@ network_script() {
     { pre_download besttrace; } &
     { pre_download nexttrace; } &
     { pre_download securityCheck; } &
+    { pre_download portchecker; } &
     { pre_download backtrace; } &
     wait
     _yellow "All files download successfully."
@@ -4754,7 +4677,7 @@ single_item_script() {
             echo -e "${GREEN}1.${PLAIN} 网络方面(简化的IP质量检测+三网回程+三网路由与延迟+测速节点11个)(平均运行6分钟左右)"
             echo -e "${GREEN}2.${PLAIN} 解锁方面(御三家解锁+常用流媒体解锁+TikTok解锁)(平均运行30~60秒)"
             echo -e "${GREEN}3.${PLAIN} 硬件方面(基础系统信息+CPU+内存+双重磁盘IO测试)(平均运行1分半钟)"
-            echo -e "${GREEN}4.${PLAIN} IP质量检测(平均运行10~20秒)"
+            echo -e "${GREEN}4.${PLAIN} IP质量检测(15个数据库的IP检测+邮件端口检测)(平均运行10~20秒)"
             echo -e "${GREEN}5.${PLAIN} 常用端口开通情况(是否有阻断)(平均运行1分钟左右)(暂时有bug未修复)"
             echo -e "${GREEN}6.${PLAIN} 三网回程线路+广州三网路由+全国三网延迟(平均运行1分20秒)"
             echo " -------------"

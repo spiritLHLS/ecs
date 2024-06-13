@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #by spiritlhl
 #From https://github.com/spiritLHLS/ecs
-#2024.05.14
+#2024.06.13
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.05.14"
+ver="2024.06.13"
 changeLog="IP质量测试，由频道 https://t.me/vps_reviews 原创"
 temp_file_apt_fix="/tmp/apt_fix.txt"
 shorturl=""
@@ -67,6 +67,10 @@ check_and_cat_file() {
     else
         truncate -s 0 "$file"
     fi
+    # 检测文件内容是否包含"error"，如果包含则不打印文件内容
+    if grep -q "error" "$file"; then
+        return
+    fi
     cat "$file"
 }
 
@@ -125,12 +129,15 @@ pre_download() {
             case $arch in
                 "x86_64" | "x86" | "amd64" | "x64")
                     wget -O securityCheck "${cdn_success_url}https://github.com/oneclickvirt/securityCheck/releases/download/output/securityCheck-linux-amd64"
+                    wget -O pck "${cdn_success_url}https://github.com/oneclickvirt/portchecker/releases/download/output/portchecker-linux-amd64"
                 ;;
                 "i386" | "i686")
                     wget -O securityCheck "${cdn_success_url}https://github.com/oneclickvirt/securityCheck/releases/download/output/securityCheck-linux-386"
+                    wget -O pck "${cdn_success_url}https://github.com/oneclickvirt/portchecker/releases/download/output/portchecker-linux-386"
                 ;;
                 "armv7l" | "armv8" | "armv8l" | "aarch64")
                     wget -O securityCheck "${cdn_success_url}https://github.com/oneclickvirt/securityCheck/releases/download/output/securityCheck-linux-arm64"
+                    wget -O pck "${cdn_success_url}https://github.com/oneclickvirt/portchecker/releases/download/output/portchecker-linux-arm64"
                 ;;
                 *)
                     echo "Unsupported architecture: $arch"
@@ -142,12 +149,15 @@ pre_download() {
             case $arch in
                 "x86_64" | "x86" | "amd64" | "x64")
                     wget -O securityCheck "${cdn_success_url}https://github.com/oneclickvirt/securityCheck/releases/download/output/securityCheck-darwin-amd64"
+                    wget -O pck "${cdn_success_url}https://github.com/oneclickvirt/portchecker/releases/download/output/portchecker-darwin-amd64"
                 ;;
                 "i386" | "i686")
                     wget -O securityCheck "${cdn_success_url}https://github.com/oneclickvirt/securityCheck/releases/download/output/securityCheck-darwin-386"
+                    wget -O pck "${cdn_success_url}https://github.com/oneclickvirt/portchecker/releases/download/output/portchecker-darwin-386"
                 ;;
                 "armv7l" | "armv8" | "armv8l" | "aarch64")
                     wget -O securityCheck "${cdn_success_url}https://github.com/oneclickvirt/securityCheck/releases/download/output/securityCheck-darwin-arm64"
+                    wget -O pck "${cdn_success_url}https://github.com/oneclickvirt/portchecker/releases/download/output/portchecker-darwin-arm64"
                 ;;
                 *)
                     echo "Unsupported architecture: $arch"
@@ -159,12 +169,15 @@ pre_download() {
             case $arch in
                 amd64)
                     wget -O securityCheck "${cdn_success_url}https://github.com/oneclickvirt/securityCheck/releases/download/output/securityCheck-freebsd-amd64"
+                    wget -O pck "${cdn_success_url}https://github.com/oneclickvirt/portchecker/releases/download/output/portchecker-freebsd-amd64"
                 ;;
                 "i386" | "i686")
                     wget -O securityCheck "${cdn_success_url}https://github.com/oneclickvirt/securityCheck/releases/download/output/securityCheck-freebsd-386"
+                    wget -O pck "${cdn_success_url}https://github.com/oneclickvirt/portchecker/releases/download/output/portchecker-freebsd-386"
                 ;;
                 "armv7l" | "armv8" | "armv8l" | "aarch64")
                     wget -O securityCheck "${cdn_success_url}https://github.com/oneclickvirt/securityCheck/releases/download/output/securityCheck-freebsd-arm64"
+                    wget -O pck "${cdn_success_url}https://github.com/oneclickvirt/portchecker/releases/download/output/portchecker-freebsd-arm64"
                 ;;
                 *)
                     echo "Unsupported architecture: $arch"
@@ -172,23 +185,6 @@ pre_download() {
                 ;;
             esac
         ;;
-        # OpenBSD)
-        #   case $arch in
-        #     amd64)
-        #       wget -O securityCheck https://github.com/oneclickvirt/securityCheck/releases/download/output/securityCheck-openbsd-amd64
-        #       ;;
-        #     "i386" | "i686")
-        #       wget -O securityCheck https://github.com/oneclickvirt/securityCheck/releases/download/output/securityCheck-openbsd-386
-        #       ;;
-        #     "armv7l" | "armv8" | "armv8l" | "aarch64")
-        #       wget -O securityCheck https://github.com/oneclickvirt/securityCheck/releases/download/output/securityCheck-openbsd-arm64
-        #       ;;
-        #     *)
-        #       echo "Unsupported architecture: $arch"
-        #       exit 1
-        #       ;;
-        #   esac
-        #   ;;
         *)
             echo "Unsupported operating system: $os"
             exit 1
@@ -235,6 +231,16 @@ security_check() {
     ./securityCheck -l $language -e yes | sed '1d' >>/tmp/ip_quality_security_check
 }
 
+email_check(){
+    cd $myvar >/dev/null 2>&1
+    if [ -f "${TEMP_DIR}/pck" ]; then
+        chmod 777 ${TEMP_DIR}/pck
+    else
+        return
+    fi
+    ${TEMP_DIR}/pck | sed '1d' >>/tmp/ip_quality_email_check
+}
+
 ST="OvwKx5qgJtf7PZgCKbtyojSU.MTcwMTUxNzY1MTgwMw"
 
 next() {
@@ -267,6 +273,12 @@ ipcheck() {
     wait
     check_and_cat_file "/tmp/ip_quality_security_check"
     check_and_cat_file "/tmp/ip_quality_google"
+    if [ "$en_status" = true ]; then
+        echo -e "-------Email-Port-Detection--Base-On-oneclickvirt/portchecker--------"
+    else
+        echo -e "-------------邮件端口检测--基于oneclickvirt/portchecker开源-------------"
+    fi
+    check_and_cat_file "/tmp/ip_quality_email_check"
     rm -rf /tmp/ip_quality_*
 }
 

@@ -1462,3 +1462,112 @@
 #     fi
 #     rm -rf /tmp/ip_quality_*
 # }
+
+# check_port_25() {
+#     rm -rf /tmp/ip_quality_check_port_25
+#     rm -rf /tmp/ip_quality_check_email_service
+#     rm -rf /tmp/ip_quality_local_port_25
+#     if [ "$en_status" = true ]; then
+#         echo "Port 25 Detection:" >>/tmp/ip_quality_check_port_25
+#     else
+#         echo "端口25检测:" >>/tmp/ip_quality_check_port_25
+#     fi
+#     { local_port_25 "localhost" 25; } &
+#     check_email_service "163邮箱"
+#     if [[ $(cat /tmp/ip_quality_check_email_service) == *"No"* ]]; then
+#         wait
+#         combine_result_of_ip_quality
+#         return
+#     else
+#         check_email_service "gmail邮箱"
+#         if [[ $(cat /tmp/ip_quality_check_email_service) == *"No"* ]]; then
+#             wait
+#             combine_result_of_ip_quality
+#             return
+#         else
+#             { check_email_service "outlook邮箱"; } &
+#             { check_email_service "yandex邮箱"; } &
+#             { check_email_service "qq邮箱"; } &
+#         fi
+#     fi
+#     wait
+#     combine_result_of_ip_quality
+# }
+
+# local_port_25() {
+#     local host=$1
+#     local port=$2
+#     rm -rf /tmp/ip_quality_local_port_25
+#     if [ "$en_status" = true ]; then
+#         nc -z -w5 $host $port >/dev/null 2>&1
+#         if [ $? -eq 0 ]; then
+#             echo "  Local: Yes" >>/tmp/ip_quality_local_port_25
+#         else
+#             echo "  Local: No" >>/tmp/ip_quality_local_port_25
+#         fi
+#     else
+#         nc -z -w5 $host $port >/dev/null 2>&1
+#         if [ $? -eq 0 ]; then
+#             echo "  本地: Yes" >>/tmp/ip_quality_local_port_25
+#         else
+#             echo "  本地: No" >>/tmp/ip_quality_local_port_25
+#         fi
+#     fi
+# }
+
+# combine_result_of_ip_quality() {
+#     check_and_cat_file /tmp/ip_quality_local_port_25 >>/tmp/ip_quality_check_port_25
+#     check_and_cat_file /tmp/ip_quality_check_email_service >>/tmp/ip_quality_check_port_25
+# }
+
+# check_email_service() {
+#     local service=$1
+#     local host=""
+#     local en_service=""
+#     local port=25
+#     local expected_response="220"
+#     case $service in
+#     "gmail邮箱")
+#         host="smtp.gmail.com"
+#         en_service="gmail"
+#         ;;
+#     "163邮箱")
+#         host="smtp.163.com"
+#         en_service="163"
+#         ;;
+#     "yandex邮箱")
+#         host="smtp.yandex.com"
+#         en_service="yandex"
+#         ;;
+#     "outlook邮箱")
+#         host="smtp.office365.com"
+#         en_service="outlook"
+#         ;;
+#     "qq邮箱")
+#         host="smtp.qq.com"
+#         en_service="qq"
+#         ;;
+#     *)
+#         if [ "$en_status" = true ]; then
+#             echo "Unsupported mailbox services: $service"
+#         else
+#             echo "不支持的邮箱服务: $service"
+#         fi
+#         return
+#         ;;
+#     esac
+#     local response=$(echo -e "QUIT\r\n" | nc -w6 $host $port 2>/dev/null)
+#     if [ "$en_status" = true ]; then
+#         if [[ $response == *"$expected_response"* ]]; then
+#             echo "  $en_service: Yes" >>/tmp/ip_quality_check_email_service
+#         else
+#             echo "  $en_service：No" >>/tmp/ip_quality_check_email_service
+#         fi
+#     else
+#         if [[ $response == *"$expected_response"* ]]; then
+#             echo "  $service: Yes" >>/tmp/ip_quality_check_email_service
+#         else
+#             echo "  $service：No" >>/tmp/ip_quality_check_email_service
+#         fi
+#     fi
+# }
