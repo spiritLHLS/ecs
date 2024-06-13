@@ -270,6 +270,7 @@ ipcheck() {
     else
         { security_check "zh"; } &
     fi
+    { email_check; } &
     wait
     check_and_cat_file "/tmp/ip_quality_security_check"
     check_and_cat_file "/tmp/ip_quality_google"
