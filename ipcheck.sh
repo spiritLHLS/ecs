@@ -233,12 +233,12 @@ security_check() {
 
 email_check(){
     cd $myvar >/dev/null 2>&1
-    if [ -f "${TEMP_DIR}/pck" ]; then
-        chmod 777 ${TEMP_DIR}/pck
+    if [ -f "pck" ]; then
+        chmod 777 pck
     else
         return
     fi
-    ${TEMP_DIR}/pck | sed '1d' >>/tmp/ip_quality_email_check
+    ./pck | sed '1d' >>/tmp/ip_quality_email_check
 }
 
 ST="OvwKx5qgJtf7PZgCKbtyojSU.MTcwMTUxNzY1MTgwMw"
