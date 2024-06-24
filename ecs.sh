@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.06.13"
+ver="2024.06.24"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -3515,7 +3515,7 @@ backtrace_script() {
     cd $myvar >/dev/null 2>&1
     if [ -f "${TEMP_DIR}/backtrace" ]; then
         chmod 777 ${TEMP_DIR}/backtrace
-        curl_output=$(${TEMP_DIR}/backtrace 2>&1)
+        curl_output=$(${TEMP_DIR}/backtrace -s=false 2>&1)
     else
         return
     fi

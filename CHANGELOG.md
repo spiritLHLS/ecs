@@ -2,6 +2,11 @@
 
 # 主要变化
 
+2024.06.13
+
+- 检测打印结果时增加错误检测
+- 邮件端口检测重构使用golang实现[oneclickvirt/portchecker](https://github.com/oneclickvirt/portchecker)进行测试，检测速度更快、检测协议更多
+
 2024.05.24
 
 - 删除无用的中间文件的生成

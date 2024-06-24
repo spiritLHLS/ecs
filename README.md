@@ -75,10 +75,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.06.13
+2024.06.24
 
-- 检测打印结果时增加错误检测
-- 邮件端口检测重构使用golang实现[oneclickvirt/portchecker](https://github.com/oneclickvirt/portchecker)进行测试，检测速度更快、检测协议更多
+- 优化常用流媒体检测不再显示IP信息，避免重复查询
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
