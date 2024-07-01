@@ -36,7 +36,7 @@ FreeBSD系统的sed命令类似alpine而不是debian，很多命令的sed需要�
 
 能连得上网都支持
 
-PS: 考虑到多系统多架构的普遍测试的需求，本套脚本不再做新功能开发，仅作维护，各项测试逐步重构为Golang版本中([此处查询相关模块重构进度](https://github.com/topics/goecs))，预计年末完成整个项目重构。
+PS: 考虑到多系统多架构的普遍测试的需求，本套脚本不再做新功能开发，仅作维护，各项测试逐步重构为Golang版本中([https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs))，预计年末完成整个项目重构正式发版。
 
 # 目录
 - [前言](#前言)
