@@ -26,7 +26,7 @@ Support geography:
 
 Anywhere you can connect to the Internet
 
-PS: Considering the demand of universal testing for multi-system and multi-architecture, the Shell version of Fusion Monster is no longer for new feature development, only for maintenance, and the tests have been refactored to Golang version ([https://github.com/oneclickvirt/ecs](https://github.com/ oneclickvirt/ecs)), is expected to complete the entire project at the end of the year test troubleshooting and formal release.
+PS: Considering the demand of universal testing for multi-system and multi-architecture, the Shell version of Fusion Monster is no longer for new feature development, only for maintenance, and the tests have been refactored to Golang version ([https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs)), is expected to complete the entire project at the end of the year test troubleshooting and formal release.
 
 Translated with DeepL.com (free version)
 
