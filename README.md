@@ -1,6 +1,6 @@
 # ecs
 
-[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FspiritLHLS%2Fecs&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FspiritLHLS%2Fecs&count_bg=%2357DEFF&title_bg=%23000000&icon=cliqz.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://www.spiritlhl.net/)
 
 ## 语言
 
@@ -20,7 +20,7 @@ FreeBSD(前提已执行```pkg install -y curl bash```)，Armbian
 
 支持架构：
 
-amd64(x86_64)、arm64
+amd64(x86_64)、arm64、i386、arm
 
 支持地域：
 

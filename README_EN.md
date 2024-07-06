@@ -1,12 +1,14 @@
 # ecs
 
-[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FspiritLHLS%2Fecs&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FspiritLHLS%2Fecs&count_bg=%2357DEFF&title_bg=%23000000&icon=cliqz.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://www.spiritlhl.net/)
 
 ## Language
 
 [中文文档](README.md) | [English Docs](README_EN.md)
 
 ## Foreword
+
+**For systems/architectures not listed below please try [https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs) for testing**
 
 Support system:
 
@@ -16,25 +18,17 @@ Semi-support system:
 
 FreeBSD(Prerequisites implemented```pkg install -y curl bash```)，Armbian
 
-<details>
-
-Some question：
-  
-Armbian system part of the detection and testing is not supported at the moment, some will be coded incorrectly
-
-FreeBSD system's CPU test is crippled at the moment, some things have problems showing up
-
-FreeBSD system's sed command is similar to alpine instead of debian, many commands of sed need to be modified, there are big problems
-
-</details>
-
 Support Architecture:
 
-Basically all are supported, both local servers and cloud servers
+amd64(x86_64)、arm64、i386、arm
 
 Support geography:
 
 Anywhere you can connect to the Internet
+
+PS: Considering the demand of universal testing for multi-system and multi-architecture, the Shell version of Fusion Monster is no longer for new feature development, only for maintenance, and the tests have been refactored to Golang version ([https://github.com/oneclickvirt/ecs](https://github.com/ oneclickvirt/ecs)), is expected to complete the entire project at the end of the year test troubleshooting and formal release.
+
+Translated with DeepL.com (free version)
 
 # Menu
 - [Foreword](#Foreword)
