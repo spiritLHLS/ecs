@@ -2,7 +2,7 @@
 # by spiritlhl
 # from https://github.com/spiritLHLS/ecs
 # curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/multi_disk_io_test.sh -o mdit.sh && chmod +x mdit.sh && bash mdit.sh
-# 2024.01.10
+# 2024.07.06
 
 myvar=$(pwd)
 export DEBIAN_FRONTEND=noninteractive
@@ -101,11 +101,19 @@ for disk_name in $disk_names; do
   fi
 done
 
+# 提示用户输入自定义路径
+read -p "Enter custom path (leave empty to use detected paths): " custom_path
+
 # 遍历数组，打开对应盘路径并检测IO
 if [ ${#disk_paths[@]} -gt 0 ]; then
   for disk_path in "${disk_paths[@]}"; do
     disk_name=$(echo "$disk_path" | cut -d ":" -f 1)
     path=$(echo "$disk_path" | cut -d ":" -f 2)
+    
+    if [ -n "$custom_path" ]; then
+      path="$custom_path"
+    fi
+
     if [ -n "$path" ]; then
       cd "$path" >/dev/null 2>&1
       if [ $? -ne 0 ]; then

@@ -8,6 +8,8 @@
 
 ## 前言
 
+**以下未列出的系统/架构请尝试[https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs)进行测试**
+
 支持系统：
 
 Ubuntu 18+, Debian 8+, Centos 7+, Fedora 33+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, AstraLinux CE, Arch
@@ -16,27 +18,15 @@ Ubuntu 18+, Debian 8+, Centos 7+, Fedora 33+, Almalinux 8.5+, OracleLinux 8+, Ro
 
 FreeBSD(前提已执行```pkg install -y curl bash```)，Armbian
 
-<details>
-
-部分问题：
-  
-Armbian系统部分检测和测试暂不支持，部分会编码错误
-
-FreeBSD系统的CPU测试目前是残废的，有些东西显示有问题
-
-FreeBSD系统的sed命令类似alpine而不是debian，很多命令的sed需要修改，有大问题
-
-</details>
-
 支持架构：
 
-基本都支持，无论是本地服务器还是云端服务器
+amd64(x86_64)、arm64
 
 支持地域：
 
 能连得上网都支持
 
-PS: 考虑到多系统多架构的普遍测试的需求，本套脚本不再做新功能开发，仅作维护，各项测试逐步重构为Golang版本中([https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs))，预计年末完成整个项目重构正式发版。
+PS: 考虑到多系统多架构的普遍测试的需求，融合怪的Shell版本不再做新功能开发，仅作维护，各项测试已重构为Golang版本([https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs))，预计年末完成整个项目的测试排障并正式发版。
 
 # 目录
 - [前言](#前言)
