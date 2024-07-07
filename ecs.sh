@@ -603,9 +603,9 @@ pre_download() {
             ;;
         nexttrace)
             NEXTTRACE_VERSION=$(curl -m 6 -sSL "https://api.github.com/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
-            # 如果 https://api.github.com/ 请求失败，则使用 https://githubapi.spiritlhl.workers.dev/ ，此时可能宿主机无IPV4网络
+            # 如果 https://api.github.com/ 请求失败，则使用 https://fd.spiritlhl.top/ ，此时可能宿主机无IPV4网络
             if [ -z "$NEXTTRACE_VERSION" ]; then
-                NEXTTRACE_VERSION=$(curl -m 6 -sSL "https://fd.spiritlhl.workers.dev/https://api.github.com/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
+                NEXTTRACE_VERSION=$(curl -m 6 -sSL "https://fd.spiritlhl.top/https://api.github.com/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
             fi
             # 如果 https://githubapi.spiritlhl.workers.dev/ 请求失败，则使用 https://githubapi.spiritlhl.top/ ，此时可能宿主机在国内
             if [ -z "$NEXTTRACE_VERSION" ]; then
@@ -3145,7 +3145,7 @@ eo6s() {
     fi
 }
 
-cdn_urls=("https://cdn0.spiritlhl.top/" "http://cdn3.spiritlhl.net/" "http://cdn1.spiritlhl.net/" "http://cdn2.spiritlhl.net/" "https://fd.spiritlhl.workers.dev/")
+cdn_urls=("https://cdn0.spiritlhl.top/" "http://cdn3.spiritlhl.net/" "http://cdn1.spiritlhl.net/" "http://cdn2.spiritlhl.net/" "https://fd.spiritlhl.top/")
 ST="OvwKx5qgJtf7PZgCKbtyojSU.MTcwMTUxNzY1MTgwMw"
 speedtest_ver="1.2.0"
 SERVER_BASE_URL="https://raw.githubusercontent.com/spiritLHLS/speedtest.net-CN-ID/main"
