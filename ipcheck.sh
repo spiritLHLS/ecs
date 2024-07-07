@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #by spiritlhl
 #From https://github.com/spiritLHLS/ecs
-#2024.06.13
+#2024.07.07
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.06.13"
+ver="2024.07.07"
 changeLog="IP质量测试，由频道 https://t.me/vps_reviews 原创"
 temp_file_apt_fix="/tmp/apt_fix.txt"
 shorturl=""
@@ -284,7 +284,7 @@ ipcheck() {
 }
 
 main() {
-    cdn_urls=("https://cdn0.spiritlhl.top/" "http://cdn3.spiritlhl.net/" "http://cdn1.spiritlhl.net/" "http://cdn2.spiritlhl.net/")
+    cdn_urls=("https://cdn0.spiritlhl.top/" "http://cdn3.spiritlhl.net/" "http://cdn1.spiritlhl.net/" "http://cdn2.spiritlhl.net/" "https://fd.spiritlhl.workers.dev/")
     check_cdn_file
     pre_download
     chmod 777 securityCheck
