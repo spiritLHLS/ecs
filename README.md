@@ -65,9 +65,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.07.01
+2024.07.07
 
-- 替换 abstractapi 检测 为 bigdatacloud 检测
+- 替换ghproxy增加支持IPV6的反代
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

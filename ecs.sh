@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.06.24"
+ver="2024.07.07"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -605,7 +605,7 @@ pre_download() {
             NEXTTRACE_VERSION=$(curl -m 6 -sSL "https://api.github.com/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
             # 如果 https://api.github.com/ 请求失败，则使用 https://githubapi.spiritlhl.workers.dev/ ，此时可能宿主机无IPV4网络
             if [ -z "$NEXTTRACE_VERSION" ]; then
-                NEXTTRACE_VERSION=$(curl -m 6 -sSL "https://githubapi.spiritlhl.workers.dev/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
+                NEXTTRACE_VERSION=$(curl -m 6 -sSL "https://fd.spiritlhl.workers.dev/https://api.github.com/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
             fi
             # 如果 https://githubapi.spiritlhl.workers.dev/ 请求失败，则使用 https://githubapi.spiritlhl.top/ ，此时可能宿主机在国内
             if [ -z "$NEXTTRACE_VERSION" ]; then
@@ -3145,7 +3145,7 @@ eo6s() {
     fi
 }
 
-cdn_urls=("https://cdn0.spiritlhl.top/" "http://cdn3.spiritlhl.net/" "http://cdn1.spiritlhl.net/" "https://ghproxy.com/" "http://cdn2.spiritlhl.net/")
+cdn_urls=("https://cdn0.spiritlhl.top/" "http://cdn3.spiritlhl.net/" "http://cdn1.spiritlhl.net/" "http://cdn2.spiritlhl.net/" "https://fd.spiritlhl.workers.dev/")
 ST="OvwKx5qgJtf7PZgCKbtyojSU.MTcwMTUxNzY1MTgwMw"
 speedtest_ver="1.2.0"
 SERVER_BASE_URL="https://raw.githubusercontent.com/spiritLHLS/speedtest.net-CN-ID/main"
@@ -4095,15 +4095,6 @@ build_text() {
         sed -i -e '/^Running fio test.../d' test_result.txt
         sed -i -e '/^checking speedtest/d' test_result.txt
         if [ -s test_result.txt ]; then
-            # if [ "$en_status" = true ]; then
-            #     if grep -q -- "-----------------------Disk-fio-Read/Write-Test-------------------------" "test_result.txt"; then
-            #         sed -i '\#-----------------------Disk-fio-Read/Write-Test-------------------------#a Block Size | 4k            (IOPS) | 64k           (IOPS)' "test_result.txt"
-            #     fi
-            # else
-            #     if grep -q -- "---------------------磁盘fio读写测试--感谢yabs开源----------------------" "test_result.txt"; then
-            #         sed -i '/---------------------磁盘fio读写测试--感谢yabs开源----------------------/a Block Size | 4k            (IOPS) | 64k           (IOPS)' "test_result.txt"
-            #     fi
-            # fi
             shorturl=$(curl --ipv4 -sL -m 10 -X POST -H "Authorization: $ST" \
                 -H "Format: RANDOM" \
                 -H "Max-Views: 0" \
