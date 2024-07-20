@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #by spiritlhl
 #From https://github.com/spiritLHLS/ecs
-#2024.07.07
+#2024.07.20
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.07.07"
+ver="2024.07.20"
 changeLog="IP质量测试，由频道 https://t.me/vps_reviews 原创"
 temp_file_apt_fix="/tmp/apt_fix.txt"
 shorturl=""
@@ -88,7 +88,7 @@ build_text() {
             -H "Content-Type: multipart/form-data" \
             -H "No-JSON: true" \
             -F "file=@${myvar}/sc_result.txt" \
-        "https://paste.spiritlhl.net/api/upload")
+        "http://hpaste.spiritlhl.net/api/upload")
         if [ $? -ne 0 ]; then
             shorturl=$(curl --ipv6 -sL -m 10 -X POST -H "Authorization: $ST" \
                 -H "Format: RANDOM" \

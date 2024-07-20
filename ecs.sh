@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.07.07"
+ver="2024.07.20"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -4102,7 +4102,7 @@ build_text() {
                 -H "Content-Type: multipart/form-data" \
                 -H "No-JSON: true" \
                 -F "file=@${myvar}/test_result.txt" \
-                "https://paste.spiritlhl.net/api/upload")
+                "http://hpaste.spiritlhl.net/api/upload")
             if [ $? -ne 0 ]; then
                 shorturl=$(curl --ipv6 -sL -m 10 -X POST -H "Authorization: $ST" \
                     -H "Format: RANDOM" \

@@ -2,6 +2,10 @@
 
 # 主要变化
 
+2024.07.07
+
+- 替换ghproxy增加支持IPV6的反代
+
 2024.07.01
 
 - 替换 abstractapi 检测 为 bigdatacloud 检测
