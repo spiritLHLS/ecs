@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.07.20"
+ver="2024.07.21"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -2764,12 +2764,12 @@ print_intro() {
     echo "--------------------- A Bench Script By spiritlhl ----------------------"
     if [ "$en_status" = true ]; then
         echo "              Evaluation Channel: https://t.me/vps_reviews               "
-        echo "Version：$ver"
+        echo "VPS Fusion Monster Version：$ver"
         echo "Shell Project: https://github.com/spiritLHLS/ecs"
         echo "Go Project: https://github.com/oneclickvirt/ecs"
     else
         echo "                   测评频道: https://t.me/vps_reviews                    "
-        echo "版本：$ver"
+        echo "VPS融合怪版本：$ver"
         echo "Shell项目地址：https://github.com/spiritLHLS/ecs"
         echo "Go项目地址：https://github.com/oneclickvirt/ecs"
     fi
@@ -3828,7 +3828,7 @@ all_script() {
             ecs_net_all_script
         fi
     fi
-    # fscarmen_port_script
+    # block_port_script
     end_script
 }
 
@@ -3965,7 +3965,7 @@ network_script() {
     spiritlhl_script
     backtrace_script
     fscarmen_route_script test_area_g[@] test_ip_g[@]
-    # fscarmen_port_script
+    # block_port_script
     ecs_net_all_script
     end_script
 }
@@ -4005,12 +4005,13 @@ hardware_script() {
 }
 
 port_script() {
+    exit 1
     pre_check
     pre_download XXXX
     get_system_info
     clear
     print_intro
-    # fscarmen_port_script
+    # block_port_script
     end_script
 }
 

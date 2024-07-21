@@ -2,6 +2,10 @@
 
 # 主要变化
 
+2024.07.20
+
+- pastebin的托管服务商间歇性和Cloudflare的CDN不对付，分流先尝试http上传，如果失败再尝试https上传
+
 2024.07.07
 
 - 替换ghproxy增加支持IPV6的反代

@@ -67,9 +67,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.07.20
+2024.07.21
 
-- pastebin的托管服务商间歇性和Cloudflare的CDN不对付，分流先尝试http上传，如果失败再尝试https上传
+- 更新项目说明头部信息，更新仓库部分说明
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
