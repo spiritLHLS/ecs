@@ -8,7 +8,9 @@
 
 ## 前言
 
-**以下未列出的系统/架构请尝试[https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs)进行测试**
+**如果有本项目未列出的系统/架构，或本项目测试有BUG测不出来，或测试不想要魔改本机配置想要最小化环境变动的**
+
+**请尝试[https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs)进行测试**
 
 支持系统：
 

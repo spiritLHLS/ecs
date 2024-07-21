@@ -2765,11 +2765,13 @@ print_intro() {
     if [ "$en_status" = true ]; then
         echo "              Evaluation Channel: https://t.me/vps_reviews               "
         echo "Version：$ver"
-        echo "UpdateLog：$changeLog                      "
+        echo "Shell Project: https://github.com/spiritLHLS/ecs"
+        echo "Go Project: https://github.com/oneclickvirt/ecs"
     else
         echo "                   测评频道: https://t.me/vps_reviews                    "
         echo "版本：$ver"
-        echo "更新日志：$changeLog                       "
+        echo "Shell项目地址：https://github.com/spiritLHLS/ecs"
+        echo "Go项目地址：https://github.com/oneclickvirt/ecs"
     fi
 }
 

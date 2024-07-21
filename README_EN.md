@@ -8,7 +8,9 @@
 
 ## Foreword
 
-**For systems/architectures not listed below please try [https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs) for testing**
+**If there is a system/architecture that is not listed in this project, or if there is a bug that cannot be detected in this project's tests, or if the tests do not want to magically change the local configuration and want to minimize environmental changes**
+
+**Please try [https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs) for testing**
 
 Support system:
 
