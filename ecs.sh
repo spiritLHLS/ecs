@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.07.21"
+ver="2024.07.26"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -4116,6 +4116,10 @@ build_text() {
                     -F "file=@${myvar}/test_result.txt" \
                     "https://paste.spiritlhl.net/api/upload")
             fi
+        fi
+        if [[ "$shorturl" == *"https://paste.spiritlhl.net/u/"* ]]; then
+            # 强制显示为http协议
+            shorturl="${shorturl/https:\/\/paste.spiritlhl.net\/u\//http:\/\/hpaste.spiritlhl.net\/code\/}"
         fi
     fi
 }

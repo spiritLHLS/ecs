@@ -67,9 +67,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.07.21
+2024.07.26
 
-- 更新项目说明头部信息，更新仓库部分说明
+- 分享链接强制显示为http协议，避免CDN抽风导致无法访问页面
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

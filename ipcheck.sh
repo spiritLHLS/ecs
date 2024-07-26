@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #by spiritlhl
 #From https://github.com/spiritLHLS/ecs
-#2024.07.20
+#2024.07.26
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.07.20"
+ver="2024.07.26"
 changeLog="IP质量测试，由频道 https://t.me/vps_reviews 原创"
 temp_file_apt_fix="/tmp/apt_fix.txt"
 shorturl=""
@@ -98,6 +98,10 @@ build_text() {
                 -H "No-JSON: true" \
                 -F "file=@${myvar}/sc_result.txt" \
             "https://paste.spiritlhl.net/api/upload")
+        fi
+        if [[ "$shorturl" == *"https://paste.spiritlhl.net/u/"* ]]; then
+            # 强制显示为http协议
+            shorturl="${shorturl/https:\/\/paste.spiritlhl.net\/u\//http:\/\/hpaste.spiritlhl.net\/code\/}"
         fi
     fi
 }
