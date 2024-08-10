@@ -70,7 +70,8 @@ https://github.com/spiritLHLS/one-click-installation-script
 2024.08.10
 
 - 修复IPV6检测IP段不存在时仍显示报错的问题
-- 修复fgist已经跑路，不再加速下载的问题，优化下载的逻辑，先尝试curl再尝试wget
+- 修复fgit已经跑路，不再加速下载的问题，优化下载的逻辑，先尝试curl再尝试wget
+- 未来将显示下载文件的进度条，减少等待过程中未知报错的问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
