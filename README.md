@@ -67,9 +67,10 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.07.26
+2024.08.10
 
-- 分享链接强制显示为http协议，避免CDN抽风导致无法访问页面
+- 修复IPV6检测IP段不存在时仍显示报错的问题
+- 修复fgist已经跑路，不再加速下载的问题，优化下载的逻辑，先尝试curl再尝试wget
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

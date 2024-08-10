@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.07.26"
+ver="2024.08.10"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -574,22 +574,21 @@ pre_download() {
                 echo "wget failed, trying with curl"
                 curl -Lk -o $TEMP_DIR/sysbench.zip "${cdn_success_url}https://github.com/akopytov/sysbench/archive/1.0.20.zip"
             fi
-            if [ ! -f $TEMP_DIR/sysbench.zip ]; then
-                wget -q -O $TEMP_DIR/sysbench.zip "https://hub.fgit.cf/akopytov/sysbench/archive/1.0.20.zip"
-            fi
             chmod +x $TEMP_DIR/sysbench.zip
             unzip $TEMP_DIR/sysbench.zip -d ${TEMP_DIR}
             ;;
         CommonMediaTests)
             curl -sL -k "${cdn_success_url}https://github.com/oneclickvirt/CommonMediaTests/releases/download/output/${CommonMediaTests_FILE}" -o $TEMP_DIR/CommonMediaTests && chmod +x $TEMP_DIR/CommonMediaTests
             if [ ! -f $TEMP_DIR/CommonMediaTests ]; then
-                wget -q -O $TEMP_DIR/CommonMediaTests "https://hub.fgit.cf/oneclickvirt/CommonMediaTests/releases/download/output/${CommonMediaTests_FILE}" && chmod +x $TEMP_DIR/CommonMediaTests
+                wget -q -O $TEMP_DIR/CommonMediaTests "${cdn_success_url}https://github.com/oneclickvirt/CommonMediaTests/releases/download/output/${CommonMediaTests_FILE}" && chmod +x $TEMP_DIR/CommonMediaTests
             fi
             ;;
         media_lmc_check)
             curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh" -o $TEMP_DIR/media_lmc_check.sh && chmod 777 $TEMP_DIR/media_lmc_check.sh
             if [ ! -f $TEMP_DIR/media_lmc_check.sh ]; then
-                wget -q -O $TEMP_DIR/media_lmc_check.sh "https://raw.fgit.cf/lmc999/RegionRestrictionCheck/main/check.sh" && chmod 777 $TEMP_DIR/media_lmc_check.sh
+                wget -q -O $TEMP_DIR/media_lmc_check.sh "${cdn_success_url}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh" && chmod 777 $TEMP_DIR/media_lmc_check.sh
+            fi
+            if [ -f $TEMP_DIR/media_lmc_check.sh ]; then
                 old_url="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcheck.unclock.media&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=visit&edge_flat=false"
                 new_url="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Foneclickvirt%2FUnlockTests&count_bg=%2323E01C&title_bg=%23555555&icon=sonarcloud.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false"
                 sed -i "s|$old_url|$new_url|g" $TEMP_DIR/media_lmc_check.sh
@@ -598,7 +597,7 @@ pre_download() {
         besttrace)
             curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/besttrace/2021/${BESTTRACE_FILE}" -o $TEMP_DIR/$BESTTRACE_FILE && chmod +x $TEMP_DIR/$BESTTRACE_FILE
             if [ ! -f $TEMP_DIR/$BESTTRACE_FILE ]; then
-                wget -q -O $TEMP_DIR/$BESTTRACE_FILE "https://raw.fgit.cf/spiritLHLS/ecs/main/archive/besttrace/2021/${BESTTRACE_FILE}" && chmod +x $TEMP_DIR/$BESTTRACE_FILE
+                wget -q -O $TEMP_DIR/$BESTTRACE_FILE "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/besttrace/2021/${BESTTRACE_FILE}" && chmod +x $TEMP_DIR/$BESTTRACE_FILE
             fi
             ;;
         nexttrace)
@@ -613,44 +612,44 @@ pre_download() {
             fi
             curl -sL -k "${cdn_success_url}https://github.com/nxtrace/Ntrace-core/releases/download/${NEXTTRACE_VERSION}/${NEXTTRACE_FILE}" -o $TEMP_DIR/$NEXTTRACE_FILE && chmod +x $TEMP_DIR/$NEXTTRACE_FILE
             if [ ! -f $TEMP_DIR/$NEXTTRACE_FILE ]; then
-                wget -q -O $TEMP_DIR/$NEXTTRACE_FILE "https://hub.fgit.cf/nxtrace/Ntrace-core/releases/download/${NEXTTRACE_VERSION}/${NEXTTRACE_FILE}" && chmod +x $TEMP_DIR/$NEXTTRACE_FILE
+                wget -q -O $TEMP_DIR/$NEXTTRACE_FILE "${cdn_success_url}https://github.com/nxtrace/Ntrace-core/releases/download/${NEXTTRACE_VERSION}/${NEXTTRACE_FILE}" && chmod +x $TEMP_DIR/$NEXTTRACE_FILE
             fi
             ;;
         backtrace)
-            wget -q -O $TEMP_DIR/backtrace https://github.com/oneclickvirt/backtrace/releases/download/output/$BACKTRACE_FILE
+            curl -sL -k "${cdn_success_url}https://github.com/oneclickvirt/backtrace/releases/download/output/$BACKTRACE_FILE" -o $TEMP_DIR/backtrace && chmod +x $TEMP_DIR/backtrace
             if [ ! -f $TEMP_DIR/backtrace ]; then
-                wget -q -O $TEMP_DIR/backtrace https://hub.fgit.cf/oneclickvirt/backtrace/releases/download/output/$BACKTRACE_FILE
+                wget -q -O $TEMP_DIR/backtrace "${cdn_success_url}https://hub.fgit.cf/oneclickvirt/backtrace/releases/download/output/$BACKTRACE_FILE" && chmod +x $TEMP_DIR/backtrace
             fi
             ;;
         gostun)
-            wget -q -O $TEMP_DIR/gostun https://github.com/oneclickvirt/gostun/releases/download/output/$GOSTUN_FILE
+            curl -sL -k "${cdn_success_url}https://github.com/oneclickvirt/gostun/releases/download/output/$GOSTUN_FILE" -o $TEMP_DIR/gostun && chmod +x $TEMP_DIR/gostun
             if [ ! -f $TEMP_DIR/gostun ]; then
-                wget -q -O $TEMP_DIR/gostun https://hub.fgit.cf/oneclickvirt/gostun/releases/download/output/$GOSTUN_FILE
+                wget -q -O $TEMP_DIR/gostun "${cdn_success_url}https://hub.fgit.cf/oneclickvirt/gostun/releases/download/output/$GOSTUN_FILE" && chmod +x $TEMP_DIR/gostun
             fi
             ;;
         securityCheck)
-            wget -q -O $TEMP_DIR/securityCheck https://github.com/oneclickvirt/securityCheck/releases/download/output/$SecurityCheck_FILE
+            curl -sL -k "${cdn_success_url}https://github.com/oneclickvirt/securityCheck/releases/download/output/$SecurityCheck_FILE" -o $TEMP_DIR/securityCheck && chmod +x $TEMP_DIR/securityCheck
             if [ ! -f $TEMP_DIR/securityCheck ]; then
-                wget -q -O $TEMP_DIR/securityCheck https://hub.fgit.cf/oneclickvirt/securityCheck/releases/download/output/$SecurityCheck_FILE
+                wget -q -O $TEMP_DIR/securityCheck "${cdn_success_url}https://hub.fgit.cf/oneclickvirt/securityCheck/releases/download/output/$SecurityCheck_FILE" && chmod +x $TEMP_DIR/securityCheck
             fi
             ;;
         portchecker)
-            wget -q -O $TEMP_DIR/pck https://github.com/oneclickvirt/portchecker/releases/download/output/$PortChecker_FILE
+            curl -sL -k "${cdn_success_url}https://github.com/oneclickvirt/portchecker/releases/download/output/$PortChecker_FILE" -o $TEMP_DIR/pck && chmod +x $TEMP_DIR/pck
             if [ ! -f $TEMP_DIR/pck ]; then
-                wget -q -O $TEMP_DIR/pck https://hub.fgit.cf/oneclickvirt/portchecker/releases/download/output/$PortChecker_FILE
+                wget -q -O $TEMP_DIR/pck "${cdn_success_url}https://hub.fgit.cf/oneclickvirt/portchecker/releases/download/output/$PortChecker_FILE" && chmod +x $TEMP_DIR/pck
             fi
             ;;
         yabs)
             curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/masonr/yet-another-bench-script/master/yabs.sh" -o $TEMP_DIR/yabs.sh && chmod +x $TEMP_DIR/yabs.sh
             if [ ! -f $TEMP_DIR/yabs.sh ]; then
-                wget -q -O $TEMP_DIR/yabs.sh "https://raw.fgit.cf/masonr/yet-another-bench-script/master/yabs.sh" && chmod +x $TEMP_DIR/yabs.sh
+                wget -q -O $TEMP_DIR/yabs.sh "${cdn_success_url}https://raw.githubusercontent.com/masonr/yet-another-bench-script/master/yabs.sh" && chmod +x $TEMP_DIR/yabs.sh
             fi
             sed -i '/# gather basic system information (inc. CPU, AES-NI\/virt status, RAM + swap + disk size)/,/^echo -e "IPv4\/IPv6  : $ONLINE"/d' $TEMP_DIR/yabs.sh
             ;;
         ecsspeed_ping)
             curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecsspeed/main/script/ecsspeed-ping.sh" -o $TEMP_DIR/ecsspeed-ping.sh && chmod +x $TEMP_DIR/ecsspeed-ping.sh
             if [ ! -f $TEMP_DIR/ecsspeed-ping.sh ]; then
-                wget -q -O $TEMP_DIR/ecsspeed-ping.sh "https://raw.fgit.cf/spiritLHLS/ecsspeed/main/script/ecsspeed-ping.sh" && chmod +x $TEMP_DIR/ecsspeed-ping.sh
+                wget -q -O $TEMP_DIR/ecsspeed-ping.sh "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecsspeed/main/script/ecsspeed-ping.sh" && chmod +x $TEMP_DIR/ecsspeed-ping.sh
             fi
             ;;
         *)
@@ -2825,7 +2824,11 @@ print_ip_info() {
         rm -rf ${file}
     done
     # 获取IPV6的子网掩码
-    local ipv6_prefixlen=$(check_and_cat_file "${TEMP_DIR}/eo6s_result")
+    if [ -f "${TEMP_DIR}/eo6s_result" ]; then
+        local ipv6_prefixlen=$(check_and_cat_file "${TEMP_DIR}/eo6s_result")
+    else
+        local ipv6_prefixlen=""
+    fi
     # 打印最终结果
     if [ "$en_status" = true ]; then
         if [[ -n "$ipv4_asn_info" && "$ipv4_asn_info" != "None" ]]; then
