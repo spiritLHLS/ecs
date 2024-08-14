@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.08.10"
+ver="2024.08.14"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -1275,6 +1275,12 @@ function BenchAPI_Systeminfo_GetVMMinfo() {
         Result_Systeminfo_isPhysical="0"
         return 0
     else
+        if [ -f "/proc/1/cgroup" ] && grep -q "docker" /proc/1/cgroup 2>/dev/null; then
+            Result_Systeminfo_VMMType="Docker"
+            Result_Systeminfo_VMMTypeShort="docker"
+            Result_Systeminfo_isPhysical="0"
+            return 0
+        fi
         Result_Systeminfo_VMMType="Dedicated"
         Result_Systeminfo_VMMTypeShort="none"
         if test -f "/sys/class/iommu/dmar0/uevent"; then
