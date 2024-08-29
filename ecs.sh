@@ -1673,6 +1673,7 @@ Function_SysBench_CPU_Fast() {
 
 # =============== 网速测试及延迟测试 部分 ===============
 download_speedtest_file() {
+    cd $myvar >/dev/null 2>&1
     file="./speedtest-cli/speedtest"
     if [[ -e "$file" ]]; then
         # _green "speedtest found"
@@ -1767,6 +1768,7 @@ get_string_length() {
 }
 
 speed_test() {
+    cd $myvar >/dev/null 2>&1
     local nodeName="$2"
     if [ ! -f "./speedtest-cli/speedtest" ]; then
         if [ -z "$1" ]; then
