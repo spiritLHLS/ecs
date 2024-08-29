@@ -4,13 +4,17 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.08.14"
+ver="2024.08.29"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
 GREEN="\033[32m"
 YELLOW="\033[33m"
 PLAIN="\033[0m"
+SAVE_CURSOR="\033[s"
+RESTORE_CURSOR="\033[u"
+HIDE_CURSOR="\033[?25l"
+SHOW_CURSOR="\033[?25h"
 _red() { echo -e "\033[31m\033[01m$@\033[0m"; }
 _green() { echo -e "\033[32m\033[01m$@\033[0m"; }
 _yellow() { echo -e "\033[33m\033[01m$@\033[0m"; }
@@ -188,6 +192,11 @@ else
 fi
 shorturl=""
 TEMP_DIR='/tmp/ecs'
+PROGRESS_DIR="/tmp/progress"
+rm -rf "$PROGRESS_DIR"
+mkdir -p "$PROGRESS_DIR"
+PID_FILE="/tmp/pids.txt"
+rm -rf "$PID_FILE"
 temp_file_apt_fix="${TEMP_DIR}/apt_fix.txt"
 WorkDir="/tmp/.LemonBench"
 test_area_g=("广州电信" "广州联通" "广州移动")
@@ -231,6 +240,7 @@ if [ ! -d "/tmp" ]; then
     mkdir /tmp
 fi
 usage_timeout=true
+DISPLAY_RUNNING=1
 
 # =============== 脚本退出执行相关函数 部分 ===============
 trap _exit INT QUIT TERM
@@ -261,6 +271,7 @@ global_startup_init_action() {
 
 global_exit_action() {
     reset_default_sysctl >/dev/null 2>&1
+    echo -en "$SHOW_CURSOR"
     if [ "$build_text_status" = true ]; then
         build_text
         if [ -n "$shorturl" ]; then
@@ -558,105 +569,233 @@ check_and_cat_file() {
     cat "$file"
 }
 
-# 后台静默预下载文件并解压
-pre_download() {
-    if [ -n "$LBench_Result_SystemBit_Full" ]; then
-        if [ "$LBench_Result_SystemBit_Full" = "arm" ]; then
-            tp_sys="arm64"
-        else
-            tp_sys="$LBench_Result_SystemBit_Full"
-        fi
+# 移动光标并清除行
+move_and_clear() {
+    local line=$1
+    echo -en "\033[${line};0H\033[K"
+}
+
+# 显示进度条
+display_progress() {
+    local use_tput=false
+    if command -v tput > /dev/null 2>&1; then
+        use_tput=true
     fi
-    for file in "$@"; do
-        case $file in
-        sysbench)
-            if ! wget -O $TEMP_DIR/sysbench.zip "${cdn_success_url}https://github.com/akopytov/sysbench/archive/1.0.20.zip"; then
-                echo "wget failed, trying with curl"
-                curl -Lk -o $TEMP_DIR/sysbench.zip "${cdn_success_url}https://github.com/akopytov/sysbench/archive/1.0.20.zip"
+    local progress_height=$((${#dfiles[@]} + 2))  # 进度显示所需的行数
+    # 保存光标位置并隐藏光标
+    echo -en "$SAVE_CURSOR$HIDE_CURSOR"
+    while [ $DISPLAY_RUNNING -eq 1 ]; do
+        # 将光标移动到保存的位置
+        echo -en "$RESTORE_CURSOR"
+        if [ "$en_status" = true ]; then
+            echo "Download progress:"
+        else
+            echo "下载进度："
+        fi
+        local all_completed=true
+        for dfile in "${dfiles[@]}"; do
+            if [ -f "$PROGRESS_DIR/$dfile" ]; then
+                local percentage=$(cat "$PROGRESS_DIR/$dfile")
+                if [[ "$percentage" =~ ^[0-9]+$ ]]; then
+                    percentage=$((percentage > 100 ? 100 : percentage))
+                    printf "%-20s [%-50s] %3d%%\n" "$dfile" "$(printf '#%.0s' $(seq 1 $((percentage / 2))))" "$percentage"
+                    if [ "$percentage" -lt 100 ]; then
+                        all_completed=false
+                    fi
+                else
+                    printf "%-20s [%-50s] ???\n" "$dfile" ""
+                    all_completed=false
+                fi
+            else
+                printf "%-20s [%-50s] ???\n" "$dfile" ""
+                all_completed=false
             fi
-            chmod +x $TEMP_DIR/sysbench.zip
-            unzip $TEMP_DIR/sysbench.zip -d ${TEMP_DIR}
-            ;;
-        CommonMediaTests)
-            curl -sL -k "${cdn_success_url}https://github.com/oneclickvirt/CommonMediaTests/releases/download/output/${CommonMediaTests_FILE}" -o $TEMP_DIR/CommonMediaTests && chmod +x $TEMP_DIR/CommonMediaTests
-            if [ ! -f $TEMP_DIR/CommonMediaTests ]; then
-                wget -q -O $TEMP_DIR/CommonMediaTests "${cdn_success_url}https://github.com/oneclickvirt/CommonMediaTests/releases/download/output/${CommonMediaTests_FILE}" && chmod +x $TEMP_DIR/CommonMediaTests
-            fi
-            ;;
-        media_lmc_check)
-            curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh" -o $TEMP_DIR/media_lmc_check.sh && chmod 777 $TEMP_DIR/media_lmc_check.sh
-            if [ ! -f $TEMP_DIR/media_lmc_check.sh ]; then
-                wget -q -O $TEMP_DIR/media_lmc_check.sh "${cdn_success_url}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh" && chmod 777 $TEMP_DIR/media_lmc_check.sh
-            fi
-            if [ -f $TEMP_DIR/media_lmc_check.sh ]; then
-                old_url="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcheck.unclock.media&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=visit&edge_flat=false"
-                new_url="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Foneclickvirt%2FUnlockTests&count_bg=%2323E01C&title_bg=%23555555&icon=sonarcloud.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false"
-                sed -i "s|$old_url|$new_url|g" $TEMP_DIR/media_lmc_check.sh
-            fi
-            ;;
-        besttrace)
-            curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/besttrace/2021/${BESTTRACE_FILE}" -o $TEMP_DIR/$BESTTRACE_FILE && chmod +x $TEMP_DIR/$BESTTRACE_FILE
-            if [ ! -f $TEMP_DIR/$BESTTRACE_FILE ]; then
-                wget -q -O $TEMP_DIR/$BESTTRACE_FILE "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/besttrace/2021/${BESTTRACE_FILE}" && chmod +x $TEMP_DIR/$BESTTRACE_FILE
-            fi
-            ;;
-        nexttrace)
-            NEXTTRACE_VERSION=$(curl -m 6 -sSL "https://api.github.com/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
-            # 如果 https://api.github.com/ 请求失败，则使用 https://fd.spiritlhl.top/ ，此时可能宿主机无IPV4网络
-            if [ -z "$NEXTTRACE_VERSION" ]; then
-                NEXTTRACE_VERSION=$(curl -m 6 -sSL "https://fd.spiritlhl.top/https://api.github.com/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
-            fi
-            # 如果 https://githubapi.spiritlhl.workers.dev/ 请求失败，则使用 https://githubapi.spiritlhl.top/ ，此时可能宿主机在国内
-            if [ -z "$NEXTTRACE_VERSION" ]; then
-                NEXTTRACE_VERSION=$(curl -m 6 -sSL "https://githubapi.spiritlhl.top/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
-            fi
-            curl -sL -k "${cdn_success_url}https://github.com/nxtrace/Ntrace-core/releases/download/${NEXTTRACE_VERSION}/${NEXTTRACE_FILE}" -o $TEMP_DIR/$NEXTTRACE_FILE && chmod +x $TEMP_DIR/$NEXTTRACE_FILE
-            if [ ! -f $TEMP_DIR/$NEXTTRACE_FILE ]; then
-                wget -q -O $TEMP_DIR/$NEXTTRACE_FILE "${cdn_success_url}https://github.com/nxtrace/Ntrace-core/releases/download/${NEXTTRACE_VERSION}/${NEXTTRACE_FILE}" && chmod +x $TEMP_DIR/$NEXTTRACE_FILE
-            fi
-            ;;
-        backtrace)
-            curl -sL -k "${cdn_success_url}https://github.com/oneclickvirt/backtrace/releases/download/output/$BACKTRACE_FILE" -o $TEMP_DIR/backtrace && chmod +x $TEMP_DIR/backtrace
-            if [ ! -f $TEMP_DIR/backtrace ]; then
-                wget -q -O $TEMP_DIR/backtrace "${cdn_success_url}https://hub.fgit.cf/oneclickvirt/backtrace/releases/download/output/$BACKTRACE_FILE" && chmod +x $TEMP_DIR/backtrace
-            fi
-            ;;
-        gostun)
-            curl -sL -k "${cdn_success_url}https://github.com/oneclickvirt/gostun/releases/download/output/$GOSTUN_FILE" -o $TEMP_DIR/gostun && chmod +x $TEMP_DIR/gostun
-            if [ ! -f $TEMP_DIR/gostun ]; then
-                wget -q -O $TEMP_DIR/gostun "${cdn_success_url}https://hub.fgit.cf/oneclickvirt/gostun/releases/download/output/$GOSTUN_FILE" && chmod +x $TEMP_DIR/gostun
-            fi
-            ;;
-        securityCheck)
-            curl -sL -k "${cdn_success_url}https://github.com/oneclickvirt/securityCheck/releases/download/output/$SecurityCheck_FILE" -o $TEMP_DIR/securityCheck && chmod +x $TEMP_DIR/securityCheck
-            if [ ! -f $TEMP_DIR/securityCheck ]; then
-                wget -q -O $TEMP_DIR/securityCheck "${cdn_success_url}https://hub.fgit.cf/oneclickvirt/securityCheck/releases/download/output/$SecurityCheck_FILE" && chmod +x $TEMP_DIR/securityCheck
-            fi
-            ;;
-        portchecker)
-            curl -sL -k "${cdn_success_url}https://github.com/oneclickvirt/portchecker/releases/download/output/$PortChecker_FILE" -o $TEMP_DIR/pck && chmod +x $TEMP_DIR/pck
-            if [ ! -f $TEMP_DIR/pck ]; then
-                wget -q -O $TEMP_DIR/pck "${cdn_success_url}https://hub.fgit.cf/oneclickvirt/portchecker/releases/download/output/$PortChecker_FILE" && chmod +x $TEMP_DIR/pck
-            fi
-            ;;
-        yabs)
-            curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/masonr/yet-another-bench-script/master/yabs.sh" -o $TEMP_DIR/yabs.sh && chmod +x $TEMP_DIR/yabs.sh
-            if [ ! -f $TEMP_DIR/yabs.sh ]; then
-                wget -q -O $TEMP_DIR/yabs.sh "${cdn_success_url}https://raw.githubusercontent.com/masonr/yet-another-bench-script/master/yabs.sh" && chmod +x $TEMP_DIR/yabs.sh
-            fi
-            sed -i '/# gather basic system information (inc. CPU, AES-NI\/virt status, RAM + swap + disk size)/,/^echo -e "IPv4\/IPv6  : $ONLINE"/d' $TEMP_DIR/yabs.sh
-            ;;
-        ecsspeed_ping)
-            curl -sL -k "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecsspeed/main/script/ecsspeed-ping.sh" -o $TEMP_DIR/ecsspeed-ping.sh && chmod +x $TEMP_DIR/ecsspeed-ping.sh
-            if [ ! -f $TEMP_DIR/ecsspeed-ping.sh ]; then
-                wget -q -O $TEMP_DIR/ecsspeed-ping.sh "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecsspeed/main/script/ecsspeed-ping.sh" && chmod +x $TEMP_DIR/ecsspeed-ping.sh
-            fi
-            ;;
-        *)
-            echo "Invalid file: $file"
-            ;;
-        esac
+        done
+        if [ "$all_completed" = true ]; then
+            break
+        fi
+        sleep 3.5
     done
+    # 显示光标
+    echo -en "$SHOW_CURSOR"
+    echo ""
+}
+
+# 开始整体并发下载并显示进度条
+start_downloads() {
+    local dfiles=("$@")  # 接收文件列表作为参数
+    # 初始化进度
+    for dfile in "${dfiles[@]}"; do
+        echo "0" > "$PROGRESS_DIR/$dfile"
+    done
+    # 获取当前光标位置
+    local current_line=$(tput lines)
+    # 启动后台进程来更新显示
+    display_progress $current_line &
+    local display_pid=$!
+    # 并发下载并跟踪PID
+    for dfile in "${dfiles[@]}"; do
+        main_download "$dfile" &
+        echo $! >> "$PID_FILE"
+    done
+    wait
+    # 停止显示进程
+    DISPLAY_RUNNING=0
+}
+
+download_file() {
+    local url=$1
+    local output=$2
+    local progress_file=$3
+    # 获取文件总大小
+    local total_size=$(curl -sIkL "$url" | grep -i Content-Length | awk '{print $2}' | tr -d '\r')
+    if [ -z "$total_size" ]; then
+        echo "$url SIZE: $total_size" >> test_result.txt
+    fi
+    # 新增变量：用于计数连续检测到下载完成的次数
+    local complete_count=0
+    if ! curl -Lk "$url" -o "$output" 2>&1 | \
+        while true; do
+            if [ -f "$output" ]; then
+                sleep 1
+                local current_size=$(stat -f%z "$output" 2>/dev/null || stat -c%s "$output" 2>/dev/null)
+                local progress=$((current_size * 100 / total_size))
+                echo "$progress" > "$progress_file"
+                sleep 1
+                # 检查是否下载完成
+                if [ "$current_size" -ge "$total_size" ]; then
+                    complete_count=$((complete_count + 1))
+                    # 只有连续3次检测到下载完成才退出循环
+                    if [ "$complete_count" -ge 3 ]; then
+                        break
+                    fi
+                else
+                    complete_count=0  # 如果不完整，重置计数器
+                fi
+            fi
+        done; then
+        wget -O "$output" "$url" 2>&1 | \
+        while true; do
+            if [ -f "$output" ]; then
+                sleep 1
+                local current_size=$(stat -f%z "$output" 2>/dev/null || stat -c%s "$output" 2>/dev/null)
+                local progress=$((current_size * 100 / total_size))
+                echo "$progress" > "$progress_file"
+                sleep 1
+                # 检查是否下载完成
+                if [ "$current_size" -ge "$total_size" ]; then
+                    complete_count=$((complete_count + 1))
+                    # 只有连续3次检测到下载完成才退出循环
+                    if [ "$complete_count" -ge 3 ]; then
+                        break
+                    fi
+                else
+                    complete_count=0  # 如果不完整，重置计数器
+                fi
+            fi
+        done
+    fi
+    # 确保最终进度被写入
+    if [ -f "$output" ]; then
+        local final_size=$(stat -f%z "$output" 2>/dev/null || stat -c%s "$output" 2>/dev/null)
+        local final_progress=$((final_size * 100 / total_size))
+        echo "$final_progress" > "$progress_file"
+    fi
+}
+
+main_download() {
+    local file=$1
+    case $file in
+    sysbench)
+        local url="${cdn_success_url}https://github.com/akopytov/sysbench/archive/1.0.20.zip"
+        local output="$TEMP_DIR/sysbench.zip"
+        download_file "$url" "$output" "$PROGRESS_DIR/$file"
+        chmod +x "$output"
+        unzip "$output" -d ${TEMP_DIR}
+        echo "100" > "$PROGRESS_DIR/$file"
+        ;;
+    CommonMediaTests)
+        local url="${cdn_success_url}https://github.com/oneclickvirt/CommonMediaTests/releases/download/output/${CommonMediaTests_FILE}"
+        local output="$TEMP_DIR/CommonMediaTests"
+        download_file "$url" "$output" "$PROGRESS_DIR/$file"
+        chmod +x "$output"
+        echo "100" > "$PROGRESS_DIR/$file"
+        ;;
+    media_lmc_check)
+        local url="${cdn_success_url}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh"
+        local output="$TEMP_DIR/media_lmc_check.sh"
+        download_file "$url" "$output" "$PROGRESS_DIR/$file"
+        chmod 777 "$output"
+        old_url="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcheck.unclock.media&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=visit&edge_flat=false"
+        new_url="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Foneclickvirt%2FUnlockTests&count_bg=%2323E01C&title_bg=%23555555&icon=sonarcloud.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false"
+        sed -i "s|$old_url|$new_url|g" "$output"
+        echo "100" > "$PROGRESS_DIR/$file"
+        ;;
+    besttrace)
+        local url="${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/besttrace/2021/${BESTTRACE_FILE}"
+        local output="$TEMP_DIR/$BESTTRACE_FILE"
+        download_file "$url" "$output" "$PROGRESS_DIR/$file"
+        chmod +x "$output"
+        echo "100" > "$PROGRESS_DIR/$file"
+        ;;
+    nexttrace)
+        NEXTTRACE_VERSION=$(curl -m 6 -sSL "https://api.github.com/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
+        if [ -z "$NEXTTRACE_VERSION" ]; then
+            NEXTTRACE_VERSION=$(curl -m 6 -sSL "https://fd.spiritlhl.top/https://api.github.com/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
+        fi
+        if [ -z "$NEXTTRACE_VERSION" ]; then
+            NEXTTRACE_VERSION=$(curl -m 6 -sSL "https://githubapi.spiritlhl.top/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
+        fi
+        local url="${cdn_success_url}https://github.com/nxtrace/Ntrace-core/releases/download/${NEXTTRACE_VERSION}/${NEXTTRACE_FILE}"
+        local output="$TEMP_DIR/$NEXTTRACE_FILE"
+        download_file "$url" "$output" "$PROGRESS_DIR/$file"
+        chmod +x "$output"
+        echo "100" > "$PROGRESS_DIR/$file"
+        ;;
+    backtrace)
+        local url="${cdn_success_url}https://github.com/oneclickvirt/backtrace/releases/download/output/$BACKTRACE_FILE"
+        local output="$TEMP_DIR/backtrace"
+        download_file "$url" "$output" "$PROGRESS_DIR/$file"
+        echo "100" > "$PROGRESS_DIR/$file"
+        ;;
+    gostun)
+        local url="${cdn_success_url}https://github.com/oneclickvirt/gostun/releases/download/output/$GOSTUN_FILE"
+        local output="$TEMP_DIR/gostun"
+        download_file "$url" "$output" "$PROGRESS_DIR/$file"
+        echo "100" > "$PROGRESS_DIR/$file"
+        ;;
+    securityCheck)
+        local url="${cdn_success_url}https://github.com/oneclickvirt/securityCheck/releases/download/output/$SecurityCheck_FILE"
+        local output="$TEMP_DIR/securityCheck"
+        download_file "$url" "$output" "$PROGRESS_DIR/$file"
+        echo "100" > "$PROGRESS_DIR/$file"
+        ;;
+    portchecker)
+        local url="${cdn_success_url}https://github.com/oneclickvirt/portchecker/releases/download/output/$PortChecker_FILE"
+        local output="$TEMP_DIR/pck"
+        download_file "$url" "$output" "$PROGRESS_DIR/$file"
+        echo "100" > "$PROGRESS_DIR/$file"
+        ;;
+    yabs)
+        local url="${cdn_success_url}https://raw.githubusercontent.com/masonr/yet-another-bench-script/master/yabs.sh"
+        local output="$TEMP_DIR/yabs.sh"
+        download_file "$url" "$output" "$PROGRESS_DIR/$file"
+        chmod +x "$output"
+        sed -i '/# gather basic system information (inc. CPU, AES-NI\/virt status, RAM + swap + disk size)/,/^echo -e "IPv4\/IPv6  : $ONLINE"/d' "$output"
+        echo "100" > "$PROGRESS_DIR/$file"
+        ;;
+    ecsspeed_ping)
+        local url="${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecsspeed/main/script/ecsspeed-ping.sh"
+        local output="$TEMP_DIR/ecsspeed-ping.sh"
+        download_file "$url" "$output" "$PROGRESS_DIR/$file"
+        chmod +x "$output"
+        echo "100" > "$PROGRESS_DIR/$file"
+        ;;
+    *)
+        echo "Invalid file: $file"
+        echo "0" > "$PROGRESS_DIR/$file"
+        ;;
+    esac
 }
 
 # =============== 其他相关信息查询 部分 ===============
@@ -1419,7 +1558,8 @@ Check_Sysbench_InstantBuild() {
         prepare_compile_env "${os_sysbench}"
         echo -e "${Msg_Info}Downloading Source code (Version 1.0.20)..."
         mkdir -p /tmp/_LBench/src/
-        pre_download sysbench
+        dfiles=(sysbench)
+        start_downloads "${dfiles[@]}"
         mv ${TEMP_DIR}/sysbench-1.0.20 /tmp/_LBench/src/
         echo -e "${Msg_Info}Compiling Sysbench Module ..."
         cd /tmp/_LBench/src/sysbench-1.0.20
@@ -3156,7 +3296,7 @@ eo6s() {
     fi
 }
 
-cdn_urls=("https://cdn0.spiritlhl.top/" "http://cdn3.spiritlhl.net/" "http://cdn1.spiritlhl.net/" "http://cdn2.spiritlhl.net/" "https://fd.spiritlhl.top/")
+cdn_urls=("http://cdn1.spiritlhl.net/" "http://cdn2.spiritlhl.net/" "http://cdn3.spiritlhl.net/" "https://fd.spiritlhl.top/" "https://cdn0.spiritlhl.top/" "https://cdn.spiritlhl.net/")
 ST="OvwKx5qgJtf7PZgCKbtyojSU.MTcwMTUxNzY1MTgwMw"
 speedtest_ver="1.2.0"
 SERVER_BASE_URL="https://raw.githubusercontent.com/spiritLHLS/speedtest.net-CN-ID/main"
@@ -3701,10 +3841,7 @@ all_script() {
         if [[ -z "${CN}" || "${CN}" != true ]]; then
             _yellow "Concurrently downloading files..."
             dfiles=(gostun CommonMediaTests besttrace nexttrace backtrace securityCheck portchecker yabs media_lmc_check)
-            for dfile in "${dfiles[@]}"; do
-                { pre_download ${dfile}; } &
-            done
-            wait
+            start_downloads "${dfiles[@]}"
             _yellow "All files download successfully."
             get_system_info
             check_dnsutils
@@ -3740,10 +3877,7 @@ all_script() {
         else
             _yellow "Concurrently downloading files..."
             dfiles=(securityCheck portchecker ecsspeed_ping)
-            for dfile in "${dfiles[@]}"; do
-                { pre_download ${dfile}; } &
-            done
-            wait
+            start_downloads "${dfiles[@]}"
             _yellow "All files download successfully."
             get_system_info
             check_dnsutils
@@ -3774,16 +3908,8 @@ all_script() {
         # 顺序测试
         if [[ -z "${CN}" || "${CN}" != true ]]; then
             _yellow "Concurrently downloading files..."
-            { pre_download besttrace; } &
-            { pre_download nexttrace; } &
-            { pre_download backtrace; } &
-            { pre_download CommonMediaTests; } &
-            { pre_download securityCheck; } &
-            { pre_download portchecker; } &
-            { pre_download gostun; } &
-            { pre_download yabs; } &
-            { pre_download media_lmc_check; } &
-            wait
+            dfiles=(besttrace nexttrace backtrace CommonMediaTests securityCheck portchecker gostun yabs media_lmc_check)
+            start_downloads "${dfiles[@]}"
             _yellow "All files download successfully."
             get_system_info
             check_dnsutils
@@ -3809,11 +3935,8 @@ all_script() {
             ecs_net_all_script
         else
             _yellow "Concurrently downloading files..."
-            { pre_download ecsspeed_ping; } &
-            { pre_download securityCheck; } &
-            { pre_download portchecker; } &
-            { pre_download gostun; } &
-            wait
+            dfiles=(ecsspeed_ping securityCheck portchecker gostun)
+            start_downloads "${dfiles[@]}"
             _yellow "All files download successfully."
             get_system_info
             check_dnsutils
@@ -3845,9 +3968,8 @@ minal_script() {
     pre_check
     get_system_info
     _yellow "Concurrently downloading files..."
-    { pre_download gostun; } &
-    { pre_download yabs; } &
-    wait
+    dfiles=(gostun yabs)
+    start_downloads "${dfiles[@]}"
     _yellow "All files download successfully."
     check_ping
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
@@ -3866,14 +3988,9 @@ minal_script() {
 minal_plus() {
     pre_check
     _yellow "Concurrently downloading files..."
-    { pre_download besttrace; } &
-    { pre_download nexttrace; } &
-    { pre_download backtrace; } &
-    { pre_download CommonMediaTests; } &
-    { pre_download gostun; } &
-    { pre_download yabs; } &
-    { pre_download media_lmc_check; } &
     wait
+    dfiles=(besttrace nexttrace backtrace CommonMediaTests gostun yabs media_lmc_check)
+    start_downloads "${dfiles[@]}"
     _yellow "All files download successfully."
     get_system_info
     check_lmc_script
@@ -3900,12 +4017,8 @@ minal_plus() {
 minal_plus_network() {
     pre_check
     _yellow "Concurrently downloading files..."
-    { pre_download besttrace; } &
-    { pre_download nexttrace; } &
-    { pre_download backtrace; } &
-    { pre_download gostun; } &
-    { pre_download yabs; } &
-    wait
+    dfiles=(besttrace nexttrace backtrace gostun yabs)
+    start_downloads "${dfiles[@]}"
     _yellow "All files download successfully."
     get_system_info
     check_ping
@@ -3927,11 +4040,8 @@ minal_plus_network() {
 minal_plus_media() {
     pre_check
     _yellow "Concurrently downloading files..."
-    { pre_download CommonMediaTests; } &
-    { pre_download gostun; } &
-    { pre_download media_lmc_check; } &
-    { pre_download yabs; } &
-    wait
+    dfiles=(CommonMediaTests gostun yabs media_lmc_check)
+    start_downloads "${dfiles[@]}"
     _yellow "All files download successfully."
     get_system_info
     check_dnsutils
@@ -3956,12 +4066,8 @@ minal_plus_media() {
 network_script() {
     pre_check
     _yellow "Concurrently downloading files..."
-    { pre_download besttrace; } &
-    { pre_download nexttrace; } &
-    { pre_download securityCheck; } &
-    { pre_download portchecker; } &
-    { pre_download backtrace; } &
-    wait
+    dfiles=(besttrace nexttrace backtrace securityCheck portchecker)
+    start_downloads "${dfiles[@]}"
     _yellow "All files download successfully."
     check_ping
     ls_sg_hk_jp=($(get_nearest_data "${SERVER_BASE_URL}/ls_sg_hk_jp.csv"))
@@ -3982,9 +4088,8 @@ network_script() {
 media_script() {
     pre_check
     _yellow "Concurrently downloading files..."
-    { pre_download CommonMediaTests; } &
-    { pre_download media_lmc_check; } &
-    wait
+    dfiles=(CommonMediaTests media_lmc_check)
+    start_downloads "${dfiles[@]}"
     _yellow "All files download successfully."
     check_dnsutils
     check_lmc_script
@@ -3998,10 +4103,14 @@ media_script() {
 
 hardware_script() {
     pre_check
+    _yellow "Concurrently downloading files..."
     if [ "$test_base_status" = false ]; then
-        pre_download yabs
+        dfiles=(yabs gostun)
+    else
+        dfiles=(gostun)
     fi
-    pre_download gostun
+    start_downloads "${dfiles[@]}"
+    _yellow "All files download successfully."
     get_system_info
     check_nat_type
     clear
@@ -4027,11 +4136,8 @@ port_script() {
 sw_script() {
     pre_check
     _yellow "Concurrently downloading files..."
-    { pre_download besttrace; } &
-    { pre_download nexttrace; } &
-    { pre_download backtrace; } &
-    { pre_download ecsspeed_ping; } &
-    wait
+    dfiles=(besttrace nexttrace backtrace ecsspeed_ping)
+    start_downloads "${dfiles[@]}"
     _yellow "All files download successfully."
     check_ping
     clear
@@ -4045,9 +4151,8 @@ sw_script() {
 network_script_select() {
     pre_check
     _yellow "Concurrently downloading files..."
-    { pre_download besttrace; } &
-    { pre_download nexttrace; } &
-    wait
+    dfiles=(besttrace nexttrace)
+    start_downloads "${dfiles[@]}"
     _yellow "All files download successfully."
     clear
     print_intro
@@ -4082,6 +4187,8 @@ rm_script() {
     rm -rf speedtest.tar.gz*
     rm -rf speedtest-cli*
     rm -rf geekbench_claim.url*
+    rm -rf "$PROGRESS_DIR"
+    rm -rf "$PID_FILE"
 }
 
 build_text() {

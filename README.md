@@ -67,17 +67,15 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.08.14
+2024.08.29
 
-- 修复Docker检测可能失败的问题，增加cgroup检测
-- 未来将显示下载文件的进度条，减少等待过程中未知报错的问题
+- 显示下载文件的进度条，减少等待过程中未知报错的问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
 **[返回顶部](https://github.com/spiritLHLS/ecs#top)**
 
 ## 融合怪命令
-
 
 ### 交互形式
 
@@ -154,8 +152,9 @@ bash ecs.sh -m 1
 
 ## IP质量检测
 
-- IP质量检测，含多家数据库查询，含DNS黑名单查询
+- IP质量检测，含15家数据库查询，含DNS黑名单查询
 - 含 ```IPV4``` 和 ```IPV6``` 检测，含ASN和地址查询
+- 含邮件端口检测
 
 ```bash
 bash <(wget -qO- bash.spiritlhl.net/ecs-ipcheck)
