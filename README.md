@@ -70,6 +70,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 2024.08.29
 
 - 显示下载文件的进度条，减少等待过程中未知报错的问题
+- 去除besttrace依赖(出BUG官方维护极慢)，直接使用nexttrace(出BUG官方维护迅速)，不再轮询检测报错才替换
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

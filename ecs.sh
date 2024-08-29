@@ -731,13 +731,13 @@ main_download() {
         sed -i "s|$old_url|$new_url|g" "$output"
         echo "100" > "$PROGRESS_DIR/$file"
         ;;
-    besttrace)
-        local url="${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/besttrace/2021/${BESTTRACE_FILE}"
-        local output="$TEMP_DIR/$BESTTRACE_FILE"
-        download_file "$url" "$output" "$PROGRESS_DIR/$file"
-        chmod +x "$output"
-        echo "100" > "$PROGRESS_DIR/$file"
-        ;;
+    # besttrace)
+    #     local url="${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/besttrace/2021/${BESTTRACE_FILE}"
+    #     local output="$TEMP_DIR/$BESTTRACE_FILE"
+    #     download_file "$url" "$output" "$PROGRESS_DIR/$file"
+    #     chmod +x "$output"
+    #     echo "100" > "$PROGRESS_DIR/$file"
+    #     ;;
     nexttrace)
         NEXTTRACE_VERSION=$(curl -m 6 -sSL "https://api.github.com/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
         if [ -z "$NEXTTRACE_VERSION" ]; then
@@ -1073,7 +1073,7 @@ get_system_bit() {
         LBench_Result_SystemBit_Short="32"
         LBench_Result_SystemBit_Full="i386"
         GOSTUN_FILE=gostun-linux-386
-        BESTTRACE_FILE=besttracemac
+        # BESTTRACE_FILE=besttracemac
         CommonMediaTests_FILE=CommonMediaTests-linux-386
         SecurityCheck_FILE=securityCheck-linux-386
         PortChecker_FILE=portchecker-linux-386
@@ -1084,7 +1084,7 @@ get_system_bit() {
         LBench_Result_SystemBit_Short="arm"
         LBench_Result_SystemBit_Full="arm"
         GOSTUN_FILE=gostun-linux-arm64
-        BESTTRACE_FILE=besttracearm
+        # BESTTRACE_FILE=besttracearm
         CommonMediaTests_FILE=CommonMediaTests-linux-arm64
         SecurityCheck_FILE=securityCheck-linux-arm64
         PortChecker_FILE=portchecker-linux-arm64
@@ -1095,7 +1095,7 @@ get_system_bit() {
         LBench_Result_SystemBit_Short="64"
         LBench_Result_SystemBit_Full="amd64"
         GOSTUN_FILE=gostun-linux-amd64
-        BESTTRACE_FILE=besttrace
+        # BESTTRACE_FILE=besttrace
         CommonMediaTests_FILE=CommonMediaTests-linux-amd64
         SecurityCheck_FILE=securityCheck-linux-amd64
         PortChecker_FILE=portchecker-linux-amd64
@@ -3715,21 +3715,33 @@ fscarmen_route_script() {
             _green "依次测试电信/联通/移动经过的地区及线路，核心程序来自ipip.net或nexttrace，请知悉!" >/tmp/ecs/ip.test
         fi
         for ((a = 0; a < ${#test_area_4[@]}; a++)); do
-            "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip_4[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >>/tmp/ip_temp
-            if [ ! -s "/tmp/ip_temp" ] || grep -q "http: 403" /tmp/ip_temp || grep -q "error" /tmp/ip_temp 2>/dev/null; then
-                rm -rf /tmp/ip_temp
-                RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip_4[a]}" --nocolor 2>/dev/null)
-                RESULT=$(echo "$RESULT" | grep '^[0-9 ]')
-                PART_1=$(echo "$RESULT" | grep '^[0-9]\{1,2\}[ ]\+[0-9a-f]' | awk '{$1="";$2="";print}' | sed "s@^[ ]\+@@g")
-                PART_2=$(echo "$RESULT" | grep '\(.*ms\)\{3\}' | sed 's/.* \([0-9*].*ms\).*ms.*ms/\1/g')
-                SPACE=' '
-                for ((i = 1; i <= $(echo "$PART_1" | wc -l); i++)); do
-                    [ "$i" -eq 10 ] && unset SPACE
-                    p_1=$(echo "$PART_2" | sed -n "${i}p") 2>/dev/null
-                    p_2=$(echo "$PART_1" | sed -n "${i}p") 2>/dev/null
-                    echo -e "$p_1 \t$p_2" >>/tmp/ip_temp
-                done
-            fi
+            # "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip_4[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >>/tmp/ip_temp
+            # if [ ! -s "/tmp/ip_temp" ] || grep -q "http: 403" /tmp/ip_temp || grep -q "error" /tmp/ip_temp 2>/dev/null; then
+            #     rm -rf /tmp/ip_temp
+            #     RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip_4[a]}" --nocolor 2>/dev/null)
+            #     RESULT=$(echo "$RESULT" | grep '^[0-9 ]')
+            #     PART_1=$(echo "$RESULT" | grep '^[0-9]\{1,2\}[ ]\+[0-9a-f]' | awk '{$1="";$2="";print}' | sed "s@^[ ]\+@@g")
+            #     PART_2=$(echo "$RESULT" | grep '\(.*ms\)\{3\}' | sed 's/.* \([0-9*].*ms\).*ms.*ms/\1/g')
+            #     SPACE=' '
+            #     for ((i = 1; i <= $(echo "$PART_1" | wc -l); i++)); do
+            #         [ "$i" -eq 10 ] && unset SPACE
+            #         p_1=$(echo "$PART_2" | sed -n "${i}p") 2>/dev/null
+            #         p_2=$(echo "$PART_1" | sed -n "${i}p") 2>/dev/null
+            #         echo -e "$p_1 \t$p_2" >>/tmp/ip_temp
+            #     done
+            # fi
+            rm -rf /tmp/ip_temp
+            RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip_4[a]}" --nocolor 2>/dev/null)
+            RESULT=$(echo "$RESULT" | grep '^[0-9 ]')
+            PART_1=$(echo "$RESULT" | grep '^[0-9]\{1,2\}[ ]\+[0-9a-f]' | awk '{$1="";$2="";print}' | sed "s@^[ ]\+@@g")
+            PART_2=$(echo "$RESULT" | grep '\(.*ms\)\{3\}' | sed 's/.* \([0-9*].*ms\).*ms.*ms/\1/g')
+            SPACE=' '
+            for ((i = 1; i <= $(echo "$PART_1" | wc -l); i++)); do
+                [ "$i" -eq 10 ] && unset SPACE
+                p_1=$(echo "$PART_2" | sed -n "${i}p") 2>/dev/null
+                p_2=$(echo "$PART_1" | sed -n "${i}p") 2>/dev/null
+                echo -e "$p_1 \t$p_2" >>/tmp/ip_temp
+            done
             if [ "$swhc_mode" = false ]; then
                 ori_ipv4="${test_ip_4[a]}"
                 IFS='.' read -ra parts <<<"$ori_ipv4"
@@ -3842,7 +3854,8 @@ all_script() {
     if [ "$1" = "B" ]; then
         if [[ -z "${CN}" || "${CN}" != true ]]; then
             _yellow "Concurrently downloading files..."
-            dfiles=(gostun CommonMediaTests besttrace nexttrace backtrace securityCheck portchecker yabs media_lmc_check)
+            # besttrace
+            dfiles=(gostun CommonMediaTests nexttrace backtrace securityCheck portchecker yabs media_lmc_check)
             start_downloads "${dfiles[@]}"
             _yellow "All files download successfully."
             get_system_info
@@ -3910,7 +3923,8 @@ all_script() {
         # 顺序测试
         if [[ -z "${CN}" || "${CN}" != true ]]; then
             _yellow "Concurrently downloading files..."
-            dfiles=(besttrace nexttrace backtrace CommonMediaTests securityCheck portchecker gostun yabs media_lmc_check)
+            # besttrace
+            dfiles=(nexttrace backtrace CommonMediaTests securityCheck portchecker gostun yabs media_lmc_check)
             start_downloads "${dfiles[@]}"
             _yellow "All files download successfully."
             get_system_info
@@ -3991,7 +4005,8 @@ minal_plus() {
     pre_check
     _yellow "Concurrently downloading files..."
     wait
-    dfiles=(besttrace nexttrace backtrace CommonMediaTests gostun yabs media_lmc_check)
+    # besttrace
+    dfiles=(nexttrace backtrace CommonMediaTests gostun yabs media_lmc_check)
     start_downloads "${dfiles[@]}"
     _yellow "All files download successfully."
     get_system_info
@@ -4019,7 +4034,8 @@ minal_plus() {
 minal_plus_network() {
     pre_check
     _yellow "Concurrently downloading files..."
-    dfiles=(besttrace nexttrace backtrace gostun yabs)
+    # besttrace
+    dfiles=(nexttrace backtrace gostun yabs)
     start_downloads "${dfiles[@]}"
     _yellow "All files download successfully."
     get_system_info
@@ -4068,7 +4084,8 @@ minal_plus_media() {
 network_script() {
     pre_check
     _yellow "Concurrently downloading files..."
-    dfiles=(besttrace nexttrace backtrace securityCheck portchecker)
+    # besttrace
+    dfiles=(nexttrace backtrace securityCheck portchecker)
     start_downloads "${dfiles[@]}"
     _yellow "All files download successfully."
     check_ping
@@ -4138,7 +4155,8 @@ port_script() {
 sw_script() {
     pre_check
     _yellow "Concurrently downloading files..."
-    dfiles=(besttrace nexttrace backtrace ecsspeed_ping)
+    # besttrace
+    dfiles=(nexttrace backtrace ecsspeed_ping)
     start_downloads "${dfiles[@]}"
     _yellow "All files download successfully."
     check_ping
@@ -4153,7 +4171,8 @@ sw_script() {
 network_script_select() {
     pre_check
     _yellow "Concurrently downloading files..."
-    dfiles=(besttrace nexttrace)
+    # besttrace
+    dfiles=(nexttrace)
     start_downloads "${dfiles[@]}"
     _yellow "All files download successfully."
     clear
@@ -4501,9 +4520,9 @@ network_test_script() {
         _yellow "网络测试相关的脚本如下"
         echo -e "${GREEN}1.${PLAIN} zhanghanyun的backtrace三网回程线路检测脚本"
         echo -e "${GREEN}2.${PLAIN} zhucaidan的mtr_trace三网回程线路测脚本"
-        echo -e "${GREEN}3.${PLAIN} 基于besttrace回程路由测试脚本(带详情信息)"
-        echo -e "${GREEN}4.${PLAIN} 基于besttrace回程路由测试脚本(二开整合输出)"
-        echo -e "${GREEN}5.${PLAIN} 基于nexttrace回程路由测试脚本(第三方IP库)"
+        echo -e "${GREEN}3.${PLAIN} 基于besttrace回程路由测试脚本(带详情信息，可能有bug)"
+        echo -e "${GREEN}4.${PLAIN} 基于besttrace回程路由测试脚本(二开整合输出，可能有bug)"
+        echo -e "${GREEN}5.${PLAIN} 基于nexttrace回程路由测试脚本(第三方IP库，更推荐)"
         echo -e "${GREEN}6.${PLAIN} 由Netflixxp维护的四网路由测试脚本"
         echo -e "${GREEN}7.${PLAIN} 原始作者维护的superspeed的三网测速脚本"
         echo -e "${GREEN}8.${PLAIN} 未知作者修复的superspeed的三网测速脚本"
@@ -4912,7 +4931,7 @@ my_original_script() {
         echo -e "${GREEN}3.${PLAIN} 三网回程路由测试(预设上海)(平均运行1分钟)"
         echo -e "${GREEN}4.${PLAIN} 三网回程路由测试(预设北京)(平均运行1分钟)"
         echo -e "${GREEN}5.${PLAIN} 三网回程路由测试(预设成都)(平均运行1分钟)"
-        echo -e "${GREEN}6.${PLAIN} 自定义IP的回程路由测试(基于besttrace)(准确率高)"
+        echo -e "${GREEN}6.${PLAIN} 自定义IP的回程路由测试(基于besttrace)(准确率高，但可能有bug)"
         echo -e "${GREEN}7.${PLAIN} 自定义IP的回程路由测试(基于nexttrace)(第三方IP库)"
         echo -e "${GREEN}8.${PLAIN} 自定义IP的IP质量检测(平均运行10~20秒)"
         echo -e "${GREEN}9.${PLAIN} 检测本机硬盘(含通电时长)(一般是独服才有用)"
