@@ -10,7 +10,7 @@
 
 **If there is a system/architecture that is not listed in this project, or if there is a bug that cannot be detected in this project's tests, or if the tests do not want to magically change the local configuration and want to minimize environmental changes**
 
-**Please try [https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs) for testing**
+**Please try [https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs/blob/master/README_EN.md) for testing**
 
 Support system:
 
@@ -28,9 +28,7 @@ Support geography:
 
 Anywhere you can connect to the Internet
 
-PS: Considering the demand of universal testing for multi-system and multi-architecture, the Shell version of Fusion Monster is no longer for new feature development, only for maintenance, and the tests have been refactored to Golang version ([https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs)), is expected to complete the entire project at the end of the year test troubleshooting and formal release.
-
-Translated with DeepL.com (free version)
+PS: Considering the demand of universal testing for multi-system and multi-architecture, the Shell version of Fusion Monster is no longer for new feature development, only for maintenance, and the tests have been refactored to Golang version ([https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs/blob/master/README_EN.md)), is expected to complete the entire project at the end of the year test troubleshooting and formal release.
 
 # Menu
 - [Foreword](#Foreword)
@@ -194,7 +192,7 @@ VPS test, VPS speed test, VPS comprehensive performance test, VPS backhaul line 
 
 ## Fusion_Monster_Function
 
-- [x] Free combination of test direction and individual tests and collection of third-party scripts, Fusion Monster tests are self-optimized and repaired, and are different from the original scripts.
+- [x]  combination of test direction and individual tests and collection of third-party scripts, Fusion Monster tests are self-optimized and repaired, and are different from the original scripts.
 - [x] Basic information query - thanks to [bench.sh](https://github.com/teddysun/across/blob/master/bench.sh), [superbench.sh](https://www.oldking.net/350.html ), [yabs](https://github.com/masonr/yet-another-bench-script), [lemonbench](https://github.com/LemonBench/LemonBench) open source, I organize the modification and optimization, with the original version of are not consistent
 - [x] CPU test - thanks to [lemonbench](https://github.com/LemonBench/LemonBench) and [yabs](https://github.com/masonr/yet-another-bench-script) open source. I organize, modify and optimize
 - [x] Memory test - thanks to [lemonbench](https://github.com/LemonBench/LemonBench) open source, I organize the modification optimization
@@ -243,7 +241,7 @@ Thanks
   <img src="https://github.com/spiritLHLS/ecs/assets/103393591/dfd47230-2747-4112-be69-b5636b34f07f" alt="h501">
 </a>
 
-provided free hosting to support this open source project.
+provided  hosting to support this open source project.
 
 Thanks also to the following platforms for editorial and testing support.
 
