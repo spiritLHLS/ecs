@@ -192,7 +192,7 @@ VPS test, VPS speed test, VPS comprehensive performance test, VPS backhaul line 
 
 ## Fusion_Monster_Function
 
-- [x]  combination of test direction and individual tests and collection of third-party scripts, Fusion Monster tests are self-optimized and repaired, and are different from the original scripts.
+- [x] Free combination of test direction and individual tests and collection of third-party scripts, Fusion Monster tests are self-optimized and repaired, and are different from the original scripts.
 - [x] Basic information query - thanks to [bench.sh](https://github.com/teddysun/across/blob/master/bench.sh), [superbench.sh](https://www.oldking.net/350.html ), [yabs](https://github.com/masonr/yet-another-bench-script), [lemonbench](https://github.com/LemonBench/LemonBench) open source, I organize the modification and optimization, with the original version of are not consistent
 - [x] CPU test - thanks to [lemonbench](https://github.com/LemonBench/LemonBench) and [yabs](https://github.com/masonr/yet-another-bench-script) open source. I organize, modify and optimize
 - [x] Memory test - thanks to [lemonbench](https://github.com/LemonBench/LemonBench) open source, I organize the modification optimization

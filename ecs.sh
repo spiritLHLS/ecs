@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.08.29"
+ver="2024.09.30"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -190,7 +190,8 @@ if [ "$en_status" = true ]; then
 else
     changeLog="VPS融合怪测试(集百家之长)"
 fi
-shorturl=""
+http_short_url=""
+https_short_url=""
 TEMP_DIR='/tmp/ecs'
 PROGRESS_DIR="/tmp/progress"
 rm -rf "$PROGRESS_DIR"
@@ -274,13 +275,20 @@ global_exit_action() {
     echo -en "$SHOW_CURSOR"
     if [ "$build_text_status" = true ]; then
         build_text
-        if [ -n "$shorturl" ]; then
+        if [ -n "$https_short_url" ] || [ -n "$http_short_url" ]; then
             if [ "$en_status" = true ]; then
                 _green "  ShortLink:"
             else
                 _green "  短链:"
             fi
-            _blue "    $shorturl"
+
+            if [ -n "$https_short_url" ]; then
+                _blue "    $https_short_url"
+            fi
+
+            if [ -n "$http_short_url" ]; then
+                _blue "    $http_short_url"
+            fi
         fi
     fi
     rm -rf ${TEMP_DIR}
@@ -4235,7 +4243,8 @@ build_text() {
         sed -i -e '/^Running fio test.../d' test_result.txt
         sed -i -e '/^checking speedtest/d' test_result.txt
         if [ -s test_result.txt ]; then
-            shorturl=$(curl --ipv4 -sL -m 10 -X POST -H "Authorization: $ST" \
+            # 尝试 HTTP
+            http_short_url=$(curl --ipv4 -sL -m 10 -X POST -H "Authorization: $ST" \
                 -H "Format: RANDOM" \
                 -H "Max-Views: 0" \
                 -H "UploadText: true" \
@@ -4243,8 +4252,13 @@ build_text() {
                 -H "No-JSON: true" \
                 -F "file=@${myvar}/test_result.txt" \
                 "http://hpaste.spiritlhl.net/api/upload")
-            if [ $? -ne 0 ]; then
-                shorturl=$(curl --ipv6 -sL -m 10 -X POST -H "Authorization: $ST" \
+            if [ $? -eq 0 ] && [ -n "$http_short_url" ]; then
+                # HTTP 请求成功
+                https_short_url="${http_short_url/http:\/\/hpaste.spiritlhl.net\/u\//https:\/\/paste.spiritlhl.net\/code\/}"
+                http_short_url="${http_short_url/http:\/\/hpaste.spiritlhl.net\/u\//http:\/\/hpaste.spiritlhl.net\/code\/}"
+            else
+                # 如果 HTTP 失败，尝试 HTTPS
+                https_short_url=$(curl --ipv6 -sL -m 10 -X POST -H "Authorization: $ST" \
                     -H "Format: RANDOM" \
                     -H "Max-Views: 0" \
                     -H "UploadText: true" \
@@ -4252,11 +4266,16 @@ build_text() {
                     -H "No-JSON: true" \
                     -F "file=@${myvar}/test_result.txt" \
                     "https://paste.spiritlhl.net/api/upload")
+                if [ $? -eq 0 ] && [ -n "$https_short_url" ]; then
+                    # HTTPS 请求成功
+                    http_short_url="${https_short_url/https:\/\/paste.spiritlhl.net\/u\//http:\/\/hpaste.spiritlhl.net\/code\/}"
+                    https_short_url="${https_short_url/https:\/\/paste.spiritlhl.net\/u\//https:\/\/paste.spiritlhl.net\/code\/}"
+                else
+                    # 两种请求都失败
+                    http_short_url=""
+                    https_short_url=""
+                fi
             fi
-        fi
-        if [[ "$shorturl" == *"https://paste.spiritlhl.net/u/"* ]]; then
-            # 强制显示为http协议
-            shorturl="${shorturl/https:\/\/paste.spiritlhl.net\/u\//http:\/\/hpaste.spiritlhl.net\/code\/}"
         fi
     fi
 }
