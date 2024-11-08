@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # by spiritlhl
 # from https://github.com/spiritLHLS/ecs
+# 2024.11.08
 # curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/eo6s.sh -o eo6s.sh && chmod +x eo6s.sh && bash eo6s.sh
+
 
 REGEX=("debian|astra" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora" "arch" "freebsd")
 RELEASE=("Debian" "Ubuntu" "CentOS" "CentOS" "Fedora" "Arch" "FreeBSD")
@@ -18,22 +20,29 @@ for ((int = 0; int < ${#REGEX[@]}; int++)); do
         [[ -n $SYSTEM ]] && break
     fi
 done
-${PACKAGE_INSTALL[int]} net-tools
-interface=$(ls /sys/class/net/ | grep -v "$(ls /sys/devices/virtual/net/)" | grep -E '^(eth|en)' | head -n 1)
+${PACKAGE_INSTALL[int]} net-tools # 无后续维护了
+${PACKAGE_INSTALL[int]} iproute2
+
+# interface=$(ls /sys/class/net/ | grep -v "$(ls /sys/devices/virtual/net/)" | grep -E '^(eth|en)' | head -n 1)
+interface=$(ls /sys/class/net/ | grep -E '^(eth|en)' | head -n 1)
 current_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
-echo ${current_ipv6}
+echo "current_ipv6: ${current_ipv6}"
 [ -z "$current_ipv6" ] && exit 1
 new_ipv6="${current_ipv6%:*}:3"
 ip addr add ${new_ipv6}/128 dev ${interface}
 sleep 5
 updated_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
-echo ${updated_ipv6}
+echo "updated_ipv6: ${updated_ipv6}"
 ip addr del ${new_ipv6}/128 dev ${interface}
 sleep 5
 final_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
-echo ${final_ipv6}
+echo "final_ipv6: ${final_ipv6}"
 ipv6_prefixlen=""
-output=$(ifconfig ${interface} | grep -oP 'inet6 (?!fe80:).*prefixlen \K\d+')
+if command -v ifconfig &> /dev/null; then
+    output=$(ifconfig ${interface} | grep -oP 'inet6 (?!fe80:).*prefixlen \K\d+')
+else
+    output=$(ip -6 addr show dev ${interface} | grep -oP 'inet6 (?!fe80:).* scope global.*prefixlen \K\d+')
+fi
 num_lines=$(echo "$output" | wc -l)
 if [ $num_lines -ge 2 ]; then
     ipv6_prefixlen=$(echo "$output" | sort -n | head -n 1)

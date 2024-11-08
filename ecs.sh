@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.09.30"
+ver="2024.11.08"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -457,8 +457,8 @@ check_unzip() {
 
 check_ip() {
     if ! command -v ip >/dev/null 2>&1; then
-        _yellow "Installing net-tools to use ip command"
-        ${PACKAGE_INSTALL[int]} net-tools
+        _yellow "Installing iproute2 to use ip command"
+        ${PACKAGE_INSTALL[int]} iproute2
     fi
     if ! command -v ifconfig >/dev/null 2>&1; then
         _yellow "Installing net-tools to use ifconfig command"
@@ -657,58 +657,86 @@ download_file() {
     local progress_file=$3
     # 获取文件总大小
     local total_size=$(curl -sIkL "$url" | grep -i Content-Length | awk '{print $2}' | tr -d '\r')
-    if [ -z "$total_size" ]; then
-        echo "$url SIZE: $total_size" >> test_result.txt
+    if [ -z "$total_size" ] || [ "$total_size" -eq 0 ]; then
+        echo "无法获取 $url 的文件大小,将使用 0 作为默认值。" >&2
+        total_size=0
     fi
-    # 新增变量：用于计数连续检测到下载完成的次数
+    # 连续检测到下载完成的次数
     local complete_count=0
-    if ! curl -Lk "$url" -o "$output" 2>&1 | \
-        while true; do
-            if [ -f "$output" ]; then
-                sleep 1
-                local current_size=$(stat -f%z "$output" 2>/dev/null || stat -c%s "$output" 2>/dev/null)
-                local progress=$((current_size * 100 / total_size))
-                echo "$progress" > "$progress_file"
-                sleep 1
-                # 检查是否下载完成
-                if [ "$current_size" -ge "$total_size" ]; then
-                    complete_count=$((complete_count + 1))
-                    # 只有连续3次检测到下载完成才退出循环
-                    if [ "$complete_count" -ge 3 ]; then
-                        break
+    # 连续检测到下载失败的次数
+    local download_failed=0
+    while true; do
+        if ! curl -Lk "$url" -o "$output" 2>&1 | \
+            while true; do
+                if [ -f "$output" ]; then
+                    sleep 1
+                    local current_size=$(stat -f%z "$output" 2>/dev/null || stat -c%s "$output" 2>/dev/null)
+                    if [ "$total_size" -gt 0 ]; then
+                        local progress=$((current_size * 100 / total_size))
+                    else
+                        local progress=0
                     fi
-                else
-                    complete_count=0  # 如果不完整，重置计数器
-                fi
-            fi
-        done; then
-        wget -O "$output" "$url" 2>&1 | \
-        while true; do
-            if [ -f "$output" ]; then
-                sleep 1
-                local current_size=$(stat -f%z "$output" 2>/dev/null || stat -c%s "$output" 2>/dev/null)
-                local progress=$((current_size * 100 / total_size))
-                echo "$progress" > "$progress_file"
-                sleep 1
-                # 检查是否下载完成
-                if [ "$current_size" -ge "$total_size" ]; then
-                    complete_count=$((complete_count + 1))
-                    # 只有连续3次检测到下载完成才退出循环
-                    if [ "$complete_count" -ge 3 ]; then
-                        break
+                    echo "$progress" > "$progress_file"
+                    sleep 1
+                    # 检查是否下载完成
+                    if [ "$current_size" -ge "$total_size" ]; then
+                        complete_count=$((complete_count + 1))
+                        # 只有连续3次检测到下载完成才退出循环
+                        if [ "$complete_count" -ge 3 ]; then
+                            break 2 # 退出外层循环
+                        fi
+                    else
+                        complete_count=0 # 如果不完整，重置计数器
                     fi
-                else
-                    complete_count=0  # 如果不完整，重置计数器
                 fi
+            done; then
+            complete_count=0
+            download_failed=$((download_failed + 1))
+            if [ "$download_failed" -ge 2 ]; then
+                echo "curl 和 wget 下载都失败,退出下载。" >&2
+                return 1 # 返回错误码
             fi
-        done
-    fi
+            echo "curl 下载失败,切换到 wget 下载。" >&2
+            wget -O "$output" "$url" 2>&1 | \
+            while true; do
+                if [ -f "$output" ]; then
+                    sleep 1
+                    local current_size=$(stat -f%z "$output" 2>/dev/null || stat -c%s "$output" 2>/dev/null)
+                    if [ "$total_size" -gt 0 ]; then
+                        local progress=$((current_size * 100 / total_size))
+                    else
+                        local progress=0
+                    fi
+                    echo "$progress" > "$progress_file"
+                    sleep 1
+                    # 检查是否下载完成
+                    if [ "$current_size" -ge "$total_size" ]; then
+                        complete_count=$((complete_count + 1))
+                        # 只有连续3次检测到下载完成才退出循环
+                        if [ "$complete_count" -ge 3 ]; then
+                            break 2 # 退出外层循环
+                        fi
+                    else
+                        complete_count=0 # 如果不完整，重置计数器
+                    fi
+                fi
+            done
+        else
+            break # curl 下载成功，退出外层循环
+        fi
+    done
     # 确保最终进度被写入
     if [ -f "$output" ]; then
         local final_size=$(stat -f%z "$output" 2>/dev/null || stat -c%s "$output" 2>/dev/null)
-        local final_progress=$((final_size * 100 / total_size))
+        if [ "$total_size" -gt 0 ]; then
+            local final_progress=$((final_size * 100 / total_size))
+        else
+            local final_progress=0
+        fi
         echo "$final_progress" > "$progress_file"
     fi
+    # 如果下载失败两次则返回错误码
+    [ "$download_failed" -ge 2 ] && return 1 || return 0
 }
 
 main_download() {
@@ -3274,22 +3302,26 @@ ipcheck() {
 eo6s() {
     # 获取IPV6的子网掩码
     rm -rf $TEMP_DIR/eo6s_result
-    local interface=$(ls /sys/class/net/ | grep -v "$(ls /sys/devices/virtual/net/)" | grep -E '^(eth|en)' | head -n 1)
+    local interface=$(ls /sys/class/net/ | grep -E '^(eth|en)' | head -n 1)
     if [ -n "$interface" ]; then
         local current_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
-        # echo ${current_ipv6}
+        echo "current_ipv6: ${current_ipv6}"
         [ -z "$current_ipv6" ] && echo "None" >$TEMP_DIR/eo6s_result && return
         local new_ipv6="${current_ipv6%:*}:3"
         ip addr add ${new_ipv6}/128 dev ${interface}
         sleep 6
         local updated_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
-        # echo ${updated_ipv6}
+        echo "updated_ipv6: ${updated_ipv6}"
         ip addr del ${new_ipv6}/128 dev ${interface}
         sleep 6
         local final_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
-        # echo ${final_ipv6}
+        echo "final_ipv6: ${final_ipv6}"
         local ipv6_prefixlen=""
-        local output=$(ifconfig ${interface} | grep -oP 'inet6 (?!fe80:).*prefixlen \K\d+')
+        if command -v ifconfig &> /dev/null; then
+            local output=$(ifconfig ${interface} | grep -oP 'inet6 (?!fe80:).*prefixlen \K\d+')
+        else
+            local output=$(ip -6 addr show dev ${interface} | grep -oP 'inet6 (?!fe80:).* scope global.*prefixlen \K\d+')
+        fi
         local num_lines=$(echo "$output" | wc -l)
         if [ $num_lines -ge 2 ]; then
             ipv6_prefixlen=$(echo "$output" | sort -n | head -n 1)
