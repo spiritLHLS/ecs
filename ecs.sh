@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.11.08"
+ver="2025.01.01"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -4256,7 +4256,6 @@ build_text() {
     cd $myvar >/dev/null 2>&1
     if { [ -n "${menu_mode}" ] && [ "${menu_mode}" = false ]; } || { [ -n "${StartInput}" ] && [ "${StartInput}" -eq 1 ]; } || { [ -n "${StartInput}" ] && [ "${StartInput}" -eq 2 ]; } || { [ -n "${StartInput1}" ] && [ "${StartInput1}" -ge 1 ] && [ "${StartInput1}" -le 4 ]; }; then
         sed -i -e '1,/-------------------- A Bench Script By spiritlhl ---------------------/d' test_result.txt
-        # 下面这个删除在FreeBSD中也删的不干净
         sed -i -e 's/\x1B\[[0-9;]\+[a-zA-Z]//g' test_result.txt
         sed -i -e '/^$/d' test_result.txt
         sed -i -e '/Preparing system for disk tests.../d' test_result.txt
@@ -4275,35 +4274,25 @@ build_text() {
         sed -i -e '/^Running fio test.../d' test_result.txt
         sed -i -e '/^checking speedtest/d' test_result.txt
         if [ -s test_result.txt ]; then
-            # 尝试 HTTP
-            http_short_url=$(curl --ipv4 -sL -m 10 -X POST -H "Authorization: $ST" \
-                -H "Format: RANDOM" \
-                -H "Max-Views: 0" \
-                -H "UploadText: true" \
-                -H "Content-Type: multipart/form-data" \
-                -H "No-JSON: true" \
+            http_short_url=$(curl --ipv4 -sL -m 10 -X POST \
+                -H "Authorization: $ST" \
                 -F "file=@${myvar}/test_result.txt" \
-                "http://hpaste.spiritlhl.net/api/upload")
-            if [ $? -eq 0 ] && [ -n "$http_short_url" ]; then
-                # HTTP 请求成功
-                https_short_url="${http_short_url/http:\/\/hpaste.spiritlhl.net\/u\//https:\/\/paste.spiritlhl.net\/code\/}"
-                http_short_url="${http_short_url/http:\/\/hpaste.spiritlhl.net\/u\//http:\/\/hpaste.spiritlhl.net\/code\/}"
+                "http://hpaste.spiritlhl.net/api/UL/upload")
+            if [ $? -eq 0 ] && [ -n "$http_short_url" ] && echo "$http_short_url" | grep -q "show"; then
+                file_id=$(echo "$http_short_url" | grep -o '[^/]*$')
+                http_short_url="http://hpaste.spiritlhl.net/#/show/${file_id}"
+                https_short_url="https://paste.spiritlhl.net/#/show/${file_id}"
             else
                 # 如果 HTTP 失败，尝试 HTTPS
-                https_short_url=$(curl --ipv6 -sL -m 10 -X POST -H "Authorization: $ST" \
-                    -H "Format: RANDOM" \
-                    -H "Max-Views: 0" \
-                    -H "UploadText: true" \
-                    -H "Content-Type: multipart/form-data" \
-                    -H "No-JSON: true" \
+                https_short_url=$(curl --ipv6 -sL -m 10 -X POST \
+                    -H "Authorization: $ST" \
                     -F "file=@${myvar}/test_result.txt" \
-                    "https://paste.spiritlhl.net/api/upload")
-                if [ $? -eq 0 ] && [ -n "$https_short_url" ]; then
-                    # HTTPS 请求成功
-                    http_short_url="${https_short_url/https:\/\/paste.spiritlhl.net\/u\//http:\/\/hpaste.spiritlhl.net\/code\/}"
-                    https_short_url="${https_short_url/https:\/\/paste.spiritlhl.net\/u\//https:\/\/paste.spiritlhl.net\/code\/}"
+                    "https://paste.spiritlhl.net/api/UL/upload")
+                if [ $? -eq 0 ] && [ -n "$https_short_url" ] && echo "$https_short_url" | grep -q "show"; then
+                    file_id=$(echo "$https_short_url" | grep -o '[^/]*$')
+                    http_short_url="http://hpaste.spiritlhl.net/#/show/${file_id}"
+                    https_short_url="https://paste.spiritlhl.net/#/show/${file_id}"
                 else
-                    # 两种请求都失败
                     http_short_url=""
                     https_short_url=""
                 fi

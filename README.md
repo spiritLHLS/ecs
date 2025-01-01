@@ -67,10 +67,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2024.11.08
+2025.01.01
 
-- 优化并发下载中的进度条显示可能存在的除0错误问题，减少报错显示，增加提示
-- 增加```ifconfig```命令的替代命令```ip```，避免部分新系统不再使用已经不维护的组件
+- pastebin使用自己手搓的方便自定义页面，修复分享展示的时候显示有背景问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

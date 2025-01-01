@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #by spiritlhl
 #From https://github.com/spiritLHLS/ecs
-#2024.07.26
+#2025.01.01
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2024.07.26"
+ver="2025.01.01"
 changeLog="IP质量测试，由频道 https://t.me/vps_reviews 原创"
 temp_file_apt_fix="/tmp/apt_fix.txt"
 shorturl=""
@@ -81,27 +81,25 @@ build_text() {
     sed -i -e '/^$/d' sc_result.txt
     sed -i 's/\r//' sc_result.txt
     if [ -s sc_result.txt ]; then
-        shorturl=$(curl --ipv4 -sL -m 10 -X POST -H "Authorization: $ST" \
-            -H "Format: RANDOM" \
-            -H "Max-Views: 0" \
-            -H "UploadText: true" \
-            -H "Content-Type: multipart/form-data" \
-            -H "No-JSON: true" \
+        http_short_url=$(curl --ipv4 -sL -m 10 -X POST \
+            -H "Authorization: $ST" \
             -F "file=@${myvar}/sc_result.txt" \
-        "http://hpaste.spiritlhl.net/api/upload")
-        if [ $? -ne 0 ]; then
-            shorturl=$(curl --ipv6 -sL -m 10 -X POST -H "Authorization: $ST" \
-                -H "Format: RANDOM" \
-                -H "Max-Views: 0" \
-                -H "UploadText: true" \
-                -H "Content-Type: multipart/form-data" \
-                -H "No-JSON: true" \
+            "http://hpaste.spiritlhl.net/api/UL/upload")
+        if [ $? -eq 0 ] && [ -n "$http_short_url" ] && echo "$http_short_url" | grep -q "show"; then
+            file_id=$(echo "$http_short_url" | grep -o '[^/]*$')
+            shorturl="https://paste.spiritlhl.net/#/show/${file_id}"
+        else
+            # 如果 HTTP 失败，尝试 HTTPS
+            https_short_url=$(curl --ipv6 -sL -m 10 -X POST \
+                -H "Authorization: $ST" \
                 -F "file=@${myvar}/sc_result.txt" \
-            "https://paste.spiritlhl.net/api/upload")
-        fi
-        if [[ "$shorturl" == *"https://paste.spiritlhl.net/u/"* ]]; then
-            # 强制显示为http协议
-            shorturl="${shorturl/https:\/\/paste.spiritlhl.net\/u\//http:\/\/hpaste.spiritlhl.net\/code\/}"
+                "https://paste.spiritlhl.net/api/UL/upload")
+            if [ $? -eq 0 ] && [ -n "$https_short_url" ] && echo "$https_short_url" | grep -q "show"; then
+                file_id=$(echo "$https_short_url" | grep -o '[^/]*$')
+                shorturl="https://paste.spiritlhl.net/#/show/${file_id}"
+            else
+                shorturl=""
+            fi
         fi
     fi
 }
