@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2025.01.01"
+ver="2025.01.02"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -218,14 +218,18 @@ BrowserUA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, 
 Speedtest_Go_version="1.6.12"
 
 # =============== 基础信息设置 ===============
-REGEX=("debian|astra" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora" "arch" "freebsd")
-RELEASE=("Debian" "Ubuntu" "CentOS" "CentOS" "Fedora" "Arch" "FreeBSD")
-PACKAGE_UPDATE=("! apt-get update && apt-get --fix-broken install -y && apt-get update" "apt-get update" "yum -y update" "yum -y update" "yum -y update" "pacman -Sy" "pkg update")
-PACKAGE_INSTALL=("apt-get -y install" "apt-get -y install" "yum -y install" "yum -y install" "yum -y install" "pacman -Sy --noconfirm --needed" "pkg install -y")
-PACKAGE_REMOVE=("apt-get -y remove" "apt-get -y remove" "yum -y remove" "yum -y remove" "yum -y remove" "pacman -Rsc --noconfirm" "pkg delete")
-PACKAGE_UNINSTALL=("apt-get -y autoremove" "apt-get -y autoremove" "yum -y autoremove" "yum -y autoremove" "yum -y autoremove" "" "pkg autoremove")
+REGEX=("debian|astra" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora" "arch" "freebsd" "alpine" "openbsd" "opencloudos")
+RELEASE=("Debian" "Ubuntu" "CentOS" "CentOS" "Fedora" "Arch" "FreeBSD" "Alpine" "OpenBSD" "OpenCloudOS")
+PACKAGE_UPDATE=("! apt-get update && apt-get --fix-broken install -y && apt-get update" "apt-get update" "yum -y update" "yum -y update" "yum -y update" "pacman -Sy" "pkg update" "apk update" "pkg_add -qu" "yum -y update")
+PACKAGE_INSTALL=("apt-get -y install" "apt-get -y install" "yum -y install" "yum -y install" "yum -y install" "pacman -Sy --noconfirm --needed" "pkg install -y" "apk add --no-cache" "pkg_add -I" "yum -y install")
+PACKAGE_REMOVE=("apt-get -y remove" "apt-get -y remove" "yum -y remove" "yum -y remove" "yum -y remove" "pacman -Rsc --noconfirm" "pkg delete" "apk del" "pkg_delete -I" "yum -y remove")
+PACKAGE_UNINSTALL=("apt-get -y autoremove" "apt-get -y autoremove" "yum -y autoremove" "yum -y autoremove" "yum -y autoremove" "" "pkg autoremove" "apk autoremove" "pkg_delete -a" "yum -y autoremove")
 CMD=("$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(hostnamectl 2>/dev/null | grep -i system | cut -d : -f2)" "$(lsb_release -sd 2>/dev/null)" "$(grep -i description /etc/lsb-release 2>/dev/null | cut -d \" -f2)" "$(grep . /etc/redhat-release 2>/dev/null)" "$(grep . /etc/issue 2>/dev/null | cut -d \\ -f1 | sed '/^[ ]*$/d')" "$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)" "$(uname -s)")
-SYS="${CMD[0]}"
+if [ -f /etc/opencloudos-release ]; then
+    SYS="opencloudos"
+else
+    SYS="${CMD[0]}"
+fi
 [[ -n $SYS ]] || exit 1
 for ((int = 0; int < ${#REGEX[@]}; int++)); do
     if [[ $(echo "$SYS" | tr '[:upper:]' '[:lower:]') =~ ${REGEX[int]} ]]; then
@@ -586,10 +590,10 @@ move_and_clear() {
 # 显示进度条
 display_progress() {
     local use_tput=false
-    if command -v tput > /dev/null 2>&1; then
+    if command -v tput >/dev/null 2>&1; then
         use_tput=true
     fi
-    local progress_height=$((${#dfiles[@]} + 2))  # 进度显示所需的行数
+    local progress_height=$((${#dfiles[@]} + 2)) # 进度显示所需的行数
     # 保存光标位置并隐藏光标
     echo -en "$SAVE_CURSOR$HIDE_CURSOR"
     while [ $DISPLAY_RUNNING -eq 1 ]; do
@@ -631,10 +635,10 @@ display_progress() {
 
 # 开始整体并发下载并显示进度条
 start_downloads() {
-    local dfiles=("$@")  # 接收文件列表作为参数
+    local dfiles=("$@") # 接收文件列表作为参数
     # 初始化进度
     for dfile in "${dfiles[@]}"; do
-        echo "0" > "$PROGRESS_DIR/$dfile"
+        echo "0" >"$PROGRESS_DIR/$dfile"
     done
     # 获取当前光标位置
     local current_line=$(tput lines)
@@ -644,7 +648,7 @@ start_downloads() {
     # 并发下载并跟踪PID
     for dfile in "${dfiles[@]}"; do
         main_download "$dfile" &
-        echo $! >> "$PID_FILE"
+        echo $! >>"$PID_FILE"
     done
     wait
     # 停止显示进程
@@ -666,7 +670,7 @@ download_file() {
     # 连续检测到下载失败的次数
     local download_failed=0
     while true; do
-        if ! curl -Lk "$url" -o "$output" 2>&1 | \
+        if ! curl -Lk "$url" -o "$output" 2>&1 |
             while true; do
                 if [ -f "$output" ]; then
                     sleep 1
@@ -676,7 +680,7 @@ download_file() {
                     else
                         local progress=0
                     fi
-                    echo "$progress" > "$progress_file"
+                    echo "$progress" >"$progress_file"
                     sleep 1
                     # 检查是否下载完成
                     if [ "$current_size" -ge "$total_size" ]; then
@@ -697,30 +701,30 @@ download_file() {
                 return 1 # 返回错误码
             fi
             echo "curl 下载失败,切换到 wget 下载。" >&2
-            wget -O "$output" "$url" 2>&1 | \
-            while true; do
-                if [ -f "$output" ]; then
-                    sleep 1
-                    local current_size=$(stat -f%z "$output" 2>/dev/null || stat -c%s "$output" 2>/dev/null)
-                    if [ "$total_size" -gt 0 ]; then
-                        local progress=$((current_size * 100 / total_size))
-                    else
-                        local progress=0
-                    fi
-                    echo "$progress" > "$progress_file"
-                    sleep 1
-                    # 检查是否下载完成
-                    if [ "$current_size" -ge "$total_size" ]; then
-                        complete_count=$((complete_count + 1))
-                        # 只有连续3次检测到下载完成才退出循环
-                        if [ "$complete_count" -ge 3 ]; then
-                            break 2 # 退出外层循环
+            wget -O "$output" "$url" 2>&1 |
+                while true; do
+                    if [ -f "$output" ]; then
+                        sleep 1
+                        local current_size=$(stat -f%z "$output" 2>/dev/null || stat -c%s "$output" 2>/dev/null)
+                        if [ "$total_size" -gt 0 ]; then
+                            local progress=$((current_size * 100 / total_size))
+                        else
+                            local progress=0
                         fi
-                    else
-                        complete_count=0 # 如果不完整，重置计数器
+                        echo "$progress" >"$progress_file"
+                        sleep 1
+                        # 检查是否下载完成
+                        if [ "$current_size" -ge "$total_size" ]; then
+                            complete_count=$((complete_count + 1))
+                            # 只有连续3次检测到下载完成才退出循环
+                            if [ "$complete_count" -ge 3 ]; then
+                                break 2 # 退出外层循环
+                            fi
+                        else
+                            complete_count=0 # 如果不完整，重置计数器
+                        fi
                     fi
-                fi
-            done
+                done
         else
             break # curl 下载成功，退出外层循环
         fi
@@ -733,7 +737,7 @@ download_file() {
         else
             local final_progress=0
         fi
-        echo "$final_progress" > "$progress_file"
+        echo "$final_progress" >"$progress_file"
     fi
     # 如果下载失败两次则返回错误码
     [ "$download_failed" -ge 2 ] && return 1 || return 0
@@ -748,14 +752,14 @@ main_download() {
         download_file "$url" "$output" "$PROGRESS_DIR/$file"
         chmod +x "$output"
         unzip "$output" -d ${TEMP_DIR}
-        echo "100" > "$PROGRESS_DIR/$file"
+        echo "100" >"$PROGRESS_DIR/$file"
         ;;
     CommonMediaTests)
         local url="${cdn_success_url}https://github.com/oneclickvirt/CommonMediaTests/releases/download/output/${CommonMediaTests_FILE}"
         local output="$TEMP_DIR/CommonMediaTests"
         download_file "$url" "$output" "$PROGRESS_DIR/$file"
         chmod +x "$output"
-        echo "100" > "$PROGRESS_DIR/$file"
+        echo "100" >"$PROGRESS_DIR/$file"
         ;;
     media_lmc_check)
         local url="${cdn_success_url}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh"
@@ -765,7 +769,7 @@ main_download() {
         old_url="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcheck.unclock.media&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=visit&edge_flat=false"
         new_url="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Foneclickvirt%2FUnlockTests&count_bg=%2323E01C&title_bg=%23555555&icon=sonarcloud.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false"
         sed -i "s|$old_url|$new_url|g" "$output"
-        echo "100" > "$PROGRESS_DIR/$file"
+        echo "100" >"$PROGRESS_DIR/$file"
         ;;
     # besttrace)
     #     local url="${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/besttrace/2021/${BESTTRACE_FILE}"
@@ -786,31 +790,31 @@ main_download() {
         local output="$TEMP_DIR/$NEXTTRACE_FILE"
         download_file "$url" "$output" "$PROGRESS_DIR/$file"
         chmod +x "$output"
-        echo "100" > "$PROGRESS_DIR/$file"
+        echo "100" >"$PROGRESS_DIR/$file"
         ;;
     backtrace)
         local url="${cdn_success_url}https://github.com/oneclickvirt/backtrace/releases/download/output/$BACKTRACE_FILE"
         local output="$TEMP_DIR/backtrace"
         download_file "$url" "$output" "$PROGRESS_DIR/$file"
-        echo "100" > "$PROGRESS_DIR/$file"
+        echo "100" >"$PROGRESS_DIR/$file"
         ;;
     gostun)
         local url="${cdn_success_url}https://github.com/oneclickvirt/gostun/releases/download/output/$GOSTUN_FILE"
         local output="$TEMP_DIR/gostun"
         download_file "$url" "$output" "$PROGRESS_DIR/$file"
-        echo "100" > "$PROGRESS_DIR/$file"
+        echo "100" >"$PROGRESS_DIR/$file"
         ;;
     securityCheck)
         local url="${cdn_success_url}https://github.com/oneclickvirt/securityCheck/releases/download/output/$SecurityCheck_FILE"
         local output="$TEMP_DIR/securityCheck"
         download_file "$url" "$output" "$PROGRESS_DIR/$file"
-        echo "100" > "$PROGRESS_DIR/$file"
+        echo "100" >"$PROGRESS_DIR/$file"
         ;;
     portchecker)
         local url="${cdn_success_url}https://github.com/oneclickvirt/portchecker/releases/download/output/$PortChecker_FILE"
         local output="$TEMP_DIR/pck"
         download_file "$url" "$output" "$PROGRESS_DIR/$file"
-        echo "100" > "$PROGRESS_DIR/$file"
+        echo "100" >"$PROGRESS_DIR/$file"
         ;;
     yabs)
         local url="${cdn_success_url}https://raw.githubusercontent.com/masonr/yet-another-bench-script/master/yabs.sh"
@@ -818,18 +822,18 @@ main_download() {
         download_file "$url" "$output" "$PROGRESS_DIR/$file"
         chmod +x "$output"
         sed -i '/# gather basic system information (inc. CPU, AES-NI\/virt status, RAM + swap + disk size)/,/^echo -e "IPv4\/IPv6  : $ONLINE"/d' "$output"
-        echo "100" > "$PROGRESS_DIR/$file"
+        echo "100" >"$PROGRESS_DIR/$file"
         ;;
     ecsspeed_ping)
         local url="${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecsspeed/main/script/ecsspeed-ping.sh"
         local output="$TEMP_DIR/ecsspeed-ping.sh"
         download_file "$url" "$output" "$PROGRESS_DIR/$file"
         chmod +x "$output"
-        echo "100" > "$PROGRESS_DIR/$file"
+        echo "100" >"$PROGRESS_DIR/$file"
         ;;
     *)
         echo "Invalid file: $file"
-        echo "0" > "$PROGRESS_DIR/$file"
+        echo "0" >"$PROGRESS_DIR/$file"
         ;;
     esac
 }
@@ -1070,28 +1074,43 @@ statistics_of_run-times() {
 
 # =============== 基础系统信息 部分 ===============
 systemInfo_get_os_release() {
-    if [ -f "/etc/centos-release" ]; then # CentOS
-        Var_OSRelease="centos"
-    elif [ -f "/etc/fedora-release" ]; then # Fedora
-        Var_OSRelease="fedora"
-    elif [ -f "/etc/redhat-release" ]; then # RedHat
-        Var_OSRelease="rhel"
-    elif [ -f "/etc/astra_version" ]; then # Astra
-        Var_OSRelease="astra"
-    elif [ -f "/etc/lsb-release" ]; then # Ubuntu
-        Var_OSRelease="ubuntu"
-    elif [ -f "/etc/debian_version" ]; then # Debian
-        Var_OSRelease="debian"
-    elif [ -f "/etc/alpine-release" ]; then # Alpine Linux
-        Var_OSRelease="alpinelinux"
-    elif [ -f "/etc/almalinux-release" ]; then # almalinux
-        Var_OSRelease="almalinux"
-    elif [ -f "/etc/arch-release" ]; then # archlinux
-        Var_OSRelease="arch"
-    elif [ -f "/etc/freebsd-update.conf" ]; then # freebsd
-        Var_OSRelease="freebsd"
-    else
-        Var_OSRelease="unknown" # 未知系统分支
+    local regex_size=${#REGEX[@]}
+    for ((i = 0; i < regex_size; i++)); do
+        local pattern="${REGEX[i]}"
+        if [ -f "/etc/debian_version" ] && [[ "$pattern" == "debian|astra" ]]; then
+            Var_OSRelease="debian"
+            break
+        elif [ -f "/etc/lsb-release" ] && [[ "$pattern" == "ubuntu" ]]; then
+            Var_OSRelease="ubuntu"
+            break
+        elif [ -f "/etc/redhat-release" ] && [[ "$pattern" == "centos|red hat|kernel|oracle linux|alma|rocky" ]]; then
+            Var_OSRelease="centos"
+            break
+        elif [ -f "/etc/amazon-linux-release" ] && [[ "$pattern" == "'amazon linux'" ]]; then
+            Var_OSRelease="centos"
+            break
+        elif [ -f "/etc/fedora-release" ] && [[ "$pattern" == "fedora" ]]; then
+            Var_OSRelease="fedora"
+            break
+        elif [ -f "/etc/arch-release" ] && [[ "$pattern" == "arch" ]]; then
+            Var_OSRelease="arch"
+            break
+        elif [ -f "/etc/freebsd-update.conf" ] && [[ "$pattern" == "freebsd" ]]; then
+            Var_OSRelease="freebsd"
+            break
+        elif [ -f "/etc/alpine-release" ] && [[ "$pattern" == "alpine" ]]; then
+            Var_OSRelease="alpinelinux"
+            break
+        elif [ -f "/etc/openbsd.conf" ] && [[ "$pattern" == "openbsd" ]]; then
+            Var_OSRelease="openbsd"
+            break
+        elif [ -f "/etc/opencloudos-release" ] && [[ "$pattern" == "opencloudos" ]]; then
+            Var_OSRelease="opencloudos"
+            break
+        fi
+    done
+    if [ -z "$Var_OSRelease" ]; then
+        Var_OSRelease="unknown"
     fi
     if [ -f /etc/os-release ]; then
         DISTRO=$(grep 'PRETTY_NAME' /etc/os-release | cut -d '"' -f 2)
@@ -1532,13 +1551,14 @@ function BenchAPI_Systeminfo_GetOSReleaseinfo() {
 get_sysbench_os_release() {
     local OS_TYPE
     case "${Var_OSRelease}" in
-    centos | rhel | almalinux) OS_TYPE="redhat" ;;
+    centos | rhel | almalinux | opencloudos) OS_TYPE="redhat" ;;
     ubuntu) OS_TYPE="ubuntu" ;;
-    debian | astra) OS_TYPE="debian" ;;
+    debian) OS_TYPE="debian" ;;
     fedora) OS_TYPE="fedora" ;;
     alpinelinux) OS_TYPE="alpinelinux" ;;
     arch) OS_TYPE="arch" ;;
     freebsd) OS_TYPE="freebsd" ;;
+    openbsd) OS_TYPE="openbsd" ;;
     *) OS_TYPE="unknown" ;;
     esac
     echo "${OS_TYPE}"
@@ -1547,13 +1567,59 @@ get_sysbench_os_release() {
 InstallSysbench() {
     local os_release=$1
     case "$os_release" in
-    ubuntu | debian) ! apt-get install -y sysbench && apt-get --fix-broken install -y && apt-get install --no-install-recommends -y sysbench ;;
-    redhat | centos) (yum -y install epel-release && yum -y install sysbench) || (dnf install epel-release -y && dnf install sysbench -y) ;;
-    fedora) dnf -y install sysbench ;;
-    arch) pacman -S --needed --noconfirm sysbench && pacman -S --needed --noconfirm libaio && ldconfig ;;
-    freebsd) pkg install -y sysbench ;;
-    alpinelinux) echo -e "${Msg_Warning}Sysbench Module not found, installing ..." && echo -e "${Msg_Warning}SysBench Current not support Alpine Linux, Skipping..." && Var_Skip_SysBench="1" ;;
-    *) echo "Error: Unknown OS release: $os_release" && exit 1 ;;
+    ubuntu)
+        apt-get -y install sysbench || {
+            apt-get --fix-broken install -y
+            apt-get --no-install-recommends -y install sysbench
+        }
+        ;;
+    debian)
+        apt-get -y install sysbench || {
+            apt-get --fix-broken install -y
+            apt-get --no-install-recommends -y install sysbench
+        }
+        ;;
+    redhat)
+        yum -y install epel-release && yum -y install sysbench || {
+            cleanup_epel
+            dnf install epel-release -y && dnf install sysbench -y || {
+                _red "Sysbench installation failed!"
+                return 1
+            }
+        }
+        ;;
+    fedora)
+        dnf -y install sysbench || {
+            _red "Sysbench installation failed!"
+            return 1
+        }
+        ;;
+    arch)
+        pacman -S --needed --noconfirm sysbench libaio && ldconfig || {
+            _red "Sysbench installation failed!"
+            return 1
+        }
+        ;;
+    freebsd)
+        pkg install -y sysbench || {
+            _red "Sysbench installation failed!"
+            return 1
+        }
+        ;;
+    openbsd)
+        pkg_add -I sysbench || {
+            _red "Sysbench installation failed!"
+            return 1
+        }
+        ;;
+    alpinelinux)
+        echo -e "${Msg_Warning}SysBench not supported on Alpine Linux, skipping..."
+        Var_Skip_SysBench="1"
+        ;;
+    *)
+        echo "Error: Unknown OS release: $os_release"
+        exit 1
+        ;;
     esac
 }
 
@@ -1566,7 +1632,7 @@ Check_SysBench() {
             InstallSysbench "$os_release"
         fi
     fi
-    # 垂死挣扎 (尝试编译安装)
+    # 尝试编译安装
     if [ ! -f "/usr/bin/sysbench" ] && [ ! -f "/usr/local/bin/sysbench" ]; then
         echo -e "${Msg_Warning}Sysbench Module install Failure, trying compile modules ..."
         Check_Sysbench_InstantBuild
@@ -1578,50 +1644,99 @@ Check_SysBench() {
     else
         _red "SysBench Moudle install Failure! Try Restart Bench or Manually install it! (/usr/bin/sysbench)"
         _blue "Will try to test with geekbench5 instead later on"
+        error_exit
         test_cpu_type="gb5"
     fi
     sleep 3
 }
 
 Check_Sysbench_InstantBuild() {
-    if [ "${Var_OSRelease}" = "centos" ] || [ "${Var_OSRelease}" = "rhel" ] || [ "${Var_OSRelease}" = "almalinux" ] || [ "${Var_OSRelease}" = "ubuntu" ] || [ "${Var_OSRelease}" = "debian" ] || [ "${Var_OSRelease}" = "fedora" ] || [ "${Var_OSRelease}" = "arch" ] || [ "${Var_OSRelease}" = "astra" ]; then
-        local os_sysbench=${Var_OSRelease}
-        if [ "$os_sysbench" = "astra" ]; then
-            os_sysbench="debian"
-        fi
-        echo -e "${Msg_Info}Release Detected: ${os_sysbench}"
-        echo -e "${Msg_Info}Preparing compile enviorment ..."
-        prepare_compile_env "${os_sysbench}"
-        echo -e "${Msg_Info}Downloading Source code (Version 1.0.20)..."
-        mkdir -p /tmp/_LBench/src/
-        dfiles=(sysbench)
-        start_downloads "${dfiles[@]}"
-        mv ${TEMP_DIR}/sysbench-1.0.20 /tmp/_LBench/src/
-        echo -e "${Msg_Info}Compiling Sysbench Module ..."
-        cd /tmp/_LBench/src/sysbench-1.0.20
-        ./autogen.sh && ./configure --without-mysql && make -j8 && make install
-        echo -e "${Msg_Info}Cleaning up ..."
-        cd /tmp && rm -rf /tmp/_LBench/src/sysbench*
-    else
+    # 检查是否支持编译安装
+    local supported_systems="centos|rhel|almalinux|opencloudos|ubuntu|debian|fedora|arch"
+    if [[ ! ${Var_OSRelease} =~ $supported_systems ]]; then
         echo -e "${Msg_Warning}Unsupported operating system: ${Var_OSRelease}"
+        return
     fi
+    # 使用包管理器对应关系
+    local os_type=${Var_OSRelease}
+    case "$os_type" in
+    "opencloudos") os_type="centos" ;;
+    "rhel") os_type="centos" ;;
+    "almalinux") os_type="centos" ;;
+    esac
+    echo -e "${Msg_Info}Release Detected: ${os_type}"
+    echo -e "${Msg_Info}Preparing compile environment..."
+    prepare_compile_env "${os_type}"
+    echo -e "${Msg_Info}Downloading Source code (Version 1.0.20)..."
+    mkdir -p /tmp/_LBench/src/
+    dfiles=(sysbench)
+    start_downloads "${dfiles[@]}"
+    mv ${TEMP_DIR}/sysbench-1.0.20 /tmp/_LBench/src/
+    echo -e "${Msg_Info}Compiling Sysbench Module..."
+    cd /tmp/_LBench/src/sysbench-1.0.20
+    ./autogen.sh && ./configure --without-mysql && make -j8 && make install
+    echo -e "${Msg_Info}Cleaning up..."
+    cd /tmp
+    rm -rf /tmp/_LBench/src/sysbench*
+}
+
+cleanup_epel() {
+    _yellow "Cleaning up EPEL repositories..."
+    rm -f /etc/yum.repos.d/*epel*
+    yum clean all
 }
 
 prepare_compile_env() {
     local system="$1"
-    if [ "${system}" = "centos" ] || [ "${system}" = "rhel" ] || [ "${system}" = "almalinux" ]; then
-        yum install -y epel-release
-        yum install -y wget curl make gcc gcc-c++ make automake libtool pkgconfig libaio-devel
-    elif [ "${system}" = "ubuntu" ] || [ "${system}" = "debian" ]; then
-        ! apt-get update && apt-get --fix-broken install -y && apt-get update
-        ! apt-get -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip && apt-get --fix-broken install -y && apt-get -y install --no-install-recommends curl wget make automake libtool pkg-config libaio-dev unzip
-    elif [ "${system}" = "fedora" ]; then
-        dnf install -y wget curl gcc gcc-c++ make automake libtool pkgconfig libaio-devel
-    elif [ "${system}" = "arch" ]; then
-        pacman -S --needed --noconfirm wget curl gcc gcc make automake libtool pkgconfig libaio lib32-libaio
-    else
-        echo -e "${Msg_Warning}Unsupported operating system: ${system}"
-    fi
+    case "${system}" in
+    redhat)
+        yum install -y epel-release || {
+            cleanup_epel
+            _yellow "EPEL installation failed, continuing..."
+        }
+        yum install -y wget curl make gcc gcc-c++ make automake libtool pkgconfig libaio-devel || {
+            _red "Failed to install build dependencies!"
+            return 1
+        }
+        ;;
+    debian | ubuntu)
+        apt-get update || {
+            apt-get --fix-broken install -y && apt-get update
+        }
+        apt-get -y install --no-install-recommends wget curl make automake libtool pkg-config libaio-dev unzip || {
+            apt-get --fix-broken install -y
+            apt-get -y install --no-install-recommends wget curl make automake libtool pkg-config libaio-dev unzip
+        }
+        ;;
+    fedora)
+        dnf install -y wget curl gcc gcc-c++ make automake libtool pkgconfig libaio-devel || {
+            _red "Failed to install build dependencies!"
+            return 1
+        }
+        ;;
+    arch)
+        pacman -S --needed --noconfirm wget curl gcc gcc make automake libtool pkgconfig libaio lib32-libaio || {
+            _red "Failed to install build dependencies!"
+            return 1
+        }
+        ;;
+    freebsd)
+        pkg install -y wget curl gcc gmake autoconf automake libtool pkgconf || {
+            _red "Failed to install build dependencies!"
+            return 1
+        }
+        ;;
+    openbsd)
+        pkg_add -I wget curl gcc gmake autoconf automake libtool pkgconf || {
+            _red "Failed to install build dependencies!"
+            return 1
+        }
+        ;;
+    *)
+        _red "Unsupported operating system: ${system}"
+        return 1
+        ;;
+    esac
 }
 
 # =============== CPU性能测试 部分 ===============
@@ -2370,7 +2485,7 @@ Run_SysBench_Memory() {
         # 直接输出
         ResultSpeed="$(echo "${TotalSpeed} ${maxtestcount}" | awk '{printf "%.2f",$1/$2}')"
     fi
-    
+
     # 1线程的测试结果写入临时变量，方便与后续的多线程变量做对比
     if [ "$1" = "1" ] && [ "$4" = "read" ]; then
         LBench_Result_MemoryReadSpeedSingle="${ResultSpeed}"
@@ -3269,7 +3384,7 @@ security_check() {
     ${TEMP_DIR}/securityCheck -l $language | sed '1d' >>/tmp/ip_quality_security_check
 }
 
-email_check(){
+email_check() {
     cd $myvar >/dev/null 2>&1
     if [ -f "${TEMP_DIR}/pck" ]; then
         chmod 777 ${TEMP_DIR}/pck
@@ -3317,7 +3432,7 @@ eo6s() {
         local final_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
         echo "final_ipv6: ${final_ipv6}"
         local ipv6_prefixlen=""
-        if command -v ifconfig &> /dev/null; then
+        if command -v ifconfig &>/dev/null; then
             local output=$(ifconfig ${interface} | grep -oP 'inet6 (?!fe80:).*prefixlen \K\d+')
         else
             local output=$(ip -6 addr show dev ${interface} | grep -oP 'inet6 (?!fe80:).* scope global.*prefixlen \K\d+')
@@ -3345,7 +3460,8 @@ SERVER_BASE_URL="https://raw.githubusercontent.com/spiritLHLS/speedtest.net-CN-I
 SERVER_BASE_URL2="https://raw.githubusercontent.com/spiritLHLS/speedtest.cn-CN-ID/main"
 
 pre_check() {
-    check_update
+    trap 'error_exit' ERR
+    check_update || error_exit
     check_root
     check_sudo
     check_curl
@@ -3359,11 +3475,11 @@ pre_check() {
     systemInfo_get_os_release
     check_lsof
     check_time_zone
-    start_time=$(date +%s) # 同步时间后再进行计时
+    start_time=$(date +%s)
     Check_SysBench
     global_startup_init_action
     cd $myvar >/dev/null 2>&1
-    ! _exists "wget" && _red "Error: wget command not found.\n" && exit 1
+    ! _exists "wget" && error_exit && _red "Error: wget command not found.\n" && exit 1
     check_china
     wait
     IPV4=$(check_and_cat_file /tmp/ip_quality_ipv4)
@@ -3403,13 +3519,13 @@ sjlleo_script() {
         return
     fi
     cd $myvar >/dev/null 2>&1
-    if [ -f $TEMP_DIR/CommonMediaTests ]; then 
+    if [ -f $TEMP_DIR/CommonMediaTests ]; then
         mv $TEMP_DIR/CommonMediaTests ./
         echo "------------流媒体解锁--基于oneclickvirt/CommonMediaTests开源-----------"
         _yellow "以下测试的解锁地区是准确的，但是不是完整解锁的判断可能有误，这方面仅作参考使用"
         ./CommonMediaTests | grep -v 'github.com/oneclickvirt/CommonMediaTests'
         _yellow "解锁Netflix，Youtube，DisneyPlus上面和下面进行比较，不同之处自行判断"
-    else 
+    else
         _red "CommonMediaTests下载失败所以不进行测试"
     fi
 }
@@ -4250,6 +4366,14 @@ rm_script() {
     rm -rf geekbench_claim.url*
     rm -rf "$PROGRESS_DIR"
     rm -rf "$PID_FILE"
+}
+
+error_exit() {
+    if [ "$en_status" = true ]; then
+        echo "An error occurred during execution. Please try using https://github.com/oneclickvirt/ecs for testing instead."
+    else
+        echo "执行出现错误,请使用 https://github.com/oneclickvirt/ecs 进行测试"
+    fi
 }
 
 build_text() {

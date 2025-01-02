@@ -67,9 +67,10 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2025.01.01
+2025.01.02
 
-- pastebin使用自己手搓的方便自定义页面，修复分享展示的时候显示有背景问题
+- 支持适配更多的系统
+- 在出现错误意外退出执行时指向golang版本的融合怪进行测试
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
