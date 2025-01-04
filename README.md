@@ -67,10 +67,11 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2025.01.02
+2025.01.04
 
-- 支持适配更多的系统
-- 在出现错误意外退出执行时指向golang版本的融合怪进行测试
+- 优化确保IP质量检测的单项脚本，出现测试为空的情况自动重试
+- 分享链接的页面优化复制命令，三次不同的方法确保无论什么浏览器都能复制成功
+- 分享链接的页面增加其他相关项目/开发者/开发组织的跳转链接
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
