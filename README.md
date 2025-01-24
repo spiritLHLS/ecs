@@ -10,7 +10,7 @@
 
 ## 前言
 
-**如果有本项目未列出的系统/架构，或本项目测试有BUG测不出来，或测试不想要魔改本机配置想要最小化环境变动的**
+**如果有本项目未列出的系统/架构，或本项目测试有BUG测不出来，或测试不想要魔改本机配置想要最小化环境变动的，或想要测试更全面的**
 
 **请尝试[https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs)进行测试**
 
@@ -30,7 +30,7 @@ amd64(x86_64)、arm64、i386、arm
 
 能连得上网都支持
 
-PS: 考虑到多系统多架构的普遍测试的需求，融合怪的Shell版本不再做新功能开发，仅作维护，各项测试已重构为Golang版本([https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs))，预计年末完成整个项目的测试排障并正式发版。
+PS: 考虑到多系统多架构的普遍测试的需求，融合怪的Shell版本不再做新功能开发，仅作维护，各项测试已重构为Golang版本([https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs))。
 
 # 目录
 - [前言](#前言)
@@ -69,11 +69,11 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2025.01.04
+2025.01.24
 
-- 优化确保IP质量检测的单项脚本，出现测试为空的情况自动重试
-- 分享链接的页面优化复制命令，三次不同的方法确保无论什么浏览器都能复制成功
-- 分享链接的页面增加其他相关项目/开发者/开发组织的跳转链接
+- 更新speedtest的go版本的1.6.12版本到1.7.10版本
+- 增加第三方脚本三网的24小时ping值测试图
+- 删除三网回程路由显示中的ipip[.]net的提示和相关代码，besttrace已不再使用，年久失修
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -292,7 +292,7 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 # 致谢
 
-感谢 [ipinfo.io](https://ipinfo.io) [ip.sb](https://ip.sb) [cheervision.co](https://cheervision.co) [ipip.net](https://en.ipip.net) [cip.cc](http://www.cip.cc) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [virustotal.com](https://www.virustotal.com/) [ip2location.com](ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) ~~[abstractapi.com](https://abstractapi.com/)~~ [ipqualityscore.com](https://www.ipqualityscore.com/) [bigdatacloud.com](https://www.bigdatacloud.com/) 等网站提供的API进行检测，感谢互联网各网站提供的查询资源
+感谢 [ipinfo.io](https://ipinfo.io) [ip.sb](https://ip.sb) [cheervision.co](https://cheervision.co) [cip.cc](http://www.cip.cc) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [virustotal.com](https://www.virustotal.com/) [ip2location.com](ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) [ipqualityscore.com](https://www.ipqualityscore.com/) [bigdatacloud.com](https://www.bigdatacloud.com/) ~~[ipip.net](https://en.ipip.net)~~ ~~[abstractapi.com](https://abstractapi.com/)~~ 等网站提供的API进行检测，感谢互联网各网站提供的查询资源
 
 感谢所有开源项目提供的原始测试脚本
 

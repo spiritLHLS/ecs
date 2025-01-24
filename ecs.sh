@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2025.01.02"
+ver="2025.01.24"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -215,7 +215,7 @@ test_ip_s6=("240e:e1:aa00:4000::24" "2408:80f1:21:5003::a" "2409:8c1e:75b0:3003:
 test_area_b6=("北京电信" "北京联通" "北京移动")
 test_ip_b6=("2400:89c0:1053:3::69" "2400:89c0:1013:3::54" "2409:8c00:8421:1303::55")
 BrowserUA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36"
-Speedtest_Go_version="1.6.12"
+Speedtest_Go_version="1.7.10"
 
 # =============== 基础信息设置 ===============
 REGEX=("debian|astra" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora" "arch" "freebsd" "alpine" "openbsd" "opencloudos")
@@ -3866,26 +3866,11 @@ fscarmen_route_script() {
     fi
     if [[ ! -z "${ip4}" ]] && [[ "$route_location" != "b6" && "$route_location" != "g6" && "$route_location" != "s6" ]]; then
         if [ "$swhc_mode" = false ]; then
-            _green "核心程序来自ipip.net或nexttrace，请知悉!" >/tmp/ecs/ip.test
+            _green "核心程序来自nexttrace，请知悉!" >/tmp/ecs/ip.test
         else
-            _green "依次测试电信/联通/移动经过的地区及线路，核心程序来自ipip.net或nexttrace，请知悉!" >/tmp/ecs/ip.test
+            _green "依次测试电信/联通/移动经过的地区及线路，核心程序来自nexttrace，请知悉!" >/tmp/ecs/ip.test
         fi
         for ((a = 0; a < ${#test_area_4[@]}; a++)); do
-            # "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip_4[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >>/tmp/ip_temp
-            # if [ ! -s "/tmp/ip_temp" ] || grep -q "http: 403" /tmp/ip_temp || grep -q "error" /tmp/ip_temp 2>/dev/null; then
-            #     rm -rf /tmp/ip_temp
-            #     RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip_4[a]}" --nocolor 2>/dev/null)
-            #     RESULT=$(echo "$RESULT" | grep '^[0-9 ]')
-            #     PART_1=$(echo "$RESULT" | grep '^[0-9]\{1,2\}[ ]\+[0-9a-f]' | awk '{$1="";$2="";print}' | sed "s@^[ ]\+@@g")
-            #     PART_2=$(echo "$RESULT" | grep '\(.*ms\)\{3\}' | sed 's/.* \([0-9*].*ms\).*ms.*ms/\1/g')
-            #     SPACE=' '
-            #     for ((i = 1; i <= $(echo "$PART_1" | wc -l); i++)); do
-            #         [ "$i" -eq 10 ] && unset SPACE
-            #         p_1=$(echo "$PART_2" | sed -n "${i}p") 2>/dev/null
-            #         p_2=$(echo "$PART_1" | sed -n "${i}p") 2>/dev/null
-            #         echo -e "$p_1 \t$p_2" >>/tmp/ip_temp
-            #     done
-            # fi
             rm -rf /tmp/ip_temp
             RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip_4[a]}" --nocolor 2>/dev/null)
             RESULT=$(echo "$RESULT" | grep '^[0-9 ]')
@@ -4663,6 +4648,10 @@ network_test_script_options() {
         bash <(wget -qO- bash.spiritlhl.net/ecs-ping)
         break_status=true
         ;;
+    16)
+        curl https://vps789.com/public/ping24h/?remarks=from%E8%9E%8D%E5%90%88%E6%80%AA
+        break_status=true
+        ;;
     0)
         original_script
         break_status=true
@@ -4697,6 +4686,7 @@ network_test_script() {
         echo -e "${GREEN}13.${PLAIN} 本人的ecs-net三网测速脚本(自动更新测速节点，对应 speedtest.net)"
         echo -e "${GREEN}14.${PLAIN} 本人的ecs-cn三网测速脚本(自动更新测速节点，对应 speedtest.cn)"
         echo -e "${GREEN}15.${PLAIN} 本人的ecs-ping三网测ping脚本(自动更新测试节点)"
+        echo -e "${GREEN}16.${PLAIN} 开始三网24小时ping测试(执行后回传24小时实时更新的图片地址)"
         echo " -------------"
         echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
         echo ""

@@ -1571,3 +1571,19 @@
 #         fi
 #     fi
 # }
+
+            # "$TEMP_DIR/$BESTTRACE_FILE" "${test_ip_4[a]}" -g cn 2>/dev/null | sed "s/^[ ]//g" | sed "/^[ ]/d" | sed '/ms/!d' | sed "s#.* \([0-9.]\+ ms.*\)#\1#g" >>/tmp/ip_temp
+            # if [ ! -s "/tmp/ip_temp" ] || grep -q "http: 403" /tmp/ip_temp || grep -q "error" /tmp/ip_temp 2>/dev/null; then
+            #     rm -rf /tmp/ip_temp
+            #     RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip_4[a]}" --nocolor 2>/dev/null)
+            #     RESULT=$(echo "$RESULT" | grep '^[0-9 ]')
+            #     PART_1=$(echo "$RESULT" | grep '^[0-9]\{1,2\}[ ]\+[0-9a-f]' | awk '{$1="";$2="";print}' | sed "s@^[ ]\+@@g")
+            #     PART_2=$(echo "$RESULT" | grep '\(.*ms\)\{3\}' | sed 's/.* \([0-9*].*ms\).*ms.*ms/\1/g')
+            #     SPACE=' '
+            #     for ((i = 1; i <= $(echo "$PART_1" | wc -l); i++)); do
+            #         [ "$i" -eq 10 ] && unset SPACE
+            #         p_1=$(echo "$PART_2" | sed -n "${i}p") 2>/dev/null
+            #         p_2=$(echo "$PART_1" | sed -n "${i}p") 2>/dev/null
+            #         echo -e "$p_1 \t$p_2" >>/tmp/ip_temp
+            #     done
+            # fi

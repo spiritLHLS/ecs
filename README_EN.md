@@ -2,13 +2,15 @@
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FspiritLHLS%2Fecs&count_bg=%2357DEFF&title_bg=%23000000&icon=cliqz.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://www.spiritlhl.net/)
 
+[<img src="https://api.gitsponsors.com/api/badge/img?id=501535202" height="20">](https://api.gitsponsors.com/api/badge/link?p=haU3VlXCDVRGPfHZE5aj8w8TKG5twqbYUa3jtSjEzkLfg4Q9TY32mTyF8RyNmnCsp1NADZHpPEhh3aKZ039SVg1DhsoX7gsoTK2dMkHlCVVrrqx82KH/ppUK/8ryOqfjpqPCBCduftYP5VNUNidMJw==)
+
 ## Language
 
 [中文文档](README.md) | [English Docs](README_EN.md)
 
 ## Foreword
 
-**If there is a system/architecture that is not listed in this project, or if there is a bug that cannot be detected in this project's tests, or if the tests do not want to magically change the local configuration and want to minimize environmental changes**
+**If there is a system/architecture that is not listed in this project, or if there is a bug that cannot be detected in this project's test, or if the test does not want to magically change the local configuration and wants to minimize the environment changes, or if you want to have a more comprehensive test.**
 
 **Please try [https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs/blob/master/README_EN.md) for testing**
 
@@ -28,7 +30,7 @@ Support geography:
 
 Anywhere you can connect to the Internet
 
-PS: Considering the demand of universal testing for multi-system and multi-architecture, the Shell version of Fusion Monster is no longer for new feature development, only for maintenance, and the tests have been refactored to Golang version ([https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs/blob/master/README_EN.md)), is expected to complete the entire project at the end of the year test troubleshooting and formal release.
+PS: Considering the demand of universal testing for multi-system and multi-architecture, the Shell version of Fusion Monster is no longer for new feature development, only for maintenance, and the tests have been refactored to Golang version ([https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs/blob/master/README_EN.md)).
 
 # Menu
 - [Foreword](#Foreword)
@@ -231,7 +233,7 @@ VPS test, VPS speed test, VPS comprehensive performance test, VPS backhaul line 
 
 # Thanks
 
-Thanks [ipinfo.io](https://ipinfo.io) [ip.sb](https://ip.sb) [cheervision.co](https://cheervision.co) [ipip.net](https://en.ipip.net) [cip.cc](http://www.cip.cc) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [virustotal.com](https://www.virustotal.com/) [ip2location.com](ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) ~~[abstractapi.com](https://abstractapi.com/)~~ [ipqualityscore.com](https://www.ipqualityscore.com/) [bigdatacloud.com](https://www.bigdatacloud.com/) and so on. They provide APIs for testing, thanks to the query resources provided by various sites on the Internet.
+Thanks [ipinfo.io](https://ipinfo.io) [ip.sb](https://ip.sb) [cheervision.co](https://cheervision.co) [cip.cc](http://www.cip.cc) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [virustotal.com](https://www.virustotal.com/) [ip2location.com](ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) [ipqualityscore.com](https://www.ipqualityscore.com/) [bigdatacloud.com](https://www.bigdatacloud.com/) ~~[ipip.net](https://en.ipip.net)~~ ~~[abstractapi.com](https://abstractapi.com/)~~ and so on. They provide APIs for testing, thanks to the query resources provided by various sites on the Internet.
 
 Thanks to all the open source projects for providing the original test scripts.
 
