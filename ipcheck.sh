@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #by spiritlhl
 #From https://github.com/spiritLHLS/ecs
-#2025.01.04
+#2025.01.27
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2025.01.04"
+ver="2025.01.27"
 changeLog="IP质量测试，由频道 https://t.me/vps_reviews 原创"
 temp_file_apt_fix="/tmp/apt_fix.txt"
 shorturl=""
@@ -91,6 +91,16 @@ build_text() {
         sed -i -e 's/\x1B\[[0-9;]\+[a-zA-Z]//g' sc_result.txt
         sed -i -e '/^$/d' sc_result.txt
         sed -i 's/\r//' sc_result.txt
+        # 检查文件大小是否小于 25KB
+        if [ ! -s sc_result.txt ]; then
+            echo "The file sc_result.txt is empty and has not been uploaded."
+            return
+        fi
+        file_size=$(wc -c <"sc_result.txt")
+        if [ "$file_size" -ge 25600 ]; then
+            echo "Files larger than 25KB (${file_size} bytes) are not uploaded."
+            return
+        fi
         if [ -s sc_result.txt ]; then
             http_short_url=$(curl --ipv4 -sL -m 10 -X POST \
                 -H "Authorization: $ST" \

@@ -69,11 +69,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2025.01.24
+2025.01.27
 
-- 更新speedtest的go版本的1.6.12版本到1.7.10版本
-- 增加第三方脚本三网的24小时ping值测试图
-- 删除三网回程路由显示中的ipip[.]net的提示和相关代码，besttrace已不再使用，年久失修
+- 硬性要求上传文件不可大于25KB，避免错误的文件进行上传
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
