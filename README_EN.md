@@ -6,7 +6,7 @@
 
 ## Language
 
-[中文文档](README.md) | [English Docs](README_EN.md)
+[中文文档](README.md) | [English Docs](README_EN.md) | [日本語ドキュメント](README_JP.md)
 
 ## Foreword
 
