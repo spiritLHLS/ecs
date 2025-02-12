@@ -69,9 +69,11 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2025.01.27
+2025.02.12
 
-- 硬性要求上传文件不可大于25KB，避免错误的文件进行上传
+- 尝试修复CDN轮询错误时仍使用CDN进行环境依赖下载的BUG
+- 去除无效的cip[.]cc对中国地区的检测，误差太大了
+- 删除无效的cdn地址，增加有效cdn地址
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

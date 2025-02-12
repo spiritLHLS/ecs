@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2025.01.27"
+ver="2025.02.12"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -344,7 +344,8 @@ next() {
 checkver() {
     check_cdn_file
     running_version=$(sed -n '7s/ver="\(.*\)"/\1/p' "$0")
-    curl -L "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/ecs.sh" -o ecs1.sh && chmod 777 ecs1.sh
+    curl -L "${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/ecs.sh" -o ecs1.sh || curl -L "https://raw.githubusercontent.com/spiritLHLS/ecs/main/ecs.sh" -o ecs1.sh
+    chmod 777 ecs1.sh
     downloaded_version=$(sed -n '7s/ver="\(.*\)"/\1/p' ecs1.sh)
     if [ "$running_version" != "$downloaded_version" ]; then
         if [ "$en_status" = true ]; then
@@ -740,7 +741,7 @@ download_file() {
         echo "$final_progress" >"$progress_file"
     fi
     # 如果下载失败两次则返回错误码
-    [ "$download_failed" -ge 2 ] && return 1 || return 0
+    [ "$download_failed" -ge 2 ] && error_exit && return 1 || return 0
 }
 
 main_download() {
@@ -771,13 +772,6 @@ main_download() {
         sed -i "s|$old_url|$new_url|g" "$output"
         echo "100" >"$PROGRESS_DIR/$file"
         ;;
-    # besttrace)
-    #     local url="${cdn_success_url}https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/besttrace/2021/${BESTTRACE_FILE}"
-    #     local output="$TEMP_DIR/$BESTTRACE_FILE"
-    #     download_file "$url" "$output" "$PROGRESS_DIR/$file"
-    #     chmod +x "$output"
-    #     echo "100" > "$PROGRESS_DIR/$file"
-    #     ;;
     nexttrace)
         NEXTTRACE_VERSION=$(curl -m 6 -sSL "https://api.github.com/repos/nxtrace/Ntrace-core/releases/latest" | awk -F \" '/tag_name/{print $4}')
         if [ -z "$NEXTTRACE_VERSION" ]; then
@@ -955,7 +949,8 @@ check_cdn_file() {
     if [ -n "$cdn_success_url" ]; then
         _yellow "CDN available, using CDN"
     else
-        _yellow "No CDN available, no use CDN"
+        _yellow "No CDN available, using original links"
+        export cdn_success_url=""
     fi
 }
 
@@ -1040,25 +1035,6 @@ check_china() {
                 CN=true
                 ;;
             esac
-        else
-            if [[ $? -ne 0 ]]; then
-                if [[ $(curl -m 6 -s cip.cc) =~ "中国" ]]; then
-                    _yellow "根据cip.cc提供的信息，当前IP可能在中国"
-                    read -e -r -p "是否选用中国镜像完成相关组件安装? [Y/n] " input
-                    case $input in
-                    [yY][eE][sS] | [yY])
-                        echo "使用中国镜像"
-                        CN=true
-                        ;;
-                    [nN][oO] | [nN])
-                        echo "不使用中国镜像"
-                        ;;
-                    *)
-                        echo "不使用中国镜像"
-                        ;;
-                    esac
-                fi
-            fi
         fi
     fi
 }
@@ -1854,13 +1830,13 @@ download_speedtest_file() {
             sys_bit="arm64"
         fi
         local url3="https://github.com/showwin/speedtest-go/releases/download/v${Speedtest_Go_version}/speedtest-go_${Speedtest_Go_version}_Linux_${sys_bit}.tar.gz"
-        curl --fail -sL -m 10 -o speedtest.tar.gz "${url3}" || curl --fail -sL -m 15 -o speedtest.tar.gz "${cdn_success_url}${url3}"
+        curl --fail -sL -m 10 -o speedtest.tar.gz "${url3}" || curl --fail -sL -m 15 -o speedtest.tar.gz "${url3}"
     else
         if [ "$sys_bit" = "aarch64" ]; then
             sys_bit="arm64"
         fi
         local url3="https://github.com/showwin/speedtest-go/releases/download/v${Speedtest_Go_version}/speedtest-go_${Speedtest_Go_version}_Linux_${sys_bit}.tar.gz"
-        curl -o speedtest.tar.gz "${cdn_success_url}${url3}"
+        curl -o speedtest.tar.gz "${cdn_success_url}${url3}" || curl -o speedtest.tar.gz "${url3}"
         # if [ $? -eq 0 ]; then
         #     _green "Used unofficial speedtest-go"
         # fi
@@ -3453,7 +3429,7 @@ eo6s() {
     fi
 }
 
-cdn_urls=("http://cdn1.spiritlhl.net/" "http://cdn2.spiritlhl.net/" "http://cdn3.spiritlhl.net/" "https://fd.spiritlhl.top/" "https://cdn0.spiritlhl.top/" "https://cdn.spiritlhl.net/")
+cdn_urls=("http://cdn1.spiritlhl.net/" "http://cdn2.spiritlhl.net/" "http://cdn3.spiritlhl.net/" "http://cdn4.spiritlhl.net/")
 ST="OvwKx5qgJtf7PZgCKbtyojSU.MTcwMTUxNzY1MTgwMw"
 speedtest_ver="1.2.0"
 SERVER_BASE_URL="https://raw.githubusercontent.com/spiritLHLS/speedtest.net-CN-ID/main"
@@ -4357,7 +4333,7 @@ error_exit() {
     if [ "$en_status" = true ]; then
         echo "An error occurred during execution. Please try using https://github.com/oneclickvirt/ecs for testing instead."
     else
-        echo "执行出现错误,请使用 https://github.com/oneclickvirt/ecs 进行测试"
+        echo "执行出现错误，如果有必要请使用 https://github.com/oneclickvirt/ecs 进行测试，避免环境依赖出现问题"
     fi
 }
 

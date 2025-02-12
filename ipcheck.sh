@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #by spiritlhl
 #From https://github.com/spiritLHLS/ecs
-#2025.01.27
+#2025.02.12
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2025.01.27"
+ver="2025.02.12"
 changeLog="IP质量测试，由频道 https://t.me/vps_reviews 原创"
 temp_file_apt_fix="/tmp/apt_fix.txt"
 shorturl=""
@@ -140,9 +140,10 @@ check_cdn() {
 check_cdn_file() {
     check_cdn "https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test"
     if [ -n "$cdn_success_url" ]; then
-        echo "CDN available, using CDN"
+        _yellow "CDN available, using CDN"
     else
-        echo "No CDN available, no use CDN"
+        _yellow "No CDN available, using original links"
+        export cdn_success_url=""
     fi
 }
 
@@ -350,7 +351,7 @@ ipcheck() {
 }
 
 main() {
-    cdn_urls=("https://cdn0.spiritlhl.top/" "http://cdn3.spiritlhl.net/" "http://cdn1.spiritlhl.net/" "http://cdn2.spiritlhl.net/" "https://fd.spiritlhl.top/")
+    cdn_urls=("http://cdn1.spiritlhl.net/" "http://cdn2.spiritlhl.net/" "http://cdn3.spiritlhl.net/" "http://cdn4.spiritlhl.net/")
     check_cdn_file
     pre_download
     chmod 777 securityCheck 2>/dev/null
