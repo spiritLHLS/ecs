@@ -2,7 +2,7 @@
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FspiritLHLS%2Fecs&count_bg=%2357DEFF&title_bg=%23000000&icon=cliqz.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://www.spiritlhl.net/)
 
-[<img src="https://api.gitsponsors.com/api/badge/img?id=501535202" height="20">](https://api.gitsponsors.com/api/badge/link?p=haU3VlXCDVRGPfHZE5aj8w8TKG5twqbYUa3jtSjEzkLfg4Q9TY32mTyF8RyNmnCsp1NADZHpPEhh3aKZ039SVg1DhsoX7gsoTK2dMkHlCVVrrqx82KH/ppUK/8ryOqfjpqPCBCduftYP5VNUNidMJw==)
+
 
 ## 言語
 
