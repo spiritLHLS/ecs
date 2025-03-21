@@ -187,7 +187,7 @@ bash ipcheck.sh
 
 虽然本项目内置使用**CDN**支持**国内**和**国外**加速服务器测试环境安装和预制文件下载，但中国境内受CDN连通性或带宽限制加载可能会比较缓慢。
 
-**本项目初次使用建议查看说明：[跳转](https://github.com/oneclickvirt/ecs/README_NEW_USER.md)**
+**本项目初次使用建议查看说明：[跳转](https://github.com/oneclickvirt/ecs/blob/master/README_NEW_USER.md)**
 
 其他说明：
 

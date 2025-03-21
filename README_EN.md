@@ -147,7 +147,7 @@ Example of testing the worst performing machine (completed in 47 minutes): [Link
 
 Although this project has built-in **CDN** support for **domestic** and **international** acceleration of server test environment installation and pre-made file downloads, loading may be slower in mainland China due to CDN connectivity or bandwidth limitations.
 
-**For first-time users of this project, it is recommended to check the instructions: [Jump to](https://github.com/oneclickvirt/ecs/README_NEW_USER.md)**
+**For first-time users of this project, it is recommended to check the instructions: [Jump to](https://github.com/oneclickvirt/ecs/blob/master/README_NEW_USER.md)**
 
 Other information:
 

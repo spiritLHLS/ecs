@@ -148,7 +148,7 @@ bash ipcheck.sh
 
 このプロジェクトには**国内**と**国外**のサーバーテスト環境インストールとプリセットファイルダウンロードを加速する**CDN**サポートが組み込まれていますが、中国本土ではCDNの接続性や帯域幅の制限により読み込みが遅くなる場合があります。
 
-**このプロジェクトを初めて使用する場合は、説明を確認することをお勧めします：[ジャンプ](https://github.com/oneclickvirt/ecs/README_NEW_USER.md)**
+**このプロジェクトを初めて使用する場合は、説明を確認することをお勧めします：[ジャンプ](https://github.com/oneclickvirt/ecs/blob/master/README_NEW_USER.md)**
 
 その他の情報：
 <details>
