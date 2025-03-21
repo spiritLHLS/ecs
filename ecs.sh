@@ -4587,7 +4587,7 @@ network_test_script_options() {
         break_status=true
         ;;
     4)
-        bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/return.sh)
+        bash <(curl -sSL https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/return.sh)
         break_status=true
         ;;
     5)
@@ -5000,7 +5000,7 @@ my_original_script_options() {
         break_status=true
         ;;
     6)
-        bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/return.sh)
+        bash <(curl -sSL https://github.com/spiritLHLS/ecs/raw/main/archive/return.sh)
         break_status=true
         ;;
     7)

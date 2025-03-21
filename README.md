@@ -2,35 +2,30 @@
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FspiritLHLS%2Fecs&count_bg=%2357DEFF&title_bg=%23000000&icon=cliqz.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://www.spiritlhl.net/)
 
-
-
 ## 语言
 
 [中文文档](README.md) | [English Docs](README_EN.md) | [日本語ドキュメント](README_JP.md)
 
 ## 前言
 
-**如果有本项目未列出的系统/架构，或本项目测试有BUG测不出来，或测试不想要魔改本机配置想要最小化环境变动的，或想要测试更全面的**
+**如果遇到以下情况：**
+- **本项目未列出的系统/架构**
+- **本项目测试有BUG测不出来**
+- **测试不想要魔改本机配置想要最小化环境变动**
+- **想要测试更全面**
 
-**请尝试[https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs)进行测试**
+**请尝试 [https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs) 进行测试**
 
-支持系统：
+### 兼容性信息
 
-Ubuntu 18+, Debian 8+, Centos 7+, Fedora 33+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, AstraLinux CE, Arch
+| 类别 | 支持选项 |
+|----------|------------------|
+| **完全支持的系统** | Ubuntu 18+, Debian 8+, Centos 7+, Fedora 33+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, AstraLinux CE, Arch |
+| **半支持系统** | FreeBSD (前提已执行 `pkg install -y curl bash`)，Armbian |
+| **支持架构** | amd64 (x86_64)、arm64、i386、arm |
+| **支持地域** | **能连得上网都支持** |
 
-半支持系统：
-
-FreeBSD(前提已执行```pkg install -y curl bash```)，Armbian
-
-支持架构：
-
-amd64(x86_64)、arm64、i386、arm
-
-支持地域：
-
-能连得上网都支持
-
-PS: 考虑到多系统多架构的普遍测试的需求，融合怪的Shell版本不再做新功能开发，仅作维护，各项测试已重构为Golang版本([https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs))。
+**注意：** 考虑到多系统多架构的普遍测试的需求，融合怪的Shell版本不再做新功能开发，仅作维护，各项测试已重构为Golang版本 ([https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs))，尽量无额外的环境依赖，完全无第三方shell文件引用。
 
 # 目录
 - [前言](#前言)
@@ -76,8 +71,6 @@ https://github.com/spiritLHLS/one-click-installation-script
 - 删除无效的cdn地址，增加有效cdn地址
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
-
-**[返回顶部](https://github.com/spiritLHLS/ecs#top)**
 
 ## 融合怪命令
 
@@ -182,58 +175,54 @@ bash ipcheck.sh
 
 ## 融合怪说明
 
-融合怪脚本最好在 /root 路径下执行，避免各种奇奇怪怪的问题
+本项目最好在```/root```路径下执行，避免产生环境依赖问题，本项目默认自动更新包管理器，不要在生产环境中使用，建议使用前文提及的Go版本确保不会变动本机配置。
 
-融合怪的执行结果保存在当前路径下的```test_result.txt```中，可在```screen```或```tmux```中执行，先退出SSH登录过一段时间后再查看文件
+融合怪的执行结果保存在当前路径下的```test_result.txt```中，可在```screen```或```tmux```中执行，可先退出SSH登录过一段时间后再查看文件，避免ssh不稳定导致的测试中断。
 
-**有时候想要测一些配置极其拉跨的机器时，上面这样执行这样可以避免IO或者CPU过于垃圾导致的测试过程中的SSH连接中断，就不会测一半啥都没了，假如screen中显示乱码，也没问题，分享链接中的结果是不带乱码的**
+**有时候想要测一些配置极其拉跨的机器时，上面这样执行这样可以避免IO或者CPU过于陈旧导致测试过程中的SSH连接中断，假如screen中显示乱码也有没问题，分享链接中的结果是不带乱码的。**
 
-融合怪的完整版和精简版运行完毕会自动上传结果到pastebin并回传分享链接，如果测一半想要退出，那么按```Ctrl+C```同时按下可终止测试，此时会自动退出删除残余文件
+融合怪的完整版和精简版运行完毕会自动上传结果到pastebin并回传分享链接，如果测一半想要退出，那么按```Ctrl+C```同时按下可终止测试，此时会自动退出删除残余的环境依赖文件。
 
-最烂机器测试的例子(跑了47分钟一样测完)：[跳转](https://github.com/spiritLHLS/ecs/blob/main/lowpage/README.md)
+最垃圾的机器测试的例子(跑了47分钟测完)：[跳转](https://github.com/spiritLHLS/ecs/blob/main/lowpage/README.md)
 
-使用**CDN**已支持**国内**和**国外**加速服务器环境安装和预制文件下载，但国内受CDN连通性或国内机器带宽大小的限制加载可能会慢很多
+虽然本项目内置使用**CDN**支持**国内**和**国外**加速服务器测试环境安装和预制文件下载，但中国境内受CDN连通性或带宽限制加载可能会比较缓慢。
 
-融合怪测试说明以及部分测试结果的内容解释(初次使用推荐查看)：
+**本项目初次使用建议查看说明：[跳转](https://github.com/oneclickvirt/ecs/README_NEW_USER.md)**
+
+其他说明：
+
 <details>
+<summary>展开查看</summary>
 
-除了已标注的原创内容，其余所有分区均为借鉴并进行优化修改后的版本，与原始对应的脚本不一样
+除已标注的原创内容，其余所有分区均为借鉴并进行优化修改后的版本，与原始对应的脚本不一样。
 
-所有检测都有考虑过使用并行测试，并在部分环节使用了该技术，比正常的顺序执行优化了2~3分钟，属于是独有的，暂无哪家的测试有同类技术
+所有检测都有考虑过使用并行测试，并在部分环节使用了该技术，比正常的顺序执行优化了2~3分钟。
 
-系统基础信息测试融合了多家还有我自己修补的部分检测(systl、NAT类型检测，并发ASN检测等)，应该是目前最全面最通用的了
+系统基础信息测试融合了多家还有自修补的部分检测(systl、NAT类型检测，并发ASN检测等)。
 
-CPU测试默认使用sysbench测试得分，不是yabs的gb4或gb5(虽然默认不是geekbench但可以通过指令指定geekbench常见版本进行测试)，前者只是简单的计算质数测试速度快，后者geekbench是综合测试系统算加权得分
+CPU测试默认使用sysbench测试得分，不是yabs的gb4或gb5(虽然默认不是geekbench但可以通过指令指定geekbench常见版本进行测试)，相关说明见Go版本融合怪说明末尾的QA。
 
-使用sysbench测试得分是每秒处理的事件数目，这个指标无论在强还是弱性能的服务器上都能迅速测出来，而geekbench很多是测不动或者速度很慢起码2分半钟
+IO测试收录了两种，来源于lemonbench的dd磁盘测试和yabs的fio磁盘测试，综合来看会比较好，前者可能误差偏大但测试速度快无硬盘大小限制，后者真实一点但测试速度慢有硬盘以及内存大小限制。
 
-CPU测试单核sysbench得分在5000以上的可以算第一梯队，4000到5000分算第二梯队，每1000分算一档，自己看看自己在哪个档位吧
+流媒体测试收录了两种，一个是go编译的二进制文件和一个shell脚本版本，二者各有优劣，互相对比看即可。
 
-AMD的7950x单核满血性能得分在6500左右，AMD的5950x单核满血性能得分5700左右，Intel普通的CPU(E5之类的)在1000~800左右，低于500的单核CPU可以说是性能比较烂的了
+tiktok测试有superbench和lmc999两种版本，哪个失效了随时可能更新为其中一种版本，以最新的脚本为准。
 
-IO测试收录了两种，来源于lemonbench的dd磁盘测试和yabs的fio磁盘测试，综合来看会比较好，前者可能误差偏大但测试速度快无硬盘大小限制，后者真实一点但测试速度慢有硬盘以及内存大小限制
+回程路由测试选用的GO编译的二进制版本和朋友PR的版本，本人做了优化适配多个IP列表以及融合部分查询。
 
-流媒体测试收录了两种，一个是go编译的二进制文件和一个shell脚本版本，二者各有优劣，互相对比看即可
+IP质量检测纯原创，如有bug或者更多数据库来源可在issues中提出，日常看IP2Location数据库的IP类型即可，其中的25端口邮箱可达，则可搭建邮局。
 
-tiktok测试有superbench和lmc999两种版本，哪个失效了随时可能更新为其中一种版本，以最新的脚本为准
+融合怪的IP质量检测是简化过的，没有查询Cloudflare的威胁得分，个人原创区的IP质量检测才是完整版(或者仓库说明中列出的那个IP质量检测的命令也是完整版)。
 
-回程路由测试选用的GO编译的二进制版本和朋友PR的版本，本人做了优化适配多个IP列表以及融合部分查询
+三网测速使用自写的测速脚本，尽量使用最新节点最新组件进行测速，且有备用第三方go版本测速内核，做到自更新测速节点列表，自适应系统环境测速。
 
-IP质量检测纯原创，如有bug或者更多数据库来源可在issues中提出，日常看IP2Location数据库的IP类型即可，其中的25端口邮箱可达，则可搭建邮局
+其他第三方脚本归纳到了第三方脚本区，里面有同类型脚本不同作者的各种竞品脚本，如果融合怪不能使你满意或者有错误，可以看看那部分。
 
-融合怪的IP质量检测是简化过的，没有查询Cloudflare的威胁得分，个人原创区的IP质量检测才是完整版(或者仓库说明中列出的那个IP质量检测的命令也是完整版)
+原创脚本区是个人原创的部分，有事没事也可以看看，可能会更新某些偏门或者独到的脚本。
 
-三网测速使用自写的测速脚本，尽量使用最新节点最新组件进行测速，且有备用第三方go版本测速内核，做到自更新测速节点列表，自适应系统环境测速
-
-其他第三方脚本归纳到了第三方脚本区，里面有同类型脚本不同作者的各种竞品脚本，如果融合怪不能使你满意或者有错误，可以看看那部分
-
-原创脚本区是个人原创的部分，有事没事也可以看看，可能会更新某些偏门或者独到的脚本
-
-VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流媒体测试等所有测试融合的脚本，本脚本能融合的都融合了
+VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流媒体测试等所有测试融合的脚本，本脚本能融合的都融合了。
 
 </details>
-
-**[返回顶部](https://github.com/spiritLHLS/ecs#top)**
 
 ## 融合怪功能
 
@@ -261,9 +250,11 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 ### https://github.com/spiritLHLS/ecsspeed
 
-**[返回顶部](https://github.com/spiritLHLS/ecs#top)**
 
 # 脚本概况
+
+<details>
+<summary>展开查看</summary>
 
 主界面：
 
@@ -283,8 +274,7 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 ![图片](https://github.com/spiritLHLS/ecs/assets/103393591/393db695-5c94-41a9-9b02-812ad9d64967)
 
-
-**[返回顶部](https://github.com/spiritLHLS/ecs#top)**
+</details>
 
 # Stargazers over time
 
@@ -292,7 +282,7 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 # 致谢
 
-感谢 [ipinfo.io](https://ipinfo.io) [ip.sb](https://ip.sb) [cheervision.co](https://cheervision.co) [cip.cc](http://www.cip.cc) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [virustotal.com](https://www.virustotal.com/) [ip2location.com](ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) [ipqualityscore.com](https://www.ipqualityscore.com/) [bigdatacloud.com](https://www.bigdatacloud.com/) ~~[ipip.net](https://en.ipip.net)~~ ~~[abstractapi.com](https://abstractapi.com/)~~ 等网站提供的API进行检测，感谢互联网各网站提供的查询资源
+感谢 [ipinfo.io](https://ipinfo.io) [ip.sb](https://ip.sb) [cheervision.co](https://cheervision.co) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [virustotal.com](https://www.virustotal.com/) [ip2location.com](ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) [ipqualityscore.com](https://www.ipqualityscore.com/) [bigdatacloud.com](https://www.bigdatacloud.com/) 等网站提供的API进行检测，感谢互联网各网站提供的查询资源
 
 感谢所有开源项目提供的原始测试脚本
 
@@ -308,4 +298,4 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 ![PyCharm logo](https://resources.jetbrains.com/storage/products/company/brand/logos/PyCharm.png)
 
-**[返回顶部](https://github.com/spiritLHLS/ecs#top)**
+

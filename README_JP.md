@@ -2,35 +2,29 @@
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FspiritLHLS%2Fecs&count_bg=%2357DEFF&title_bg=%23000000&icon=cliqz.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://www.spiritlhl.net/)
 
-
-
 ## 言語
 
 [中文文档](README.md) | [English Docs](README_EN.md) | [日本語ドキュメント](README_JP.md)
 
 ## 前書き
+**以下の状況に遭遇した場合：**
+- **このプロジェクトに記載されていないシステム/アーキテクチャ**
+- **このプロジェクトのテストにバグがあり検出できない**
+- **ローカル構成の変更を最小限に抑えたい**
+- **より包括的なテストを希望する**
 
-**このプロジェクトに記載されていないシステム/アーキテクチャがある場合、またはこのプロジェクトのテストでバグが発生して検出できない場合、またはテストがローカル構成を魔改造したくない場合、または環境の変更を最小限に抑えたい場合、またはより包括的なテストを希望する場合。**
+**テストには [https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs/blob/master/README_JP.md) をご利用ください**
 
-**テストには[https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs/blob/master/README_JP.md)を試してください**
+### 互換性情報
 
-サポートされているシステム：
+| カテゴリ | サポートオプション |
+|----------|------------------|
+| **完全サポートシステム** | Ubuntu 18+, Debian 8+, Centos 7+, Fedora 33+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, AstraLinux CE, Arch |
+| **部分サポートシステム** | FreeBSD (前提条件: `pkg install -y curl bash` を実行)、Armbian |
+| **サポートアーキテクチャ** | amd64 (x86_64)、arm64、i386、arm |
+| **サポート地域** | **インターネット接続可能なすべての地域** |
 
-Ubuntu 18+、Debian 8+、Centos 7+、Fedora 33+、Almalinux 8.5+、OracleLinux 8+、RockyLinux 8+、AstraLinux CE、Arch
-
-半サポートシステム：
-
-FreeBSD（前提条件として```pkg install -y curl bash```を実行）、Armbian
-
-サポートされているアーキテクチャ：
-
-amd64（x86_64）、arm64、i386、arm
-
-サポートされている地域：
-
-インターネットに接続できる場所ならどこでもサポート
-
-PS: 多システム多アーキテクチャの普遍的なテストの需要を考慮して、ShellバージョンのFusion Monsterは新機能の開発を行わず、メンテナンスのみを行い、テストはGolangバージョンにリファクタリングされています（[https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs/blob/master/README_JP.md)）。
+**注意：** 多システム多アーキテクチャの普遍的なテスト需要を考慮し、Shellバージョンは新機能開発を行わず、メンテナンスのみを行います。すべてのテスト機能はGolangバージョン ([https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs/blob/master/README_JP.md)) に再構築され、追加の環境依存を最小限に抑え、サードパーティのシェルファイル参照を完全に排除しています。
 
 # メニュー
 - [前書き](#前書き)
@@ -142,56 +136,51 @@ bash ipcheck.sh
 
 ## Fusion_Monster_Description
 
-Fusion Monsterスクリプトは、/rootパスで実行するのが最適です。これにより、さまざまな奇妙な問題を回避できます
+このプロジェクトは環境依存の問題を避けるため、`/root`パスで実行することをお勧めします。デフォルトでパッケージマネージャーを自動更新しますが、本番環境での使用は避けてください。ローカル設定を変更しないよう、前述のGoバージョンを使用することをお勧めします。
 
-Fusion Monsterの結果は、現在のパスの```test_result.txt```に保存されます。```screen```または```tmux```で実行し、SSHからログアウトしてしばらくしてからファイルを確認できます
+「融合モンスター」の実行結果は、現在のディレクトリの`test_result.txt`に保存されます。`screen`や`tmux`で実行し、SSH接続を一度切断して時間をおいてからファイルを確認することで、不安定なSSH接続によるテスト中断を避けることができます。
 
-**時々、IOやCPUが非常に低性能なマシンをテストしたい場合、上記のように実行することで、テスト中にSSH接続が中断されるのを回避できます。これにより、テストが途中で中断されることはありません。screenで表示が乱れる場合でも問題ありません。結果の共有リンクには乱れがありません**
+**非常に低スペックのマシンをテストする場合、この方法で実行することで古いIOやCPUによるSSH接続の中断を防げます。screenで文字化けが表示されても問題ありません。共有リンクの結果には文字化けは含まれません。**
 
-Fusion Monsterの完全版と簡易版は、テストが完了すると結果をpastebinに自動的にアップロードし、共有リンクを返します。テストの途中で終了したい場合は、```Ctrl+C```を同時に押してテストを終了できます。この場合、自動的に終了し、残りのファイルを削除します
+融合モンスターの完全版と簡易版は、実行完了時に自動的に結果をpastebinにアップロードし、共有リンクを返します。テスト中に終了したい場合は、`Ctrl+C`を押してテストを中止できます。これにより自動的に終了し、残りの環境依存ファイルを削除します。
 
-**CDN**を使用してサーバー環境のインストールとプリファブファイルのダウンロードを加速します
+最低スペックのマシンのテスト例（47分で完了）：[リンク](https://github.com/spiritLHLS/ecs/blob/main/lowpage/README.md)
 
-Fusion Monsterテストの説明と一部のテスト結果の内容の説明（初めて使用するユーザーに推奨）：
+このプロジェクトには**国内**と**国外**のサーバーテスト環境インストールとプリセットファイルダウンロードを加速する**CDN**サポートが組み込まれていますが、中国本土ではCDNの接続性や帯域幅の制限により読み込みが遅くなる場合があります。
+
+**このプロジェクトを初めて使用する場合は、説明を確認することをお勧めします：[ジャンプ](https://github.com/oneclickvirt/ecs/README_NEW_USER.md)**
+
+その他の情報：
 <details>
+<summary>クリックして展開</summary>
+マークされているオリジナルコンテンツを除き、他のすべてのセクションは借用して最適化されたバージョンであり、元のスクリプトとは異なります。
 
-オリジナルの内容がマークされているものを除き、他のすべてのセクションは借用および最適化されたバージョンであり、元の対応するスクリプトとは異なります
+すべての検出方法は並列テストを考慮しており、一部のコンポーネントではこの技術が使用されています。通常の順次実行と比較して2〜3分の最適化が図られています。
 
-すべてのテストは並行テストの使用を考慮しており、一部の部分ではこの技術を使用しています。通常の順次実行よりも2〜3分短縮されており、独自のものであり、同様の技術を持つテストは現在ありません
+システム基本情報テストは、複数のソースと自己修正の検出部分（sysctl、NATタイプ検出、同時ASN検出など）を組み合わせています。
 
-システム基本情報テストは、他のいくつかの部分と私自身のパッチテスト（systl、NATタイプ検出、並行ASN検出など）を統合しており、現在最も包括的で一般的なものです
+CPUテストはデフォルトでsysbenchスコアリングを使用し、yabsのgb4やgb5は使用しません（デフォルトではgeekbenchではありませんが、コマンドで一般的なgeekbenchバージョンを指定してテストできます）。関連する説明はGoバージョンの融合モンスター説明の最後にあるQ&Aを参照してください。
 
-CPUテストはデフォルトでsysbenchテストスコアを使用し、yabsのgb4またはgb5ではありません（デフォルトではgeekbenchではありませんが、コマンドでgeekbenchの一般的なバージョンを指定してテストできます）。前者は単に質数を計算して速��をテストするだけであり、後者のgeekbenchはシステム全体をテストして加重スコアを計算します
+IOテストには、lemonbenchのddディスクテストとyabsのfioディスクテストの2種類が含まれています。前者はエラーが大きい可能性がありますが、ディスクサイズの制限なく高速にテストでき、後者はより正確ですが速度が遅く、ディスクとメモリサイズに制限があります。
 
-sysbenchテストスコアを使用する場合、これは毎秒処理されるイベントの数です。この指標は、強力なサーバーでも低性能のサーバーでも迅速に測定できますが、geekbenchは多くの場合測定できないか、速度が非常に遅く、少なくとも2分半かかります
+ストリーミングメディアテストには、goコンパイルバイナリファイルとシェルスクリプトバージョンの2種類があります。それぞれに長所と短所があり、必要に応じて比較してください。
 
-CPUテストの単一コアsysbenchスコアが5000以上の場合、これは第1ティアに分類されます。4000から5000ポイントは第2ティアに分類され、1000ポイントごとに1つのクラスに分類されます。自分がどのクラスにいるかを確認してください
+TikTokテストにはsuperbenchとlmc999の両バージョンがあります。どちらかが機能しなくなった場合、いずれかのバージョンに更新される可能性があります。最新のスクリプトを参照してください。
 
-AMDの7950xの単一コアのフルブラッドパフォーマンススコアは約6500であり、AMDの5950xの単一コアのフルブラッドパフォーマンススコアは約5700です。Intelの通常のCPU（E5など）は約1000〜800であり、500未満の単一コアCPUは性能が低いと言えます
+リターンルートテストには、GOコンパイルバイナリバージョンと友人からのPRバージョンを使用しています。複数のIPリストに適応し、部分的なクエリをマージするための最適化が行われています。
 
-IOテストには2種類が含まれており、lemonbenchのddディスクテストとyabsのfioディスクテストから派生しています。総合的に見ると、前者は誤差が大きいかもしれませんが、テスト速度が速く、ハードディスクのサイズに制限がありません。後者はより現実的ですが、テスト速度が遅く、ハードディスクとメモリのサイズに制限があります
+IP品質検出は完全にオリジナルです。バグや追加のデータベースソースがある場合は、issuesで提起してください。一般的に、IP2LocationデータベースのIPタイプを確認してください。ポート25がメール用にアクセス可能であれば、郵便局を設定できます。
 
-ストリーミングメディアテストには2種類が含まれており、1つはgoでコンパイルされたバイナリファイルで、もう1つはshellスクリプトバージョンです。両方にはそれぞれの利点と欠点があり、相互に比較して確認できます
+融合モンスターのIP品質検出は、Cloudflareの脅威スコアを照会せずに簡略化されています。個人オリジナルセクションのIP品質検出（またはリポジトリの説明に記載されているIP品質検出コマンド）が完全版です。
 
-tiktokテストにはsuperbenchとlmc999の2つのバージョンがあり、どちらかが無効になると、最新のスクリプトに更新される可能性があります
+三ネットワーク速度テストでは、自作スクリプトを使用し、可能な限り最新のノードとコンポーネントを使用しています。また、バックアップとして第三者のgoバージョンテストコアを備え、速度テストノードリストの自己更新とシステム環境に適応したテストを提供しています。
 
-バックホールルーティングテストには、GOでコンパイルされたバイナリバージョンと友人のPRバージョンが選択されており、複数のIPリストに適応し、一部のクエリを統合するために最適化されています
+その他のサードパーティスクリプトはサードパーティスクリプトセクションに分類されており、異なる作者による同じタイプのさまざまな競合スクリプトを見つけることができます。融合モンスターが満足できない場合やエラーがある場合は、そのセクションを確認してください。
 
-IP品質テストは純粋にオリジナルであり、バグや追加のデータベースソースがある場合は、issuesで提起できます。日常的にはIP2LocationデータベースのIPタイプを確認できます。25ポートのメールボックスに到達できる場合、郵便局を構築できます
+オリジナルスクリプトセクションには個人的に作成された部分が含まれており、時々確認して、ニッチまたはユニークなスクリプトの更新を確認することができます。
 
-Fusion MonsterのIP品質チェックは簡略化されており、Cloudflareの脅威スコアを照会しません。個人のオリジナルセクションのIP品質チェックが完全版です（または、リポジトリの説明に記載されているIP品質チェックのコマンドも完全版です）
-
-速度テストには自作の速度テストスクリプトを使用し、最新のノードと最新のコンポーネントを使用して速度テストを行い、予備の第三者goバージョンの速度テストカーネルがあり、速度テストノードリストを自動更新し、システム環境に適応して速度テストを行います
-
-他の第三者スクリプトは第三者スクリプトエリアにまとめられており、同じタイプのスクリプトが異なる著者によって提供されています。融合モンスターが満足できない場合やエラーがある場合は、その部分を確認してください
-
-オリジナルスクリプトエリアは個人のオリジナル部分であり、時折確認することができます。偏ったスクリプトや独自のスクリプトが更新される可能性があります
-
-VPSテスト、VPS速度テスト、VPS総合性能テスト、VPSバックホールルーティングテスト、VPSストリーミングテストなど、すべてのテストを融合したスクリプトです。このスクリプトは融合できるものをすべて融合しています
-
+VPSテスト、VPS速度テスト、VPS総合パフォーマンステスト、VPSリターンルートテスト、VPSストリーミングメディアテストなど、すべてのテスト融合スクリプト - このスクリプトは統合可能なすべてを統合しています。
 </details>
-
-**[トップに戻る](https://github.com/spiritLHLS/ecs/blob/main/README_JP.md#top)**
 
 ## Fusion_Monster_Function
 
@@ -214,9 +203,10 @@ VPSテスト、VPS速度テスト、VPS総合性能テスト、VPSバックホ�
 
 ### https://t.me/vps_reviews
 
-**[トップに戻る](https://github.com/spiritLHLS/ecs/blob/main/README_JP.md#top)**
-
 # スクリーンショット
+
+<details>
+<summary>Click to show</summary>
 
 ![画像](https://github.com/spiritLHLS/ecs/assets/103393591/0acecaea-8cbc-43a0-9262-e2fa157fb8e9)
 
@@ -228,13 +218,15 @@ VPSテスト、VPS速度テスト、VPS総合性能テスト、VPSバックホ�
 
 ![画像](https://github.com/spiritLHLS/ecs/assets/103393591/bfe775ad-323c-4f6e-8d81-fcf787644653)
 
+<details>
+
 # Stargazers_over_time
 
 [![Stargazers over time](https://starchart.cc/spiritLHLS/ecs.svg)](https://starchart.cc/spiritLHLS/ecs)
 
 # 感謝
 
-感謝 [ipinfo.io](https://ipinfo.io) [ip.sb](https://ip.sb) [cheervision.co](https://cheervision.co) [cip.cc](http://www.cip.cc) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [virustotal.com](https://www.virustotal.com/) [ip2location.com](ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) [ipqualityscore.com](https://www.ipqualityscore.com/) [bigdatacloud.com](https://www.bigdatacloud.com/) ~~[ipip.net](https://en.ipip.net)~~ ~~[abstractapi.com](https://abstractapi.com/)~~ などのサイトが提供するAPIを使用してテストを行い、インターネット上のさまざまなサイトが提供するクエリリソースに感謝します
+感謝 [ipinfo.io](https://ipinfo.io) [ip.sb](https://ip.sb) [cheervision.co](https://cheervision.co) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [virustotal.com](https://www.virustotal.com/) [ip2location.com](ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) [ipqualityscore.com](https://www.ipqualityscore.com/) [bigdatacloud.com](https://www.bigdatacloud.com/)  などのサイトが提供するAPIを使用してテストを行い、インターネット上のさまざまなサイトが提供するクエリリソースに感謝します
 
 すべてのオープンソースプロジェクトに感謝し、元のテストスクリプトを提供してくれたことに感謝します
 
@@ -250,4 +242,4 @@ VPSテスト、VPS速度テスト、VPS総合性能テスト、VPSバックホ�
 
 ![PyCharm logo](https://resources.jetbrains.com/storage/products/company/brand/logos/PyCharm.png)
 
-**[トップに戻る](https://github.com/spiritLHLS/ecs/blob/main/README_JP.md#top)**
+

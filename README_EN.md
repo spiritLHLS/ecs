@@ -2,35 +2,29 @@
 
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FspiritLHLS%2Fecs&count_bg=%2357DEFF&title_bg=%23000000&icon=cliqz.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://www.spiritlhl.net/)
 
-
-
 ## Language
 
 [中文文档](README.md) | [English Docs](README_EN.md) | [日本語ドキュメント](README_JP.md)
 
-## Foreword
-
-**If there is a system/architecture that is not listed in this project, or if there is a bug that cannot be detected in this project's test, or if the test does not want to magically change the local configuration and wants to minimize the environment changes, or if you want to have a more comprehensive test.**
+## Introduction
+**If you encounter any of the following situations:**
+- **Systems/architectures not listed in this project**
+- **Bugs in the testing process of this project**
+- **Desire to minimize environment changes without modifying local configuration**
+- **Need for more comprehensive testing**
 
 **Please try [https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs/blob/master/README_EN.md) for testing**
 
-Support system:
+### Compatibility Information
 
-Ubuntu 18+, Debian 8+, Centos 7+, Fedora 33+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, AstraLinux CE, Arch
+| Category | Supported Options |
+|----------|------------------|
+| **Fully Supported Systems** | Ubuntu 18+, Debian 8+, Centos 7+, Fedora 33+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, AstraLinux CE, Arch |
+| **Partially Supported Systems** | FreeBSD (prerequisite: run `pkg install -y curl bash`), Armbian |
+| **Supported Architectures** | amd64 (x86_64), arm64, i386, arm |
+| **Supported Regions** | **All regions with internet connectivity** |
 
-Semi-support system:
-
-FreeBSD(Prerequisites implemented```pkg install -y curl bash```)，Armbian
-
-Support Architecture:
-
-amd64(x86_64)、arm64、i386、arm
-
-Support geography:
-
-Anywhere you can connect to the Internet
-
-PS: Considering the demand of universal testing for multi-system and multi-architecture, the Shell version of Fusion Monster is no longer for new feature development, only for maintenance, and the tests have been refactored to Golang version ([https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs/blob/master/README_EN.md)).
+**Note:** Due to the need for testing across multiple systems and architectures, the Shell version of this multi-system solution will no longer receive new feature development and will only be maintained. All testing functions have been reconstructed in Golang version ([https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs/blob/master/README_EN.md)), with minimal additional environmental dependencies and absolutely no third-party shell file references.
 
 # Menu
 - [Foreword](#Foreword)
@@ -141,56 +135,54 @@ bash ipcheck.sh
 
 ## Fusion_Monster_Description
 
-The fusion monster script is best executed under the /root path to avoid all sorts of weird problems
+This project is best executed in the `/root` path to avoid environmental dependency issues. It automatically updates package managers by default and should not be used in production environments. It's recommended to use the Go version mentioned earlier to ensure your local configuration remains unchanged.
 
-The result of the fusion monster is saved in ```test_result.txt``` under the current path, which can be executed in ```screen``` or ```tmux```, first log out of SSH and log in for a period of time before checking the file.
+The results of the "fusion monster" are saved in `test_result.txt` in the current directory. You can run it in `screen` or `tmux`, and you can exit the SSH login and check the file after some time to avoid test interruptions caused by unstable SSH connections.
 
-**Sometimes want to test some of the configuration of the machine is extremely pull across the above so that the implementation of this can be avoided IO or CPU is too much garbage caused by the test process of the SSH connection interruption, will not test half of the nothing, if the screen in the display of the garbled, but also no problem, to share the link in the results are not garbled**
+**Sometimes when testing machines with extremely poor configurations, executing it this way can prevent SSH connection interruptions caused by outdated IO or CPU. If screen displays garbled characters, it's not a problem - the shared link results will not contain garbled text.**
 
-The full version and lite version of Fusion Monster will automatically upload the results to pastebin and send back the sharing link when finished, if you want to quit halfway through the test, then press ```Ctrl+C``` at the same time to terminate the test, and then it will automatically quit and delete the remaining files.
+Both the complete and simplified versions of the fusion monster will automatically upload results to pastebin and return a sharing link upon completion. If you want to exit during testing, press `Ctrl+C` to terminate the test. This will automatically exit and delete residual environment dependency files.
 
-Use **CDN** to accelerate the server environment installation and prefabricated file downloads
+Example of testing the worst performing machine (completed in 47 minutes): [Link](https://github.com/spiritLHLS/ecs/blob/main/lowpage/README.md)
 
-Explanation of Fusion Monster test and content explanation of some test results (recommended view for first time users):
+Although this project has built-in **CDN** support for **domestic** and **international** acceleration of server test environment installation and pre-made file downloads, loading may be slower in mainland China due to CDN connectivity or bandwidth limitations.
+
+**For first-time users of this project, it is recommended to check the instructions: [Jump to](https://github.com/oneclickvirt/ecs/README_NEW_USER.md)**
+
+Other information:
+
 <details>
+<summary>Click to expand</summary>
 
-In addition to the original content has been marked, all the remaining partitions are borrowed and optimized and modified version, not the same as the original corresponding scripts
+Except for the original content marked, all other sections are borrowed and optimized versions, different from the original corresponding scripts.
 
-All tests have considered the use of parallel testing, and in some parts of the use of the technology, optimized than the normal sequential execution of 2 ~ 3 minutes, belong to the unique, no test has the same kind of technology for the time being
+All detection methods have been considered for parallel testing, and this technique has been used in some components, optimizing 2-3 minutes compared to normal sequential execution.
 
-The system basic information test incorporates a number of other part of my own patch test (systl, NAT type detection, concurrent ASN detection, etc.), it should be the most comprehensive and most common at present
+The system basic information test combines multiple sources with self-patched detection parts (sysctl, NAT type detection, concurrent ASN detection, etc.).
 
-CPU test default use sysbench test score, not yabs gb4 or gb5 (although the default is not gekbench but you can specify the common version of gekbench through the command to test), the former is just a simple calculation of the number of primes to test the speed of the fast, the latter gekbench is a comprehensive test system to count the weighted score!
+CPU testing uses sysbench scoring by default, not yabs' gb4 or gb5 (although geekbench isn't the default, you can specify common geekbench versions for testing via commands). Related explanations can be found in the Q&A at the end of the Go version fusion monster description.
 
-The use of sysbench test score is the number of events processed per second, this indicator whether in the strong or weak performance of the server can be quickly measured, while many of the geekbench is not measured or very slow at least 2 minutes and a half
+IO testing includes two types: dd disk testing from lemonbench and fio disk testing from yabs. The former may have larger errors but tests quickly with no disk size limitations, while the latter is more accurate but slower with disk and memory size limitations.
 
-CPU test single-core sysbench score of more than 5000 can be counted in the first tier, 4000 to 5000 points counted in the second tier, every 1000 points counted in a class, see for yourself in which class it!
+Streaming media testing includes two types: a go-compiled binary file and a shell script version. Each has its own advantages and disadvantages; compare them as needed.
 
-AMD's 7950x single-core full-blooded performance score of 6500 or so, AMD's 5950x single-core full-blooded performance score of 5700 or so, Intel's ordinary CPU (E5 and so on) in the 1000 ~ 800 or so, less than 500 single-core CPU can be said to be the performance of the more rotten!
+TikTok testing has both superbench and lmc999 versions. If one becomes ineffective, it may be updated to either version; refer to the latest script.
 
-IO test included two kinds, from lemonbench's dd disk test and yabs's fio disk test, a comprehensive view will be better, the former may be biased error but the test speed is fast without hard disk size limitations, the latter a little more realistic but the test speed is slow with hard disk as well as memory size limitations
+Return route testing uses a GO-compiled binary version and a PR version from a friend. Optimizations have been made to adapt to multiple IP lists and merge partial queries.
 
-Streaming media test included two kinds, a go compiled binaries and a shell script version, both have their own advantages and disadvantages, compared with each other to see it
+IP quality detection is completely original. If there are bugs or additional database sources, please raise them in issues. Generally, check the IP type in the IP2Location database. If port 25 is accessible for email, you can set up a post office.
 
-The tiktok test has two versions, superbench and lmc999, which is invalid at any time may be updated to one of the versions, to the latest script shall prevail
+The fusion monster's IP quality detection is simplified without querying Cloudflare threat scores. The personal original section's IP quality detection (or the IP quality detection command listed in the repository description) is the complete version.
 
-Backhaul routing test selected GO compiled binary version and friends PR version, I did optimization to adapt to multiple IP lists and integration of some of the queries
+Three-network speed testing uses a self-written script with the latest nodes and components when possible, along with backup third-party go version testing cores, providing self-updating speed test node lists and adaptive system environment testing.
 
-IP quality testing is purely original, if there are bugs or more database sources can be raised in the issues, the daily look at the IP2Location database IP type can be, which can be reached by the mailbox on port 25, you can build the post office
+Other third-party scripts are categorized in the third-party script section, where you can find various competitive scripts of the same type from different authors. If the fusion monster doesn't satisfy you or has errors, you can check that section.
 
-Fusion Monster's IP Quality Check is simplified and doesn't query Cloudflare's Threat Score, the IP Quality Check in the Personal Originals section is the full version (or the command listed in the repository description for that IP Quality Check is also the full version).
+The original script section contains personally created parts which may be worth checking occasionally for updates on niche or unique scripts.
 
-Speed test using self-written speed test script, try to use the latest nodes and the latest components for speed test, and there is a spare third-party go version of the speed test kernel, so as to self-update the speed test node list, adaptive system environment speed test.
-
-Other third-party scripts are summarized in the third-party script area, which has the same type of scripts by different authors of a variety of competing scripts, if the fusion of blame can not make you satisfied or there is an error, you can look at that part!
-
-Original script area is a personal original part, something can also look at, may update some off the beaten path or unique scripts.
-
-VPS test, VPS speed test, VPS comprehensive performance test, VPS backhaul line test, VPS streaming test and all the test fusion script, this script can be fusion of all fusion.
+VPS testing, VPS speed testing, VPS comprehensive performance testing, VPS return route testing, VPS streaming media testing, and all other test fusion scripts - this script integrates everything that can be integrated.
 
 </details>
-
-**[Back to top](https://github.com/spiritLHLS/ecs/blob/main/README_EN.md#top)**
 
 ## Fusion_Monster_Function
 
@@ -213,9 +205,10 @@ VPS test, VPS speed test, VPS comprehensive performance test, VPS backhaul line 
 
 ### https://t.me/vps_reviews
 
-**[Back to top](https://github.com/spiritLHLS/ecs/blob/main/README_EN.md#top)**
-
 # Screenshot
+
+<details>
+<summary>Click to show</summary>
 
 ![图片](https://github.com/spiritLHLS/ecs/assets/103393591/0acecaea-8cbc-43a0-9262-e2fa157fb8e9)
 
@@ -227,13 +220,15 @@ VPS test, VPS speed test, VPS comprehensive performance test, VPS backhaul line 
 
 ![图片](https://github.com/spiritLHLS/ecs/assets/103393591/bfe775ad-323c-4f6e-8d81-fcf787644653)
 
+</details>
+
 # Stargazers_over_time
 
 [![Stargazers over time](https://starchart.cc/spiritLHLS/ecs.svg)](https://starchart.cc/spiritLHLS/ecs)
 
 # Thanks
 
-Thanks [ipinfo.io](https://ipinfo.io) [ip.sb](https://ip.sb) [cheervision.co](https://cheervision.co) [cip.cc](http://www.cip.cc) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [virustotal.com](https://www.virustotal.com/) [ip2location.com](ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) [ipqualityscore.com](https://www.ipqualityscore.com/) [bigdatacloud.com](https://www.bigdatacloud.com/) ~~[ipip.net](https://en.ipip.net)~~ ~~[abstractapi.com](https://abstractapi.com/)~~ and so on. They provide APIs for testing, thanks to the query resources provided by various sites on the Internet.
+Thanks [ipinfo.io](https://ipinfo.io) [ip.sb](https://ip.sb) [cheervision.co](https://cheervision.co) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [virustotal.com](https://www.virustotal.com/) [ip2location.com](ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) [ipqualityscore.com](https://www.ipqualityscore.com/) [bigdatacloud.com](https://www.bigdatacloud.com/) and so on. They provide APIs for testing, thanks to the query resources provided by various sites on the Internet.
 
 Thanks to all the open source projects for providing the original test scripts.
 
@@ -249,4 +244,4 @@ Thanks also to the following platforms for editorial and testing support.
 
 ![PyCharm logo](https://resources.jetbrains.com/storage/products/company/brand/logos/PyCharm.png)
 
-**[Back to top](https://github.com/spiritLHLS/ecs/blob/main/README_EN.md#top)**
+
