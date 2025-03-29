@@ -5227,7 +5227,7 @@ start_script() {
 rm -rf $TEMP_DIR
 mkdir -p $TEMP_DIR
 get_system_bit
-statistics_of_run-times
+statistics_of_run_times
 start_script
 global_exit_action
 rm_script
