@@ -1,6 +1,6 @@
 # ecs
 
-![访问计数](https://hits.spiritlhl.net/ecs.svg?action=hit&title=Hits&title_bg=%23555555&count_bg=%2324dde1&edge_flat=false)
+[![Hits](https://hits.spiritlhl.net/ecs.svg?action=hit&title=Hits&title_bg=%23555555&count_bg=%2324dde1&edge_flat=false)](https://hits.spiritlhl.net)
 
 ## 语言
 
@@ -64,11 +64,9 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2025.02.12
+2025.03.29
 
-- 尝试修复CDN轮询错误时仍使用CDN进行环境依赖下载的BUG
-- 去除无效的cip[.]cc对中国地区的检测，误差太大了
-- 删除无效的cdn地址，增加有效cdn地址
+- 修复hits徽章访问量统计，使用 https://github.com/oneclickvirt/hitscounter
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

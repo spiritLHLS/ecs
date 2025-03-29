@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2025.02.12"
+ver="2025.03.29"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -767,9 +767,6 @@ main_download() {
         local output="$TEMP_DIR/media_lmc_check.sh"
         download_file "$url" "$output" "$PROGRESS_DIR/$file"
         chmod 777 "$output"
-        old_url="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fcheck.unclock.media&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=visit&edge_flat=false"
-        new_url="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Foneclickvirt%2FUnlockTests&count_bg=%2323E01C&title_bg=%23555555&icon=sonarcloud.svg&icon_color=%23E7E7E7&title=hits&edge_flat=false"
-        sed -i "s|$old_url|$new_url|g" "$output"
         echo "100" >"$PROGRESS_DIR/$file"
         ;;
     nexttrace)
@@ -1039,13 +1036,11 @@ check_china() {
     fi
 }
 
-statistics_of_run-times() {
-    COUNT=$(
-        curl -4 -ksm1 "https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FspiritLHLS%2Fecs&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=&edge_flat=true" 2>&1 ||
-            curl -6 -ksm1 "https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FspiritLHLS%2Fecs&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=&edge_flat=true" 2>&1
-    )
-    TODAY=$(expr "$COUNT" : '.*\s\([0-9]\{1,\}\)\s/.*')
-    TOTAL=$(expr "$COUNT" : '.*/\s\([0-9]\{1,\}\)\s.*')
+statistics_of_run_times() {
+    COUNT=$(curl -4 -ksm1 "https://hits.spiritlhl.net/ecs?action=hit&title=Hits&title_bg=%23555555&count_bg=%2324dde1&edge_flat=false" 2>/dev/null ||
+        curl -6 -ksm1 "https://hits.spiritlhl.net/ecs?action=hit&title=Hits&title_bg=%23555555&count_bg=%2324dde1&edge_flat=false" 2>/dev/null)
+    TODAY=$(echo "$COUNT" | grep -oP '"daily":\s*[0-9]+' | sed 's/"daily":\s*\([0-9]*\)/\1/')
+    TOTAL=$(echo "$COUNT" | grep -oP '"total":\s*[0-9]+' | sed 's/"total":\s*\([0-9]*\)/\1/')
 }
 
 # =============== 基础系统信息 部分 ===============
