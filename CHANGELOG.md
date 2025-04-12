@@ -2,6 +2,10 @@
 
 # 主要变化
 
+2025.03.29
+
+- 修复hits徽章访问量统计，使用 https://github.com/oneclickvirt/hitscounter
+
 2025.02.12
 
 - 尝试修复CDN轮询错误时仍使用CDN进行环境依赖下载的BUG

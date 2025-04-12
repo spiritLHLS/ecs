@@ -22,7 +22,12 @@ for ((int = 0; int < ${#REGEX[@]}; int++)); do
 done
 ${PACKAGE_INSTALL[int]} net-tools # 无后续维护了
 ${PACKAGE_INSTALL[int]} iproute2
-
+ipv6_prefixlen=$(ip -6 addr show | grep global | awk '{print length, $2}' | sort -nr | head -n 1 | awk '{print $2}' | cut -d '/' -f2)
+if [ -z "$ipv6_prefixlen" ] || ! echo "$ipv6_prefixlen" | grep -Eq '^[0-9]+$'; then
+    exit 0
+elif [ "$ipv6_prefixlen" -eq 128 ]; then
+    exit 0
+fi
 # interface=$(ls /sys/class/net/ | grep -v "$(ls /sys/devices/virtual/net/)" | grep -E '^(eth|en)' | head -n 1)
 interface=$(ls /sys/class/net/ | grep -E '^(eth|en)' | head -n 1)
 current_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
@@ -37,18 +42,18 @@ ip addr del ${new_ipv6}/128 dev ${interface}
 sleep 5
 final_ipv6=$(curl -s -6 -m 5 ipv6.ip.sb)
 echo "final_ipv6: ${final_ipv6}"
-ipv6_prefixlen=""
-if command -v ifconfig &> /dev/null; then
-    output=$(ifconfig ${interface} | grep -oP 'inet6 (?!fe80:).*prefixlen \K\d+')
-else
-    output=$(ip -6 addr show dev ${interface} | grep -oP 'inet6 (?!fe80:).* scope global.*prefixlen \K\d+')
-fi
-num_lines=$(echo "$output" | wc -l)
-if [ $num_lines -ge 2 ]; then
-    ipv6_prefixlen=$(echo "$output" | sort -n | head -n 1)
-else
-    ipv6_prefixlen=$(echo "$output" | head -n 1)
-fi
+# ipv6_prefixlen=""
+# if command -v ifconfig &> /dev/null; then
+#     output=$(ifconfig ${interface} | grep -oP 'inet6 (?!fe80:).*prefixlen \K\d+')
+# else
+#     output=$(ip -6 addr show dev ${interface} | grep -oP 'inet6 (?!fe80:).* scope global.*prefixlen \K\d+')
+# fi
+# num_lines=$(echo "$output" | wc -l)
+# if [ $num_lines -ge 2 ]; then
+#     ipv6_prefixlen=$(echo "$output" | sort -n | head -n 1)
+# else
+#     ipv6_prefixlen=$(echo "$output" | head -n 1)
+# fi
 if [ "$updated_ipv6" == "$current_ipv6" ] || [ -z "$updated_ipv6" ]; then
     echo "IPV6 子网掩码: 128"
 else

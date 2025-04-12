@@ -64,9 +64,12 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2025.03.29
+2025.04.12
 
-- 修复hits徽章访问量统计，使用 https://github.com/oneclickvirt/hitscounter
+- 根据 https://github.com/oneclickvirt/backtrace 更新，添加对IPV6路由的线路检测
+- 修复当出现内核错误时，测速不再继续尝试执行
+- 修复当 /dev/null 不可用时，依然测试IO的问题
+- 修复当子网掩码为128时还进行ipv6的子网掩码长度测试的问题
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -140,7 +143,7 @@ bash ecs.sh -m 1
 | -base | 可选项 | 可指定仅测试基础的系统信息 | 无该指令则默认按照menu选项的组合测试 |
 | -ctype | 可选项 | 可指定通过何种方式测试cpu，可选```gb4```、```gb5```、```gb6```分别对应```geekbench```的```4```、```5```、```6```版本 | 无该指令则默认使用```sysbench```测试 |
 | -dtype | 可选项 | 可指定测试硬盘IO的程序，可选```dd```、```fio```，前者测试快后者测试慢 | 无该指令则默认都使用进行测试 |
-| -mdisk | 可选项 | 可指定测试多个挂载盘的IO | 注意本指令包含测试系统盘 |
+| -mdisk | 可选项 | 可指定测试多个挂载盘的IO | 注意本指令包含测试系统盘，无该指令默认仅测试系统盘 |
 | -stype | 可选项 | 可指定使用```.cn```还是```.net```的数据进行测速 | 无该指令则默认使用```.net```数据测速优先，不可用时才替换为```.cn```数据 |
 | -bansp | 可选项 | 可指定强制不测试网速 | 无该指令则默认测试网速 |
 | -banup | 可选项 | 可指定强制不生成分享链接 | 无该指令则默认生成分享链接 |
