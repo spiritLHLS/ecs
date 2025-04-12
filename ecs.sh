@@ -1808,7 +1808,29 @@ download_speedtest_file() {
         return
     fi
     local sys_bit="$1"
+    # Create directory if it doesn't exist
+    if [ ! -d "./speedtest-cli" ]; then
+        mkdir -p "./speedtest-cli"
+    fi
+    # Modified to try speedtest-go first
+    if [ "$sys_bit" = "aarch64" ]; then
+        sys_bit_go="arm64"
+    else
+        sys_bit_go="$sys_bit"
+    fi
+    local url3="https://github.com/showwin/speedtest-go/releases/download/v${Speedtest_Go_version}/speedtest-go_${Speedtest_Go_version}_Linux_${sys_bit_go}.tar.gz"
     if [[ -z "${CN}" || "${CN}" != true ]]; then
+        curl --fail -sL -m 10 -o speedtest.tar.gz "${url3}" || curl --fail -sL -m 15 -o speedtest.tar.gz "${url3}"
+        if [[ $? -eq 0 ]]; then
+            # _green "Successfully downloaded speedtest-go"
+            tar -zxf speedtest.tar.gz -C ./speedtest-cli
+            chmod 777 ./speedtest-cli/speedtest-go
+            rm -rf speedtest.tar.gz*
+            return
+        else
+            # _yellow "Failed to download speedtest-go, falling back to official speedtest-cli"
+            rm -rf speedtest.tar.gz*
+        fi
         if [ "$speedtest_ver" = "1.2.0" ]; then
             local url1="https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-${sys_bit}.tgz"
             local url2="https://dl.lamp.sh/files/ookla-speedtest-1.2.0-linux-${sys_bit}.tgz"
@@ -1817,41 +1839,28 @@ download_speedtest_file() {
             local url2="https://bintray.com/ookla/download/download_file?file_path=ookla-speedtest-1.0.0-${sys_bit}-linux.tgz"
         fi
         curl --fail -sL -m 10 -o speedtest.tgz "${url1}" || curl --fail -sL -m 10 -o speedtest.tgz "${url2}"
-        if [[ $? -ne 0 ]]; then
-            # _red "Error: Failed to download official speedtest-cli."
+        if [[ $? -eq 0 ]]; then
+            tar -zxf speedtest.tgz -C ./speedtest-cli
+            chmod 777 ./speedtest-cli/speedtest
             rm -rf speedtest.tgz*
-            # _yellow "Try using the unofficial speedtest-go"
+            return
+        else
+            rm -rf speedtest.tgz*
         fi
-        if [ "$sys_bit" = "aarch64" ]; then
-            sys_bit="arm64"
-        fi
-        local url3="https://github.com/showwin/speedtest-go/releases/download/v${Speedtest_Go_version}/speedtest-go_${Speedtest_Go_version}_Linux_${sys_bit}.tar.gz"
-        curl --fail -sL -m 10 -o speedtest.tar.gz "${url3}" || curl --fail -sL -m 15 -o speedtest.tar.gz "${url3}"
     else
-        if [ "$sys_bit" = "aarch64" ]; then
-            sys_bit="arm64"
-        fi
-        local url3="https://github.com/showwin/speedtest-go/releases/download/v${Speedtest_Go_version}/speedtest-go_${Speedtest_Go_version}_Linux_${sys_bit}.tar.gz"
         curl -o speedtest.tar.gz "${cdn_success_url}${url3}" || curl -o speedtest.tar.gz "${url3}"
-        # if [ $? -eq 0 ]; then
-        #     _green "Used unofficial speedtest-go"
-        # fi
+        if [[ $? -eq 0 ]]; then
+            # _green "Used unofficial speedtest-go"
+            tar -zxf speedtest.tar.gz -C ./speedtest-cli
+            chmod 777 ./speedtest-cli/speedtest-go
+            rm -rf speedtest.tar.gz*
+            return
+        else
+            rm -rf speedtest.tar.gz*
+        fi
     fi
-    if [ ! -d "./speedtest-cli" ]; then
-        mkdir -p "./speedtest-cli"
-    fi
-    if [ -f "./speedtest.tgz" ]; then
-        tar -zxf speedtest.tgz -C ./speedtest-cli
-        chmod 777 ./speedtest-cli/speedtest
-        rm -rf speedtest.tgz*
-    elif [ -f "./speedtest.tar.gz" ]; then
-        tar -zxf speedtest.tar.gz -C ./speedtest-cli
-        chmod 777 ./speedtest-cli/speedtest-go
-        rm -rf speedtest.tar.gz*
-    else
-        _red "Error: Failed to download speedtest tool."
-        exit 1
-    fi
+    _red "Error: Failed to download any speedtest tool."
+    exit 1
 }
 
 install_speedtest() {
@@ -1894,7 +1903,7 @@ speed_test() {
     cd $myvar >/dev/null 2>&1
     local nodeName="$2"
     local cmd_status=0
-    if [ ! -f "./speedtest-cli/speedtest" ]; then
+    if [ -f "./speedtest-cli/speedtest-go" ]; then
         if [ -z "$1" ]; then
             if [ "$usage_timeout" = true ]; then
                 timeout 70s ./speedtest-cli/speedtest-go --ua="${BrowserUA}" >./speedtest-cli/speedtest.log 2>&1

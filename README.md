@@ -68,6 +68,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 - 根据 https://github.com/oneclickvirt/backtrace 更新，添加对IPV6路由的线路检测
 - 修复当出现内核错误时，测速不再继续尝试执行
+- 修改测速优先级测速，优先使用go版本重构的测速，避免官方编译的内核版本问题
 - 修复当 /dev/null 不可用时，依然测试IO的问题
 - 修复当子网掩码为128时还进行ipv6的子网掩码长度测试的问题
 
