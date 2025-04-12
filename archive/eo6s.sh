@@ -26,6 +26,7 @@ ipv6_prefixlen=$(ip -6 addr show | grep global | awk '{print length, $2}' | sort
 if [ -z "$ipv6_prefixlen" ] || ! echo "$ipv6_prefixlen" | grep -Eq '^[0-9]+$'; then
     exit 0
 elif [ "$ipv6_prefixlen" -eq 128 ]; then
+    echo "IPV6 子网掩码: 128"
     exit 0
 fi
 # interface=$(ls /sys/class/net/ | grep -v "$(ls /sys/devices/virtual/net/)" | grep -E '^(eth|en)' | head -n 1)
