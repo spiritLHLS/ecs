@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # by spiritlhl
 # from https://github.com/spiritLHLS/ecs
-# 2024.11.08
+# 2025.04.12
 # curl -L https://raw.githubusercontent.com/spiritLHLS/ecs/main/archive/eo6s.sh -o eo6s.sh && chmod +x eo6s.sh && bash eo6s.sh
 
 
