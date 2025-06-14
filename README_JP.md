@@ -39,8 +39,8 @@
 - [フレンドリーリンク](#フレンドリーリンク)
   - [レビュー_チャンネル](#レビュー_チャンネル)
     - [https://t.me/vps\_reviews](#httpstmevps_reviews)
-- [Stargazers_over_time](#Stargazers_over_time)
 - [感謝](#感謝)
+- [Stargazers_over_time](#Stargazers_over_time)
 
 <a id="top"></a>
 ------
@@ -240,6 +240,14 @@ VPSテスト、VPS速度テスト、VPS総合パフォーマンステスト、VP
 
 また、以下のプラットフォームに編集およびテストのサポートを提供してくれたことに感謝します
 
-![PyCharm logo](https://resources.jetbrains.com/storage/products/company/brand/logos/PyCharm.png)
+<a href="https://www.jetbrains.com/pycharm/" target="_blank">
+  <img src="https://resources.jetbrains.com/storage/products/company/brand/logos/PyCharm.png" alt="pycharm">
+</a>
 
+<a href="https://community.ibm.com/zsystems/form/l1cc-oss-vm-request/" target="_blank">
+  <img src="https://linuxone.cloud.marist.edu/oss/resources/images/linuxonelogo03.png" alt="ibm">
+</a>
 
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/oneclickvirt/ecs.svg?variant=adaptive)](https://www.spiritlhl.net)

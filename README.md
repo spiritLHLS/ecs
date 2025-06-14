@@ -45,8 +45,8 @@
   - [自动更新测速服务器节点列表的网络基准测试脚本](#自动更新测速服务器节点列表的网络基准测试脚本)
     - [https://github.com/spiritLHLS/ecsspeed](#httpsgithubcomspiritlhlsecsspeed)
 - [脚本概况](#脚本概况)
-- [Stargazers over time](#stargazers-over-time)
 - [致谢](#致谢)
+- [Stargazers over time](#stargazers-over-time)
 
 <a id="top"></a>
 ------
@@ -64,13 +64,10 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2025.04.12
+2025.06.14
 
-- 根据 https://github.com/oneclickvirt/backtrace 更新，添加对IPV6路由的线路检测
-- 修复当出现内核错误时，测速不再继续尝试执行
-- 修改测速优先级测速，优先使用go版本重构的测速，避免官方编译的内核版本问题
-- 修复当 /dev/null 不可用时，依然测试IO的问题
-- 修复当子网掩码为128时还进行ipv6的子网掩码长度测试的问题
+- 修复speedtest-go的延迟提取出现重复拼接的问题
+- 修复致谢部分内容，添加IBM开源支持的致谢
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -278,10 +275,6 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 </details>
 
-# Stargazers over time
-
-[![Stargazers over time](https://starchart.cc/spiritLHLS/ecs.svg)](https://starchart.cc/spiritLHLS/ecs)
-
 # 致谢
 
 感谢 [ipinfo.io](https://ipinfo.io) [ip.sb](https://ip.sb) [cheervision.co](https://cheervision.co) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [virustotal.com](https://www.virustotal.com/) [ip2location.com](https://ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) [ipqualityscore.com](https://www.ipqualityscore.com/) [bigdatacloud.com](https://www.bigdatacloud.com/) 等网站提供的API进行检测，感谢互联网各网站提供的查询资源
@@ -298,6 +291,15 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 同时感谢以下平台提供编辑和测试支持
 
-![PyCharm logo](https://resources.jetbrains.com/storage/products/company/brand/logos/PyCharm.png)
+<a href="https://www.jetbrains.com/pycharm/" target="_blank">
+  <img src="https://resources.jetbrains.com/storage/products/company/brand/logos/PyCharm.png" alt="pycharm">
+</a>
 
+<a href="https://community.ibm.com/zsystems/form/l1cc-oss-vm-request/" target="_blank">
+  <img src="https://linuxone.cloud.marist.edu/oss/resources/images/linuxonelogo03.png" alt="ibm">
+</a>
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/oneclickvirt/ecs.svg?variant=adaptive)](https://www.spiritlhl.net)
 

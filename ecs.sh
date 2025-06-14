@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2025.04.12"
+ver="2025.06.14"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -1921,7 +1921,7 @@ speed_test() {
         if [ $cmd_status -eq 0 ]; then
             local dl_speed=$(grep -oP 'Download: \K[\d\.]+' ./speedtest-cli/speedtest.log)
             local up_speed=$(grep -oP 'Upload: \K[\d\.]+' ./speedtest-cli/speedtest.log)
-            local latency=$(grep -oP 'Latency: \K[\d\.]+' ./speedtest-cli/speedtest.log)
+            local latency=$(grep -oP 'Latency: \K[\d\.]+' ./speedtest-cli/speedtest.log | head -1)
             if [[ -n "${latency}" && "${latency}" == *.* ]]; then
                 latency=$(awk '{printf "%.2f", $1}' <<<"${latency}")
             fi
@@ -1961,9 +1961,9 @@ speed_test() {
             local dl_speed=$(awk '/Download/{print $3" "$4}' ./speedtest-cli/speedtest.log)
             local up_speed=$(awk '/Upload/{print $3" "$4}' ./speedtest-cli/speedtest.log)
             if [ "$speedtest_ver" = "1.2.0" ]; then
-                local latency=$(grep -oP 'Idle Latency:\s+\K[\d\.]+' ./speedtest-cli/speedtest.log)
+                local latency=$(grep -oP 'Idle Latency:\s+\K[\d\.]+' ./speedtest-cli/speedtest.log | head -1)
             else
-                local latency=$(grep -oP 'Latency:\s+\K[\d\.]+' ./speedtest-cli/speedtest.log)
+                local latency=$(grep -oP 'Latency:\s+\K[\d\.]+' ./speedtest-cli/speedtest.log | head -1)
             fi
             local packet_loss=$(awk -F': +' '/Packet Loss/{if($2=="Not available."){print "NULL"}else{print $2}}' ./speedtest-cli/speedtest.log)
             if [[ -n "${dl_speed}" || -n "${up_speed}" || -n "${latency}" ]]; then
