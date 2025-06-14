@@ -301,5 +301,5 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 ## Stargazers over time
 
-[![Stargazers over time](https://starchart.cc/oneclickvirt/ecs.svg?variant=adaptive)](https://www.spiritlhl.net)
+[![Stargazers over time](https://starchart.cc/spiritLHLS/ecs.svg?variant=adaptive)](https://www.spiritlhl.net)
 
