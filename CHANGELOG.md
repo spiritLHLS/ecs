@@ -2,6 +2,11 @@
 
 # 主要变化
 
+2025.06.14
+
+- 修复speedtest-go的延迟提取出现重复拼接的问题
+- 修复致谢部分内容，添加IBM开源支持的致谢
+
 2025.04.12
 
 - 根据 https://github.com/oneclickvirt/backtrace 更新，添加对IPV6路由的线路检测

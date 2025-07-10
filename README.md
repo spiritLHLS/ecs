@@ -9,12 +9,17 @@
 ## 前言
 
 **如果遇到以下情况：**
-- **本项目未列出的系统/架构**
-- **本项目测试有BUG测不出来**
-- **测试不想要魔改本机配置想要最小化环境变动**
-- **想要测试更全面**
+- **需要在本项目未列出的系统/架构上进行测试**
+- **本项目测试过程中有BUG测不出来或有依赖报错**
+- **测试不想要污染本机配置想要最小化环境变动**
+- **测试不想要在sudo权限或root权限下测试**
+- **想要测试更全面更迅速，想要自行编译测试**
 
 **请尝试 [https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs) 进行测试**
+
+考虑到多系统多架构的普遍测试的需求，融合怪的Shell版本不再做新功能开发，仅作维护，各项测试已完全重构为[Golang版本]((https://github.com/oneclickvirt/ecs))，极端环境下可无额外的环境依赖，完全无第三方shell文件引用，支持非root环境测试等多项新功能。
+
+**本项目初次使用建议查看说明避免看不懂测试项目：[跳转](https://github.com/oneclickvirt/ecs/blob/master/README_NEW_USER.md)**
 
 ### 兼容性信息
 
@@ -23,9 +28,7 @@
 | **完全支持的系统** | Ubuntu 18+, Debian 8+, Centos 7+, Fedora 33+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, AstraLinux CE, Arch |
 | **半支持系统** | FreeBSD (前提已执行 `pkg install -y curl bash`)，Armbian |
 | **支持架构** | amd64 (x86_64)、arm64、i386、arm |
-| **支持地域** | **能连得上网都支持** |
-
-**注意：** 考虑到多系统多架构的普遍测试的需求，融合怪的Shell版本不再做新功能开发，仅作维护，各项测试已重构为Golang版本 ([https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs))，尽量无额外的环境依赖，完全无第三方shell文件引用。
+| **支持地域** | 能连得上网都支持，无公网环境则无法测试 |
 
 # 目录
 - [前言](#前言)
@@ -64,10 +67,12 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2025.06.14
+2025.07.10
 
-- 修复speedtest-go的延迟提取出现重复拼接的问题
-- 修复致谢部分内容，添加IBM开源支持的致谢
+- 更新数据库来源，替换cheervision数据库为dkly数据库
+- 添加maxmind数据库获取IP地理信息和ASN组织信息，修复部分数据库识别信息时缺失或有额外引号的问题
+- 添加对macos的CPU的正确识别方式，避免原方式导致的文本截断
+- 修改部分仓库说明减少重复内容
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -186,8 +191,6 @@ bash ipcheck.sh
 
 虽然本项目内置使用**CDN**支持**国内**和**国外**加速服务器测试环境安装和预制文件下载，但中国境内受CDN连通性或带宽限制加载可能会比较缓慢。
 
-**本项目初次使用建议查看说明：[跳转](https://github.com/oneclickvirt/ecs/blob/master/README_NEW_USER.md)**
-
 其他说明：
 
 <details>
@@ -249,7 +252,6 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 ### https://github.com/spiritLHLS/ecsspeed
 
-
 # 脚本概况
 
 <details>
@@ -277,26 +279,26 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 # 致谢
 
-感谢 [ipinfo.io](https://ipinfo.io) [ip.sb](https://ip.sb) [cheervision.co](https://cheervision.co) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [virustotal.com](https://www.virustotal.com/) [ip2location.com](https://ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) [ipqualityscore.com](https://www.ipqualityscore.com/) [bigdatacloud.com](https://www.bigdatacloud.com/) 等网站提供的API进行检测，感谢互联网各网站提供的查询资源
+感谢 [he.net](https://he.net) [bgp.tools](https://bgp.tools) [ipinfo.io](https://ipinfo.io) [maxmind.com](https://www.maxmind.com/en/home) [cloudflare.com](https://www.cloudflare.com/) [ip.sb](https://ip.sb) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [ip2location.com](https://ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) [ipqualityscore.com](https://www.ipqualityscore.com/) [bigdatacloud.com](https://www.bigdatacloud.com/) [cheervision.co](https://cheervision.co) [virustotal.com](https://www.virustotal.com/) 等网站提供的API进行检测，感谢互联网各网站提供的查询资源
 
 感谢所有开源项目提供的原始测试脚本
 
 感谢
 
 <a href="https://h501.io/?from=69" target="_blank">
-  <img src="https://github.com/spiritLHLS/ecs/assets/103393591/dfd47230-2747-4112-be69-b5636b34f07f" alt="h501">
+  <img src="https://github.com/spiritLHLS/ecs/assets/103393591/dfd47230-2747-4112-be69-b5636b34f07f" alt="h501" style="height: 50px;">
 </a>
 
-提供的免费托管支持本开源项目
+提供的免费托管支持本开源项目的共享测试结果存储
 
 同时感谢以下平台提供编辑和测试支持
 
 <a href="https://www.jetbrains.com/pycharm/" target="_blank">
-  <img src="https://resources.jetbrains.com/storage/products/company/brand/logos/PyCharm.png" alt="pycharm">
+  <img src="https://resources.jetbrains.com/storage/products/company/brand/logos/PyCharm.png" alt="pycharm" style="height: 50px;">
 </a>
 
 <a href="https://community.ibm.com/zsystems/form/l1cc-oss-vm-request/" target="_blank">
-  <img src="https://linuxone.cloud.marist.edu/oss/resources/images/linuxonelogo03.png" alt="ibm">
+  <img src="https://linuxone.cloud.marist.edu/oss/resources/images/linuxonelogo03.png" alt="ibm" style="height: 50px;">
 </a>
 
 ## Stargazers over time

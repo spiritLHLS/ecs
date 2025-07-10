@@ -7,13 +7,19 @@
 [中文文档](README.md) | [English Docs](README_EN.md) | [日本語ドキュメント](README_JP.md)
 
 ## 前書き
-**以下の状況に遭遇した場合：**
-- **このプロジェクトに記載されていないシステム/アーキテクチャ**
-- **このプロジェクトのテストにバグがあり検出できない**
-- **ローカル構成の変更を最小限に抑えたい**
-- **より包括的なテストを希望する**
+
+**以下が発生した場合:**。
+- このプロジェクトに記載されていないシステム/アーキテクチャでのテストが必要です。
+- このプロジェクトのテストプロセスで検出できないバグがあるか、エラーを報告する依存関係がある。
+- テストはローカルの設定を汚染したくないので、環境への変更を最小限にしたい。
+- テストは、sudo や root 権限でテストしたくない。
+- より包括的かつ迅速にテストを行いたい、自分でテストをコンパイルしたい。
 
 **テストには [https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs/blob/master/README_JP.md) をご利用ください**
+
+マルチシステム・マルチアーキテクチャに対応したユニバーサルテストのニーズを考慮し、Fusion MonsterのShellバージョンは新機能の開発用ではなく、メンテナンス用となり、テストはGolangバージョンに完全にリファクタリングされ、環境依存の追加、サードパーティのシェルファイルの参照、非root環境でのテストのサポートなど、多くの新機能が追加され、極端な環境でも使用できるようになりました。
+
+**ジャンプ](https://github.com/oneclickvirt/ecs/blob/master/README_NEW_USER.md)**テスト項目が読めないことを避けるために、この項目を初めて使用する方は説明書を確認することをお勧めします。
 
 ### 互換性情報
 
@@ -22,9 +28,7 @@
 | **完全サポートシステム** | Ubuntu 18+, Debian 8+, Centos 7+, Fedora 33+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, AstraLinux CE, Arch |
 | **部分サポートシステム** | FreeBSD (前提条件: `pkg install -y curl bash` を実行)、Armbian |
 | **サポートアーキテクチャ** | amd64 (x86_64)、arm64、i386、arm |
-| **サポート地域** | **インターネット接続可能なすべての地域** |
-
-**注意：** 多システム多アーキテクチャの普遍的なテスト需要を考慮し、Shellバージョンは新機能開発を行わず、メンテナンスのみを行います。すべてのテスト機能はGolangバージョン ([https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs/blob/master/README_JP.md)) に再構築され、追加の環境依存を最小限に抑え、サードパーティのシェルファイル参照を完全に排除しています。
+| **サポート地域** | インターネットに接続できる環境であれば対応可能だが、公衆回線環境がないとテストできない |
 
 # メニュー
 - [前書き](#前書き)
@@ -148,8 +152,6 @@ bash ipcheck.sh
 
 このプロジェクトには**国内**と**国外**のサーバーテスト環境インストールとプリセットファイルダウンロードを加速する**CDN**サポートが組み込まれていますが、中国本土ではCDNの接続性や帯域幅の制限により読み込みが遅くなる場合があります。
 
-**このプロジェクトを初めて使用する場合は、説明を確認することをお勧めします：[ジャンプ](https://github.com/oneclickvirt/ecs/blob/master/README_NEW_USER.md)**
-
 その他の情報：
 <details>
 <summary>クリックして展開</summary>
@@ -226,14 +228,14 @@ VPSテスト、VPS速度テスト、VPS総合パフォーマンステスト、VP
 
 # 感謝
 
-感謝 [ipinfo.io](https://ipinfo.io) [ip.sb](https://ip.sb) [cheervision.co](https://cheervision.co) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [virustotal.com](https://www.virustotal.com/) [ip2location.com](https://ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) [ipqualityscore.com](https://www.ipqualityscore.com/) [bigdatacloud.com](https://www.bigdatacloud.com/)  などのサイトが提供するAPIを使用してテストを行い、インターネット上のさまざまなサイトが提供するクエリリソースに感謝します
+感謝 [he.net](https://he.net) [bgp.tools](https://bgp.tools) [ipinfo.io](https://ipinfo.io) [maxmind.com](https://www.maxmind.com/en/home) [cloudflare.com](https://www.cloudflare.com/) [ip.sb](https://ip.sb) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [ip2location.com](https://ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) [ipqualityscore.com](https://www.ipqualityscore.com/) [bigdatacloud.com](https://www.bigdatacloud.com/) [cheervision.co](https://cheervision.co) [virustotal.com](https://www.virustotal.com/) などのサイトが提供するAPIを使用してテストを行い、インターネット上のさまざまなサイトが提供するクエリリソースに感謝します
 
 すべてのオープンソースプロジェクトに感謝し、元のテストスクリプトを提供してくれたことに感謝します
 
 感謝
 
 <a href="https://h501.io/?from=69" target="_blank">
-  <img src="https://github.com/spiritLHLS/ecs/assets/103393591/dfd47230-2747-4112-be69-b5636b34f07f" alt="h501">
+  <img src="https://github.com/spiritLHLS/ecs/assets/103393591/dfd47230-2747-4112-be69-b5636b34f07f" alt="h501" style="height: 50px;">
 </a>
 
 このオープンソースプロジェクトをサポートするためにホスティングを提供してくれました
@@ -241,11 +243,11 @@ VPSテスト、VPS速度テスト、VPS総合パフォーマンステスト、VP
 また、以下のプラットフォームに編集およびテストのサポートを提供してくれたことに感謝します
 
 <a href="https://www.jetbrains.com/pycharm/" target="_blank">
-  <img src="https://resources.jetbrains.com/storage/products/company/brand/logos/PyCharm.png" alt="pycharm">
+  <img src="https://resources.jetbrains.com/storage/products/company/brand/logos/PyCharm.png" alt="pycharm" style="height: 50px;">
 </a>
 
 <a href="https://community.ibm.com/zsystems/form/l1cc-oss-vm-request/" target="_blank">
-  <img src="https://linuxone.cloud.marist.edu/oss/resources/images/linuxonelogo03.png" alt="ibm">
+  <img src="https://linuxone.cloud.marist.edu/oss/resources/images/linuxonelogo03.png" alt="ibm" style="height: 50px;">
 </a>
 
 ## Stargazers over time

@@ -7,13 +7,17 @@
 [中文文档](README.md) | [English Docs](README_EN.md) | [日本語ドキュメント](README_JP.md)
 
 ## Introduction
-**If you encounter any of the following situations:**
-- **Systems/architectures not listed in this project**
-- **Bugs in the testing process of this project**
-- **Desire to minimize environment changes without modifying local configuration**
-- **Need for more comprehensive testing**
+
+**If the following is encountered:**
+- **Testing needs to be done on systems/architectures not listed in this project**
+- **There are bugs in the testing process of this project that cannot be detected or have dependencies that report errors**
+- **Tests do not want to pollute the local configuration and want to minimize changes to the environment**
+- **The test does not want to test under sudo or root privileges**
+- **Want to test more comprehensively and more quickly, want to compile the test by yourself**
 
 **Please try [https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs/blob/master/README_EN.md) for testing**
+
+**First time users of this program are advised to check the instructions to avoid not being able to read the test program: [Jump](https://github.com/oneclickvirt/ecs/blob/master/README_NEW_USER.md)**
 
 ### Compatibility Information
 
@@ -22,9 +26,7 @@
 | **Fully Supported Systems** | Ubuntu 18+, Debian 8+, Centos 7+, Fedora 33+, Almalinux 8.5+, OracleLinux 8+, RockyLinux 8+, AstraLinux CE, Arch |
 | **Partially Supported Systems** | FreeBSD (prerequisite: run `pkg install -y curl bash`), Armbian |
 | **Supported Architectures** | amd64 (x86_64), arm64, i386, arm |
-| **Supported Regions** | **All regions with internet connectivity** |
-
-**Note:** Due to the need for testing across multiple systems and architectures, the Shell version of this multi-system solution will no longer receive new feature development and will only be maintained. All testing functions have been reconstructed in Golang version ([https://github.com/oneclickvirt/ecs](https://github.com/oneclickvirt/ecs/blob/master/README_EN.md)), with minimal additional environmental dependencies and absolutely no third-party shell file references.
+| **Supported Regions** | Supported if you can connect to the Internet, but cannot be tested without public network |
 
 # Menu
 - [Foreword](#Foreword)
@@ -147,8 +149,6 @@ Example of testing the worst performing machine (completed in 47 minutes): [Link
 
 Although this project has built-in **CDN** support for **domestic** and **international** acceleration of server test environment installation and pre-made file downloads, loading may be slower in mainland China due to CDN connectivity or bandwidth limitations.
 
-**For first-time users of this project, it is recommended to check the instructions: [Jump to](https://github.com/oneclickvirt/ecs/blob/master/README_NEW_USER.md)**
-
 Other information:
 
 <details>
@@ -224,14 +224,14 @@ VPS testing, VPS speed testing, VPS comprehensive performance testing, VPS retur
 
 # Thanks
 
-Thanks [ipinfo.io](https://ipinfo.io) [ip.sb](https://ip.sb) [cheervision.co](https://cheervision.co) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [virustotal.com](https://www.virustotal.com/) [ip2location.com](https://ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) [ipqualityscore.com](https://www.ipqualityscore.com/) [bigdatacloud.com](https://www.bigdatacloud.com/) and so on. They provide APIs for testing, thanks to the query resources provided by various sites on the Internet.
+Thanks [he.net](https://he.net) [bgp.tools](https://bgp.tools) [ipinfo.io](https://ipinfo.io) [maxmind.com](https://www.maxmind.com/en/home) [cloudflare.com](https://www.cloudflare.com/) [ip.sb](https://ip.sb) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [ip2location.com](https://ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) [ipqualityscore.com](https://www.ipqualityscore.com/) [bigdatacloud.com](https://www.bigdatacloud.com/) [cheervision.co](https://cheervision.co) [virustotal.com](https://www.virustotal.com/) and so on. They provide APIs for testing, thanks to the query resources provided by various sites on the Internet.
 
 Thanks to all the open source projects for providing the original test scripts.
 
 Thanks
 
 <a href="https://h501.io/?from=69" target="_blank">
-  <img src="https://github.com/spiritLHLS/ecs/assets/103393591/dfd47230-2747-4112-be69-b5636b34f07f" alt="h501">
+  <img src="https://github.com/spiritLHLS/ecs/assets/103393591/dfd47230-2747-4112-be69-b5636b34f07f" alt="h501" style="height: 50px;">
 </a>
 
 provided  hosting to support this open source project.
@@ -239,11 +239,11 @@ provided  hosting to support this open source project.
 Thanks also to the following platforms for editorial and testing support.
 
 <a href="https://www.jetbrains.com/pycharm/" target="_blank">
-  <img src="https://resources.jetbrains.com/storage/products/company/brand/logos/PyCharm.png" alt="pycharm">
+  <img src="https://resources.jetbrains.com/storage/products/company/brand/logos/PyCharm.png" alt="pycharm" style="height: 50px;">
 </a>
 
 <a href="https://community.ibm.com/zsystems/form/l1cc-oss-vm-request/" target="_blank">
-  <img src="https://linuxone.cloud.marist.edu/oss/resources/images/linuxonelogo03.png" alt="ibm">
+  <img src="https://linuxone.cloud.marist.edu/oss/resources/images/linuxonelogo03.png" alt="ibm" style="height: 50px;">
 </a>
 
 ## Stargazers over time
