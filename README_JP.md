@@ -44,6 +44,7 @@
   - [レビュー_チャンネル](#レビュー_チャンネル)
     - [https://t.me/vps\_reviews](#httpstmevps_reviews)
 - [感謝](#感謝)
+- [History Usage](#History-Usage)
 - [Stargazers_over_time](#Stargazers_over_time)
 
 <a id="top"></a>
@@ -224,7 +225,7 @@ VPSテスト、VPS速度テスト、VPS総合パフォーマンステスト、VP
 
 # Stargazers_over_time
 
-[![Stargazers over time](https://starchart.cc/spiritLHLS/ecs.svg)](https://starchart.cc/spiritLHLS/ecs)
+[![Stargazers Over Time](https://starchart.cc/spiritLHLS/ecs.svg)](https://starchart.cc/spiritLHLS/ecs)
 
 # 感謝
 
@@ -250,6 +251,10 @@ VPSテスト、VPS速度テスト、VPS総合パフォーマンステスト、VP
   <img src="https://linuxone.cloud.marist.edu/oss/resources/images/linuxonelogo03.png" alt="ibm" style="height: 50px;">
 </a>
 
-## Stargazers over time
+## History Usage
 
-[![Stargazers over time](https://starchart.cc/spiritLHLS/ecs.svg?variant=adaptive)](https://www.spiritlhl.net)
+![ecs](https://hits.spiritlhl.net/chart/ecs.svg)
+
+## Stargazers Over Time
+
+[![Stargazers Over Time](https://starchart.cc/spiritLHLS/ecs.svg?variant=adaptive)](https://www.spiritlhl.net)

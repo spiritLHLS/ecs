@@ -42,6 +42,7 @@
   - [Review_Channel](#Review_Channel)
     - [https://t.me/vps\_reviews](#httpstmevps_reviews)
 - [Thanks](#Thanks)
+- [History Usage](#History-Usage)
 - [Stargazers_over_time](#Stargazers_over_time)
 
 <a id="top"></a>
@@ -246,6 +247,10 @@ Thanks also to the following platforms for editorial and testing support.
   <img src="https://linuxone.cloud.marist.edu/oss/resources/images/linuxonelogo03.png" alt="ibm" style="height: 50px;">
 </a>
 
-## Stargazers over time
+## History Usage
 
-[![Stargazers over time](https://starchart.cc/spiritLHLS/ecs.svg?variant=adaptive)](https://www.spiritlhl.net)
+![ecs](https://hits.spiritlhl.net/chart/ecs.svg)
+
+## Stargazers Over Time
+
+[![Stargazers Over Time](https://starchart.cc/spiritLHLS/ecs.svg?variant=adaptive)](https://www.spiritlhl.net)

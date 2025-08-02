@@ -49,7 +49,8 @@
     - [https://github.com/spiritLHLS/ecsspeed](#httpsgithubcomspiritlhlsecsspeed)
 - [脚本概况](#脚本概况)
 - [致谢](#致谢)
-- [Stargazers over time](#stargazers-over-time)
+- [History Usage](#History-Usage)
+- [Stargazers Over Time](#stargazers-over-time)
 
 <a id="top"></a>
 ------
@@ -301,7 +302,11 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
   <img src="https://linuxone.cloud.marist.edu/oss/resources/images/linuxonelogo03.png" alt="ibm" style="height: 50px;">
 </a>
 
-## Stargazers over time
+## History Usage
 
-[![Stargazers over time](https://starchart.cc/spiritLHLS/ecs.svg?variant=adaptive)](https://www.spiritlhl.net)
+![ecs](https://hits.spiritlhl.net/chart/ecs.svg)
+
+## Stargazers Over Time
+
+[![Stargazers Over Time](https://starchart.cc/spiritLHLS/ecs.svg?variant=adaptive)](https://www.spiritlhl.net)
 
