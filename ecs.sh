@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2025.07.10"
+ver="2025.08.15"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -317,21 +317,36 @@ _exists() {
 }
 
 reset_default_sysctl() {
-    # 还原系统原有的设置
-    if [ -f /etc/security/limits.conf ]; then
+    # 还原 /etc/security/limits.conf
+    if [ -f /etc/security/limits.conf.backup ]; then
         cp /etc/security/limits.conf.backup /etc/security/limits.conf
-        rm /etc/security/limits.conf.backup
+        rm -f /etc/security/limits.conf.backup
     fi
-    if which systemctl >/dev/null 2>&1; then
-        if [ -f "$sysctl_conf" ]; then
-            cp "$sysctl_conf_backup" "$sysctl_conf"
-            check_and_cat_file "$sysctl_default" >>"$sysctl_conf"
-            $sysctl_path -p 2>/dev/null
-            cp "$sysctl_conf_backup" "$sysctl_conf"
-            rm "$sysctl_conf_backup"
-            rm "$sysctl_default"
+    # 还原 sysctl 设置
+    local conf_files=()
+    # 优先 systemd 方式
+    if [ -f "/etc/sysctl.d/99-custom.conf" ]; then
+        conf_files+=("/etc/sysctl.d/99-custom.conf")
+    fi
+    # 传统方式
+    if [ -f "/etc/sysctl.conf" ]; then
+        conf_files+=("/etc/sysctl.conf")
+    fi
+    for conf in "${conf_files[@]}"; do
+        local backup="${conf}.backup"
+        local default="${conf}.default"
+        if [ -f "$backup" ]; then
+            cp "$backup" "$conf"
+            rm -f "$backup"
         fi
-        $sysctl_path -p 2>/dev/null
+        if [ -f "$default" ]; then
+            cat "$default" >>"$conf"
+            rm -f "$default"
+        fi
+    done
+    # 重新加载 sysctl
+    if which sysctl >/dev/null 2>&1; then
+        sysctl -p 2>/dev/null
     fi
 }
 
@@ -887,7 +902,8 @@ variable_exists() {
 }
 
 optimized_kernel() {
-    _yellow "optimizing resource limits"
+    _yellow "优化资源限制"
+    # 优化 limits.conf
     if [ -f /etc/security/limits.conf ]; then
         cp /etc/security/limits.conf /etc/security/limits.conf.backup
         cat >/etc/security/limits.conf <<EOF
@@ -901,32 +917,42 @@ root soft nproc 512000
 root hard nproc 512000
 EOF
     fi
-    if which systemctl >/dev/null 2>&1; then
-        _yellow "optimizing sysctl configuration"
-        declare -A default_values
-        if [ -f "$sysctl_conf" ]; then
-            if [ ! -f "$sysctl_conf_backup" ]; then
-                cp "$sysctl_conf" "$sysctl_conf_backup"
-            fi
-            while IFS= read -r line; do
-                variable="${line%%=*}"
-                variable="${variable%%[[:space:]]*}"
-                default_value="${line#*=}"
-                default_values["$variable"]="$default_value"
-            done < <($sysctl_path -a)
-            echo "" >"$sysctl_default"
-            for variable in "${!sysctl_vars[@]}"; do
-                value="${sysctl_vars[$variable]}"
-                if variable_exists "$variable"; then
-                    sed -i "s/^$variable=.*/$variable=$value/" "$sysctl_conf"
-                else
-                    echo "$variable=$value" >>"$sysctl_conf"
-                    default_value="${default_values[$variable]}"
-                    echo "$variable=$default_value" >>"$sysctl_default"
-                fi
-            done
-            $sysctl_path -p 2>/dev/null
+    # 优化 sysctl
+    _yellow "优化 sysctl 配置"
+    declare -A default_values
+    sysctl_conf="/etc/sysctl.d/99-custom.conf"
+    sysctl_conf_backup="${sysctl_conf}.backup"
+    sysctl_default="${sysctl_conf}.default"
+    # 兼容老系统 /etc/sysctl.conf
+    if [ ! -f "$sysctl_conf" ] && [ -f /etc/sysctl.conf ]; then
+        sysctl_conf="/etc/sysctl.conf"
+        sysctl_conf_backup="${sysctl_conf}.backup"
+        sysctl_default="${sysctl_conf}.default"
+    fi
+    if [ -f "$sysctl_conf" ]; then
+        if [ ! -f "$sysctl_conf_backup" ]; then
+            cp "$sysctl_conf" "$sysctl_conf_backup"
         fi
+        # 获取系统默认值
+        while IFS= read -r line; do
+            variable="${line%%=*}"
+            variable="${variable%%[[:space:]]*}"
+            default_value="${line#*=}"
+            default_values["$variable"]="$default_value"
+        done < <(sysctl -a)
+        echo "" >"$sysctl_default"
+        # 更新或添加变量
+        for variable in "${!sysctl_vars[@]}"; do
+            value="${sysctl_vars[$variable]}"
+            if grep -q "^$variable" "$sysctl_conf"; then
+                sed -i "s|^$variable.*|$variable=$value|" "$sysctl_conf"
+            else
+                echo "$variable=$value" >>"$sysctl_conf"
+                default_value="${default_values[$variable]}"
+                echo "$variable=$default_value" >>"$sysctl_default"
+            fi
+        done
+        sysctl -p "$sysctl_conf" 2>/dev/null
     fi
 }
 
@@ -2983,6 +3009,7 @@ check_ip_info_by_ipsb() {
 get_system_info() {
     local ip4=$(echo "$IPV4" | tr -d '\n')
     arch=$(uname -m)
+    # 磁盘信息
     if [ -n "$Result_Systeminfo_Diskinfo" ]; then
         :
     else
@@ -2991,6 +3018,7 @@ get_system_info() {
         disk_total_size=$(calc_disk "${disk_size1[@]}")
         disk_used_size=$(calc_disk "${disk_size2[@]}")
     fi
+    # CPU 信息
     if [ "$(uname)" = "Darwin" ]; then
         cname=$(sysctl -n machdep.cpu.brand_string)
         cores=$(sysctl -n hw.ncpu)
@@ -3011,12 +3039,12 @@ get_system_info() {
         if _exists "w"; then
             load=$(
                 LANG=C
-                w | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//'
+                w | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/ *$//'
             )
         elif _exists "uptime"; then
             load=$(
                 LANG=C
-                uptime | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//'
+                uptime | head -1 | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//;s/ *$//'
             )
         fi
     elif [ "${Var_OSRelease}" == "freebsd" ]; then
@@ -3044,29 +3072,18 @@ get_system_info() {
         fi
     fi
     cname=$(echo -n "$cname" | tr '\n' ' ' | sed -E 's/ +/ /g')
+    # 内存信息
     if command -v free >/dev/null 2>&1; then
-        if free -m | grep -q '内存'; then # 如果输出中包含 "内存" 关键词
+        if free -m | grep -q '内存'; then
             tram=$(free -m | awk '/内存/{print $2}')
             uram=$(free -m | awk '/内存/{print $3}')
             swap=$(free -m | awk '/交换/{print $2}')
             uswap=$(free -m | awk '/交换/{print $3}')
-        else # 否则，假定输出是英文的
-            tram=$(
-                LANG=C
-                free -m | awk '/Mem/ {print $2}'
-            )
-            uram=$(
-                LANG=C
-                free -m | awk '/Mem/ {print $3}'
-            )
-            swap=$(
-                LANG=C
-                free -m | awk '/Swap/ {print $2}'
-            )
-            uswap=$(
-                LANG=C
-                free -m | awk '/Swap/ {print $3}'
-            )
+        else
+            tram=$(free -m | awk '/Mem/ {print $2}')
+            uram=$(free -m | awk '/Mem/ {print $3}')
+            swap=$(free -m | awk '/Swap/ {print $2}')
+            uswap=$(free -m | awk '/Swap/ {print $3}')
         fi
     else
         tram=$($sysctl_path -n hw.physmem | awk '{printf "%.0f", $1/1024/1024}')
@@ -3081,37 +3098,29 @@ get_system_info() {
     fi
     kern=$(uname -r)
     if [ -z "$sysctl_path" ]; then
-        tcpctrl="None"
+        if command -v sysctl >/dev/null 2>&1; then
+            sysctl_path=$(command -v sysctl)
+        else
+            sysctl_path=""
+        fi
     fi
-    tcpctrl=$($sysctl_path -n net.ipv4.tcp_congestion_control 2>/dev/null)
-    if [ $? -ne 0 ]; then
+    tcpctrl="None"
+    if [ -n "$sysctl_path" ] && [ -x "$sysctl_path" ]; then
+        tcpctrl=$($sysctl_path -n net.ipv4.tcp_congestion_control 2>/dev/null || echo "None")
+    fi
+    if [ "$tcpctrl" != "bbr" ] && lsmod | grep bbr >/dev/null 2>&1; then
         if [ "$en_status" = true ]; then
-            tcpctrl="TCP congestion control algorithm not set"
+            reading "Should I turn on bbr before testing? (Enter to leave it on by default) [y/n] " confirmbbr
         else
-            tcpctrl="未设置TCP拥塞控制算法"
+            reading "是否要开启bbr再进行测试？(回车则默认不开启) [y/n] " confirmbbr
         fi
-    else
-        if [ $tcpctrl == "bbr" ]; then
-            :
-        else
-            if lsmod | grep bbr >/dev/null; then
-                if [ "$en_status" = true ]; then
-                    reading "Should I turn on bbr before testing? (Enter to leave it on by default) [y/n] " confirmbbr
-                else
-                    reading "是否要开启bbr再进行测试？(回车则默认不开启) [y/n] " confirmbbr
-                fi
-                echo ""
-                if [ "$confirmbbr" != "y" ]; then
-                    echo "net.core.default_qdisc=fq" >>"$sysctl_conf"
-                    echo "net.ipv4.tcp_congestion_control=bbr" >>"$sysctl_conf"
-                    $sysctl_path -p
-                fi
-                tcpctrl=$($sysctl_path -n net.ipv4.tcp_congestion_control 2>/dev/null)
-                if [ $? -ne 0 ]; then
-                    tcpctrl="None"
-                fi
-            fi
+        echo ""
+        if [ "$confirmbbr" != "y" ]; then
+            echo "net.core.default_qdisc=fq" >>"$sysctl_conf"
+            echo "net.ipv4.tcp_congestion_control=bbr" >>"$sysctl_conf"
+            $sysctl_path -p
         fi
+        tcpctrl=$($sysctl_path -n net.ipv4.tcp_congestion_control 2>/dev/null || echo "None")
     fi
 }
 
@@ -3885,14 +3894,14 @@ backtrace_script() {
     if [ -f "${TEMP_DIR}/backtrace" ]; then
         chmod 777 ${TEMP_DIR}/backtrace
         if [[ $ipv6_condition == true ]]; then
-            curl_output="$(${TEMP_DIR}/backtrace -s=false -ipv6=true 2>&1)"
+            curl_output="$(${TEMP_DIR}/backtrace -ipv6=true 2>&1)"
         else
-            curl_output="$(${TEMP_DIR}/backtrace -s=false 2>&1)"
+            curl_output="$(${TEMP_DIR}/backtrace 2>&1)"
         fi
     else
         return
     fi
-    echo -e "----------------三网回程--基于oneclickvirt/backtrace开源----------------"
+    echo -e "-------------上游及三网回程--基于oneclickvirt/backtrace开源-------------"
     grep -sq 'sendto: network is unreachable' <<<$curl_output && _yellow "纯IPV6网络无法查询" || echo "${curl_output}" | grep -v 'github.com/oneclickvirt/backtrace' | grep -v '正在测试' | grep -v '测试完成' | grep -v 'json decode err'
 }
 

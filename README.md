@@ -68,12 +68,10 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2025.07.10
+2025.08.15
 
-- 更新数据库来源，替换cheervision数据库为dkly数据库
-- 添加maxmind数据库获取IP地理信息和ASN组织信息，修复部分数据库识别信息时缺失或有额外引号的问题
-- 添加对macos的CPU的正确识别方式，避免原方式导致的文本截断
-- 修改部分仓库说明减少重复内容
+- 适配Debian13的新sysctl配置
+- 更新backtrace支持上游检测
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
