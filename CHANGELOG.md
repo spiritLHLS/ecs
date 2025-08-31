@@ -2,6 +2,11 @@
 
 # 主要变化
 
+2025.08.15
+
+- 适配Debian13的新sysctl配置
+- 更新backtrace支持上游检测
+
 2025.07.10
 
 - 更新数据库来源，替换cheervision数据库为dkly数据库

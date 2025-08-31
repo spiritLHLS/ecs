@@ -68,10 +68,10 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2025.08.15
+2025.08.31
 
-- 适配Debian13的新sysctl配置
-- 更新backtrace支持上游检测
+- 添加每个测试项目的说明
+- lsmod不存在时不进行对应的bbr检测
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 

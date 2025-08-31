@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2025.08.15"
+ver="2025.08.31"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -286,13 +286,16 @@ global_exit_action() {
             else
                 _green "  短链:"
             fi
-
             if [ -n "$https_short_url" ]; then
                 _blue "    $https_short_url"
             fi
-
             if [ -n "$http_short_url" ]; then
                 _blue "    $http_short_url"
+            fi
+            if [ "$en_status" = true ]; then
+                _yellow "  Every Test Benchmark: https://bash.spiritlhl.net/ecsguide"
+            else
+                _yellow "  每项测试基准见: https://bash.spiritlhl.net/ecsguide"
             fi
         fi
     fi
@@ -3108,7 +3111,7 @@ get_system_info() {
     if [ -n "$sysctl_path" ] && [ -x "$sysctl_path" ]; then
         tcpctrl=$($sysctl_path -n net.ipv4.tcp_congestion_control 2>/dev/null || echo "None")
     fi
-    if [ "$tcpctrl" != "bbr" ] && lsmod | grep bbr >/dev/null 2>&1; then
+    if [ "$tcpctrl" != "bbr" ] && command -v lsmod >/dev/null 2>&1 && lsmod | grep bbr >/dev/null 2>&1; then
         if [ "$en_status" = true ]; then
             reading "Should I turn on bbr before testing? (Enter to leave it on by default) [y/n] " confirmbbr
         else
