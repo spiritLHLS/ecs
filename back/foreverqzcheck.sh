@@ -4,7 +4,7 @@
 
 
 ver="2023.04.14"
-changeLog="IP质量测试(含欺诈得分)，由频道 https://t.me/vps_reviews 原创"
+changeLog="IP质量测试(含欺诈得分)，由频道 https://t.me/+UHVoo2U4VyA5NTQ1 原创"
 
 red(){
     echo -e "\033[31m\033[01m$1\033[0m"
@@ -476,7 +476,7 @@ main() {
   reading "\n 请输入需要查询的 IP: " ip4
   yellow "\n 检测中，请稍等片刻。\n"
   echo "-----------------欺诈分数以及IP质量检测--本频道独创-------------------"
-  echo "                   测评频道: https://t.me/vps_reviews                    "
+  echo "                   测评频道: https://t.me/+UHVoo2U4VyA5NTQ1                    "
   next
   yellow "得分仅作参考，不代表100%准确，IP类型如果不一致请手动查询多个数据库比对"
   scamalytics "$ip4"

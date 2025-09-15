@@ -3131,12 +3131,12 @@ get_system_info() {
 print_intro() {
     echo "--------------------- A Bench Script By spiritlhl ----------------------"
     if [ "$en_status" = true ]; then
-        echo "              Evaluation Channel: https://t.me/vps_reviews               "
+        echo "              Evaluation Channel: https://t.me/+UHVoo2U4VyA5NTQ1               "
         echo "VPS Fusion Monster Version：$ver"
         echo "Shell Project: https://github.com/spiritLHLS/ecs"
         echo "Go Project [recommend]: https://github.com/oneclickvirt/ecs"
     else
-        echo "                   测评频道: https://t.me/vps_reviews                    "
+        echo "                   测评频道: https://t.me/+UHVoo2U4VyA5NTQ1                    "
         echo "VPS融合怪版本：$ver"
         echo "Shell项目地址：https://github.com/spiritLHLS/ecs"
         echo "Go项目地址 [推荐]：https://github.com/oneclickvirt/ecs"
@@ -5211,7 +5211,7 @@ head_script() {
         echo -e "# Version: $ver                                       #"
         echo -e "# Update log：$changeLog     #"
         echo -e "# ${GREEN}Author${PLAIN}: spiritlhl                                         #"
-        echo -e "# ${GREEN}TG Channel${PLAIN}: https://t.me/vps_reviews                      #"
+        echo -e "# ${GREEN}TG Channel${PLAIN}: https://t.me/+UHVoo2U4VyA5NTQ1                      #"
         echo -e "# ${GREEN}GitHub${PLAIN}: https://github.com/spiritLHLS                     #"
         echo -e "# ${GREEN}GitLab${PLAIN}: https://gitlab.com/spiritysdx                     #"
         echo "#############################################################"
@@ -5226,7 +5226,7 @@ head_script() {
         echo -e "# 版本(请注意比对仓库版本更新)：$ver                  #"
         echo -e "# 更新日志：$changeLog                       #"
         echo -e "# ${GREEN}作者${PLAIN}: spiritlhl                                           #"
-        echo -e "# ${GREEN}TG频道${PLAIN}: https://t.me/vps_reviews                          #"
+        echo -e "# ${GREEN}TG频道${PLAIN}: https://t.me/+UHVoo2U4VyA5NTQ1                          #"
         echo -e "# ${GREEN}GitHub${PLAIN}: https://github.com/spiritLHLS                     #"
         echo -e "# ${GREEN}GitLab${PLAIN}: https://gitlab.com/spiritysdx                     #"
         echo "#############################################################"

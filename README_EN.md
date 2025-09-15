@@ -40,7 +40,6 @@
   - [Fusion_Monster_Function](#Fusion_Monster_Function)
 - [Friendly_link](#Friendly_link)
   - [Review_Channel](#Review_Channel)
-    - [https://t.me/vps\_reviews](#httpstmevps_reviews)
 - [Thanks](#Thanks)
 - [History Usage](#History-Usage)
 - [Stargazers_over_time](#Stargazers_over_time)
@@ -204,7 +203,7 @@ VPS testing, VPS speed testing, VPS comprehensive performance testing, VPS retur
 
 ## Review_Channel
 
-### https://t.me/vps_reviews
+https://t.me/+UHVoo2U4VyA5NTQ1
 
 # Screenshot
 

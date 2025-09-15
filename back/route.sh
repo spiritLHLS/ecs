@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ver="2022.12.11"
-changeLog="路由相关工具合集，由频道 https://t.me/vps_reviews 整理修改"
+changeLog="路由相关工具合集，由频道 https://t.me/+UHVoo2U4VyA5NTQ1 整理修改"
 
 test_area=("广州电信" "广州联通" "广州移动")
 test_ip=("58.60.188.222" "210.21.196.6" "120.196.165.2")
@@ -199,7 +199,7 @@ fscarmen_route_script(){
 
 print_intro() {
     echo "--------------------- A Bench Script By spiritlhl --------------------"
-    echo "                   测评频道: https://t.me/vps_reviews                    "
+    echo "                   测评频道: https://t.me/+UHVoo2U4VyA5NTQ1                    "
     echo "版本：$ver"
     echo "更新日志：$changeLog"
 }

@@ -44,9 +44,7 @@
   - [融合怪功能](#融合怪功能)
 - [友链](#友链)
   - [测评频道](#测评频道)
-    - [https://t.me/vps\_reviews](#httpstmevps_reviews)
   - [自动更新测速服务器节点列表的网络基准测试脚本](#自动更新测速服务器节点列表的网络基准测试脚本)
-    - [https://github.com/spiritLHLS/ecsspeed](#httpsgithubcomspiritlhlsecsspeed)
 - [脚本概况](#脚本概况)
 - [致谢](#致谢)
 - [History Usage](#History-Usage)
@@ -245,11 +243,11 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 
 ## 测评频道
 
-### https://t.me/vps_reviews
+https://t.me/+UHVoo2U4VyA5NTQ1
 
 ## 自动更新测速服务器节点列表的网络基准测试脚本
 
-### https://github.com/spiritLHLS/ecsspeed
+https://github.com/spiritLHLS/ecsspeed
 
 # 脚本概况
 

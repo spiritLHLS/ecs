@@ -42,7 +42,6 @@
   - [Fusion_Monster_Function](#Fusion_Monster_Function)
 - [フレンドリーリンク](#フレンドリーリンク)
   - [レビュー_チャンネル](#レビュー_チャンネル)
-    - [https://t.me/vps\_reviews](#httpstmevps_reviews)
 - [感謝](#感謝)
 - [History Usage](#History-Usage)
 - [Stargazers_over_time](#Stargazers_over_time)
@@ -204,7 +203,7 @@ VPSテスト、VPS速度テスト、VPS総合パフォーマンステスト、VP
 
 ## レビュー_チャンネル
 
-### https://t.me/vps_reviews
+https://t.me/+UHVoo2U4VyA5NTQ1
 
 # スクリーンショット
 

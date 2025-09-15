@@ -6,7 +6,7 @@
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
 ver="2025.02.12"
-changeLog="IP质量测试，由频道 https://t.me/vps_reviews 原创"
+changeLog="IP质量测试，由频道 https://t.me/+UHVoo2U4VyA5NTQ1 原创"
 temp_file_apt_fix="/tmp/apt_fix.txt"
 shorturl=""
 REGEX=("debian" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "alpine")
@@ -58,7 +58,7 @@ arch=$(uname -m)
 
 print_intro() {
     echo "-------------------- A Bench Script By spiritlhl ---------------------"
-    echo "                   测评频道: https://t.me/vps_reviews                    "
+    echo "                   测评频道: https://t.me/+UHVoo2U4VyA5NTQ1                    "
     echo "版本：$ver"
     echo "更新日志：$changeLog"
 }
