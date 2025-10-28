@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # by spiritlhl
-# from https://github.com/spiritLHLS/ecs
+# from https://github.com/spiritLHLS/ecs but more recommended to use https://github.com/oneclickvirt/ecs
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2025.08.31"
+ver="2025.10.28"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -1207,6 +1207,27 @@ function BenchAPI_Systeminfo_GetCPUinfo() {
         local r_cachesize_l3="$r_cachesize_l3_k KB"
     fi
     local r_sockets && r_sockets="$(lscpu -B 2>/dev/null | grep -oP "(?<=Socket\(s\):).*(?=)" | sed -e 's/^[ ]*//g')"
+    local is_hybrid_cpu=0
+    if grep -q "Intel" /proc/cpuinfo 2>/dev/null; then
+        local cpu_model=$(grep -m1 "model name" /proc/cpuinfo 2>/dev/null | sed 's/.*: //')
+        # 检测混合架构CPU
+        local cpu_types=$(grep "model name" /proc/cpuinfo 2>/dev/null | sort -u | wc -l)
+        if [ "$cpu_types" -gt 1 ]; then
+            # 如果存在多种CPU型号名称，很可能是混合架构
+            is_hybrid_cpu=1
+        elif echo "$cpu_model" | grep -qE "(1[2-5]th Gen)"; then
+            # 明确已知的混合架构：12代(Alder Lake), 13代(Raptor Lake), 14代(Raptor Lake Refresh), 15代(Meteor Lake)
+            is_hybrid_cpu=1
+        elif [ -d "/sys/devices/system/cpu/cpu0/cache" ]; then
+            # 检查是否存在不同大小的L2缓存（P核和E核的L2缓存大小通常不同）
+            local l2_sizes=$(find /sys/devices/system/cpu/cpu*/cache/index2/size 2>/dev/null | xargs cat 2>/dev/null | sort -u | wc -l)
+            if [ "$l2_sizes" -gt 1 ]; then
+                is_hybrid_cpu=1
+            fi
+        fi
+    fi
+    local actual_cores=$(grep -c "^core id" /proc/cpuinfo 2>/dev/null || echo "0")
+    local actual_threads=$(grep -c "^processor" /proc/cpuinfo 2>/dev/null || echo "0")
     if [ "$r_sockets" -ge "2" ]; then
         local r_cores && r_cores="$(lscpu -B 2>/dev/null | grep -oP "(?<=Core\(s\) per socket:).*(?=)" | sed -e 's/^[ ]*//g')"
         r_cores="$(echo "$r_sockets" "$r_cores" | awk '{printf "%d\n",$1*$2}')"
@@ -1217,6 +1238,15 @@ function BenchAPI_Systeminfo_GetCPUinfo() {
         local r_cores && r_cores="$(lscpu -B 2>/dev/null | grep -oP "(?<=Core\(s\) per socket:).*(?=)" | sed -e 's/^[ ]*//g')"
         local r_threadpercore && r_threadpercore="$(lscpu -B 2>/dev/null | grep -oP "(?<=Thread\(s\) per core:).*(?=)" | sed -e 's/^[ ]*//g')"
         local r_threads && r_threads="$(echo "$r_cores" "$r_threadpercore" | awk '{printf "%d\n",$1*$2}')"
+    fi
+    if [ "$is_hybrid_cpu" -eq 1 ] && [ "$actual_threads" -gt 0 ]; then
+        local unique_cores=$(awk -F': ' '/core id/{print $2}' /proc/cpuinfo 2>/dev/null | sort -u | wc -l)
+        if [ "$unique_cores" -gt 0 ]; then
+            r_cores="$unique_cores"
+        fi
+        r_threads="$actual_threads"
+        # 对于混合架构，线程数/核心数的比例可能不是整数（因为P核有超线程，E核没有）
+        # 所以不可简单地用 cores * threadpercore 来计算，这块覆写修复原计算问题
     fi
     # CPU AES能力检测
     # local t_aes && t_aes="$(awk -F ': ' '/flags/{print $2}' /proc/cpuinfo 2>/dev/null | grep -oE "\baes\b" | sort -u)"

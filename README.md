@@ -66,10 +66,10 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2025.08.31
+2025.10.28
 
-- 添加每个测试项目的说明
-- lsmod不存在时不进行对应的bbr检测
+- 修复Intel混合架构的CPU的线程数获取
+- 添加3个额外的IP数据库，现累计并发查询数据库18个
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -276,7 +276,7 @@ https://github.com/spiritLHLS/ecsspeed
 
 # 致谢
 
-感谢 [he.net](https://he.net) [bgp.tools](https://bgp.tools) [ipinfo.io](https://ipinfo.io) [maxmind.com](https://www.maxmind.com/en/home) [cloudflare.com](https://www.cloudflare.com/) [ip.sb](https://ip.sb) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [ip2location.com](https://ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) [ipqualityscore.com](https://www.ipqualityscore.com/) [bigdatacloud.com](https://www.bigdatacloud.com/) [cheervision.co](https://cheervision.co) [virustotal.com](https://www.virustotal.com/) 等网站提供的API进行检测，感谢互联网各网站提供的查询资源
+感谢 [he.net](https://he.net) [bgp.tools](https://bgp.tools) [ipinfo.io](https://ipinfo.io) [maxmind.com](https://www.maxmind.com/en/home) [cloudflare.com](https://www.cloudflare.com/) [ip.sb](https://ip.sb) [scamalytics.com](https://scamalytics.com) [abuseipdb.com](https://www.abuseipdb.com/) [ip2location.com](https://ip2location.com/) [ip-api.com](https://ip-api.com) [ipregistry.co](https://ipregistry.co/) [ipdata.co](https://ipdata.co/) [ipgeolocation.io](https://ipgeolocation.io) [ipwhois.io](https://ipwhois.io) [ipapi.com](https://ipapi.com/) [ipapi.is](https://ipapi.is/) [ipqualityscore.com](https://www.ipqualityscore.com/) [bigdatacloud.com](https://www.bigdatacloud.com/) [dkly.net](https://data.dkly.net) [virustotal.com](https://www.virustotal.com/) [ipfighter.com](https://ipfighter.com/) [getipintel.net](http://check.getipintel.net/) [fraudlogix.com](https://fraudlogix.com) 等网站提供的API进行检测，感谢互联网各网站提供的查询资源
 
 感谢所有开源项目提供的原始测试脚本
 
