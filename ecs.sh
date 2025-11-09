@@ -4491,7 +4491,7 @@ build_text() {
     if { [ -n "${menu_mode}" ] && [ "${menu_mode}" = false ]; } ||
         { [ -n "${StartInput}" ] && { [ "${StartInput}" -eq 1 ] || [ "${StartInput}" -eq 2 ]; }; } ||
         { [ -n "${StartInput1}" ] && [ "${StartInput1}" -ge 1 ] && [ "${StartInput1}" -le 4 ]; }; then
-        sed -i -e '1,/-------------------- A Bench Script By spiritlhl ---------------------/d' test_result.txt
+        sed -i -e '1,/.*A Bench Script By spiritlhl.*/d' test_result.txt
         sed -i -e 's/\x1B\[[0-9;]\+[a-zA-Z]//g' test_result.txt
         sed -i -e '/^$/d' test_result.txt
         sed -i -e '/Preparing system for disk tests.../d' test_result.txt
