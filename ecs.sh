@@ -680,10 +680,16 @@ download_file() {
     local output=$2
     local progress_file=$3
     # 获取文件总大小
-    local total_size=$(curl -sIkL "$url" | grep -i Content-Length | awk '{print $2}' | tr -d '\r')
-    if [ -z "$total_size" ] || [ "$total_size" -eq 0 ]; then
-        echo "无法获取 $url 的文件大小,将使用 0 作为默认值。" >&2
+    local total_size=$(curl -sIkL "$url" | grep -i Content-Length | awk '{print $2}' | tr -d '\r\n' | grep -o '[0-9]*' | head -1)
+    total_size=${total_size:-0}
+    # 去掉前导零，避免被当作八进制
+    total_size=$((10#$total_size))
+    # 确保 total_size 是纯数字
+    if ! [[ "$total_size" =~ ^[0-9]+$ ]]; then
         total_size=0
+    fi
+    if [ "$total_size" -eq 0 ]; then
+        echo "无法获取 $url 的文件大小,将使用 0 作为默认值。" >&2
     fi
     # 连续检测到下载完成的次数
     local complete_count=0
@@ -694,8 +700,16 @@ download_file() {
             while true; do
                 if [ -f "$output" ]; then
                     sleep 1
-                    local current_size=$(stat -f%z "$output" 2>/dev/null || stat -c%s "$output" 2>/dev/null)
-                    if [ "$total_size" -gt 0 ]; then
+                    local current_size=$(stat -c%s "$output" 2>/dev/null || stat -f%z "$output" 2>/dev/null)
+                    current_size=$(echo "$current_size" | tr -d '\r\n' | grep -o '[0-9]*' | head -1)
+                    current_size=${current_size:-0}
+                    # 去掉前导零，避免被当作八进制
+                    current_size=$((10#$current_size))
+                    # 确保 current_size 是纯数字
+                    if ! [[ "$current_size" =~ ^[0-9]+$ ]]; then
+                        current_size=0
+                    fi
+                    if [ "$total_size" -gt 0 ] && [ "$current_size" -gt 0 ]; then
                         local progress=$((current_size * 100 / total_size))
                     else
                         local progress=0
@@ -703,7 +717,7 @@ download_file() {
                     echo "$progress" >"$progress_file"
                     sleep 1
                     # 检查是否下载完成
-                    if [ "$current_size" -ge "$total_size" ]; then
+                    if [ "$total_size" -gt 0 ] && [ "$current_size" -ge "$total_size" ]; then
                         complete_count=$((complete_count + 1))
                         # 只有连续3次检测到下载完成才退出循环
                         if [ "$complete_count" -ge 3 ]; then
@@ -725,8 +739,16 @@ download_file() {
                 while true; do
                     if [ -f "$output" ]; then
                         sleep 1
-                        local current_size=$(stat -f%z "$output" 2>/dev/null || stat -c%s "$output" 2>/dev/null)
-                        if [ "$total_size" -gt 0 ]; then
+                        local current_size=$(stat -c%s "$output" 2>/dev/null || stat -f%z "$output" 2>/dev/null)
+                        current_size=$(echo "$current_size" | tr -d '\r\n' | grep -o '[0-9]*' | head -1)
+                        current_size=${current_size:-0}
+                        # 去掉前导零，避免被当作八进制
+                        current_size=$((10#$current_size))
+                        # 确保 current_size 是纯数字
+                        if ! [[ "$current_size" =~ ^[0-9]+$ ]]; then
+                            current_size=0
+                        fi
+                        if [ "$total_size" -gt 0 ] && [ "$current_size" -gt 0 ]; then
                             local progress=$((current_size * 100 / total_size))
                         else
                             local progress=0
@@ -734,7 +756,7 @@ download_file() {
                         echo "$progress" >"$progress_file"
                         sleep 1
                         # 检查是否下载完成
-                        if [ "$current_size" -ge "$total_size" ]; then
+                        if [ "$total_size" -gt 0 ] && [ "$current_size" -ge "$total_size" ]; then
                             complete_count=$((complete_count + 1))
                             # 只有连续3次检测到下载完成才退出循环
                             if [ "$complete_count" -ge 3 ]; then
