@@ -57,7 +57,7 @@ os=$(uname -s)
 arch=$(uname -m)
 
 print_intro() {
-    echo "-------------------- A Bench Script By spiritlhl ---------------------"
+    echo "-----------------------A Bench Script By spiritlhl-----------------------"
     echo "                   测评频道: https://t.me/+UHVoo2U4VyA5NTQ1                    "
     echo "版本：$ver"
     echo "更新日志：$changeLog"
@@ -331,9 +331,9 @@ ipcheck() {
     fi
 
     if [ "$en_status" = true ]; then
-        echo -e "-------Email-Port-Detection--Base-On-oneclickvirt/portchecker--------"
+        echo -e "---------Email-Port-Detection--Base-On-oneclickvirt/portchecker----------"
     else
-        echo -e "-------------邮件端口检测--基于oneclickvirt/portchecker开源-------------"
+        echo -e "----------邮件端口检测--基于oneclickvirt/portchecker开源----------"
     fi
 
     if [ -f "/tmp/ip_quality_email_check" ]; then
@@ -360,7 +360,7 @@ main() {
     start_time=$(date +%s)
     print_intro
     _yellow "数据仅作参考，不代表100%准确，IP类型如果不一致请手动查询多个数据库比对"
-    echo -e "-------------IP质量检测--基于oneclickvirt/securityCheck使用-------------"
+    echo -e "----------IP质量检测--基于oneclickvirt/securityCheck使用----------"
     # 执行检测并保存到临时文件
     temp_output=$(mktemp)
     ipcheck | tee "$temp_output"

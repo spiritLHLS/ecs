@@ -2100,7 +2100,7 @@ test_list() {
 
 temp_head() {
     if [ "$en_status" = true ]; then
-        echo "------------------------------Speedtest---------------------------------"
+        echo "--------------------------------Speedtest--------------------------------"
         if [[ $selection =~ ^[1-5]$ ]]; then
             if [ -f "./speedtest-cli/speedtest" ]; then
                 echo -e "Location\t     Upload\t\t  Download\t Delay\t  Loss"
@@ -2114,8 +2114,8 @@ temp_head() {
                 echo -e "Location\t Upload\t\t  Download\t Delay"
             fi
         fi
-    else
-        echo "--------------------自动更新测速节点列表--本脚本原创--------------------"
+        else
+            echo "---------------------自动更新测速节点列表--本脚本原创----------------------"
         if [[ $selection =~ ^[1-5]$ ]]; then
             if [ -f "./speedtest-cli/speedtest" ]; then
                 echo -e "位置\t         上传速度\t 下载速度\t 延迟\t  丢包率"
@@ -3180,7 +3180,7 @@ get_system_info() {
 
 # =============== 正式输出 部分 ===============
 print_intro() {
-    echo "--------------------- A Bench Script By spiritlhl ----------------------"
+    echo "-----------------------A Bench Script By spiritlhl-----------------------"
     if [ "$en_status" = true ]; then
         echo "              Evaluation Channel: https://t.me/+UHVoo2U4VyA5NTQ1               "
         echo "VPS Fusion Monster Version：$ver"
@@ -3531,9 +3531,9 @@ ipcheck() {
     check_and_cat_file "/tmp/ip_quality_security_check"
     check_and_cat_file "/tmp/ip_quality_google"
     if [ "$en_status" = true ]; then
-        echo -e "-------Email-Port-Detection--Base-On-oneclickvirt/portchecker--------"
+        echo -e "---------Email-Port-Detection--Base-On-oneclickvirt/portchecker----------"
     else
-        echo -e "-------------邮件端口检测--基于oneclickvirt/portchecker开源-------------"
+        echo -e "------------邮件端口检测--基于oneclickvirt/portchecker开源------------"
     fi
     check_and_cat_file "/tmp/ip_quality_email_check"
     rm -rf /tmp/ip_quality_*
@@ -3644,9 +3644,9 @@ unlock_test_script() {
     if [ -f ./UnlockTests ] && [ -s ./UnlockTests ]; then
         chmod +x ./UnlockTests
         if [ "$en_status" = true ]; then
-            echo "------------Streaming-Unlock-Test--Thanks-to-oneclickvirt/UnlockTests-----------"
+            echo "--------Streaming-Unlock-Test--Thanks-to-oneclickvirt/UnlockTests--------"
         else
-            echo "---------------流媒体解锁--感谢oneclickvirt/UnlockTests测试-------------"
+            echo "---------------流媒体解锁--感谢oneclickvirt/UnlockTests测试----------------"
         fi
         ./UnlockTests -f=0 -b=false | grep -v -E '项目地址:|Your IPV4 address:|Your IPV6 address:'
     else
@@ -3665,19 +3665,19 @@ cpu_judge() {
         case $benchmark_type in
         sysbench)
             benchmark_name="SysBench_CPU_Fast"
-            echo "---------------------------CPU-Sysbench-Test----------------------------"
+            echo "----------------------------CPU-Sysbench-Test----------------------------"
             ;;
         geekbench4)
             benchmark_name="4"
-            echo "--------------------------CPU-Geekbench4-Test---------------------------"
+            echo "---------------------------CPU-Geekbench4-Test---------------------------"
             ;;
         geekbench5)
             benchmark_name="5"
-            echo "--------------------------CPU-Geekbench5-Test---------------------------"
+            echo "---------------------------CPU-Geekbench5-Test---------------------------"
             ;;
         geekbench6)
             benchmark_name="6"
-            echo "--------------------------CPU-Geekbench6-Test---------------------------"
+            echo "---------------------------CPU-Geekbench6-Test---------------------------"
             ;;
         *)
             echo "Invalid benchmark type"
@@ -3688,19 +3688,19 @@ cpu_judge() {
         case $benchmark_type in
         sysbench)
             benchmark_name="SysBench_CPU_Fast"
-            echo "----------------------CPU测试--通过sysbench测试-------------------------"
+            echo "------------------------CPU测试--通过sysbench测试-------------------------"
             ;;
         geekbench4)
             benchmark_name="4"
-            echo "-----------------CPU测试--感谢yabs开源geekbench4测试--------------------"
+            echo "-------------------CPU测试--感谢yabs开源geekbench4测试--------------------"
             ;;
         geekbench5)
             benchmark_name="5"
-            echo "-----------------CPU测试--感谢yabs开源geekbench5测试--------------------"
+            echo "-------------------CPU测试--感谢yabs开源geekbench5测试--------------------"
             ;;
         geekbench6)
             benchmark_name="6"
-            echo "-----------------CPU测试--感谢yabs开源geekbench6测试--------------------"
+            echo "-------------------CPU测试--感谢yabs开源geekbench6测试--------------------"
             ;;
         *)
             echo "Invalid benchmark type"
@@ -3731,9 +3731,9 @@ cpu_judge() {
 memory_script() {
     if command -v sysbench >/dev/null 2>&1; then
         if [ "$en_status" = true ]; then
-            echo "----------------------------Memory-Test---------------------------------"
+            echo "-------------------------------Memory-Test-------------------------------"
         else
-            echo "---------------------内存测试--感谢lemonbench开源-----------------------"
+            echo "--------------------内存测试--感谢lemonbench开源----------------------------"
         fi
         Function_SysBench_Memory_Fast
     fi
@@ -3741,9 +3741,9 @@ memory_script() {
 
 basic_script() {
     if [ "$en_status" = true ]; then
-        echo "----------------------------Basic-Information---------------------------"
+        echo "----------------------------Basic-Information----------------------------"
     else
-        echo "---------------------基础信息查询--感谢所有开源项目---------------------"
+        echo "---------------------基础信息查询--感谢所有开源项目----------------------"
     fi
     print_system_info
     print_ip_info
@@ -3768,9 +3768,9 @@ io1_script() {
     cd $myvar >/dev/null 2>&1
     sleep 1
     if [ "$en_status" = true ]; then
-        echo "------------------------Disk-dd-Read/Write-Test-------------------------"
+        echo "-------------------------Disk-dd-Read/Write-Test-------------------------"
     else
-        echo "------------------磁盘dd读写测试--感谢lemonbench开源--------------------"
+        echo "--------------------磁盘dd读写测试--感谢lemonbench开源--------------------"
     fi
     Function_DiskTest_Fast
 }
@@ -3780,9 +3780,9 @@ io2_script() {
     cd $myvar >/dev/null 2>&1
     cp $TEMP_DIR/yabs.sh ./
     if [ "$en_status" = true ]; then
-        echo "-----------------------Disk-fio-Read/Write-Test-------------------------"
+        echo "------------------------Disk-fio-Read/Write-Test-------------------------"
     else
-        echo "---------------------磁盘fio读写测试--感谢yabs开源----------------------"
+        echo "----------------------磁盘fio读写测试--感谢yabs开源-----------------------"
     fi
     echo -en "\rRunning fio test..."
     local output=$(./yabs.sh -s -- -i -n -g 2>&1 | tail -n +9)
@@ -3805,9 +3805,9 @@ io3_script() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
     cd $myvar >/dev/null 2>&1
     if [ "$en_status" = true ]; then
-        echo "-----------------------Multi-Disk-Read/Write-Test-----------------------"
+        echo "-----------------------Multi-Disk-Read/Write-Test------------------------"
     else
-        echo "----------------------多盘读写测试--感谢yabs开源------------------------"
+        echo "---------------------多盘读写测试--感谢yabs开源----------------------"
     fi
     # 获取非以vda开头的盘名称
     disk_names=$(lsblk -e 11 -n -o NAME | grep -v "vda" | grep -v "snap" | grep -v "loop")
@@ -3834,7 +3834,7 @@ io3_script() {
                 if [ $? -ne 0 ]; then
                     continue
                 fi
-                echo -e "---------------------------------"
+                echo -e "-------------------------------------------------------------------------"
                 echo "Current disk: ${disk_name}"
                 echo "Current path: ${path}"
                 if [ ! -f "yabs.sh" ]; then
@@ -3857,7 +3857,7 @@ io3_script() {
             fi
             cd $myvar >/dev/null 2>&1
         done
-        echo -e "---------------------------------"
+        echo -e "-------------------------------------------------------------------------"
     else
         echo "No extra disk"
         return
@@ -3890,9 +3890,9 @@ io_judge() {
 lmc999_script() {
     cd $myvar >/dev/null 2>&1
     if [ "$en_status" = true ]; then
-        echo -e "---------------------------TikTok-Unlock-Test---------------------------"
+        echo -e "---------------------------TikTok-Unlock-Test----------------------------"
     else
-        echo -e "--------------------TikTok解锁--感谢lmc999的源脚本----------------------"
+        echo -e "---------------------TikTok解锁--感谢lmc999的源脚本---------------------"
     fi
     local Ftmpresult=$(curl $useNIC --user-agent "${UA_Browser}" -sL -m 10 "https://www.tiktok.com/")
     if [[ "$Ftmpresult" = "curl"* ]]; then
@@ -3919,10 +3919,10 @@ spiritlhl_script() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
     cd $myvar >/dev/null 2>&1
     if [ "$en_status" = true ]; then
-        echo -e "----IP-Quality-Detection--Base-On-oneclickvirt/securityCheck---------"
+        echo -e "--------IP-Quality-Detection--Base-On-oneclickvirt/securityCheck---------"
         _yellow "Data for reference only, does not represent 100% accurate, if and the actual situation is not consistent with the manual query multiple database comparison"
     else
-        echo -e "-------------IP质量检测--基于oneclickvirt/securityCheck使用-------------"
+        echo -e "-------------IP质量检测--基于oneclickvirt/securityCheck使用--------------"
         _yellow "数据仅作参考，不代表100%准确，如果和实际情况不一致请手动查询多个数据库比对"
     fi
     ipcheck
@@ -3944,7 +3944,7 @@ backtrace_script() {
     else
         return
     fi
-    echo -e "-------------上游及三网回程--基于oneclickvirt/backtrace开源-------------"
+    echo -e "-------------上游及三网回程--基于oneclickvirt/backtrace开源--------------"
     grep -sq 'sendto: network is unreachable' <<<$curl_output && _yellow "纯IPV6网络无法查询" || echo "${curl_output}" | grep -v 'github.com/oneclickvirt/backtrace' | grep -v '正在测试' | grep -v '测试完成' | grep -v 'json decode err'
 }
 
@@ -3954,7 +3954,7 @@ nexttrace_route_script() {
         return
     fi
     cd $myvar >/dev/null 2>&1
-    echo -e "-----------------------回程路由--基于nexttrace开源----------------------"
+    echo -e "----------------------回程路由--基于nexttrace开源-----------------------"
     rm -f /tmp/ecs/ip.test
     local test_area_4
     local test_ip_4
@@ -4050,7 +4050,7 @@ ecs_ping() {
     if [ "$en_status" = true ]; then
         return
     fi
-    echo -e "-----------------------全国延迟检测--本脚本原创-------------------------"
+    echo -e "----------------------全国延迟检测--本脚本原创-----------------------"
     if [ -f "${TEMP_DIR}/ecsspeed-ping.sh" ]; then
         ping_output=$(bash ${TEMP_DIR}/ecsspeed-ping.sh 2>&1)
     else
@@ -4401,9 +4401,9 @@ port_script() {
     clear
     print_intro
     if [ "$en_status" = true ]; then
-        echo -e "-------Email-Port-Protocol-Detection--Base-On-portchecker--------"
-    else
-        echo -e "-------------邮件端口协议检测情况-------------"
+        echo -e "-----------Email-Port-Protocol-Detection--Base-On-portchecker------------"
+        else
+            echo -e "------------------------邮件端口协议检测情况------------------------"
     fi
     cd $myvar >/dev/null 2>&1
     if [ -f "${TEMP_DIR}/pck" ]; then
@@ -4602,7 +4602,7 @@ comprehensive_test_script() {
             echo -e "${GREEN}5.${PLAIN} Aniverse's a.sh VPS Test Script - Special Adaptation Dedicated Service"
             echo -e "${GREEN}6.${PLAIN} UnixBench VPS Test Script - Special Adaptation for unix Systems"
             echo -e "${GREEN}7.${PLAIN} Zbench VPS Test Script - Testing in China"
-            echo " -------------"
+            echo "-------------------------------------------------------------------------"
             echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
             echo ""
         else
@@ -4614,7 +4614,7 @@ comprehensive_test_script() {
             echo -e "${GREEN}5.${PLAIN} Aniverse的a.sh VPS测试脚本-特殊适配独服"
             echo -e "${GREEN}6.${PLAIN} UnixBench VPS测试脚本-特殊适配unix系统"
             echo -e "${GREEN}7.${PLAIN} Zbench VPS测试脚本-国内测试"
-            echo " -------------"
+            echo "-------------------------------------------------------------------------"
             echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
             echo ""
         fi
@@ -4701,7 +4701,7 @@ media_test_script() {
         echo -e "${GREEN}7.${PLAIN} nkeonkeo的流媒体检测脚本-基于上者的GO重构版本"
         echo -e "${GREEN}8.${PLAIN} missuo的OpenAI-Checker检测脚本(可能卡住)"
         echo -e "${GREEN}9.${PLAIN} 本人修改优化的OpenAI-Checker检测脚本(重构优化)"
-        echo " -------------"
+        echo "-------------------------------------------------------------------------"
         echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
         echo ""
         while true; do
@@ -4822,7 +4822,7 @@ network_test_script() {
         echo -e "${GREEN}14.${PLAIN} 本人的ecs-cn三网测速脚本(自动更新测速节点，对应 speedtest.cn)"
         echo -e "${GREEN}15.${PLAIN} 本人的ecs-ping三网测ping脚本(自动更新测试节点)"
         echo -e "${GREEN}16.${PLAIN} 开始三网24小时ping测试(执行后回传24小时实时更新的图片地址)"
-        echo " -------------"
+        echo "-------------------------------------------------------------------------"
         echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
         echo ""
         while true; do
@@ -4883,13 +4883,13 @@ hardware_test_script() {
     head_script
     if $menu_mode; then
         _yellow "硬件测试合集如下"
-        echo " -------------"
+        echo "-------------------------------------------------------------------------"
         echo -e "${GREEN}1.${PLAIN} 检测本机硬盘(含通电时长)-一般是独服才有用"
         echo -e "${GREEN}2.${PLAIN} Geekbench4测试"
         echo -e "${GREEN}3.${PLAIN} Geekbench5测试"
         echo -e "${GREEN}4.${PLAIN} Geekbench6测试"
         echo -e "${GREEN}5.${PLAIN} 测试挂载的多个磁盘的IO(仅测试挂载盘)"
-        echo " -------------"
+        echo "-------------------------------------------------------------------------"
         echo -e "${GREEN}0.${PLAIN} 回到上一级菜单"
         echo ""
         while true; do
@@ -4950,7 +4950,7 @@ original_script() {
         echo -e "${GREEN}2.${PLAIN} 流媒体测试脚本合集(各种流媒体解锁相关)"
         echo -e "${GREEN}3.${PLAIN} 网络测试脚本合集(如三网回程和三网测速等)"
         echo -e "${GREEN}4.${PLAIN} 硬件测试脚本合集(如gb5，硬盘通电时长等)"
-        echo " -------------"
+        echo "-------------------------------------------------------------------------"
         echo -e "${GREEN}0.${PLAIN} 回到主菜单"
         echo ""
         while true; do
@@ -5012,7 +5012,7 @@ simplify_script() {
             echo -e "${GREEN}2.${PLAIN} Lite (System Info + CPU + RAM + Disk IO + Common Streams + TikTok + Backhaul + Routing + 4 nodes for speed test) (4 minutes average run time)"
             echo -e "${GREEN}3.${PLAIN} Lite Network Edition (4 nodes for system information + CPU + memory + disk IO + backhaul + routing + speed test) (average run time 4 minutes)"
             echo -e "${GREEN}4.${PLAIN} Lite unlocked version (System info + CPU + RAM + Disk IO + common streams + TikTok + 4 nodes for speed test) (runs for 4 minutes on average)"
-            echo " -------------"
+            echo "-------------------------------------------------------------------------"
             echo -e "${GREEN}0.${PLAIN} Back to the main menu"
         else
             _yellow "融合怪的精简脚本如下"
@@ -5020,7 +5020,7 @@ simplify_script() {
             echo -e "${GREEN}2.${PLAIN} 精简版(系统信息+CPU+内存+磁盘IO+常用流媒体+TikTok+回程+路由+测速节点4个)(平均运行4分钟)"
             echo -e "${GREEN}3.${PLAIN} 精简网络版(系统信息+CPU+内存+磁盘IO+回程+路由+测速节点4个)(平均运行4分钟)"
             echo -e "${GREEN}4.${PLAIN} 精简解锁版(系统信息+CPU+内存+磁盘IO+常用流媒体+TikTok+测速节点4个)(平均运行4分钟)"
-            echo " -------------"
+            echo "-------------------------------------------------------------------------"
             echo -e "${GREEN}0.${PLAIN} 回到主菜单"
         fi
         echo ""
@@ -5094,7 +5094,7 @@ single_item_script() {
             echo -e "${GREEN}4.${PLAIN} IP quality check (average runtime 10~20 seconds)"
             echo -e "${GREEN}5.${PLAIN} Email port protocol detection (average runtime 10~20 seconds)"
             echo -e "${GREEN}6.${PLAIN} Triple-net backhaul line + Guangzhou triple-net routing + nationwide triple-net delay (average running 1 minute 20 seconds)"
-            echo " -------------"
+            echo "-------------------------------------------------------------------------"
             echo -e "${GREEN}0.${PLAIN} Back to the main menu"
         else
             _yellow "融合怪拆分的单项测试脚本如下"
@@ -5104,7 +5104,7 @@ single_item_script() {
             echo -e "${GREEN}4.${PLAIN} IP质量检测(15个数据库的IP检测+邮件端口检测)(平均运行10~20秒)"
             echo -e "${GREEN}5.${PLAIN} 邮件端口协议检测情况(平均运行10~20秒)"
             echo -e "${GREEN}6.${PLAIN} 三网回程线路+广州三网路由+全国三网延迟(平均运行1分20秒)"
-            echo " -------------"
+            echo "-------------------------------------------------------------------------"
             echo -e "${GREEN}0.${PLAIN} 回到主菜单"
         fi
         echo ""
@@ -5232,7 +5232,7 @@ my_original_script() {
         echo -e "${GREEN}15.${PLAIN} ecs-ping三网测ping脚本(自动更新测试节点)"
         echo -e "${GREEN}16.${PLAIN} 测试挂载的多个磁盘的IO(仅测试挂载盘)"
         echo -e "${GREEN}17.${PLAIN} 检测本机的NAT类型"
-        echo " -------------"
+        echo "-------------------------------------------------------------------------"
         echo -e "${GREEN}0.${PLAIN} 回到主菜单"
         echo ""
         while true; do
@@ -5346,7 +5346,7 @@ start_script() {
             echo -e "${GREEN}5.${PLAIN} Third-party scripts area (various test scripts by similar authors)"
             echo -e "${GREEN}6.${PLAIN} Original area (some test scripts unique to this script)"
             echo -e "${GREEN}7.${PLAIN} Update this script"
-            echo " -------------"
+            echo "-------------------------------------------------------------------------"
             echo -e "${GREEN}0.${PLAIN} Exit"
         else
             echo -e "${GREEN}1.${PLAIN} 顺序测试--融合怪完全体(所有项目都测试)(平均运行7分钟)(机器普通推荐使用)"
@@ -5356,7 +5356,7 @@ start_script() {
             echo -e "${GREEN}5.${PLAIN} 第三方脚本区(同类作者的各种测试脚本)"
             echo -e "${GREEN}6.${PLAIN} 原创区(本脚本独有的一些测试脚本)"
             echo -e "${GREEN}7.${PLAIN} 更新本脚本"
-            echo " -------------"
+            echo "-------------------------------------------------------------------------"
             echo -e "${GREEN}0.${PLAIN} 退出"
         fi
         echo ""
