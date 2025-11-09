@@ -66,10 +66,13 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2025.10.28
+2025.11.09
 
-- 修复Intel混合架构的CPU的线程数获取
-- 添加3个额外的IP数据库，现累计并发查询数据库18个
+- 修复当日执行统计次数的请求和解析
+- 删除无效的归档文件，无使用价值
+- 删除无效的御三家流媒体测试，原作者不再维护且年久失修不具备参考价值了
+- 替换无效的[RegionRestrictionCheck](https://github.com/lmc999/RegionRestrictionCheck)测试，替换为使用[UnlockTests](https://github.com/oneclickvirt/UnlockTests)测试，原测试项目无人维护近半年了
+- 删除单项检测中的常用端口检测，替换为邮件端口协议检测
 
 历史更新日志：[跳转](https://github.com/spiritLHLS/ecs/blob/main/CHANGELOG.md)
 
@@ -231,8 +234,7 @@ VPS测试，VPS测速，VPS综合性能测试，VPS回程线路测试，VPS流�
 - [x] 内存测试--感谢[lemonbench](https://github.com/LemonBench/LemonBench)开源，本人整理修改优化
 - [x] 磁盘dd读写测试--感谢[lemonbench](https://github.com/LemonBench/LemonBench)开源，本人整理修改优化
 - [x] 硬盘fio读写测试--感谢[yabs](https://github.com/masonr/yet-another-bench-script)开源，本人整理修改优化
-- [x] 御三家流媒体解锁测试--感谢[netflix-verify](https://github.com/sjlleo/netflix-verify)、[VerifyDisneyPlus](https://github.com/sjlleo/VerifyDisneyPlus)、[TubeCheck](https://github.com/sjlleo/TubeCheck)开源，本人整理修改维护[CommonMediaTests](https://github.com/oneclickvirt/CommonMediaTests)使用
-- [x] 常用流媒体解锁测试--感谢[RegionRestrictionCheck](https://github.com/lmc999/RegionRestrictionCheck)开源，本人整理修改优化
+- [x] 常用流媒体解锁测试--感谢[UnlockTests](https://github.com/oneclickvirt/UnlockTests)开源
 - [x] Tiktok解锁--感谢[TikTokCheck](https://github.com/lmc999/TikTokCheck)开源，本人整理修改优化
 - [x] 三网回程以及路由延迟--感谢[zhanghanyun/backtrace](https://github.com/zhanghanyun/backtrace)开源，本人整理修改维护[oneclickvirt/backtrace](https://github.com/oneclickvirt/backtrace)使用
 - [x] 回程路由及带宽类型检测(商宽/家宽/数据中心)--由[fscarmen](https://github.com/fscarmen)的PR以及本人的技术思路提供，本人修改优化维护
