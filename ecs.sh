@@ -3624,7 +3624,7 @@ unlock_test_script() {
         if [ "$en_status" = true ]; then
             echo "------------Streaming-Unlock-Test--Thanks-to-oneclickvirt/UnlockTests-----------"
         else
-            echo "------------流媒体解锁--感谢oneclickvirt/UnlockTests测试-----------"
+            echo "---------------流媒体解锁--感谢oneclickvirt/UnlockTests测试-------------"
         fi
         ./UnlockTests -f=0 -b=false | grep -v -E '项目地址:|Your IPV4 address:|Your IPV6 address:'
     else
