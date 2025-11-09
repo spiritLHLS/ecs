@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2025.10.28"
+ver="2025.11.09"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -774,18 +774,11 @@ main_download() {
         unzip "$output" -d ${TEMP_DIR}
         echo "100" >"$PROGRESS_DIR/$file"
         ;;
-    CommonMediaTests)
-        local url="${cdn_success_url}https://github.com/oneclickvirt/CommonMediaTests/releases/download/output/${CommonMediaTests_FILE}"
-        local output="$TEMP_DIR/CommonMediaTests"
+    UnlockTests)
+        local url="${cdn_success_url}https://github.com/oneclickvirt/UnlockTests/releases/download/output/${UnlockTests_FILE}"
+        local output="$TEMP_DIR/UnlockTests"
         download_file "$url" "$output" "$PROGRESS_DIR/$file"
         chmod +x "$output"
-        echo "100" >"$PROGRESS_DIR/$file"
-        ;;
-    media_lmc_check)
-        local url="${cdn_success_url}https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh"
-        local output="$TEMP_DIR/media_lmc_check.sh"
-        download_file "$url" "$output" "$PROGRESS_DIR/$file"
-        chmod 777 "$output"
         echo "100" >"$PROGRESS_DIR/$file"
         ;;
     nexttrace)
@@ -1067,10 +1060,16 @@ check_china() {
 }
 
 statistics_of_run_times() {
-    COUNT=$(curl -4 -ksm1 "https://hits.spiritlhl.net/ecs?action=hit&title=Hits&title_bg=%23555555&count_bg=%2324dde1&edge_flat=false" 2>/dev/null ||
-        curl -6 -ksm1 "https://hits.spiritlhl.net/ecs?action=hit&title=Hits&title_bg=%23555555&count_bg=%2324dde1&edge_flat=false" 2>/dev/null)
-    TODAY=$(echo "$COUNT" | grep -oP '"daily":\s*[0-9]+' | sed 's/"daily":\s*\([0-9]*\)/\1/')
-    TOTAL=$(echo "$COUNT" | grep -oP '"total":\s*[0-9]+' | sed 's/"total":\s*\([0-9]*\)/\1/')
+    COUNT=$(curl -ksm10 "https://hits.spiritlhl.net/ecs?action=hit&title=Hits&title_bg=%23555555&count_bg=%2324dde1&edge_flat=false" 2>/dev/null)
+    if [ -z "$COUNT" ]; then
+        TODAY="N/A"
+        TOTAL="N/A"
+    else
+        TODAY=$(echo "$COUNT" | grep -oP '"daily":\s*[0-9]+' | sed 's/"daily":\s*\([0-9]*\)/\1/')
+        TOTAL=$(echo "$COUNT" | grep -oP '"total":\s*[0-9]+' | sed 's/"total":\s*\([0-9]*\)/\1/')
+        [ -z "$TODAY" ] && TODAY="N/A"
+        [ -z "$TOTAL" ] && TOTAL="N/A"
+    fi
 }
 
 # =============== 基础系统信息 部分 ===============
@@ -1130,7 +1129,7 @@ get_system_bit() {
         LBench_Result_SystemBit_Full="i386"
         GOSTUN_FILE=gostun-linux-386
         # BESTTRACE_FILE=besttracemac
-        CommonMediaTests_FILE=CommonMediaTests-linux-386
+        UnlockTests_FILE=ut-linux-386
         SecurityCheck_FILE=securityCheck-linux-386
         PortChecker_FILE=portchecker-linux-386
         BACKTRACE_FILE=backtrace-linux-386
@@ -1141,7 +1140,7 @@ get_system_bit() {
         LBench_Result_SystemBit_Full="arm"
         GOSTUN_FILE=gostun-linux-arm64
         # BESTTRACE_FILE=besttracearm
-        CommonMediaTests_FILE=CommonMediaTests-linux-arm64
+        UnlockTests_FILE=ut-linux-arm64
         SecurityCheck_FILE=securityCheck-linux-arm64
         PortChecker_FILE=portchecker-linux-arm64
         BACKTRACE_FILE=backtrace-linux-arm64
@@ -1152,7 +1151,7 @@ get_system_bit() {
         LBench_Result_SystemBit_Full="amd64"
         GOSTUN_FILE=gostun-linux-amd64
         # BESTTRACE_FILE=besttrace
-        CommonMediaTests_FILE=CommonMediaTests-linux-amd64
+        UnlockTests_FILE=ut-linux-amd64
         SecurityCheck_FILE=securityCheck-linux-amd64
         PortChecker_FILE=portchecker-linux-amd64
         BACKTRACE_FILE=backtrace-linux-amd64
@@ -3441,8 +3440,10 @@ print_end_time() {
     fi
 }
 
-check_lmc_script() {
-    mv $TEMP_DIR/media_lmc_check.sh ./
+check_unlock_script() {
+    if [ -f $TEMP_DIR/UnlockTests ] && [ -s $TEMP_DIR/UnlockTests ]; then
+        mv $TEMP_DIR/UnlockTests ./
+    fi
 }
 
 # =============== IP质量检测 部分 ===============
@@ -3615,20 +3616,23 @@ pre_check() {
     fi
 }
 
-sjlleo_script() {
+unlock_test_script() {
     [ "${Var_OSRelease}" = "freebsd" ] && return
-    if [ "$en_status" = true ]; then
-        return
-    fi
     cd $myvar >/dev/null 2>&1
-    if [ -f $TEMP_DIR/CommonMediaTests ]; then
-        mv $TEMP_DIR/CommonMediaTests ./
-        echo "------------流媒体解锁--基于oneclickvirt/CommonMediaTests开源-----------"
-        _yellow "以下测试的解锁地区是准确的，但是不是完整解锁的判断可能有误，这方面仅作参考使用"
-        ./CommonMediaTests | grep -v 'github.com/oneclickvirt/CommonMediaTests'
-        _yellow "解锁Netflix，Youtube，DisneyPlus上面和下面进行比较，不同之处自行判断"
+    if [ -f ./UnlockTests ] && [ -s ./UnlockTests ]; then
+        chmod +x ./UnlockTests
+        if [ "$en_status" = true ]; then
+            echo "------------Streaming-Unlock-Test--Thanks-to-oneclickvirt/UnlockTests-----------"
+        else
+            echo "------------流媒体解锁--感谢oneclickvirt/UnlockTests测试-----------"
+        fi
+        ./UnlockTests -f=0 -b=false | grep -v -E '项目地址:|Your IPV4 address:|Your IPV6 address:'
     else
-        _red "CommonMediaTests下载失败所以不进行测试"
+        if [ "$en_status" = true ]; then
+            _red "UnlockTests download failed so no test"
+        else
+            _red "UnlockTests下载失败所以不进行测试"
+        fi
     fi
 }
 
@@ -3861,22 +3865,6 @@ io_judge() {
     fi
 }
 
-RegionRestrictionCheck_script() {
-    if [ "$en_status" = true ]; then
-        echo -e "-------------------------Streaming-Unlock-Test--------------------------"
-        _yellow " The following is an IPV4 network test, if there is no IPV4 network there is no output"
-        echo 0 | bash media_lmc_check.sh -E -M 4 2>/dev/null | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
-        _yellow " The following is an IPV6 network test, if there is no IPV6 network there is no output"
-        echo 0 | bash media_lmc_check.sh -E -M 6 2>/dev/null | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
-    else
-        echo -e "----------------流媒体解锁--感谢RegionRestrictionCheck开源--------------"
-        _yellow " 以下为IPV4网络测试，若无IPV4网络则无输出"
-        echo 0 | bash media_lmc_check.sh -M 4 2>/dev/null | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
-        _yellow " 以下为IPV6网络测试，若无IPV6网络则无输出"
-        echo 0 | bash media_lmc_check.sh -M 6 2>/dev/null | grep -A999999 '============\[ Multination \]============' | sed '/=======================================/q'
-    fi
-}
-
 lmc999_script() {
     cd $myvar >/dev/null 2>&1
     if [ "$en_status" = true ]; then
@@ -4102,7 +4090,7 @@ all_script() {
         if [[ -z "${CN}" || "${CN}" != true ]]; then
             _yellow "Concurrently downloading files..."
             # besttrace
-            dfiles=(gostun CommonMediaTests nexttrace backtrace securityCheck portchecker yabs media_lmc_check)
+            dfiles=(gostun UnlockTests nexttrace backtrace securityCheck portchecker yabs)
             start_downloads "${dfiles[@]}"
             _yellow "All files download successfully."
             get_system_info
@@ -4113,7 +4101,7 @@ all_script() {
             CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
             CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
             [ "$enable_speedtest" = true ] && _yellow "checking speedtest" && install_speedtest &
-            check_lmc_script &
+            check_unlock_script &
             check_nat_type &
             clear
             print_intro
@@ -4121,16 +4109,14 @@ all_script() {
             wait
             ecs_net_all_script >${TEMP_DIR}/ecs_net_output.txt &
             io_judge "all"
-            sjlleo_script >${TEMP_DIR}/sjlleo_output.txt &
-            RegionRestrictionCheck_script >${TEMP_DIR}/RegionRestrictionCheck_output.txt &
+            unlock_test_script >${TEMP_DIR}/unlock_output.txt &
             lmc999_script >${TEMP_DIR}/lmc999_output.txt &
             spiritlhl_script >${TEMP_DIR}/spiritlhl_output.txt &
             backtrace_script >${TEMP_DIR}/backtrace_output.txt &
             nexttrace_route_script test_area_g[@] test_ip_g[@] >${TEMP_DIR}/fscarmen_route_output.txt &
             echo "正在并发测试中，大概2~3分钟无输出，请耐心等待。。。"
             wait
-            check_and_cat_file ${TEMP_DIR}/sjlleo_output.txt
-            check_and_cat_file ${TEMP_DIR}/RegionRestrictionCheck_output.txt
+            check_and_cat_file ${TEMP_DIR}/unlock_output.txt
             check_and_cat_file ${TEMP_DIR}/lmc999_output.txt
             check_and_cat_file ${TEMP_DIR}/spiritlhl_output.txt
             check_and_cat_file ${TEMP_DIR}/backtrace_output.txt
@@ -4149,7 +4135,7 @@ all_script() {
             CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
             CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
             [ "$enable_speedtest" = true ] && _yellow "checking speedtest" && install_speedtest &
-            check_lmc_script &
+            check_unlock_script &
             check_nat_type &
             clear
             print_intro
@@ -4171,7 +4157,7 @@ all_script() {
         if [[ -z "${CN}" || "${CN}" != true ]]; then
             _yellow "Concurrently downloading files..."
             # besttrace
-            dfiles=(nexttrace backtrace CommonMediaTests securityCheck portchecker gostun yabs media_lmc_check)
+            dfiles=(nexttrace backtrace UnlockTests securityCheck portchecker gostun yabs)
             start_downloads "${dfiles[@]}"
             _yellow "All files download successfully."
             get_system_info
@@ -4182,14 +4168,13 @@ all_script() {
             CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
             CN_Mobile=($(get_nearest_data "${SERVER_BASE_URL}/CN_Mobile.csv"))
             [ "$enable_speedtest" = true ] && _yellow "checking speedtest" && install_speedtest
-            check_lmc_script
+            check_unlock_script
             check_nat_type
             clear
             print_intro
             basic_script
             io_judge "all"
-            sjlleo_script
-            RegionRestrictionCheck_script
+            unlock_test_script
             lmc999_script
             spiritlhl_script
             backtrace_script
@@ -4253,11 +4238,11 @@ minal_plus() {
     _yellow "Concurrently downloading files..."
     wait
     # besttrace
-    dfiles=(nexttrace backtrace CommonMediaTests gostun yabs media_lmc_check)
+    dfiles=(nexttrace backtrace UnlockTests gostun yabs)
     start_downloads "${dfiles[@]}"
     _yellow "All files download successfully."
     get_system_info
-    check_lmc_script
+    check_unlock_script
     check_dnsutils
     check_ping
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
@@ -4269,8 +4254,7 @@ minal_plus() {
     print_intro
     basic_script
     io_judge "io2"
-    sjlleo_script
-    RegionRestrictionCheck_script
+    unlock_test_script
     lmc999_script
     backtrace_script
     nexttrace_route_script test_area_g[@] test_ip_g[@]
@@ -4305,12 +4289,12 @@ minal_plus_network() {
 minal_plus_media() {
     pre_check
     _yellow "Concurrently downloading files..."
-    dfiles=(CommonMediaTests gostun yabs media_lmc_check)
+    dfiles=(UnlockTests gostun yabs)
     start_downloads "${dfiles[@]}"
     _yellow "All files download successfully."
     get_system_info
     check_dnsutils
-    check_lmc_script
+    check_unlock_script
     check_ping
     CN_Unicom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Unicom.csv"))
     CN_Telecom=($(get_nearest_data "${SERVER_BASE_URL}/CN_Telecom.csv"))
@@ -4321,8 +4305,7 @@ minal_plus_media() {
     print_intro
     basic_script
     io_judge "io2"
-    sjlleo_script
-    RegionRestrictionCheck_script
+    unlock_test_script
     lmc999_script
     ecs_net_minal_script
     end_script
@@ -4354,15 +4337,14 @@ network_script() {
 media_script() {
     pre_check
     _yellow "Concurrently downloading files..."
-    dfiles=(CommonMediaTests media_lmc_check)
+    dfiles=(UnlockTests)
     start_downloads "${dfiles[@]}"
     _yellow "All files download successfully."
     check_dnsutils
-    check_lmc_script
+    check_unlock_script
     clear
     print_intro
-    sjlleo_script
-    RegionRestrictionCheck_script
+    unlock_test_script
     lmc999_script
     end_script
 }
@@ -4389,13 +4371,29 @@ hardware_script() {
 }
 
 port_script() {
-    exit 1
     pre_check
-    pre_download XXXX
-    get_system_info
+    _yellow "Concurrently downloading files..."
+    dfiles=(portchecker)
+    start_downloads "${dfiles[@]}"
+    _yellow "All files download successfully."
     clear
     print_intro
-    # block_port_script
+    if [ "$en_status" = true ]; then
+        echo -e "-------Email-Port-Protocol-Detection--Base-On-portchecker--------"
+    else
+        echo -e "-------------邮件端口协议检测情况-------------"
+    fi
+    cd $myvar >/dev/null 2>&1
+    if [ -f "${TEMP_DIR}/pck" ]; then
+        chmod 777 ${TEMP_DIR}/pck
+        ${TEMP_DIR}/pck | sed '1d'
+    else
+        if [ "$en_status" = true ]; then
+            echo "Port checker tool not found"
+        else
+            echo "端口检测工具未找到"
+        fi
+    fi
     end_script
 }
 
@@ -4443,8 +4441,7 @@ rm_script() {
     cd $myvar >/dev/null 2>&1
     rm -rf speedtest.tgz*
     rm -rf wget-log*
-    rm -rf media_lmc_check.sh*
-    rm -rf CommonMediaTests
+    rm -rf UnlockTests
     rm -rf besttrace
     rm -rf nexttrace
     rm -rf LemonBench.Result.txt*
@@ -4990,17 +4987,17 @@ simplify_script() {
         if [ "$en_status" = true ]; then
             _yellow "The streamlined script for the fusion monster is as follows"
             echo -e "${GREEN}1.${PLAIN} Minimalist version (system information + CPU + memory + disk IO + 4 nodes for speed test) (average run time 3 minutes)"
-            echo -e "${GREEN}2.${PLAIN} Lite (System Info + CPU + RAM + Disk IO + Mikado Unlocked + Common Streams + TikTok + Backhaul + Routing + 4 nodes for speed test) (4 minutes average run time)"
+            echo -e "${GREEN}2.${PLAIN} Lite (System Info + CPU + RAM + Disk IO + Common Streams + TikTok + Backhaul + Routing + 4 nodes for speed test) (4 minutes average run time)"
             echo -e "${GREEN}3.${PLAIN} Lite Network Edition (4 nodes for system information + CPU + memory + disk IO + backhaul + routing + speed test) (average run time 4 minutes)"
-            echo -e "${GREEN}4.${PLAIN} Lite unlocked version (System info + CPU + RAM + Disk IO + Gosanja unlocked + common streams + TikTok + 4 nodes for speed test) (runs for 4 minutes on average)"
+            echo -e "${GREEN}4.${PLAIN} Lite unlocked version (System info + CPU + RAM + Disk IO + common streams + TikTok + 4 nodes for speed test) (runs for 4 minutes on average)"
             echo " -------------"
             echo -e "${GREEN}0.${PLAIN} Back to the main menu"
         else
             _yellow "融合怪的精简脚本如下"
             echo -e "${GREEN}1.${PLAIN} 极简版(系统信息+CPU+内存+磁盘IO+测速节点4个)(平均运行3分钟)"
-            echo -e "${GREEN}2.${PLAIN} 精简版(系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体+TikTok+回程+路由+测速节点4个)(平均运行4分钟)"
+            echo -e "${GREEN}2.${PLAIN} 精简版(系统信息+CPU+内存+磁盘IO+常用流媒体+TikTok+回程+路由+测速节点4个)(平均运行4分钟)"
             echo -e "${GREEN}3.${PLAIN} 精简网络版(系统信息+CPU+内存+磁盘IO+回程+路由+测速节点4个)(平均运行4分钟)"
-            echo -e "${GREEN}4.${PLAIN} 精简解锁版(系统信息+CPU+内存+磁盘IO+御三家解锁+常用流媒体+TikTok+测速节点4个)(平均运行4分钟)"
+            echo -e "${GREEN}4.${PLAIN} 精简解锁版(系统信息+CPU+内存+磁盘IO+常用流媒体+TikTok+测速节点4个)(平均运行4分钟)"
             echo " -------------"
             echo -e "${GREEN}0.${PLAIN} 回到主菜单"
         fi
@@ -5070,20 +5067,20 @@ single_item_script() {
         if [ "$en_status" = true ]; then
             _yellow "The single test script for fusion monster splitting is as follows"
             echo -e "${GREEN}1.${PLAIN} Networking (simplified IP quality check + triple network backhaul + triple network routing and latency + 11 speed nodes) (average run time about 6 minutes)"
-            echo -e "${GREEN}2.${PLAIN} For unlocking (Gosanja unlocking + common streamer unlocking + TikTok unlocking) (average runtime 30~60 seconds)"
+            echo -e "${GREEN}2.${PLAIN} For unlocking (common streamer unlocking + TikTok unlocking) (average runtime 30~60 seconds)"
             echo -e "${GREEN}3.${PLAIN} Hardware (basic system information + CPU + RAM + dual disk IO test) (average run time 1½ minutes)"
             echo -e "${GREEN}4.${PLAIN} IP quality check (average runtime 10~20 seconds)"
-            # echo -e "${GREEN}5.${PLAIN} Common port openings (blocked or not) (average run time about 1 minute) (bugs not fixed yet)"
-            # echo -e "${GREEN}6.${PLAIN} Triple-net backhaul line + Guangzhou triple-net routing + nationwide triple-net delay (average running 1 minute 20 seconds)"
+            echo -e "${GREEN}5.${PLAIN} Email port protocol detection (average runtime 10~20 seconds)"
+            echo -e "${GREEN}6.${PLAIN} Triple-net backhaul line + Guangzhou triple-net routing + nationwide triple-net delay (average running 1 minute 20 seconds)"
             echo " -------------"
             echo -e "${GREEN}0.${PLAIN} Back to the main menu"
         else
             _yellow "融合怪拆分的单项测试脚本如下"
             echo -e "${GREEN}1.${PLAIN} 网络方面(简化的IP质量检测+三网回程+三网路由与延迟+测速节点11个)(平均运行6分钟左右)"
-            echo -e "${GREEN}2.${PLAIN} 解锁方面(御三家解锁+常用流媒体解锁+TikTok解锁)(平均运行30~60秒)"
+            echo -e "${GREEN}2.${PLAIN} 解锁方面(常用流媒体解锁+TikTok解锁)(平均运行30~60秒)"
             echo -e "${GREEN}3.${PLAIN} 硬件方面(基础系统信息+CPU+内存+双重磁盘IO测试)(平均运行1分半钟)"
             echo -e "${GREEN}4.${PLAIN} IP质量检测(15个数据库的IP检测+邮件端口检测)(平均运行10~20秒)"
-            echo -e "${GREEN}5.${PLAIN} 常用端口开通情况(是否有阻断)(平均运行1分钟左右)(暂时有bug未修复)"
+            echo -e "${GREEN}5.${PLAIN} 邮件端口协议检测情况(平均运行10~20秒)"
             echo -e "${GREEN}6.${PLAIN} 三网回程线路+广州三网路由+全国三网延迟(平均运行1分20秒)"
             echo " -------------"
             echo -e "${GREEN}0.${PLAIN} 回到主菜单"
@@ -5241,7 +5238,7 @@ head_script() {
         echo -e "# Version: $ver                                       #"
         echo -e "# Update log：$changeLog     #"
         echo -e "# ${GREEN}Author${PLAIN}: spiritlhl                                         #"
-        echo -e "# ${GREEN}TG Channel${PLAIN}: https://t.me/+UHVoo2U4VyA5NTQ1                      #"
+        echo -e "# ${GREEN}TG Channel${PLAIN}: https://t.me/+UHVoo2U4VyA5NTQ1                #"
         echo -e "# ${GREEN}GitHub${PLAIN}: https://github.com/spiritLHLS                     #"
         echo -e "# ${GREEN}GitLab${PLAIN}: https://gitlab.com/spiritysdx                     #"
         echo "#############################################################"
@@ -5256,7 +5253,7 @@ head_script() {
         echo -e "# 版本(请注意比对仓库版本更新)：$ver                  #"
         echo -e "# 更新日志：$changeLog                       #"
         echo -e "# ${GREEN}作者${PLAIN}: spiritlhl                                           #"
-        echo -e "# ${GREEN}TG频道${PLAIN}: https://t.me/+UHVoo2U4VyA5NTQ1                          #"
+        echo -e "# ${GREEN}TG频道${PLAIN}: https://t.me/+UHVoo2U4VyA5NTQ1                    #"
         echo -e "# ${GREEN}GitHub${PLAIN}: https://github.com/spiritLHLS                     #"
         echo -e "# ${GREEN}GitLab${PLAIN}: https://gitlab.com/spiritysdx                     #"
         echo "#############################################################"

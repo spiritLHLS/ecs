@@ -192,9 +192,8 @@ VPS testing, VPS speed testing, VPS comprehensive performance testing, VPS retur
 - [x] Memory test - thanks to [lemonbench](https://github.com/LemonBench/LemonBench) open source, I organize the modification optimization
 - [x] disk dd read/write test - thanks to [lemonbench](https://github.com/LemonBench/LemonBench) open source, I organize the modified optimization!
 - [x] Hard disk fio read and write test - thanks to [yabs](https://github.com/masonr/yet-another-bench-script) open source, I organize the modified optimization
-- [x] Mikado streaming unlock test - thanks to [sjlleo's binary file](https://github.com/sjlleo?tab=repositories), I modify the finishing optimized
-- [x] Streaming media unlocking test - thanks to [RegionRestrictionCheck](https://github.com/lmc999/RegionRestrictionCheck) open source, I organize, modify and optimize the
-- [x] Tiktok unlock - Thanks to [TikTokCheck](https://github.com/lmc999/TikTokCheck) open source, I organize modified to optimize the
+- [x] Streaming media unlocking test - thanks to [UnlockTests](https://github.com/oneclickvirt/UnlockTests) open source.
+- [x] Tiktok unlock - Thanks to [TikTokCheck](https://github.com/lmc999/TikTokCheck) open source, I organize modified to optimize it.
 - [x] Backhaul routing and bandwidth type detection (business wide/home wide/data center) - by [fscarmen](https://github.com/fscarmen) PR as well as my technical ideas to provide, I modify the optimization maintenance
 - [x] IP quality and port 25 detection (including IPV4 and IPV6) - this script is original, thanks to the Internet to provide the query resources
 - [x] speedtest speed test - use self-writing [ecsspeed](https://github.com/spiritLHLS/ecsspeed) warehouse, automatically update the speed test server ID, once and for all to solve the problem of always have to manually update the speed test ID!
