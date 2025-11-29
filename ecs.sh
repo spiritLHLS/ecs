@@ -4,7 +4,7 @@
 
 cd /root >/dev/null 2>&1
 myvar=$(pwd)
-ver="2025.11.09"
+ver="2025.11.29"
 
 # =============== 默认输入设置 ===============
 RED="\033[31m"
@@ -3988,8 +3988,8 @@ nexttrace_route_script() {
         fi
         for ((a = 0; a < ${#test_area_4[@]}; a++)); do
             rm -rf /tmp/ip_temp
-            RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip_4[a]}" --nocolor 2>/dev/null)
-            RESULT=$(echo "$RESULT" | grep '^[0-9 ]')
+            RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip_4[a]}" --no-color 2>/dev/null)
+            RESULT=$(echo "$RESULT" | grep -E -v '^(NextTrace|MapTrace|\[NextTrace API\]|IP|traceroute to)')
             PART_1=$(echo "$RESULT" | grep '^[0-9]\{1,2\}[ ]\+[0-9a-f]' | awk '{$1="";$2="";print}' | sed "s@^[ ]\+@@g")
             PART_2=$(echo "$RESULT" | grep '\(.*ms\)\{3\}' | sed 's/.* \([0-9*].*ms\).*ms.*ms/\1/g')
             SPACE=' '
@@ -4020,7 +4020,7 @@ nexttrace_route_script() {
         _green "依次测试电信/联通/移动经过的地区及线路，核心程序来自nexttrace，请知悉!" >/tmp/ecs/ip.test
         for ((a = 0; a < ${#test_area_6[@]}; a++)); do
             rm -rf /tmp/ip_temp
-            RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip_6[a]}" --nocolor 2>/dev/null)
+            RESULT=$("$TEMP_DIR/$NEXTTRACE_FILE" "${test_ip_6[a]}" --no-color 2>/dev/null)
             RESULT=$(echo "$RESULT" | grep -E -v '^(NextTrace|MapTrace|\[NextTrace API\]|IP|traceroute to)')
             PART_1=$(echo "$RESULT" | grep '^[0-9]\{1,2\}[ ]\+[0-9a-f]' | awk '{$1="";$2="";print}' | sed "s@^[ ]\+@@g")
             PART_2=$(echo "$RESULT" | grep '\(.*ms\)\{3\}' | sed 's/.* \([0-9*].*ms\).*ms.*ms/\1/g')

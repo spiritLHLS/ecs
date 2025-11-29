@@ -2,6 +2,16 @@
 
 # 主要变化
 
+2025.11.09
+
+- 修复当日执行统计次数的请求和解析
+- 修复进度条解析的时可能存在的换行符导致进度条报错
+- 删除无效的归档文件，无使用价值
+- 删除无效的御三家流媒体测试，原作者不再维护且年久失修不具备参考价值了
+- 替换无效的[RegionRestrictionCheck](https://github.com/lmc999/RegionRestrictionCheck)测试，替换为使用[UnlockTests](https://github.com/oneclickvirt/UnlockTests)测试，原测试项目无人维护近半年了
+- 删除单项检测中的常用端口检测，替换为邮件端口协议检测
+- 统一单横线划分的项目头的行长，统一格式化
+
 2025.10.28
 
 - 修复Intel混合架构的CPU的线程数获取
