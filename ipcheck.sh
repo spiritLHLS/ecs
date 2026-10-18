@@ -11,6 +11,7 @@ PORT_CHECKER_BIN="${TEMP_DIR}/pck"
 IP_QUALITY_GOOGLE_FILE="${TEMP_DIR}/ip_quality_google"
 IP_QUALITY_SECURITY_FILE="${TEMP_DIR}/ip_quality_security_check"
 IP_QUALITY_EMAIL_FILE="${TEMP_DIR}/ip_quality_email_check"
+IP_QUALITY_IPOK_FILE="${TEMP_DIR}/ip_quality_ipok"
 cleanup_temp_dir() {
     if [ -n "${TEMP_DIR:-}" ] && [ -d "$TEMP_DIR" ]; then
         rm -rf -- "$TEMP_DIR"
@@ -236,6 +237,20 @@ email_check() {
     fi
 }
 
+ipok_check() {
+    rm -f "$IP_QUALITY_IPOK_FILE"
+    local output=""
+    if command -v curl >/dev/null 2>&1; then
+        output=$(curl -sL --connect-timeout 8 -m 15 "https://ipok.io/check?plain=1" 2>/dev/null)
+    elif command -v timeout >/dev/null 2>&1 && command -v wget >/dev/null 2>&1; then
+        output=$(timeout 15 wget -qO- -T 10 "https://ipok.io/check?plain=1" 2>/dev/null)
+    fi
+
+    if [ -n "$output" ]; then
+        echo "$output" >>"$IP_QUALITY_IPOK_FILE"
+    fi
+}
+
 ST="OvwKx5qgJtf7PZgCKbtyojSU.MTcwMTUxNzY1MTgwMw"
 
 next() {
@@ -283,6 +298,10 @@ ipcheck() {
     fi
 
     {
+        ipok_check
+    } &
+
+    {
         email_check
         if [[ $? -ne 0 ]]; then
             echo "邮件端口检测执行失败" >>"$IP_QUALITY_EMAIL_FILE"
@@ -297,6 +316,16 @@ ipcheck() {
 
     if [ -f "$IP_QUALITY_SECURITY_FILE" ]; then
         check_and_cat_file "$IP_QUALITY_SECURITY_FILE"
+        has_output=true
+    fi
+
+    if [ -s "$IP_QUALITY_IPOK_FILE" ]; then
+        if [ "$en_status" = true ]; then
+            echo -e "-----------IP-Purity-&-Reputation--Base-On-ipok.io-Multi-Source----------"
+        else
+            echo -e "-------------IP纯净度与多源风控--基于ipok.io多源交叉检测--------------"
+        fi
+        check_and_cat_file "$IP_QUALITY_IPOK_FILE"
         has_output=true
     fi
 
@@ -322,7 +351,7 @@ ipcheck() {
     fi
 
     # 清理临时文件
-    rm -f "$IP_QUALITY_SECURITY_FILE" "$IP_QUALITY_GOOGLE_FILE" "$IP_QUALITY_EMAIL_FILE"
+    rm -f "$IP_QUALITY_SECURITY_FILE" "$IP_QUALITY_GOOGLE_FILE" "$IP_QUALITY_EMAIL_FILE" "$IP_QUALITY_IPOK_FILE"
 }
 
 main() {

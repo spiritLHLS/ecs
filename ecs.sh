@@ -212,6 +212,7 @@ IPSB_RESULT_FILE="${TEMP_DIR}/ipsb"
 IP_QUALITY_GOOGLE_FILE="${TEMP_DIR}/ip_quality_google"
 IP_QUALITY_SECURITY_FILE="${TEMP_DIR}/ip_quality_security_check"
 IP_QUALITY_EMAIL_FILE="${TEMP_DIR}/ip_quality_email_check"
+IP_QUALITY_IPOK_FILE="${TEMP_DIR}/ip_quality_ipok"
 ROUTE_RESULT_FILE="${TEMP_DIR}/ip.test"
 ROUTE_HOP_FILE="${TEMP_DIR}/ip_temp"
 EO6S_NEW_IPV6=""
@@ -3631,6 +3632,20 @@ email_check() {
     "${TEMP_DIR}/pck" | sed '1d' >>"$IP_QUALITY_EMAIL_FILE"
 }
 
+ipok_check() {
+    rm -f "$IP_QUALITY_IPOK_FILE"
+    local output=""
+    if command -v curl >/dev/null 2>&1; then
+        output=$(curl -sL --connect-timeout 8 -m 15 "https://ipok.io/check?plain=1" 2>/dev/null)
+    elif command -v timeout >/dev/null 2>&1 && command -v wget >/dev/null 2>&1; then
+        output=$(timeout 15 wget -qO- -T 10 "https://ipok.io/check?plain=1" 2>/dev/null)
+    fi
+
+    if [ -n "$output" ]; then
+        echo "$output" >>"$IP_QUALITY_IPOK_FILE"
+    fi
+}
+
 ipcheck() {
     { google; } &
     if [ "$en_status" = true ]; then
@@ -3639,8 +3654,17 @@ ipcheck() {
         { security_check "zh"; } &
     fi
     { email_check; } &
+    { ipok_check; } &
     wait
     check_and_cat_file "$IP_QUALITY_SECURITY_FILE"
+    if [ -s "$IP_QUALITY_IPOK_FILE" ]; then
+        if [ "$en_status" = true ]; then
+            echo -e "-----------IP-Purity-&-Reputation--Base-On-ipok.io-Multi-Source----------"
+        else
+            echo -e "-------------IP纯净度与多源风控--基于ipok.io多源交叉检测--------------"
+        fi
+        check_and_cat_file "$IP_QUALITY_IPOK_FILE"
+    fi
     check_and_cat_file "$IP_QUALITY_GOOGLE_FILE"
     if [ "$en_status" = true ]; then
         echo -e "---------Email-Port-Detection--Base-On-oneclickvirt/portchecker----------"
@@ -3648,7 +3672,7 @@ ipcheck() {
         echo -e "------------邮件端口检测--基于oneclickvirt/portchecker开源------------"
     fi
     check_and_cat_file "$IP_QUALITY_EMAIL_FILE"
-    rm -f "$IP_QUALITY_SECURITY_FILE" "$IP_QUALITY_GOOGLE_FILE" "$IP_QUALITY_EMAIL_FILE"
+    rm -f "$IP_QUALITY_SECURITY_FILE" "$IP_QUALITY_GOOGLE_FILE" "$IP_QUALITY_EMAIL_FILE" "$IP_QUALITY_IPOK_FILE"
 }
 
 eo6s() {
