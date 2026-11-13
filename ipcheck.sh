@@ -17,7 +17,7 @@ cleanup_temp_dir() {
     fi
 }
 trap cleanup_temp_dir EXIT
-ver="2026.07.13"
+ver="2026.11.13"
 changeLog="IP质量测试，由频道 https://t.me/+UHVoo2U4VyA5NTQ1 原创"
 en_status=false
 shorturl=""

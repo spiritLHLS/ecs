@@ -85,7 +85,7 @@ https://github.com/spiritLHLS/one-click-installation-script
 
 ## 更新
 
-2026.08.27
+2026.11.13
 
 - `speedtest-go` 下载版本升级至 `v1.8.3`
 
