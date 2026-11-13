@@ -286,4 +286,4 @@ Thanks also to the following platforms for editorial and testing support.
 
 ## Stargazers Over Time
 
-[![Stargazers Over Time](https://starchart.cc/spiritLHLS/ecs.svg?variant=adaptive)](https://www.spiritlhl.net)
+[![Stargazers Over Time](https://api.star-history.com/chart?repos=spiritLHLS/ecs&type=date)](https://www.spiritlhl.net)
